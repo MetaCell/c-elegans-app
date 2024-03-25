@@ -1,0 +1,5 @@
+django-stubs
+ipdb
+pytest
+pytest-django
+black

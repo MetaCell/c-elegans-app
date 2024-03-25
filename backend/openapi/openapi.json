@@ -1,0 +1,526 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "myapp",
+    "version": "1.0.0",
+    "description": ""
+  },
+  "paths": {
+    "/api/datasets": {
+      "get": {
+        "operationId": "get_all_datasets",
+        "summary": "Get All Datasets",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Dataset"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "datasets"
+        ]
+      }
+    },
+    "/api/datasets/{dataset}/full": {
+      "get": {
+        "operationId": "get_full_dataset",
+        "summary": "Get Full Dataset",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dataset",
+            "schema": {
+              "title": "Dataset",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FullDataset"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "datasets"
+        ]
+      }
+    },
+    "/api/datasets/{dataset}": {
+      "get": {
+        "operationId": "get_dataset",
+        "summary": "Get Dataset",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dataset",
+            "schema": {
+              "title": "Dataset",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dataset"
+                }
+              }
+            }
+          }
+        },
+        "description": "Returns all the datasets from the DB",
+        "tags": [
+          "datasets"
+        ]
+      }
+    },
+    "/api/cells": {
+      "get": {
+        "operationId": "get_all_cells",
+        "summary": "Get All Cells",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Neuron"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "Returns all the cells (neurons) from the DB",
+        "tags": [
+          "neurons"
+        ]
+      }
+    },
+    "/api/connections": {
+      "get": {
+        "operationId": "get_connections",
+        "summary": "Get Connections",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cells",
+            "schema": {
+              "title": "Cells",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "datasetIds",
+            "schema": {
+              "title": "Datasetids",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "datasetType",
+            "schema": {
+              "title": "Datasettype",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "thresholdChemical",
+            "schema": {
+              "default": 3,
+              "title": "Thresholdchemical",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "thresholdElectrical",
+            "schema": {
+              "default": 3,
+              "title": "Thresholdelectrical",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "includeNeighboringCells",
+            "schema": {
+              "default": false,
+              "title": "Includeneighboringcells",
+              "type": "boolean"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "includeAnnotations",
+            "schema": {
+              "default": false,
+              "title": "Includeannotations",
+              "type": "boolean"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Connection"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "Gets the connections of a dedicated Dataset",
+        "tags": [
+          "connectivity"
+        ]
+      }
+    },
+    "/api/connections/{dataset}": {
+      "get": {
+        "operationId": "get_dataset_connections",
+        "summary": "Get Dataset Connections",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dataset",
+            "schema": {
+              "title": "Dataset",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Connection"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "Gets the connections of a dedicated Dataset",
+        "tags": [
+          "connectivity"
+        ]
+      }
+    },
+    "/api/download-connectivity": {
+      "get": {
+        "operationId": "get_dataset_connectivity",
+        "summary": "Get Dataset Connectivity",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "datasetId",
+            "schema": {
+              "title": "Datasetid",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Connection"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "connectivity"
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Dataset": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "maxLength": 20,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "collection": {
+            "maxLength": 20,
+            "title": "Collection",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 50,
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "time": {
+            "title": "Time",
+            "type": "number"
+          },
+          "visualTime": {
+            "title": "Visual Time",
+            "type": "number"
+          },
+          "type": {
+            "maxLength": 50,
+            "title": "Type",
+            "type": "string"
+          },
+          "axes": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Axes"
+          }
+        },
+        "required": [
+          "collection",
+          "name",
+          "description",
+          "time",
+          "visualTime",
+          "type"
+        ],
+        "title": "Dataset",
+        "type": "object"
+      },
+      "Connection": {
+        "properties": {
+          "dataset_id": {
+            "title": "Dataset",
+            "type": "string"
+          },
+          "pre": {
+            "maxLength": 30,
+            "title": "Pre",
+            "type": "string"
+          },
+          "post": {
+            "maxLength": 30,
+            "title": "Post",
+            "type": "string"
+          },
+          "type": {
+            "maxLength": 20,
+            "title": "Type",
+            "type": "string"
+          },
+          "synapses": {
+            "title": "Synapses",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "dataset_id",
+          "pre",
+          "post",
+          "type",
+          "synapses"
+        ],
+        "title": "Connection",
+        "type": "object"
+      },
+      "FullDataset": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "maxLength": 20,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "collection": {
+            "maxLength": 20,
+            "title": "Collection",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 50,
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "time": {
+            "title": "Time",
+            "type": "number"
+          },
+          "visualTime": {
+            "title": "Visual Time",
+            "type": "number"
+          },
+          "type": {
+            "maxLength": 50,
+            "title": "Type",
+            "type": "string"
+          },
+          "axes": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Axes"
+          },
+          "connections": {
+            "items": {
+              "$ref": "#/components/schemas/Connection"
+            },
+            "title": "Connections",
+            "type": "array"
+          }
+        },
+        "required": [
+          "collection",
+          "name",
+          "description",
+          "time",
+          "visualTime",
+          "type",
+          "connections"
+        ],
+        "title": "FullDataset",
+        "type": "object"
+      },
+      "Neuron": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "nclass": {
+            "maxLength": 30,
+            "title": "Nclass",
+            "type": "string"
+          },
+          "neurotransmitter": {
+            "maxLength": 10,
+            "title": "Neurotransmitter",
+            "type": "string"
+          },
+          "type": {
+            "maxLength": 10,
+            "title": "Type",
+            "type": "string"
+          },
+          "embryonic": {
+            "default": false,
+            "title": "Embryonic",
+            "type": "boolean"
+          },
+          "inhead": {
+            "default": false,
+            "title": "Inhead",
+            "type": "boolean"
+          },
+          "intail": {
+            "default": false,
+            "title": "Intail",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "nclass",
+          "neurotransmitter",
+          "type"
+        ],
+        "title": "Neuron",
+        "type": "object"
+      }
+    }
+  },
+  "servers": []
+}
