@@ -10,10 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
     "@metacell/geppetto-meta-client": "^1.2.8",
     "@metacell/geppetto-meta-core": "^1.2.8",
     "@metacell/geppetto-meta-ui": "^1.2.8",
     "@mui/material": "^5.15.15",
+    "file-saver": "^2.0.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^9.1.1"
@@ -27,6 +30,7 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
+    "sass": "^1.75.0",
     "typescript": "^5.2.2",
     "vite": "^5.2.0"
   }
