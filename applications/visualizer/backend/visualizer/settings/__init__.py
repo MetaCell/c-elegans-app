@@ -4,7 +4,9 @@ from .common import *
 
 is_production = os.environ.get('PRODUCTION', False)
 
+
 if is_production:
-    from .production import *
+    if CURRENT_APP_NAME:
+        from .production import *
 else:
     from .development import *

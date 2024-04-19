@@ -15,6 +15,7 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+CURRENT_APP_NAME = os.environ.get('CH_CURRENT_APP_NAME', None)
 
 
 # Quick-start development settings - unsuitable for production
