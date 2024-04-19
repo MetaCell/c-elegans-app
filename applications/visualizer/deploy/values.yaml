@@ -1,16 +1,32 @@
 harness:
+  database:
+    auto: true
+    type: postgres
+    size: 2Gi
+    resources:
+      limits:
+        cpu: '0.50'
+      requests:
+        cpu: '0.25'
   dependencies:
-    # build: [cloudharness-frontend-build, cloudharness-django]
     build: []
-    # hard: [common]
     hard: []
-  deployment: {auto: true, port: 8080}
+  deployment:
+    auto: true
+    port: 8080
+    replicas: 1
+    resources:
+      limits:
+        cpu: '0.50'
+        memory: 500M
+      requests:
+        cpu: '0.25'
+        memory: 32M
   livenessProbe: {path: /api/live}
   readinessProbe: {path: /api/ready}
   secured: false
   service: {auto: true, port: 8080}
   subdomain: visualizer
-
   test:
     api:
       autotest: true
@@ -23,13 +39,3 @@ harness:
   #   uri: /*
   # use_services:
   # - {name: common}
-deploy:
-  mode: replicated
-  replicas: 3
-  resources:
-    limits:
-      cpus: 2
-      memory: 500M
-    reservations:
-      cpus: 2
-      memory: 32M
