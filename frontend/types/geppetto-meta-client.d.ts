@@ -9,8 +9,8 @@ declare module '@metacell/geppetto-meta-client/common/layout/actions' {
 }
 
 declare module '@metacell/geppetto-meta-client/common' {
-  export const createStore: any;
-  export default { createStore };
+  export const createLayoutAndStore: any;
+  export default { createLayoutAndStore };
 }
 
 declare module '@metacell/geppetto-meta-client/common/layout/model' {
