@@ -1,0 +1,35 @@
+harness:
+  dependencies:
+    # build: [cloudharness-frontend-build, cloudharness-django]
+    build: []
+    # hard: [common]
+    hard: []
+  deployment: {auto: true, port: 8080}
+  livenessProbe: {path: /api/live}
+  readinessProbe: {path: /api/ready}
+  secured: false
+  service: {auto: true, port: 8080}
+  subdomain: visualizer
+
+  test:
+    api:
+      autotest: true
+      checks: [all]
+      enabled: true
+  # uri_role_mapping:
+  # - require-any-role: true
+  #   roles: ['visualizer:visualizer-administrator', 'visualizer:visualizer-manager',
+  #     'visualizer:visualizer-user']
+  #   uri: /*
+  # use_services:
+  # - {name: common}
+deploy:
+  mode: replicated
+  replicas: 3
+  resources:
+    limits:
+      cpus: 2
+      memory: 500M
+    reservations:
+      cpus: 2
+      memory: 32M
