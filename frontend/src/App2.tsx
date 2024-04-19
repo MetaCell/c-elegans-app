@@ -1,16 +1,12 @@
-import {useDispatch, useStore} from "react-redux";
+import {useDispatch} from "react-redux";
 import React, {useEffect, useState} from "react";
 import {ThemeProvider} from '@mui/material/styles';
 import {Box, CircularProgress, CssBaseline} from "@mui/material";
-import {getLayoutManagerInstance} from "@metacell/geppetto-meta-client/common/layout/LayoutManager";
 import {addWidget} from '@metacell/geppetto-meta-client/common/layout/actions';
 import '@metacell/geppetto-meta-ui/flex-layout/style/dark.scss';
-import {leftComponentWidget, rightComponentWidget} from "./layout-manager/widgets.ts";
+import {rightComponentWidget} from "./layout-manager/widgets.ts";
 import theme from './theme/index.tsx';
 import './App.css'
-import {initLayoutManager} from "../geppetto-meta/geppetto.js/geppetto-client/src/common";
-import componentMap from "./layout-manager/componentMap.ts";
-import baseLayout from "./layout-manager/layout.ts";
 
 
 function App2({layoutManager}) {
