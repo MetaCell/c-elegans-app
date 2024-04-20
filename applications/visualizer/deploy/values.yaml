@@ -1,6 +1,7 @@
 harness:
   database:
     auto: true
+    local_expose: true
     type: postgres
     size: 2Gi
     resources:

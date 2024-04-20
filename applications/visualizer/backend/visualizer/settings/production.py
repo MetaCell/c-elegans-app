@@ -20,12 +20,20 @@ class Config(dict):
 @lru_cache
 def read_config():
     yaml = YAML(typ='safe')   # default, if not specfied, is 'rt' (round-trip)
-    return Config(yaml.load(Path("/opt/cloudharness/resources/allvalues.yaml"))["apps"][CURRENT_APP_NAME])
+    if IS_PRODUCTION and CURRENT_APP_NAME:
+        # We are in cluster mode
+        config_file = "/opt/cloudharness/resources/allvalues.yaml"
+        return Config(yaml.load(Path(config_file))["apps"][CURRENT_APP_NAME])
 
+    # We are in local cluster mode (feeding the DB for example)
+    config_file = "../../../deployment/compose/allvalues.yaml"
+    config_map = yaml.load(Path(config_file))["apps"][CURRENT_APP_NAME]
+    # explicitly set host to 127.0.0.1
+    config_map["harness"]["database"]["name"] = "127.0.0.1"
+    return Config(config_map)
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
 
 DATABASES = {
     "default": {
@@ -41,3 +49,7 @@ DATABASES = {
         # },
     },
 }
+
+
+from pprint import pprint as print
+print(DATABASES)

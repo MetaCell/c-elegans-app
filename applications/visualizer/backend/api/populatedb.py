@@ -226,7 +226,6 @@ def populate_synapses(_, print, print_success):
     print("  . Saving synapses", ending="")
     for synapse in synapses:
         synapse["connection"] = Connection.objects.get(id=synapse["connection_id"])
-        # synapse_objects.append(Synapse.objects.create(**synapse))
         synapse_objects.append(Synapse(**synapse))
 
     Synapse.objects.bulk_create(synapse_objects, ignore_conflicts=True)
