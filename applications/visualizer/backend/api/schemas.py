@@ -1,10 +1,14 @@
 from ninja import ModelSchema, Schema
-from .models import Dataset as DatasetModel, Neuron as NeuronModel, Connection as ConnectionModel
+from .models import (
+    Dataset as DatasetModel,
+    Neuron as NeuronModel,
+    Connection as ConnectionModel,
+)
 
 
 def to_camel(string: str) -> str:
-    words = string.split('_')
-    return words[0] + ''.join(word.capitalize() for word in words[1:])
+    words = string.split("_")
+    return words[0] + "".join(word.capitalize() for word in words[1:])
 
 
 # This class is here to configure an auto snake2camel case translator
@@ -18,13 +22,30 @@ class BilingualSchema(Schema):
 class Dataset(ModelSchema, BilingualSchema):
     class Meta:
         model = DatasetModel
-        fields = ["id", "collection", "name", "description", "time", "visual_time", "type", "axes"]
+        fields = [
+            "id",
+            "collection",
+            "name",
+            "description",
+            "time",
+            "visual_time",
+            "type",
+            "axes",
+        ]
 
 
 class Neuron(ModelSchema, BilingualSchema):
     class Meta:
         model = NeuronModel
-        fields = ["name", "nclass", "neurotransmitter", "type", "embryonic", "inhead", "intail"]
+        fields = [
+            "name",
+            "nclass",
+            "neurotransmitter",
+            "type",
+            "embryonic",
+            "inhead",
+            "intail",
+        ]
 
 
 class Connection(ModelSchema, BilingualSchema):

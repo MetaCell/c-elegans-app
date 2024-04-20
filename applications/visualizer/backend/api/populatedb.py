@@ -23,11 +23,13 @@ def populate_datasets(path, print, print_success):
     raw_datasets = path / "datasets.json"
     datasets = json.loads(raw_datasets.read_text())
 
-    Dataset.objects.bulk_create([
-        Dataset(**translate({
-            "visualTime": "visual_time"
-        }, dataset)) for dataset in datasets
-    ], ignore_conflicts=True)
+    Dataset.objects.bulk_create(
+        [
+            Dataset(**translate({"visualTime": "visual_time"}, dataset))
+            for dataset in datasets
+        ],
+        ignore_conflicts=True,
+    )
     print_success("\t[OK]")
 
 
@@ -39,12 +41,15 @@ def populate_neurons(path, print, print_success):
     neurons = []
     for data in json_neurons:
         cell_to_class[data["name"]] = data["classes"]
-        translate({
-            "typ": "type",
-            "nt": "neurotransmitter",
-            "emb": "embryonic",
-            "classes": "nclass",
-        }, data)
+        translate(
+            {
+                "typ": "type",
+                "nt": "neurotransmitter",
+                "emb": "embryonic",
+                "classes": "nclass",
+            },
+            data,
+        )
         neurons.append(Neuron(**data))
 
     Neuron.objects.bulk_create(neurons, ignore_conflicts=True)
@@ -57,15 +62,18 @@ def combine_annotations(annotation_path: Path, print):
     for file in annotation_path.iterdir():
         if file.suffix != ".json":
             continue
-        dataset_type, _, _ = file.name.partition('.')
+        dataset_type, _, _ = file.name.partition(".")
         json_content = json.loads(file.read_text())
         for annotation_type, annotations_of_type in json_content.items():
-            processed_annotations = [{
-                "pre": pre,
-                "post": post,
-                "collection": dataset_type,
-                "annotation": annotation_type,
-            } for pre, post in annotations_of_type]
+            processed_annotations = [
+                {
+                    "pre": pre,
+                    "post": post,
+                    "collection": dataset_type,
+                    "annotation": annotation_type,
+                }
+                for pre, post in annotations_of_type
+            ]
             annotations.extend(processed_annotations)
     return annotations
 
@@ -84,18 +92,20 @@ def expand_annotations(annotations, print):
             (pre, post),
             (pre_class, post),
             (pre, post_class),
-            (pre_class, post_class)
+            (pre_class, post_class),
         )
         for pre, post in expanded_annotations_data:
             key = f"{pre}-{post}-{collection}-{annotation_type}"
             if key not in annotations_seen:
-                processed_annotations.append({
-                    "pre": pre,
-                    "post": post,
-                    "type": "chemical",
-                    "collection": collection,
-                    "annotation": annotation_type,
-                })
+                processed_annotations.append(
+                    {
+                        "pre": pre,
+                        "post": post,
+                        "type": "chemical",
+                        "collection": collection,
+                        "annotation": annotation_type,
+                    }
+                )
                 annotations_seen.add(key)
 
     return processed_annotations
@@ -108,10 +118,9 @@ def populate_annotations(path, print, print_success):
     annotations = expand_annotations(annotations, print)
 
     print("  . Saving annotations", ending="")
-    Annotation.objects.bulk_create([
-        Annotation(**data)
-        for data in annotations
-    ], ignore_conflicts=True)
+    Annotation.objects.bulk_create(
+        [Annotation(**data) for data in annotations], ignore_conflicts=True
+    )
     print_success("\t\t[OK]")
 
 
@@ -121,17 +130,20 @@ def combine_connections(connections_path: Path, print):
     for file in connections_path.iterdir():
         if file.suffix != ".json":
             continue
-        dataset_id, _, _ = file.name.partition('.')
+        dataset_id, _, _ = file.name.partition(".")
         json_content = json.loads(file.read_text())
         for entry in json_content:
             entry["dataset_id"] = dataset_id
         connections.extend(json_content)
     return connections
 
+
 synapses = []
+
 
 def compute_connections_synapses(json_connections, print):
     print("  . Compute connections and synapses")
+
     def get_class(cell, connection):
         # TODO include legacy type?
         return cell_to_class.get(cell, cell)
@@ -149,8 +161,14 @@ def compute_connections_synapses(json_connections, print):
         if i == (nb_connections // 4) * 3:
             print("    75%  ")
 
-        pre, post, typ, syn, dataset_id = itemgetter("pre", "post", "typ", "syn", "dataset_id")(connection)
-        ids, pre_tid, post_tid = connection.get("ids"), connection.get("pre_tid"), connection.get("post_tid")
+        pre, post, typ, syn, dataset_id = itemgetter(
+            "pre", "post", "typ", "syn", "dataset_id"
+        )(connection)
+        ids, pre_tid, post_tid = (
+            connection.get("ids"),
+            connection.get("pre_tid"),
+            connection.get("post_tid"),
+        )
 
         type = "chemical" if typ == 0 else "electrical"
         synapses_count = len(syn)
@@ -186,20 +204,24 @@ def compute_connections_synapses(json_connections, print):
                     "pre": edge_pre,
                     "post": edge_post,
                     "type": type,
-                    "synapses": 0
+                    "synapses": 0,
                 }
             connections[key]["synapses"] += edge_count
 
         if ids:
-            for connector_id, synid, pretid, posttid in zip(ids, syn, pre_tid, post_tid):
+            for connector_id, synid, pretid, posttid in zip(
+                ids, syn, pre_tid, post_tid
+            ):
                 key = ",".join((dataset_id, pre, post, type))
-                synapses.append({
-                    "connection_id": connections[key]["id"],
-                    "connector_id": connector_id,
-                    "weight": synid,
-                    "pre_tid": pretid,
-                    "post_tid": posttid,
-                })
+                synapses.append(
+                    {
+                        "connection_id": connections[key]["id"],
+                        "connector_id": connector_id,
+                        "weight": synid,
+                        "pre_tid": pretid,
+                        "post_tid": posttid,
+                    }
+                )
     print("    100%")
     return connections
 
@@ -212,10 +234,10 @@ def populate_connections(path, print, print_success):
     connections = compute_connections_synapses(json_connections, print)
 
     print("  . Saving connections", ending="")
-    Connection.objects.bulk_create([
-        Connection(**connection)
-        for connection in connections.values()
-    ], ignore_conflicts=True)
+    Connection.objects.bulk_create(
+        [Connection(**connection) for connection in connections.values()],
+        ignore_conflicts=True,
+    )
     print_success("\t\t[OK]")
 
 

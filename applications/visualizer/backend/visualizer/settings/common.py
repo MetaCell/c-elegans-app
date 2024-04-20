@@ -15,8 +15,8 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-CURRENT_APP_NAME = os.environ.get('CH_CURRENT_APP_NAME', None)
-IS_PRODUCTION = os.environ.get('PRODUCTION', False)
+CURRENT_APP_NAME = os.environ.get("CH_CURRENT_APP_NAME", None)
+IS_PRODUCTION = os.environ.get("PRODUCTION", False)
 
 
 # Quick-start development settings - unsuitable for production
@@ -77,7 +77,6 @@ TEMPLATES = [
 WSGI_APPLICATION = "visualizer.wsgi.application"
 
 
-
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -127,10 +126,7 @@ PERSISTENT_ROOT = BASE_DIR / "persistent"
 # from cloudharness_django.settings import *
 
 # add the local apps
-INSTALLED_APPS += [
-    "api",
-    "visualizer"
-]
+INSTALLED_APPS += ["api", "visualizer"]
 
 # # override django admin base template with a local template
 # # to add some custom styling

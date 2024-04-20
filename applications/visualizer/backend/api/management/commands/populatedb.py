@@ -15,6 +15,10 @@ class Command(BaseCommand):
             raise CommandError(f"Folder {folder} does not exist")
 
         for func in populate_functions:
-            func(folder,
-                 lambda *args, **kwargs: self.stdout.write(*args, **kwargs),
-                 lambda *args, **kwargs: self.stdout.write(self.style.SUCCESS(*args, **kwargs)))
+            func(
+                folder,
+                lambda *args, **kwargs: self.stdout.write(*args, **kwargs),
+                lambda *args, **kwargs: self.stdout.write(
+                    self.style.SUCCESS(*args, **kwargs)
+                ),
+            )

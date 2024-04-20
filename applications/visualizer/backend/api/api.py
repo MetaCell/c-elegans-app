@@ -66,7 +66,9 @@ async def get_all_datasets(request):
 
 
 ## V2
-@api.get("/datasets/{dataset}", response={200: Dataset, 404: ErrorMessage}, tags=["datasets"])
+@api.get(
+    "/datasets/{dataset}", response={200: Dataset, 404: ErrorMessage}, tags=["datasets"]
+)
 async def get_dataset(request, dataset: str):
     """Returns a specific dataset"""
     return await aget_object_or_404(DatasetModel, id=dataset)
@@ -150,6 +152,7 @@ def get_all_cells(request):
 async def live(request):
     """Test if application is healthy"""
     return "I'm alive!"
+
 
 @api.get("/ping", tags=["heathcheck"])
 async def ping(request):

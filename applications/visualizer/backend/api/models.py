@@ -1,4 +1,18 @@
-from django.db.models import CASCADE, BooleanField, FloatField, ForeignKey, IntegerField, JSONField, Model, CharField, PositiveIntegerField, PositiveSmallIntegerField, TextField, SmallIntegerField, UniqueConstraint
+from django.db.models import (
+    CASCADE,
+    BooleanField,
+    FloatField,
+    ForeignKey,
+    IntegerField,
+    JSONField,
+    Model,
+    CharField,
+    PositiveIntegerField,
+    PositiveSmallIntegerField,
+    TextField,
+    SmallIntegerField,
+    UniqueConstraint,
+)
 
 
 # CREATE TABLE datasets (
@@ -15,8 +29,12 @@ from django.db.models import CASCADE, BooleanField, FloatField, ForeignKey, Inte
 class Dataset(Model):
     id = CharField(max_length=20, primary_key=True, db_index=True)
     collection = CharField(max_length=20, db_index=True)
-    type = CharField(max_length=50, )
-    name = CharField(max_length=50, )
+    type = CharField(
+        max_length=50,
+    )
+    name = CharField(
+        max_length=50,
+    )
     description = TextField()
     time = FloatField()
     visual_time = FloatField()
@@ -67,7 +85,8 @@ class Annotation(Model):
     class Meta:
         constraints = [
             UniqueConstraint(
-                fields=["pre", "post", "type", "collection", "annotation"], name="pk_annotations"
+                fields=["pre", "post", "type", "collection", "annotation"],
+                name="pk_annotations",
             )
         ]
 
@@ -90,7 +109,9 @@ class Annotation(Model):
 # );
 class Connection(Model):
     id = PositiveIntegerField(primary_key=True, db_index=True)
-    dataset = ForeignKey(to=Dataset, on_delete=CASCADE, db_index=True, related_name="connections")
+    dataset = ForeignKey(
+        to=Dataset, on_delete=CASCADE, db_index=True, related_name="connections"
+    )
     pre = CharField(max_length=30, db_index=True)
     post = CharField(max_length=30, db_index=True)
     type = CharField(max_length=20, db_index=True)
@@ -129,6 +150,7 @@ class Synapse(Model):
     class Meta:
         constraints = [
             UniqueConstraint(
-                fields=["connection", "connector_id", "weight", "pre_tid", "post_tid"], name="unique_synapse"
+                fields=["connection", "connector_id", "weight", "pre_tid", "post_tid"],
+                name="unique_synapse",
             )
         ]

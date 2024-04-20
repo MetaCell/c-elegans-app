@@ -19,7 +19,7 @@ class Config(dict):
 
 @lru_cache
 def read_config():
-    yaml = YAML(typ='safe')   # default, if not specfied, is 'rt' (round-trip)
+    yaml = YAML(typ="safe")  # default, if not specfied, is 'rt' (round-trip)
     if IS_PRODUCTION and CURRENT_APP_NAME:
         # We are in cluster mode
         config_file = "/opt/cloudharness/resources/allvalues.yaml"

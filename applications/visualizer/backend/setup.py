@@ -14,8 +14,7 @@ VERSION = "1.0.0"
 # prerequisite: setuptools
 # http://pypi.python.org/pypi/setuptools
 
-REQUIRES = [
-]
+REQUIRES = []
 
 setup(
     name=NAME,
