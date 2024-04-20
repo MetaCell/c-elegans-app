@@ -1,5 +1,4 @@
 from subprocess import run
-import os
 from pathlib import Path
 import sys
 
@@ -39,6 +38,7 @@ class Command(object):
             self.args.append(keys)
         return self
 
+
 sh = Command()
 
 
@@ -48,20 +48,30 @@ def in_venv():
 
 def check_venv_activate():
     if not in_venv():
-        print("You are not in a virtualenv, please initialise and activate a python 3.11 venv before running this script")
+        print(
+            "You are not in a virtualenv, please initialise and activate a python 3.11 venv before running this script"
+        )
         sys.exit(1)
 
 
 def install_cloud_harness():
     if not Path("cloud-harness").exists():
-        print("Cloning cloud-harness branch CH-100 (experimental docker compose support)")
-        sh.git.clone("--single-branch", "--branch", "feature/CH-100", "https://github.com/MetaCell/cloud-harness.git")
+        print(
+            "Cloning cloud-harness branch CH-100 (experimental docker compose support)"
+        )
+        sh.git.clone(
+            "--single-branch",
+            "--branch",
+            "feature/CH-100",
+            "https://github.com/MetaCell/cloud-harness.git",
+        )
 
     print("Installing cloud-harness")
     sh.bash("cloud-harness/install.sh")
 
 
-def generate_dev_deployment():
+# fmt: off
+def generate_local_dev_deployment():
     # harness-deployment cloud-harness . -l -d javelin.local -dtls -n javelin -e local -i dashboard
     sh("harness-deployment",
        "cloud-harness", ".",
@@ -69,10 +79,34 @@ def generate_dev_deployment():
        "-d", "celegans.local",
        "-dtls",
        "-n", "celegans",
-       "-e", "local",
+       "-e", "dev",
        "-i", "visualizer",
        "--docker-compose"
     )
+
+
+def generate_dev_deployment():
+    # harness-deployment cloud-harness . -l -d javelin.local -dtls -n javelin -e local -i dashboard
+    sh("harness-deployment",
+       "cloud-harness", ".",
+       "-n", "celegans",
+       "-e", "dev",
+       "-i", "visualizer",
+       "--docker-compose"
+    )
+
+
+
+def generate_prod_deployment():
+    # harness-deployment cloud-harness . -l -d javelin.local -dtls -n javelin -e local -i dashboard
+    sh("harness-deployment",
+       "cloud-harness", ".",
+       "-n", "celegans",
+       "-e", "prod",
+       "-i", "visualizer",
+       "--docker-compose"
+    )
+# fmt: on
 
 
 def install_backend_dependencies():
@@ -87,6 +121,9 @@ def install_frontend_dependencies():
 if __name__ == "__main__":
     check_venv_activate()
     install_cloud_harness()
-    generate_dev_deployment()
+    generate_local_dev_deployment
+    # generate_dev_deployment()
+    # generate_prod_deployment()
+
     install_backend_dependencies()
     install_frontend_dependencies()

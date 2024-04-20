@@ -1,4 +1,5 @@
 skaffold.yaml
-docker-compose.yaml 
+docker-compose.yaml
 # deployment/
 cloud-harness/
+.vscode/
