@@ -96,6 +96,13 @@ class Connection(Model):
     type = CharField(max_length=20, db_index=True)
     synapses = PositiveSmallIntegerField(db_index=True)
 
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=["dataset", "pre", "post", "type"], name="pk_connections"
+            )
+        ]
+
 
 # CREATE TABLE synapses (
 #   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -113,8 +120,15 @@ class Connection(Model):
 #   INDEX idx_synapses_post_tid (post_tid)
 # );
 class Synapse(Model):
-    connection_id = ForeignKey(to=Connection, on_delete=CASCADE, db_index=True)
+    connection = ForeignKey(to=Connection, on_delete=CASCADE, db_index=True)
     connector_id = PositiveIntegerField(db_index=True)
     weight = PositiveIntegerField(db_index=True)
     pre_tid = PositiveIntegerField(db_index=True)
     post_tid = PositiveIntegerField(db_index=True)
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=["connection", "connector_id", "weight", "pre_tid", "post_tid"], name="unique_synapse"
+            )
+        ]

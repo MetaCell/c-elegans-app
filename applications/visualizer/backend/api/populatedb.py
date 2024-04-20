@@ -1,45 +1,43 @@
-from django.db import migrations
 import json
 from pathlib import Path
 from operator import itemgetter
-
+from .models import Dataset, Neuron, Annotation, Connection, Synapse
 
 
 # Will be populated by the ingest_neurons function
 cell_to_class = {}
 
 
-def translate(d, data):
-    for old, new in d.items():
+def translate(translation_map, data):
+    for old, new in translation_map.items():
         try:
             data[new] = data[old]
             del data[old]
         except Exception:
             ...
+    return data
 
 
-def populate_datasets(apps, schema_editor):
-    print("\n    * Populate Dataset table...", end="")
-    raw_datasets = Path("raw-data") / "datasets.json"
+def populate_datasets(path, print, print_success):
+    print("Populate Dataset table...", ending="")
+    raw_datasets = path / "datasets.json"
     datasets = json.loads(raw_datasets.read_text())
 
-    Dataset = apps.get_model("api", "Dataset")
-    for dataset in datasets:
-        translate({
+    Dataset.objects.bulk_create([
+        Dataset(**translate({
             "visualTime": "visual_time"
-        }, dataset)
-        ds = Dataset(**dataset)
-        ds.save()
-    print("\t\t[OK]")
+        }, dataset)) for dataset in datasets
+    ], ignore_conflicts=True)
+    print_success("\t[OK]")
 
 
-def populate_neurons(apps, schema_editor):
-    print("    * Populate Neuron table...", end="")
-    raw_datasets = Path("raw-data") / "neurons.json"
-    neurons = json.loads(raw_datasets.read_text())
+def populate_neurons(path, print, print_success):
+    print("Populate Neuron table...", ending="")
+    raw_datasets = path / "neurons.json"
+    json_neurons = json.loads(raw_datasets.read_text())
 
-    Neuron = apps.get_model("api", "Neuron")
-    for data in neurons:
+    neurons = []
+    for data in json_neurons:
         cell_to_class[data["name"]] = data["classes"]
         translate({
             "typ": "type",
@@ -47,13 +45,14 @@ def populate_neurons(apps, schema_editor):
             "emb": "embryonic",
             "classes": "nclass",
         }, data)
-        ds = Neuron(**data)
-        ds.save()
-    print("\t\t[OK]")
+        neurons.append(Neuron(**data))
+
+    Neuron.objects.bulk_create(neurons, ignore_conflicts=True)
+    print_success("\t[OK]")
 
 
-def combine_annotations(annotation_path: Path):
-    print("      . Combining annotations")
+def combine_annotations(annotation_path: Path, print):
+    print("  . Combining annotations")
     annotations = []
     for file in annotation_path.iterdir():
         if file.suffix != ".json":
@@ -71,8 +70,8 @@ def combine_annotations(annotation_path: Path):
     return annotations
 
 
-def expand_annotations(annotations):
-    print("      . Expanding annotations")
+def expand_annotations(annotations, print):
+    print("  . Expanding annotations")
     processed_annotations = []
     annotations_seen = set()
 
@@ -102,22 +101,22 @@ def expand_annotations(annotations):
     return processed_annotations
 
 
-def populate_annotations(apps, schema_editor):
-    print("    * Populate Annotation table...")
-    data_folder = Path("raw-data") / "annotations"
-    annotations = combine_annotations(data_folder)
-    annotations = expand_annotations(annotations)
+def populate_annotations(path, print, print_success):
+    print("Populate Annotation table...")
+    data_folder = path / "annotations"
+    annotations = combine_annotations(data_folder, print)
+    annotations = expand_annotations(annotations, print)
 
-    Annotation = apps.get_model("api", "Annotation")
-    print("      . saving annotations", end="")
-    for data in annotations:
-        ds = Annotation(**data)
-        ds.save()
-    print("\t\t[OK]")
+    print("  . Saving annotations", ending="")
+    Annotation.objects.bulk_create([
+        Annotation(**data)
+        for data in annotations
+    ], ignore_conflicts=True)
+    print_success("\t\t[OK]")
 
 
-def combine_connections(connections_path: Path):
-    print("      . Combining connections")
+def combine_connections(connections_path: Path, print):
+    print("  . Combining connections")
     connections = []
     for file in connections_path.iterdir():
         if file.suffix != ".json":
@@ -131,25 +130,24 @@ def combine_connections(connections_path: Path):
 
 synapses = []
 
-def compute_connections_synapses(json_connections, apps):
-    print("      . Compute connections and synapses", end="")
+def compute_connections_synapses(json_connections, print):
+    print("  . Compute connections and synapses")
     def get_class(cell, connection):
         # TODO include legacy type?
         return cell_to_class.get(cell, cell)
-
-    Dataset = apps.get_model("api", "Dataset")
 
     connections = {}
     # synapses = []
     connection_counter = 0
     nb_connections = len(json_connections)
     for i, connection in enumerate(json_connections):
+        # ugly
         if i == nb_connections // 4:
-            print("  25%  ", end="")
+            print("    25%  ")
         if i == nb_connections // 2:
-            print("  50%  ", end="")
+            print("    50%  ")
         if i == (nb_connections // 4) * 3:
-            print("  75%  ", end="")
+            print("    75%  ")
 
         pre, post, typ, syn, dataset_id = itemgetter("pre", "post", "typ", "syn", "dataset_id")(connection)
         ids, pre_tid, post_tid = connection.get("ids"), connection.get("pre_tid"), connection.get("post_tid")
@@ -202,43 +200,43 @@ def compute_connections_synapses(json_connections, apps):
                     "pre_tid": pretid,
                     "post_tid": posttid,
                 })
-    print(" 100%")
+    print("    100%")
     return connections
 
 
-def populate_connections(apps, schema_editor):
-    print("    * Populate Connection table...")
-    data_folder = Path("raw-data") / "connections"
-    json_connections = combine_connections(data_folder)
+def populate_connections(path, print, print_success):
+    print("Populate Connection table...")
+    data_folder = path / "connections"
+    json_connections = combine_connections(data_folder, print)
 
-    connections = compute_connections_synapses(json_connections, apps)
+    connections = compute_connections_synapses(json_connections, print)
 
-    Connection = apps.get_model("api", "Connection")
-    print("      . saving connections", end="")
-    for connection in connections.values():
-        ds = Connection(**connection)
-        ds.save()
-    print("\t\t[OK]")
+    print("  . Saving connections", ending="")
+    Connection.objects.bulk_create([
+        Connection(**connection)
+        for connection in connections.values()
+    ], ignore_conflicts=True)
+    print_success("\t\t[OK]")
 
 
-def populate_synapses(apps, schema_editor):
-    print("    * Populate Synapse table...")
+def populate_synapses(_, print, print_success):
+    print("Populate Synapse table...")
 
-    Connection = apps.get_model("api", "Connection")
-    Synapse = apps.get_model("api", "Synapse")
-
-    print("      . saving synapses", end="")
+    synapse_objects = []
+    print("  . Saving synapses", ending="")
     for synapse in synapses:
-        synapse["connection_id"] = Connection.objects.get(id=synapse["connection_id"])
-        ds = Synapse.objects.create(**synapse)
-        ds.save()
-    print("\t\t\t[OK]")
+        synapse["connection"] = Connection.objects.get(id=synapse["connection_id"])
+        # synapse_objects.append(Synapse.objects.create(**synapse))
+        synapse_objects.append(Synapse(**synapse))
+
+    Synapse.objects.bulk_create(synapse_objects, ignore_conflicts=True)
+    print_success("\t\t[OK]")
 
 
 populate_functions = [
-    migrations.RunPython(populate_datasets),
-    migrations.RunPython(populate_neurons),
-    migrations.RunPython(populate_annotations),
-    migrations.RunPython(populate_connections),
-    migrations.RunPython(populate_synapses),
+    populate_datasets,
+    populate_neurons,
+    populate_annotations,
+    populate_connections,
+    populate_synapses,
 ]
