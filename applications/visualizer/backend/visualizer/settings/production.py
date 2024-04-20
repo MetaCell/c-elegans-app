@@ -32,9 +32,9 @@ def read_config():
     config_map["harness"]["database"]["name"] = "127.0.0.1"
     return Config(config_map)
 
+
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -49,7 +49,3 @@ DATABASES = {
         # },
     },
 }
-
-
-from pprint import pprint as print
-print(DATABASES)
