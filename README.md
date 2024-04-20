@@ -106,3 +106,16 @@ bash applications/visualizer/backend/populate-db.bash compose
 ```
 
 This command will apply the necessary migrations to the postgresql db and populate it.
+
+
+### Backend Development Notes
+
+If the API signature changes (endpoints signature changes, new endpoints, new exceptions, pagination, ...), the code of the REST client must be generated again.
+The generation relies on the fact that the server can be launched properly (in a way), so be sure you have all that you need to run the backend in local (no need to have docker compose setup for this).
+Run the following script:
+
+```bash
+bash applications/visualizer/generate-binding.bash
+```
+
+This will trigger the `openapi.json` file generation from the backend and the generation of the frontend REST API client.
