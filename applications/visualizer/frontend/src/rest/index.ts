@@ -9,6 +9,10 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { Dataset } from './models/Dataset';
 export type { ErrorMessage } from './models/ErrorMessage';
+export type { Input } from './models/Input';
+export type { Neuron } from './models/Neuron';
+export type { PagedNeuron } from './models/PagedNeuron';
 
 export { DatasetsService } from './services/DatasetsService';
 export { HeathcheckService } from './services/HeathcheckService';
+export { NeuronsService } from './services/NeuronsService';

@@ -1,10 +1,6 @@
 from ninja import NinjaAPI, Router, Schema
-from ninja.pagination import paginate
-from django.core.exceptions import ObjectDoesNotExist
+from ninja.pagination import paginate, PageNumberPagination
 from django.shortcuts import aget_object_or_404
-from django.http import Http404
-
-
 
 
 from .schemas import Dataset, FullDataset, Neuron, Connection, ConnectionRequest
@@ -76,10 +72,11 @@ async def get_dataset(request, dataset: str):
     return await aget_object_or_404(DatasetModel, id=dataset)
 
 
-# @api.get("/cells", response=list[Neuron], tags=["neurons"])
-# async def get_all_cells(request):
-#     """Returns all the cells (neurons) from the DB"""
-#     return await to_list(NeuronModel.objects.all())
+@api.get("/cells", response=list[Neuron], tags=["neurons"])
+@paginate(PageNumberPagination, page_size=50)
+def get_all_cells(request):
+    """Returns all the cells (neurons) from the DB"""
+    return NeuronModel.objects.all()
 
 
 # # @api.post("/connections", response=list[Connection], tags=["connectivity"])

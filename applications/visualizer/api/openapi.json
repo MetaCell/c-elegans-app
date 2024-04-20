@@ -76,6 +76,41 @@
         ]
       }
     },
+    "/api/cells": {
+      "get": {
+        "operationId": "get_all_cells",
+        "summary": "Get All Cells",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedNeuron"
+                }
+              }
+            }
+          }
+        },
+        "description": "Returns all the cells (neurons) from the DB",
+        "tags": [
+          "neurons"
+        ]
+      }
+    },
     "/api/live": {
       "get": {
         "operationId": "live",
@@ -202,6 +237,92 @@
           "detail"
         ],
         "title": "ErrorMessage",
+        "type": "object"
+      },
+      "Input": {
+        "properties": {
+          "page": {
+            "default": 1,
+            "minimum": 1,
+            "title": "Page",
+            "type": "integer"
+          }
+        },
+        "title": "Input",
+        "type": "object"
+      },
+      "Neuron": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "nclass": {
+            "maxLength": 30,
+            "title": "Nclass",
+            "type": "string"
+          },
+          "neurotransmitter": {
+            "maxLength": 10,
+            "title": "Neurotransmitter",
+            "type": "string"
+          },
+          "type": {
+            "maxLength": 10,
+            "title": "Type",
+            "type": "string"
+          },
+          "embryonic": {
+            "default": false,
+            "title": "Embryonic",
+            "type": "boolean"
+          },
+          "inhead": {
+            "default": false,
+            "title": "Inhead",
+            "type": "boolean"
+          },
+          "intail": {
+            "default": false,
+            "title": "Intail",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "nclass",
+          "neurotransmitter",
+          "type"
+        ],
+        "title": "Neuron",
+        "type": "object"
+      },
+      "PagedNeuron": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Neuron"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "count"
+        ],
+        "title": "PagedNeuron",
         "type": "object"
       }
     }
