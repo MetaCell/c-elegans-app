@@ -1,18 +1,26 @@
-from functools import lru_cache
-from ninja import NinjaAPI, Router
+from ninja import NinjaAPI, Router, Schema
 from ninja.pagination import paginate
+from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import aget_object_or_404
+from django.http import Http404
 
 
-# from .schemas import Dataset, FullDataset, Neuron, Connection, ConnectionRequest
-# from .models import (
-#     Dataset as DatasetModel,
-#     Neuron as NeuronModel,
-#     Connection as ConnectionModel,
-# )
 
 
-# async def to_list(q):
-#     return [x async for x in q]
+from .schemas import Dataset, FullDataset, Neuron, Connection, ConnectionRequest
+from .models import (
+    Dataset as DatasetModel,
+    Neuron as NeuronModel,
+    Connection as ConnectionModel,
+)
+
+
+class ErrorMessage(Schema):
+    detail: str
+
+
+async def to_list(q):
+    return [x async for x in q]
 
 
 class CElegansAPI(NinjaAPI):
@@ -27,29 +35,22 @@ class ByAliasRouter(Router):
         return super().api_operation(*args, **kwargs)
 
 
-api = CElegansAPI(title="myapp", default_router=ByAliasRouter())
-
-@api.get("/live", tags=["heathcheck"])
-async def live(request):
-    """Test if application is healthy"""
-    return "I'm alive!"
-
-@api.get("/ping", tags=["heathcheck"])
-async def ping(request):
-    """test the application is up"""
-    return "Ping!"
+api = CElegansAPI(title="C. Elegans Visualizer", default_router=ByAliasRouter())
 
 
-@api.get("/ready", tags=["heathcheck"])
-async def ready(request):
-    """Test if application is ready to take requests"""
-    return "I'm READY!"
+# @api.exception_handler(ObjectDoesNotExist)
+# def service_unavailable(request, exc):
+#     return api.create_response(
+#         request,
+#         {"message": exc.args[0]},
+#         status=404,
+#     )
 
 
-
-# @api.get("/datasets", response=list[Dataset], tags=["datasets"])
-# async def get_all_datasets(request):
-#     return await to_list(DatasetModel.objects.all())
+@api.get("/datasets", response=list[Dataset], tags=["datasets"])
+async def get_all_datasets(request):
+    """Returns all the datasets from the DB"""
+    return await to_list(DatasetModel.objects.all())
 
 
 # @api.get("/datasets/{dataset}/full", response=FullDataset, tags=["datasets"])
@@ -57,10 +58,22 @@ async def ready(request):
 #     return await DatasetModel.objects.prefetch_related("connections").aget(id=dataset)
 
 
-# @api.get("/datasets/{dataset}", response=Dataset, tags=["datasets"])
+## V1
+# @api.get("/datasets/{dataset}", response={200: Dataset, 404: ErrorMessage}, tags=["datasets"])
 # async def get_dataset(request, dataset: str):
-#     """Returns all the datasets from the DB"""
-#     return await DatasetModel.objects.aget(id=dataset)
+#     """Returns a specific dataset"""
+#     try:
+#         dataset_object = await DatasetModel.objects.aget(id=dataset)
+#         return 200, dataset_object
+#     except DatasetModel.DoesNotExist:
+#         return 404, {"detail": f'Dataset "{dataset}" does not exist'}
+
+
+## V2
+@api.get("/datasets/{dataset}", response={200: Dataset, 404: ErrorMessage}, tags=["datasets"])
+async def get_dataset(request, dataset: str):
+    """Returns a specific dataset"""
+    return await aget_object_or_404(DatasetModel, id=dataset)
 
 
 # @api.get("/cells", response=list[Neuron], tags=["neurons"])
@@ -134,3 +147,20 @@ async def ready(request):
 #         return []
 
 #     # TODO
+
+
+@api.get("/live", tags=["heathcheck"])
+async def live(request):
+    """Test if application is healthy"""
+    return "I'm alive!"
+
+@api.get("/ping", tags=["heathcheck"])
+async def ping(request):
+    """test the application is up"""
+    return "Ping!"
+
+
+@api.get("/ready", tags=["heathcheck"])
+async def ready(request):
+    """Test if application is ready to take requests"""
+    return "I'm READY!"

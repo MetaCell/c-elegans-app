@@ -1,11 +1,81 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "myapp",
+    "title": "C. Elegans Visualizer",
     "version": "1.0.0",
     "description": ""
   },
   "paths": {
+    "/api/datasets": {
+      "get": {
+        "operationId": "get_all_datasets",
+        "summary": "Get All Datasets",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Dataset"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "Returns all the datasets from the DB",
+        "tags": [
+          "datasets"
+        ]
+      }
+    },
+    "/api/datasets/{dataset}": {
+      "get": {
+        "operationId": "get_dataset",
+        "summary": "Get Dataset",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dataset",
+            "schema": {
+              "title": "Dataset",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dataset"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorMessage"
+                }
+              }
+            }
+          }
+        },
+        "description": "Returns a specific dataset",
+        "tags": [
+          "datasets"
+        ]
+      }
+    },
     "/api/live": {
       "get": {
         "operationId": "live",
@@ -56,7 +126,85 @@
     }
   },
   "components": {
-    "schemas": {}
+    "schemas": {
+      "Dataset": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "maxLength": 20,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "collection": {
+            "maxLength": 20,
+            "title": "Collection",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 50,
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "time": {
+            "title": "Time",
+            "type": "number"
+          },
+          "visualTime": {
+            "title": "Visual Time",
+            "type": "number"
+          },
+          "type": {
+            "maxLength": 50,
+            "title": "Type",
+            "type": "string"
+          },
+          "axes": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Axes"
+          }
+        },
+        "required": [
+          "collection",
+          "name",
+          "description",
+          "time",
+          "visualTime",
+          "type"
+        ],
+        "title": "Dataset",
+        "type": "object"
+      },
+      "ErrorMessage": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "title": "ErrorMessage",
+        "type": "object"
+      }
+    }
   },
   "servers": []
 }

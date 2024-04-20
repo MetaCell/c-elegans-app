@@ -7,4 +7,8 @@ export { CancelablePromise, CancelError } from './core/CancelablePromise';
 export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
+export type { Dataset } from './models/Dataset';
+export type { ErrorMessage } from './models/ErrorMessage';
+
+export { DatasetsService } from './services/DatasetsService';
 export { HeathcheckService } from './services/HeathcheckService';
