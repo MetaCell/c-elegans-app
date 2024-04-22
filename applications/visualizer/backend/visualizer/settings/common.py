@@ -126,7 +126,7 @@ PERSISTENT_ROOT = BASE_DIR / "persistent"
 # from cloudharness_django.settings import *
 
 # add the local apps
-INSTALLED_APPS += ["api", "visualizer"]
+INSTALLED_APPS += ["api"]
 
 # # override django admin base template with a local template
 # # to add some custom styling
