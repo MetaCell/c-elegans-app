@@ -1,6 +1,7 @@
 from ninja import NinjaAPI, Router, Schema
 from ninja.pagination import paginate, PageNumberPagination
 from django.shortcuts import aget_object_or_404
+from django.db.models import Q
 
 
 from .schemas import Dataset, FullDataset, Neuron, Connection, ConnectionRequest
@@ -72,6 +73,29 @@ async def get_all_datasets(request):
 async def get_dataset(request, dataset: str):
     """Returns a specific dataset"""
     return await aget_object_or_404(DatasetModel, id=dataset)
+
+
+@api.get(
+    "/datasets/{dataset}/neurons",
+    response={200: list[Neuron], 404: ErrorMessage},
+    tags=["datasets"],
+)
+async def get_dataset_neurons(request, dataset: str):
+    """Returns all the neurons of a dedicated dataset"""
+    return await to_list(
+        NeuronModel.objects.filter(
+            Q(
+                name__in=ConnectionModel.objects.filter(
+                    dataset__id=dataset
+                ).values_list("pre", flat=True)
+            )
+            | Q(
+                name__in=ConnectionModel.objects.filter(
+                    dataset__id=dataset
+                ).values_list("post", flat=True)
+            )
+        )
+    )
 
 
 @api.get("/cells", response=list[Neuron], tags=["neurons"])
