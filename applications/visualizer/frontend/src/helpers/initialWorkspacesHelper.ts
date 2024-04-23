@@ -11,7 +11,12 @@ export const createEmptyWorkspace = (name: string): Workspace => {
         return {
             id: workspaceId,
             name: name,
-            viewers: {},
+            viewers: {
+                [ViewerType.Graph]: true,
+                [ViewerType.ThreeD]: true,
+                [ViewerType.EM]: false,
+                [ViewerType.InstanceDetails]: false,
+            },
             datasets: {},
             neurons: {},
             synchronizations: {

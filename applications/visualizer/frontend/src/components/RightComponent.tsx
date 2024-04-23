@@ -1,16 +1,24 @@
 import {Box, Button, List, ListItem, ListItemText, Typography} from "@mui/material";
 import {useGlobalContext} from "../contexts/GlobalContext.tsx";
-import {activateNeuron, deactivateNeuron} from "../helpers/workspacesHelper.ts";
+import {
+    activateDataset,
+    activateNeuron,
+    changeViewerVisibility,
+    deactivateDataset,
+    deactivateNeuron, updateViewerSynchronizationStatus
+} from "../helpers/workspacesHelper.ts";
+import {ViewerSynchronizationPair, ViewerType} from "../models.ts";
 
 
 const testNeuron = {id: 'neuron3', label: 'Neuron 3'};
+const testDataset = {id: 'dataset1', name: 'Dataset 1'};
 
 export default function RightComponent() {
     const {workspaces, currentWorkspaceId, updateWorkspace} = useGlobalContext();
     const workspace = workspaces[currentWorkspaceId];
 
     function withWorkspaceUpdate(modifyWorkspace) {
-        return function (workspace, ...args) {
+        return function (...args) {
             const updatedWorkspace = modifyWorkspace(workspace, ...args);
             updateWorkspace(workspace.id, updatedWorkspace);
             return updatedWorkspace;
@@ -19,6 +27,10 @@ export default function RightComponent() {
 
     const addNeuronAndUpdate = withWorkspaceUpdate(activateNeuron);
     const removeNeuronAndUpdate = withWorkspaceUpdate(deactivateNeuron);
+    const addDatasetAndUpdate = withWorkspaceUpdate(activateDataset);
+    const removeDatasetAndUpdate = withWorkspaceUpdate(deactivateDataset);
+    const toggleViewerVisibility = withWorkspaceUpdate(changeViewerVisibility);
+    const toggleSyncStatus = withWorkspaceUpdate(updateViewerSynchronizationStatus);
 
     if (!workspace) {
         return (
@@ -28,6 +40,10 @@ export default function RightComponent() {
         );
     }
 
+    const viewerToToggle = ViewerType.Graph;
+    const currentVisibility = workspace.viewers[viewerToToggle];
+    const syncPair = ViewerSynchronizationPair.Graph_InstanceDetails;
+    const currentSyncStatus = workspace.synchronizations[syncPair];
 
     return (
         <Box>
@@ -37,20 +53,41 @@ export default function RightComponent() {
 
 
             <Box>
-                <Button variant="contained" color="primary" onClick={() => addNeuronAndUpdate(workspace, testNeuron)}>
-                    Add Neuron
+                <Button variant="contained" color="primary" onClick={() => addNeuronAndUpdate(testNeuron)}>
+                    Activate Neuron
                 </Button>
                 <Button variant="contained" color="error"
-                        onClick={() => removeNeuronAndUpdate(workspace, testNeuron.id)}>
-                    Remove Neuron
+                        onClick={() => removeNeuronAndUpdate(testNeuron.id)}>
+                    Deactivate Neuron
+                </Button>
+                <Button variant="contained" color="primary" onClick={() => addDatasetAndUpdate(testDataset)}>
+                    Activate Dataset
+                </Button>
+                <Button variant="contained" color="error"
+                        onClick={() => removeDatasetAndUpdate(testDataset.id)}>
+                    Deactivate Dataset
+                </Button>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => toggleViewerVisibility(viewerToToggle, !currentVisibility)}
+                >
+                    Toggle {ViewerType.Graph} Viewer
+                </Button>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => toggleSyncStatus(syncPair, !currentSyncStatus)}
+                >
+                    Toggle Synchronization {syncPair}
                 </Button>
             </Box>
 
             <Typography variant="subtitle2">Viewers:</Typography>
             <List>
-                {Object.entries(workspace.viewers).map(([id, viewer]) => (
-                    <ListItem key={id}>
-                        <ListItemText primary={`Type: ${viewer.type}`} secondary={`Visible: ${viewer.isVisible}`}/>
+                {Object.entries(workspace.viewers).map(([type, isVisible]) => (
+                    <ListItem key={type}>
+                        <ListItemText primary={`${type}: ${isVisible}`}/>
                     </ListItem>
                 ))}
             </List>

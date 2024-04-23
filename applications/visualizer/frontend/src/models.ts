@@ -16,7 +16,7 @@ export enum ViewerSynchronizationPair {
 export interface Workspace {
     id: string;
     name: string;
-    viewers: Record<string, Viewer>;
+    viewers: Record<ViewerType, boolean>;
     datasets: Record<string, Dataset>;
     neurons: Record<string, Neuron>;
     synchronizations: Record<ViewerSynchronizationPair, boolean>;
@@ -24,11 +24,6 @@ export interface Workspace {
 
     store: ReturnType<typeof createStore>;
     layoutManager: unknown;
-}
-
-interface Viewer {
-    type: ViewerType;
-    isVisible: boolean;
 }
 
 export interface Dataset {

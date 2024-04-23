@@ -1,4 +1,4 @@
-import {Dataset, Neuron, NeuronGroup, ViewerSynchronizationPair, Workspace} from "../models.ts";
+import {Dataset, Neuron, NeuronGroup, ViewerSynchronizationPair, ViewerType, Workspace} from "../models.ts";
 
 export function activateNeuron(workspace: Workspace, neuron: Neuron): Workspace {
     return {
@@ -38,18 +38,15 @@ export function deactivateDataset(workspace: Workspace, datasetId: string): Work
     };
 }
 
-export function changeViewerVisibility(workspace: Workspace, viewerId: string, isVisible: boolean): Workspace {
-    if (!workspace.viewers[viewerId]) {
+export function changeViewerVisibility(workspace: Workspace, viewerId: ViewerType, isVisible: boolean): Workspace {
+    if (workspace.viewers[viewerId] === undefined) {
         throw new Error('Viewer not found');
     }
     return {
         ...workspace,
         viewers: {
             ...workspace.viewers,
-            [viewerId]: {
-                ...workspace.viewers[viewerId],
-                isVisible: isVisible
-            }
+            [viewerId]: isVisible,
         }
     };
 }
@@ -70,17 +67,21 @@ export function addNeuronToGroup(workspace: Workspace, neuronId: string, groupId
     if (!neuron) {
         throw new Error('Neuron not found');
     }
-    if (!workspace.neuronGroups[groupId]) {
+    const group = workspace.neuronGroups[groupId];
+    if (!group) {
         throw new Error('Neuron group not found');
     }
 
+    const updatedNeurons = new Set(group.neurons);
+    updatedNeurons.add(neuronId);
+
     return {
         ...workspace,
-        neurons: {
-            ...workspace.neurons,
-            [neuronId]: {
-                ...neuron,
-                groupId: groupId
+        neuronGroups: {
+            ...workspace.neuronGroups,
+            [groupId]: {
+                ...group,
+                neurons: updatedNeurons
             }
         }
     };
