@@ -21,6 +21,7 @@ export interface Workspace {
     neurons: Set<string>;
     synchronizations: Record<ViewerSynchronizationPair, boolean>;
     neuronGroups: Record<string, NeuronGroup>;
+    highlightedNeuron: string | undefined;
 
     store: ReturnType<typeof createStore>;
     layoutManager: unknown;

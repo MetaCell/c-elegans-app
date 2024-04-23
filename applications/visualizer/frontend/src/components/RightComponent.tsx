@@ -5,7 +5,7 @@ import {
     activateNeuron,
     changeViewerVisibility,
     deactivateDataset,
-    deactivateNeuron, updateViewerSynchronizationStatus
+    deactivateNeuron, highlightNeuron, updateViewerSynchronizationStatus
 } from "../helpers/workspacesHelper.ts";
 import {ViewerSynchronizationPair, ViewerType} from "../models.ts";
 
@@ -28,6 +28,8 @@ export default function RightComponent() {
     const removeDatasetAndUpdate = withWorkspaceUpdate(deactivateDataset);
     const toggleViewerVisibility = withWorkspaceUpdate(changeViewerVisibility);
     const toggleSyncStatus = withWorkspaceUpdate(updateViewerSynchronizationStatus);
+    const highlightNeuronAndUpdate = withWorkspaceUpdate(highlightNeuron);
+
 
     if (!workspace) {
         return (
@@ -80,6 +82,14 @@ export default function RightComponent() {
                 >
                     Toggle Synchronization {syncPair}
                 </Button>
+
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => highlightNeuronAndUpdate(testNeuron)}
+                >
+                    Highlight Neuron
+                </Button>
             </Box>
 
             <Typography variant="subtitle2">Viewers:</Typography>
@@ -117,6 +127,9 @@ export default function RightComponent() {
                     </ListItem>
                 ))}
             </List>
+
+            <Typography variant="subtitle2">Highlighted Neuron: {workspace.highlightedNeuron || "None"}</Typography>
+
 
         </Box>
     );

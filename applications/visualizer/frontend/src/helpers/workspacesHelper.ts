@@ -90,3 +90,10 @@ export function updateViewerSynchronizationStatus(workspace: Workspace, pair: Vi
         }
     };
 }
+
+export function highlightNeuron(workspace: Workspace, neuronId: string | undefined): Workspace {
+    return {
+        ...workspace,
+        highlightedNeuron: neuronId
+    };
+}

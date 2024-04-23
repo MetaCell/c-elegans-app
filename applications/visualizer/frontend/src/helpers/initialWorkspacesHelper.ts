@@ -27,6 +27,7 @@ export const createEmptyWorkspace = (name: string): Workspace => {
             neuronGroups: {},
             store: store,
             layoutManager: layoutManager,
+            highlightedNeuron: undefined,
         };
 
     }
