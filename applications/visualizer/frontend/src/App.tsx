@@ -19,7 +19,7 @@ function App() {
                 <CssBaseline/>
                 {hasLaunched ? (
                     <Provider store={workspaces[currentWorkspaceId].store}>
-                        <Workspace layoutManager={workspaces[currentWorkspaceId].layoutManager}/>
+                        <Workspace workspaceId={currentWorkspaceId}/>
                     </Provider>
                 ) : <AppLauncher/>}
             </ThemeProvider>

@@ -7,19 +7,20 @@ export enum ViewerType {
     InstanceDetails = 'Instance Details'
 }
 
-type ViewerSynchronizationPair =
-    [ViewerType.Graph | ViewerType.InstanceDetails]
-    | [ViewerType.Graph, ViewerType.ThreeD]
-    | [ViewerType.ThreeD, ViewerType.EM];
-
+export enum ViewerSynchronizationPair {
+    Graph_InstanceDetails,
+    Graph_ThreeD,
+    ThreeD_EM
+}
 
 export interface Workspace {
     id: string;
     name: string;
-    viewers: Viewer[];
-    datasets: Dataset[];
-    neurons: Neuron[];
-    synchronizations: ViewerSynchronization[];
+    viewers: Record<string, Viewer>;
+    datasets: Record<string, Dataset>;
+    neurons: Record<string, Neuron>;
+    synchronizations: Record<ViewerSynchronizationPair, boolean>;
+    neuronGroups: Record<string, NeuronGroup>;
 
     store: ReturnType<typeof createStore>;
     layoutManager: unknown;
@@ -30,26 +31,20 @@ interface Viewer {
     isVisible: boolean;
 }
 
-interface Dataset {
+export interface Dataset {
     id: string;
     name: string;
-    neurons: Neuron[];
+    neurons: Set<Neuron>;
 }
 
-interface Neuron {
+export interface Neuron {
     id: string;
     label: string;
-    isSelected: boolean;
-    groupId?: string;
 }
 
 export interface NeuronGroup {
     id: string;
     name: string;
     color: string;
-}
-
-interface ViewerSynchronization {
-    pair: ViewerSynchronizationPair;
-    isActive: boolean;
+    neurons: Set<string>;
 }
