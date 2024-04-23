@@ -18,6 +18,7 @@ backend
 ├── openapi
 │   └── openapi.json         # The openapi.json generated from the routes defined in "api.py"
 ├── populate-db.bash         # the script to populate the DB
+├── tests/**            # The directory that contains the tests
 └── visualizer
     ├── asgi.py
     ├── models.py
@@ -45,4 +46,15 @@ If you also want to see the SQL commands that are sent to the DB, you can start 
 ```bash
 # from inside the "backend" folder
 python manage.py shell_plus --print-sql
+```
+
+## Run tests
+
+The tests are written with `pytest` and `pytest-django`.
+To run the test, simply execute in the `backend` folder one of the following command:
+
+```bash
+python -m pytest
+# or simply
+pytest
 ```
