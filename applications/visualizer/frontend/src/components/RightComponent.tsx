@@ -10,11 +10,8 @@ import {
 import {ViewerSynchronizationPair, ViewerType} from "../models.ts";
 
 
-const testNeuron = {id: 'neuron3', label: 'Neuron 3'};
-const testDataset = {id: 'dataset1', name: 'Dataset 1'};
-
 export default function RightComponent() {
-    const {workspaces, currentWorkspaceId, updateWorkspace} = useGlobalContext();
+    const {workspaces, currentWorkspaceId, updateWorkspace, datasets, neurons} = useGlobalContext();
     const workspace = workspaces[currentWorkspaceId];
 
     function withWorkspaceUpdate(modifyWorkspace) {
@@ -44,6 +41,8 @@ export default function RightComponent() {
     const currentVisibility = workspace.viewers[viewerToToggle];
     const syncPair = ViewerSynchronizationPair.Graph_InstanceDetails;
     const currentSyncStatus = workspace.synchronizations[syncPair];
+    const testNeuron = 'ADAL'
+    const testDataset = "white_1986_jse"
 
     return (
         <Box>
@@ -57,14 +56,14 @@ export default function RightComponent() {
                     Activate Neuron
                 </Button>
                 <Button variant="contained" color="error"
-                        onClick={() => removeNeuronAndUpdate(testNeuron.id)}>
+                        onClick={() => removeNeuronAndUpdate(testNeuron)}>
                     Deactivate Neuron
                 </Button>
                 <Button variant="contained" color="primary" onClick={() => addDatasetAndUpdate(testDataset)}>
                     Activate Dataset
                 </Button>
                 <Button variant="contained" color="error"
-                        onClick={() => removeDatasetAndUpdate(testDataset.id)}>
+                        onClick={() => removeDatasetAndUpdate(testDataset)}>
                     Deactivate Dataset
                 </Button>
                 <Button
@@ -94,18 +93,18 @@ export default function RightComponent() {
 
             <Typography variant="subtitle2">Datasets:</Typography>
             <List>
-                {Object.entries(workspace.datasets).map(([id, dataset]) => (
+                {Array.from(workspace.datasets).map((id) => (
                     <ListItem key={id}>
-                        <ListItemText primary={`Name: ${dataset.name}`}/>
+                        <ListItemText primary={`Name: ${datasets[id]?.name || "Not found"}`}/>
                     </ListItem>
                 ))}
             </List>
 
             <Typography variant="subtitle2">Neurons:</Typography>
             <List>
-                {Object.entries(workspace.neurons).map(([id, neuron]) => (
+                {Array.from(workspace.neurons).map((id) => (
                     <ListItem key={id}>
-                        <ListItemText primary={`Label: ${neuron.label}`}/>
+                        <ListItemText primary={`Label: ${neurons[id]?.name || "Not found"}`}/>
                     </ListItem>
                 ))}
             </List>

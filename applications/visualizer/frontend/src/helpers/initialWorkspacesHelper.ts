@@ -17,8 +17,8 @@ export const createEmptyWorkspace = (name: string): Workspace => {
                 [ViewerType.EM]: false,
                 [ViewerType.InstanceDetails]: false,
             },
-            datasets: {},
-            neurons: {},
+            datasets: new Set<string>(),
+            neurons: new Set<string>(),
             synchronizations: {
                 [ViewerSynchronizationPair.Graph_InstanceDetails]: true,
                 [ViewerSynchronizationPair.Graph_ThreeD]: true,
@@ -26,8 +26,7 @@ export const createEmptyWorkspace = (name: string): Workspace => {
             },
             neuronGroups: {},
             store: store,
-            layoutManager:
-            layoutManager,
+            layoutManager: layoutManager,
         };
 
     }

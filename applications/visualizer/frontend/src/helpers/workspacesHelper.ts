@@ -1,37 +1,31 @@
-import {Dataset, Neuron, NeuronGroup, ViewerSynchronizationPair, ViewerType, Workspace} from "../models.ts";
+import {NeuronGroup, ViewerSynchronizationPair, ViewerType, Workspace} from "../models.ts";
 
-export function activateNeuron(workspace: Workspace, neuron: Neuron): Workspace {
+export function activateNeuron(workspace: Workspace, neuronId: string): Workspace {
     return {
         ...workspace,
-        neurons: {
-            ...workspace.neurons,
-            [neuron.id]: neuron
-        }
+        neurons: new Set(workspace.neurons).add(neuronId)
     };
 }
 
 export function deactivateNeuron(workspace: Workspace, neuronId: string): Workspace {
-    const newNeurons = {...workspace.neurons};
-    delete newNeurons[neuronId];
+    const newNeurons = new Set(workspace.neurons);
+    newNeurons.delete(neuronId);
     return {
         ...workspace,
         neurons: newNeurons
     };
 }
 
-export function activateDataset(workspace: Workspace, dataset: Dataset): Workspace {
+export function activateDataset(workspace: Workspace, datasetId: string): Workspace {
     return {
         ...workspace,
-        datasets: {
-            ...workspace.datasets,
-            [dataset.id]: dataset
-        }
+        datasets: new Set(workspace.datasets).add(datasetId)
     };
 }
 
 export function deactivateDataset(workspace: Workspace, datasetId: string): Workspace {
-    const newDatasets = {...workspace.datasets};
-    delete newDatasets[datasetId];
+    const newDatasets = new Set(workspace.datasets);
+    newDatasets.delete(datasetId);
     return {
         ...workspace,
         datasets: newDatasets

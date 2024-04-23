@@ -1,8 +1,12 @@
-import React, {createContext, useState, useContext, ReactNode} from 'react';
-import {Workspace} from "../models.ts";
+import React, {createContext, useState, useContext, ReactNode, useEffect} from 'react';
+import {Dataset, Neuron, Workspace} from "../models.ts";
+import {DatasetsService, NeuronsService} from "../rest";
+import {mapDatasetFromRequestToContext, mapNeuronFromRequestToContext} from "../helpers/mappers.ts";
 
 export interface GlobalContextType {
     workspaces: Record<string, Workspace>;
+    neurons: Record<string, Neuron>;
+    datasets: Record<string, Dataset>;
     currentWorkspaceId: string | undefined;
     addWorkspace: (workspace: Workspace) => void;
     updateWorkspace: (workspaceId: string, workspace: Workspace) => void;
@@ -18,7 +22,35 @@ const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
 
 export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({children}) => {
     const [workspaces, setWorkspaces] = useState<Record<string, Workspace>>({});
+    const [neurons, setNeurons] = useState<Record<string, Neuron>>({});
+    const [datasets, setDatasets] = useState<Record<string, Dataset>>({});
     const [currentWorkspaceId, setCurrentWorkspaceId] = useState<string | undefined>(undefined);
+
+
+    useEffect(() => {
+        // Fetching Neurons
+        // FIXME: Get All Cells without pagination
+        NeuronsService.getAllCells({page: 1}).then(response => {
+            const neuronMap = response.items.reduce((acc, neuronRequest) => {
+                const neuron = mapNeuronFromRequestToContext(neuronRequest);
+                return {...acc, [neuron.id]: neuron};
+            }, {});
+            setNeurons(neuronMap);
+        }).catch(error => {
+            console.error('Failed to fetch neurons:', error);
+        });
+
+        // Fetching Datasets
+        DatasetsService.getAllDatasets().then(response => {
+            const datasetMap = response.reduce((acc, datasetRequest) => {
+                const dataset = mapDatasetFromRequestToContext(datasetRequest);
+                return {...acc, [dataset.id]: dataset};
+            }, {});
+            setDatasets(datasetMap);
+        }).catch(error => {
+            console.error('Failed to fetch datasets:', error);
+        });
+    }, []);
 
     const addWorkspace = (workspace: Workspace) => {
         setWorkspaces(prev => ({...prev, [workspace.id]: workspace}));
@@ -43,7 +75,16 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({chi
 
     return (
         <GlobalContext.Provider
-            value={{workspaces, currentWorkspaceId, addWorkspace, updateWorkspace, removeWorkspace, switchWorkspace}}>
+            value={{
+                workspaces,
+                neurons,
+                datasets,
+                currentWorkspaceId,
+                addWorkspace,
+                updateWorkspace,
+                removeWorkspace,
+                switchWorkspace
+            }}>
             {children}
         </GlobalContext.Provider>
     );

@@ -17,8 +17,8 @@ export interface Workspace {
     id: string;
     name: string;
     viewers: Record<ViewerType, boolean>;
-    datasets: Record<string, Dataset>;
-    neurons: Record<string, Neuron>;
+    datasets: Set<string>;
+    neurons: Set<string>;
     synchronizations: Record<ViewerSynchronizationPair, boolean>;
     neuronGroups: Record<string, NeuronGroup>;
 
@@ -34,7 +34,7 @@ export interface Dataset {
 
 export interface Neuron {
     id: string;
-    label: string;
+    name: string;
 }
 
 export interface NeuronGroup {
