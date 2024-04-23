@@ -1,51 +1,28 @@
-import {useDispatch, useStore} from "react-redux";
-import React, {useEffect, useState} from "react";
+import {Provider} from "react-redux";
 import {ThemeProvider} from '@mui/material/styles';
-import {Box, CircularProgress, CssBaseline} from "@mui/material";
-import {getLayoutManagerInstance} from "@metacell/geppetto-meta-client/common/layout/LayoutManager";
-import {addWidget} from '@metacell/geppetto-meta-client/common/layout/actions';
+import {CssBaseline} from "@mui/material";
 import '@metacell/geppetto-meta-ui/flex-layout/style/dark.scss';
-import {leftComponentWidget, rightComponentWidget} from "./layout-manager/widgets.ts";
 import theme from './theme/index.tsx';
 import './App.css'
-
+import {useGlobalContext} from "./contexts/GlobalContext.tsx";
+import AppLauncher from "./components/AppLauncher.tsx";
+import Workspace from "./components/Workspace.tsx";
 
 function App() {
+    const {workspaces, currentWorkspaceId} = useGlobalContext();
 
-    const store = useStore();
-    const dispatch = useDispatch();
-    const [LayoutComponent, setLayoutComponent] = useState<React.ComponentType | undefined>(undefined);
-
-    useEffect(() => {
-        if (LayoutComponent === undefined) {
-            const myManager = getLayoutManagerInstance();
-            if (myManager) {
-                setLayoutComponent(myManager.getComponent());
-            }
-        }
-    }, [store, dispatch, LayoutComponent])
-
-    useEffect(() => {
-        dispatch(addWidget(leftComponentWidget()));
-        dispatch(addWidget(rightComponentWidget()));
-    }, [LayoutComponent, dispatch])
-
-
-    const isLoading = LayoutComponent === undefined
+    const hasLaunched = currentWorkspaceId != undefined
 
     return (
         <>
             <ThemeProvider theme={theme}>
                 <CssBaseline/>
-                {isLoading ?
-                    <CircularProgress/> :
-                    <Box id="layout-manager-container">
-                        <LayoutComponent/>
-                    </Box>
-                }
+                {hasLaunched ? (
+                    <Provider store={workspaces[currentWorkspaceId].store}>
+                        <Workspace layoutManager={workspaces[currentWorkspaceId].layoutManager}/>
+                    </Provider>
+                ) : <AppLauncher/>}
             </ThemeProvider>
-
-
         </>
     )
 }
