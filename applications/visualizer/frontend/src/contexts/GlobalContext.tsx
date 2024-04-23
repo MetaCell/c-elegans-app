@@ -1,5 +1,5 @@
-import React, {createContext, useState, useContext, ReactNode, useEffect} from 'react';
-import {Dataset, Neuron, Workspace} from "../models.ts";
+import React, {createContext, ReactNode, useContext, useEffect, useState} from 'react';
+import {Dataset, Neuron, ViewMode, Workspace} from "../models.ts";
 import {DatasetsService, NeuronsService} from "../rest";
 import {mapDatasetFromRequestToContext, mapNeuronFromRequestToContext} from "../helpers/mappers.ts";
 
@@ -12,6 +12,8 @@ export interface GlobalContextType {
     updateWorkspace: (workspaceId: string, workspace: Workspace) => void;
     removeWorkspace: (workspaceId: string) => void;
     switchWorkspace: (workspaceId: string) => void;
+
+    viewMode: ViewMode;
 }
 
 interface GlobalContextProviderProps {
@@ -25,6 +27,8 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({chi
     const [neurons, setNeurons] = useState<Record<string, Neuron>>({});
     const [datasets, setDatasets] = useState<Record<string, Dataset>>({});
     const [currentWorkspaceId, setCurrentWorkspaceId] = useState<string | undefined>(undefined);
+    const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.Default);
+    const [selectedWorkspacesIds, setSelectedWorkspacesIds] = useState<Set<string>>(new Set<string>());
 
 
     useEffect(() => {
@@ -83,7 +87,11 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({chi
                 addWorkspace,
                 updateWorkspace,
                 removeWorkspace,
-                switchWorkspace
+                switchWorkspace,
+                viewMode,
+                setViewMode,
+                selectedWorkspacesIds,
+                setSelectedWorkspacesIds,
             }}>
             {children}
         </GlobalContext.Provider>

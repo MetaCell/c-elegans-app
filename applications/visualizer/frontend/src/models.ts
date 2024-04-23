@@ -1,5 +1,11 @@
 import {createStore} from "@reduxjs/toolkit";
 
+
+export enum ViewMode {
+    Default = 'Default',
+    Compare = 'Compare',
+}
+
 export enum ViewerType {
     Graph = 'Graph',
     ThreeD = '3D',
