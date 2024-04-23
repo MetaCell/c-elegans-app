@@ -58,3 +58,7 @@ python -m pytest
 # or simply
 pytest
 ```
+
+The data in the test are paritally generated.
+Some of the fields are manually set and the ones that we don't want to write and/or test are generated (e.g: the field is marked `not null` in the django model, so it has to be here).
+The value generation is done with [`model-bakery`](https://model-bakery.readthedocs.io/), which offers a nice level of flexibility and customization.
