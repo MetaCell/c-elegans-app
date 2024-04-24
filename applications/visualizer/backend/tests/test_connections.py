@@ -1,11 +1,7 @@
-from ninja.testing import TestAsyncClient
 import pytest
-from model_bakery import baker
 
-
-from api.api import api as celegans_api
 from api.models import Connection
-from .utils import flat_dict, generate_instance
+from .utils import generate_instance
 
 
 # Some test data
