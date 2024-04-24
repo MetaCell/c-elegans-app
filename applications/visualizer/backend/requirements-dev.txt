@@ -3,4 +3,6 @@ django_extensions
 ipdb
 pytest
 pytest-django
+pytest-asyncio
+model-bakery
 black
