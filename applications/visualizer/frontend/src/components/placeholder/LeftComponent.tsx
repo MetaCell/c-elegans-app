@@ -1,6 +1,6 @@
 import {Box, Typography} from "@mui/material";
 
-import {useGlobalContext} from "../contexts/GlobalContext.tsx";
+import {useGlobalContext} from "../../contexts/GlobalContext.tsx";
 
 export default function LeftComponent() {
     const {datasets, neurons} = useGlobalContext();

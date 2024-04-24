@@ -1,13 +1,13 @@
 import {Box, Button, List, ListItem, ListItemText, Typography} from "@mui/material";
-import {useGlobalContext} from "../contexts/GlobalContext.tsx";
+import {useGlobalContext} from "../../contexts/GlobalContext.tsx";
 import {
     activateDataset,
     activateNeuron,
     changeViewerVisibility,
     deactivateDataset,
     deactivateNeuron, highlightNeuron, updateViewerSynchronizationStatus
-} from "../helpers/workspacesHelper.ts";
-import {ViewerSynchronizationPair, ViewerType} from "../models.ts";
+} from "../../helpers/workspacesHelper.ts";
+import {ViewerSynchronizationPair, ViewerType} from "../../models.ts";
 import {useSelector} from "react-redux";
 
 
@@ -115,7 +115,7 @@ export default function RightComponent() {
 
             <Typography variant="subtitle2">Neurons:</Typography>
             <List>
-                {Array.from(workspace.neurons).map((id, index) => (
+                {Array.from(workspace.neurons).map((id) => (
                     <ListItem key={id}>
                         <ListItemText primary={`Label: ${neurons[id]?.name || "Not found"}`}/>
                     </ListItem>
