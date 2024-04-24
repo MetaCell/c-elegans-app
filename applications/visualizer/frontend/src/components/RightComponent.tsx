@@ -8,11 +8,14 @@ import {
     deactivateNeuron, highlightNeuron, updateViewerSynchronizationStatus
 } from "../helpers/workspacesHelper.ts";
 import {ViewerSynchronizationPair, ViewerType} from "../models.ts";
+import {useSelector} from "react-redux";
 
 
 export default function RightComponent() {
-    const {workspaces, currentWorkspaceId, updateWorkspace, datasets, neurons} = useGlobalContext();
-    const workspace = workspaces[currentWorkspaceId];
+    const {workspaces, updateWorkspace, datasets, neurons} = useGlobalContext();
+    const workspaceId = useSelector(state => state.workspaceId);
+
+    const workspace = workspaces[workspaceId];
 
     function withWorkspaceUpdate(modifyWorkspace) {
         return function (...args) {
@@ -112,7 +115,7 @@ export default function RightComponent() {
 
             <Typography variant="subtitle2">Neurons:</Typography>
             <List>
-                {Array.from(workspace.neurons).map((id) => (
+                {Array.from(workspace.neurons).map((id, index) => (
                     <ListItem key={id}>
                         <ListItemText primary={`Label: ${neurons[id]?.name || "Not found"}`}/>
                     </ListItem>

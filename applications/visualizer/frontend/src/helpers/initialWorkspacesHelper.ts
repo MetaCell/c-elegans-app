@@ -6,7 +6,7 @@ export const createEmptyWorkspace = (name: string): Workspace => {
         // Generate a unique ID for the workspace
         const workspaceId = `workspace-${Date.now()}`;
 
-        const {layoutManager, store} = getLayoutManagerAndStore();
+        const {layoutManager, store} = getLayoutManagerAndStore(workspaceId);
 
         return {
             id: workspaceId,

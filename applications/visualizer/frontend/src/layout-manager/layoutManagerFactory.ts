@@ -14,6 +14,14 @@ import baseLayout from "./layout.ts";
 
 const storeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
+const workspaceReducer = (state = '', action) => {
+    switch (action.type) {
+        case 'SET_WORKSPACE_ID':
+            return action.payload;
+        default:
+            return state;
+    }
+}
 
 const initialState = {
     client: clientInitialState,
@@ -24,16 +32,17 @@ const initialState = {
 const staticReducers = {
     client: geppettoClientReducer,
     layout,
-    widgets
+    widgets,
+    workspaceId: workspaceReducer
 }
 
-const getLayoutManagerAndStore = () => {
+const getLayoutManagerAndStore = (workspaceId: string) => {
     const layoutManager = initLayoutManager(baseLayout, componentMap, undefined, false);
     const allMiddlewares = [callbacksMiddleware, layoutManager.middleware];
 
     const store = createStore(
         reducerDecorator(combineReducers({...staticReducers})),
-        {...initialState},
+        {...initialState, workspaceId: workspaceId},
         storeEnhancers(applyMiddleware(...allMiddlewares))
     );
     return {
