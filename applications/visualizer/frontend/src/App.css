@@ -4,8 +4,9 @@
     margin: 0 auto;
 }
 
-#layout-manager-container {
+.layout-manager-container {
     display: flex;
+    flex-direction: column;
     position: relative;
     width: 100%;
     height: 100%;

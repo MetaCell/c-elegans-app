@@ -1,51 +1,93 @@
-import {useDispatch, useStore} from "react-redux";
-import React, {useEffect, useState} from "react";
+import {Provider} from "react-redux";
 import {ThemeProvider} from '@mui/material/styles';
-import {Box, CircularProgress, CssBaseline} from "@mui/material";
-import {getLayoutManagerInstance} from "@metacell/geppetto-meta-client/common/layout/LayoutManager";
-import {addWidget} from '@metacell/geppetto-meta-client/common/layout/actions';
+import {Box, Button, CssBaseline, Typography} from "@mui/material";
 import '@metacell/geppetto-meta-ui/flex-layout/style/dark.scss';
-import {leftComponentWidget, rightComponentWidget} from "./layout-manager/widgets.ts";
 import theme from './theme/index.tsx';
 import './App.css'
-
+import {useGlobalContext} from "./contexts/GlobalContext.tsx";
+import AppLauncher from "./components/AppLauncher.tsx";
+import Workspace from "./components/Workspace.tsx";
+import React from "react";
+import {createEmptyWorkspace} from "./helpers/initialWorkspacesHelper.ts";
+import {ViewMode} from "./models.ts";
 
 function App() {
+    const {
+        workspaces,
+        currentWorkspaceId,
+        switchWorkspace,
+        addWorkspace,
+        viewMode,
+        setViewMode,
+        selectedWorkspacesIds,
+        setSelectedWorkspacesIds
+    } = useGlobalContext();
 
-    const store = useStore();
-    const dispatch = useDispatch();
-    const [LayoutComponent, setLayoutComponent] = useState<React.ComponentType | undefined>(undefined);
 
-    useEffect(() => {
-        if (LayoutComponent === undefined) {
-            const myManager = getLayoutManagerInstance();
-            if (myManager) {
-                setLayoutComponent(myManager.getComponent());
+    const TEST_toggleViewMode = () => {
+        if (viewMode === ViewMode.Default) {
+            setViewMode(ViewMode.Compare);
+            // Ensure at least two workspaces are selected for comparison
+            const keys = Object.keys(workspaces);
+            if (selectedWorkspacesIds.size < 2) {
+                if (keys.length < 2) {
+                    // Create a new workspace if there aren't enough
+                    const newWorkspace = createEmptyWorkspace(`Workspace ${keys.length + 1}`);
+                    addWorkspace(newWorkspace);
+                    setSelectedWorkspacesIds(new Set([currentWorkspaceId, newWorkspace.id]));
+                } else {
+                    setSelectedWorkspacesIds(new Set([currentWorkspaceId, keys.find(key => key !== currentWorkspaceId)]));
+                }
             }
+        } else {
+            setViewMode(ViewMode.Default);
+            setSelectedWorkspacesIds(new Set([currentWorkspaceId]));
         }
-    }, [store, dispatch, LayoutComponent])
+    };
+    const TEST_change_workspace = () => {
 
-    useEffect(() => {
-        dispatch(addWidget(leftComponentWidget()));
-        dispatch(addWidget(rightComponentWidget()));
-    }, [LayoutComponent, dispatch])
+        const keys = Object.keys(workspaces);
+        const otherKeys = keys.filter(key => key !== currentWorkspaceId);
 
+        if (otherKeys.length > 0) {
+            switchWorkspace(otherKeys[0]);
+        } else {
+            const newWorkspace = createEmptyWorkspace(`Workspace ${Object.keys(workspaces).length + 1}`);
+            addWorkspace(newWorkspace);
+            switchWorkspace(newWorkspace.id);
+        }
+    }
 
-    const isLoading = LayoutComponent === undefined
+    const hasLaunched = currentWorkspaceId != undefined
 
     return (
         <>
             <ThemeProvider theme={theme}>
                 <CssBaseline/>
-                {isLoading ?
-                    <CircularProgress/> :
-                    <Box id="layout-manager-container">
-                        <LayoutComponent/>
+                {hasLaunched ? (
+                    <Box className={"layout-manager-container"}>
+                        <Button variant="contained" color="primary" onClick={TEST_change_workspace}>
+                            Change Workspace
+                        </Button>
+                        <Button variant="contained" color="secondary" onClick={TEST_toggleViewMode}>
+                            Change View mode
+                        </Button>
+                        {viewMode === ViewMode.Compare ?
+                            Array.from(selectedWorkspacesIds).map(id => (
+                                <Provider key={id} store={workspaces[id].store}>
+                                    <Workspace workspaceId={id}/>
+                                </Provider>
+                            ))
+                            :
+                            <Provider store={workspaces[currentWorkspaceId].store}>
+                                <Workspace workspaceId={currentWorkspaceId}/>
+                            </Provider>
+                        }
+
                     </Box>
-                }
+
+                ) : <AppLauncher/>}
             </ThemeProvider>
-
-
         </>
     )
 }
