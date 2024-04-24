@@ -1,10 +1,10 @@
 from ninja.testing import TestAsyncClient
 import pytest
-from model_bakery import baker
 
 
 from api.api import api as celegans_api
 from api.models import Dataset
+from .utils import generate_instance
 
 
 # Some test data
@@ -25,22 +25,13 @@ datasets = [
 
 
 # Setup the db for this module with some data
-# @pytest.fixture(scope="module")
-# def django_db_setup(django_db_setup, django_db_blocker):
-#     with django_db_blocker.unblock():
-#         for dataset in datasets:
-#             Dataset.objects.create(**dataset)
-
-
-# Setup the db for this module with some data
 # Data are baked with "baker", it allows to create dummy values automatically
 # and also to specify some fields. It is used here to "fill" the fields which are
 # marked as "non-null" in the model which we don't want to manually fill.
 @pytest.fixture(scope="module")
 def django_db_setup(django_db_setup, django_db_blocker):
     with django_db_blocker.unblock():
-        for dataset in datasets:
-            baker.make(Dataset, **dataset)
+        generate_instance(Dataset, datasets)
 
 
 # Fixture to access the test client in all test functions
