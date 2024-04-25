@@ -52,13 +52,13 @@ class Dataset(Model):
 #   CONSTRAINT pk_neurons PRIMARY KEY (name)
 # );
 class Neuron(Model):
-    name = CharField(max_length=30, primary_key=True, null=False)
-    nclass = CharField(max_length=30, null=False)
-    neurotransmitter = CharField(max_length=10, null=False)
-    type = CharField(max_length=10, null=False)
-    embryonic = BooleanField(null=False, default=False)
-    inhead = BooleanField(null=False, default=False)
-    intail = BooleanField(null=False, default=False)
+    name = CharField(max_length=30, primary_key=True)
+    nclass = CharField(max_length=30)
+    neurotransmitter = CharField(max_length=10)
+    type = CharField(max_length=10)
+    embryonic = BooleanField(default=False)
+    inhead = BooleanField(default=False)
+    intail = BooleanField(default=False)
 
 
 # DROP TABLE IF EXISTS annotations;

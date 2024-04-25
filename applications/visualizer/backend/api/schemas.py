@@ -20,10 +20,11 @@ class BilingualSchema(Schema):
 
 
 class Dataset(ModelSchema, BilingualSchema):
+    id: str
+
     class Meta:
         model = DatasetModel
         fields = [
-            "id",
             "collection",
             "name",
             "description",
@@ -35,10 +36,11 @@ class Dataset(ModelSchema, BilingualSchema):
 
 
 class Neuron(ModelSchema, BilingualSchema):
+    name: str
+
     class Meta:
         model = NeuronModel
         fields = [
-            "name",
             "nclass",
             "neurotransmitter",
             "type",

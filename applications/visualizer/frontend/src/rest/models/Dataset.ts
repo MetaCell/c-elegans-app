@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export type Dataset = {
-    id?: (string | null);
+    id: string;
     collection: string;
     name: string;
     description: string;

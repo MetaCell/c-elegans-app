@@ -76,6 +76,53 @@
         ]
       }
     },
+    "/api/datasets/{dataset}/neurons": {
+      "get": {
+        "operationId": "get_dataset_neurons",
+        "summary": "Get Dataset Neurons",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dataset",
+            "schema": {
+              "title": "Dataset",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Neuron"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorMessage"
+                }
+              }
+            }
+          }
+        },
+        "description": "Returns all the neurons of a dedicated dataset",
+        "tags": [
+          "datasets"
+        ]
+      }
+    },
     "/api/cells": {
       "get": {
         "operationId": "get_all_cells",
@@ -165,16 +212,8 @@
       "Dataset": {
         "properties": {
           "id": {
-            "anyOf": [
-              {
-                "maxLength": 20,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Id"
+            "title": "Id",
+            "type": "string"
           },
           "collection": {
             "maxLength": 20,
@@ -216,6 +255,7 @@
           }
         },
         "required": [
+          "id",
           "collection",
           "name",
           "description",
@@ -239,31 +279,11 @@
         "title": "ErrorMessage",
         "type": "object"
       },
-      "Input": {
-        "properties": {
-          "page": {
-            "default": 1,
-            "minimum": 1,
-            "title": "Page",
-            "type": "integer"
-          }
-        },
-        "title": "Input",
-        "type": "object"
-      },
       "Neuron": {
         "properties": {
           "name": {
-            "anyOf": [
-              {
-                "maxLength": 30,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name"
+            "title": "Name",
+            "type": "string"
           },
           "nclass": {
             "maxLength": 30,
@@ -297,11 +317,24 @@
           }
         },
         "required": [
+          "name",
           "nclass",
           "neurotransmitter",
           "type"
         ],
         "title": "Neuron",
+        "type": "object"
+      },
+      "Input": {
+        "properties": {
+          "page": {
+            "default": 1,
+            "minimum": 1,
+            "title": "Page",
+            "type": "integer"
+          }
+        },
+        "title": "Input",
         "type": "object"
       },
       "PagedNeuron": {

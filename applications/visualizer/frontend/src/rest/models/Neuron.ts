@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export type Neuron = {
-    name?: (string | null);
+    name: string;
     nclass: string;
     neurotransmitter: string;
     type: string;
