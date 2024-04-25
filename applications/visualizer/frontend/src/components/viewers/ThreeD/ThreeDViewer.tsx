@@ -1,5 +1,5 @@
 import {Suspense, useEffect, useState} from "react";
-import {CameraControls, PerspectiveCamera} from "@react-three/drei";
+import {CameraControls, GizmoHelper, GizmoViewport, PerspectiveCamera} from "@react-three/drei";
 import {
     CAMERA_FAR,
     CAMERA_FOV,
@@ -26,7 +26,7 @@ function ThreeDViewer() {
     const [instances, setInstances] = useState<Instance[]>([])
 
     useEffect(() => {
-        // TODO: Implement
+        // TODO: Understand why adal disappears
         if (showNeurons) {
             setInstances([
                 {
@@ -60,7 +60,13 @@ function ThreeDViewer() {
                 <directionalLight color={LIGHT_1_COLOR} position={LIGHT_1_POSITION}/>
                 <directionalLight color={LIGHT_2_COLOR} position={LIGHT_2_POSITION}/>
                 <STLViewer instances={instances}/>
-                <axesHelper args={[5]} position={[0, 0, -10]}/>
+                <GizmoHelper
+                    alignment="bottom-right"
+                    margin={[80, 80]}
+                >
+                    <GizmoViewport axisColors={['red', 'green', 'blue']} labels={['Posterior', 'Dorsal', 'Left']}
+                                   labelColor="white" hideNegativeAxes hideAxisHeads/>
+                </GizmoHelper>
             </Suspense>
         </Canvas>
     );

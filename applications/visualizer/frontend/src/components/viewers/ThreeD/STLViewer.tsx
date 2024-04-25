@@ -11,6 +11,8 @@ interface Props {
 }
 
 const STLViewer: FC<Props> = ({instances}) => {
+    // Todo: Fix typescript warning
+    // Check if useLoader caches or do we need to do it ourselves
     const stlObjects = useLoader<STLLoader, BufferGeometry[]>(STLLoader, instances.map(i => i.url));
 
     return (

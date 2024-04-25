@@ -21,6 +21,8 @@ const STLMesh: FC<Props> = ({id, color, opacity, stl}) => {
             workspace.highlightNeuron(clicked.userData.id)
         }
     }
+    // TODO: Add outlines for selected
+    // TODO: Test wireframe
     return (
         <mesh userData={{id}} onClick={onClick}>
             <primitive attach="geometry" object={stl}/>
