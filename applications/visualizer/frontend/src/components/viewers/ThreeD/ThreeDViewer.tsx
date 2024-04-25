@@ -36,7 +36,7 @@ function ThreeDViewer() {
             setInstances([
                 {
                     id: 'bone',
-                    url: 'bone.stl',
+                    url: 'nervering-SEM_adult.stl',
                     color: 'white',
                     opacity: 1
                 }
