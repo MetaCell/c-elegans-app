@@ -14,30 +14,20 @@ interface Props {
 }
 
 const STLViewer: FC<Props> = ({instances}) => {
-    const {workspaces} = useGlobalContext();
-
-    const workspaceId = useSelector(state => state.workspaceId);
-    const workspace: Workspace = workspaces[workspaceId];
-
-    const stl = useLoader<STLLoader, BufferGeometry[]>(STLLoader, instances.map(i => i.url));
-
-    const onSelect = (selected) => {
-        console.log(selected)
-    }
+    const stlObjects = useLoader<STLLoader, BufferGeometry[]>(STLLoader, instances.map(i => i.url));
 
     return (
         <Center>
             <group rotation={[-Math.PI / 2, 0, 0]}>
-                <Select onChange={onSelect}>
-                    {stl.map((stl, idx) => (
-                        <STLMesh
-                            key={idx}
-                            stl={stl}
-                            opacity={instances[idx].opacity}
-                            color={instances[idx].color}
-                        />
-                    ))}
-                </Select>
+                {stlObjects.map((stl, idx) => (
+                    <STLMesh
+                        key={idx}
+                        stl={stl}
+                        id={instances[idx].id}
+                        opacity={instances[idx].opacity}
+                        color={instances[idx].color}
+                    />
+                ))}
             </group>
         </Center>
     );

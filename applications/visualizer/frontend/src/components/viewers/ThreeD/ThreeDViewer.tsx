@@ -51,7 +51,7 @@ function ThreeDViewer() {
     }, [showNeurons, showSynapses]);
 
     return (
-        <Canvas style={{backgroundColor: SCENE_BACKGROUND}} frameloop="demand">
+        <Canvas style={{backgroundColor: SCENE_BACKGROUND}}>
             <Suspense fallback={<Loader/>}>
                 <PerspectiveCamera
                     makeDefault
