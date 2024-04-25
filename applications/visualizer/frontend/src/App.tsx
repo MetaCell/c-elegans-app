@@ -8,7 +8,7 @@ import {useGlobalContext} from "./contexts/GlobalContext.tsx";
 import AppLauncher from "./components/AppLauncher.tsx";
 import Workspace from "./components/Workspace.tsx";
 import React from "react";
-import {ViewMode} from "./models.ts";
+import {ViewMode} from "./models/models.ts";
 
 function App() {
     const {

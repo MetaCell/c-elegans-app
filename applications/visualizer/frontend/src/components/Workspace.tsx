@@ -6,11 +6,10 @@ import {addWidget} from '@metacell/geppetto-meta-client/common/layout/actions';
 import '@metacell/geppetto-meta-ui/flex-layout/style/dark.scss';
 import theme from '../theme';
 import {useGlobalContext} from "../contexts/GlobalContext.tsx";
-import {threeDViewerWidget} from "../layout-manager/widgets.ts";
+import {rightComponentWidget, threeDViewerWidget} from "../layout-manager/widgets.ts";
 
 
 function Workspace() {
-
 
     const dispatch = useDispatch();
     const {workspaces} = useGlobalContext();
@@ -31,6 +30,7 @@ function Workspace() {
 
     useEffect(() => {
         dispatch(addWidget(threeDViewerWidget()));
+        dispatch(addWidget(rightComponentWidget()));
     }, [LayoutComponent, dispatch])
 
 

@@ -28,7 +28,7 @@ export const threeDViewerWidget = () => ({
     id: widgetIds.threeDViewer,
     name: "3D Viewer",
     component: widgetIds.threeDViewer,
-    panelName: "rightPanel",
+    panelName: "leftPanel",
     enableClose: false,
     status: WidgetStatus.ACTIVE,
 });

@@ -35,9 +35,15 @@ function ThreeDViewer() {
         if (showNeurons) {
             setInstances([
                 {
-                    id: 'bone',
+                    id: 'nerve_ring',
                     url: 'nervering-SEM_adult.stl',
                     color: 'white',
+                    opacity: 0.5
+                },
+                {
+                    id: 'adal_sem',
+                    url: 'ADAL-SEM_adult.stl',
+                    color: 'blue',
                     opacity: 1
                 }
             ])

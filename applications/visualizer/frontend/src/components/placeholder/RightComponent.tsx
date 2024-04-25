@@ -1,37 +1,15 @@
 import {Box, Button, List, ListItem, ListItemText, Typography} from "@mui/material";
 import {useGlobalContext} from "../../contexts/GlobalContext.tsx";
-import {
-    activateDataset,
-    activateNeuron,
-    changeViewerVisibility,
-    deactivateDataset,
-    deactivateNeuron, highlightNeuron, updateViewerSynchronizationStatus
-} from "../../helpers/workspacesHelper.ts";
-import {ViewerSynchronizationPair, ViewerType} from "../../models.ts";
+import {ViewerSynchronizationPair, ViewerType} from "../../models/models.ts";
 import {useSelector} from "react-redux";
+import {Workspace} from "../../models/workspace.ts";
 
 
 export default function RightComponent() {
-    const {workspaces, updateWorkspace, datasets, neurons} = useGlobalContext();
+    const {workspaces} = useGlobalContext();
     const workspaceId = useSelector(state => state.workspaceId);
 
-    const workspace = workspaces[workspaceId];
-
-    function withWorkspaceUpdate(modifyWorkspace) {
-        return function (...args) {
-            const updatedWorkspace = modifyWorkspace(workspace, ...args);
-            updateWorkspace(workspace.id, updatedWorkspace);
-            return updatedWorkspace;
-        };
-    }
-
-    const addNeuronAndUpdate = withWorkspaceUpdate(activateNeuron);
-    const removeNeuronAndUpdate = withWorkspaceUpdate(deactivateNeuron);
-    const addDatasetAndUpdate = withWorkspaceUpdate(activateDataset);
-    const removeDatasetAndUpdate = withWorkspaceUpdate(deactivateDataset);
-    const toggleViewerVisibility = withWorkspaceUpdate(changeViewerVisibility);
-    const toggleSyncStatus = withWorkspaceUpdate(updateViewerSynchronizationStatus);
-    const highlightNeuronAndUpdate = withWorkspaceUpdate(highlightNeuron);
+    const workspace : Workspace = workspaces[workspaceId];
 
 
     if (!workspace) {
@@ -57,41 +35,33 @@ export default function RightComponent() {
 
 
             <Box>
-                <Button variant="contained" color="primary" onClick={() => addNeuronAndUpdate(testNeuron)}>
+                <Button variant="contained" color="primary" onClick={() => workspace.activateNeuron(testNeuron)}>
                     Activate Neuron
                 </Button>
                 <Button variant="contained" color="error"
-                        onClick={() => removeNeuronAndUpdate(testNeuron)}>
+                        onClick={() => workspace.deactivateNeuron(testNeuron)}>
                     Deactivate Neuron
                 </Button>
-                <Button variant="contained" color="primary" onClick={() => addDatasetAndUpdate(testDataset)}>
+                <Button variant="contained" color="primary" onClick={() => workspace.activateDataset(testDataset)}>
                     Activate Dataset
                 </Button>
                 <Button variant="contained" color="error"
-                        onClick={() => removeDatasetAndUpdate(testDataset)}>
+                        onClick={() => workspace.deactivateDataset(testDataset)}>
                     Deactivate Dataset
                 </Button>
                 <Button
                     variant="contained"
                     color="primary"
-                    onClick={() => toggleViewerVisibility(viewerToToggle, !currentVisibility)}
+                    onClick={() => workspace.changeViewerVisibility(viewerToToggle, !currentVisibility)}
                 >
                     Toggle {ViewerType.Graph} Viewer
                 </Button>
                 <Button
                     variant="contained"
                     color="primary"
-                    onClick={() => toggleSyncStatus(syncPair, !currentSyncStatus)}
+                    onClick={() => workspace.updateViewerSynchronizationStatus(syncPair, !currentSyncStatus)}
                 >
                     Toggle Synchronization {syncPair}
-                </Button>
-
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => highlightNeuronAndUpdate(testNeuron)}
-                >
-                    Highlight Neuron
                 </Button>
             </Box>
 
@@ -106,18 +76,18 @@ export default function RightComponent() {
 
             <Typography variant="subtitle2">Datasets:</Typography>
             <List>
-                {Array.from(workspace.datasets).map((id) => (
+                {Array.from(workspace.activeDatasets).map((id) => (
                     <ListItem key={id}>
-                        <ListItemText primary={`Name: ${datasets[id]?.name || "Not found"}`}/>
+                        <ListItemText primary={`${id}`}/>
                     </ListItem>
                 ))}
             </List>
 
             <Typography variant="subtitle2">Neurons:</Typography>
             <List>
-                {Array.from(workspace.neurons).map((id) => (
+                {Array.from(workspace.activeNeurons).map((id) => (
                     <ListItem key={id}>
-                        <ListItemText primary={`Label: ${neurons[id]?.name || "Not found"}`}/>
+                        <ListItemText primary={`${id}`}/>
                     </ListItem>
                 ))}
             </List>
