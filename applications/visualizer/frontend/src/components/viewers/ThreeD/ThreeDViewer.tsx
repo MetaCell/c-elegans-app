@@ -7,8 +7,7 @@ import {
     CAMERA_POSITION, LIGHT_1_COLOR, LIGHT_1_POSITION, LIGHT_2_COLOR, LIGHT_2_POSITION,
     SCENE_BACKGROUND
 } from "../../../../settings/threeDSettings.ts";
-import {useGlobalContext} from "../../../contexts/GlobalContext.tsx";
-import {useSelector} from "react-redux";
+
 import STLViewer from "./STLViewer.tsx";
 import {Canvas} from "@react-three/fiber";
 import Loader from "./Loader.tsx";
@@ -25,10 +24,6 @@ function ThreeDViewer() {
     const [showNeurons, setShowNeurons] = useState<boolean>(true);
     const [showSynapses, setShowSynapses] = useState<boolean>(true);
     const [instances, setInstances] = useState<Instance[]>([])
-
-    const {workspaces} = useGlobalContext();
-    const workspaceId = useSelector(state => state.workspaceId);
-    const workspace = workspaces[workspaceId];
 
     useEffect(() => {
         // TODO: Implement
@@ -65,6 +60,7 @@ function ThreeDViewer() {
                 <directionalLight color={LIGHT_1_COLOR} position={LIGHT_1_POSITION}/>
                 <directionalLight color={LIGHT_2_COLOR} position={LIGHT_2_POSITION}/>
                 <STLViewer instances={instances}/>
+                <axesHelper args={[5]} position={[0, 0, -10]}/>
             </Suspense>
         </Canvas>
     );

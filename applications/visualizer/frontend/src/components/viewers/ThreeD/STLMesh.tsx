@@ -2,6 +2,7 @@ import React, {FC} from "react";
 import {useGlobalContext} from "../../../contexts/GlobalContext.tsx";
 import {useSelector} from "react-redux";
 import {Workspace} from "../../../models/workspace.ts";
+import {RootState} from "../../../layout-manager/layoutManagerFactory.ts";
 
 interface Props {
     stl: any;
@@ -12,7 +13,7 @@ interface Props {
 
 const STLMesh: FC<Props> = ({id, color, opacity, stl}) => {
     const {workspaces} = useGlobalContext();
-    const workspaceId = useSelector(state => state.workspaceId);
+    const workspaceId = useSelector((state:RootState) => state.workspaceId);
     const workspace: Workspace = workspaces[workspaceId];
     const onClick = (event) => {
         const clicked = getClosestIntersectedObject(event)

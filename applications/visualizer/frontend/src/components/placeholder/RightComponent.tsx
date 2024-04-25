@@ -3,11 +3,12 @@ import {useGlobalContext} from "../../contexts/GlobalContext.tsx";
 import {ViewerSynchronizationPair, ViewerType} from "../../models/models.ts";
 import {useSelector} from "react-redux";
 import {Workspace} from "../../models/workspace.ts";
+import {RootState} from "../../layout-manager/layoutManagerFactory.ts";
 
 
 export default function RightComponent() {
     const {workspaces} = useGlobalContext();
-    const workspaceId = useSelector(state => state.workspaceId);
+    const workspaceId = useSelector((state:RootState) => state.workspaceId);
 
     const workspace : Workspace = workspaces[workspaceId];
 

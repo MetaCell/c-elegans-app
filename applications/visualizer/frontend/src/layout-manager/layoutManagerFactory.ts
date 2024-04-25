@@ -1,16 +1,25 @@
 import {applyMiddleware, combineReducers, compose, createStore} from "@reduxjs/toolkit";
 import {callbacksMiddleware} from '@metacell/geppetto-meta-client/common/middleware/geppettoMiddleware';
 import {initLayoutManager} from "@metacell/geppetto-meta-client/common/layout/LayoutManager";
-import geppettoClientReducer, {clientInitialState} from '@metacell/geppetto-meta-client/common/reducer/geppettoClient';
+import geppettoClientReducer, {clientInitialState, ClientState} from '@metacell/geppetto-meta-client/common/reducer/geppettoClient';
 import {
     layoutInitialState,
     layout,
-    widgets
+    widgets,
+    LayoutState
 } from '@metacell/geppetto-meta-client/common/reducer/geppettoLayout';
 import {reducerDecorator} from '@metacell/geppetto-meta-client/common/reducer/reducerDecorator';
+import {WidgetMap} from '@metacell/geppetto-meta-client/common/layout/model';
 
 import componentMap from "./componentMap.ts";
 import baseLayout from "./layout.ts";
+
+export interface RootState {
+    client: ClientState;
+    layout: LayoutState;
+    widgets: WidgetMap;
+    workspaceId: string;
+}
 
 const storeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 

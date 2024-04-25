@@ -1,7 +1,7 @@
-export const CAMERA_FOV = 750
-export const CAMERA_POSITION = [0, 0, 100]
-export const CAMERA_NEAR = 1
-export const CAMERA_FAR = 100000
+export const CAMERA_FOV = 50
+export const CAMERA_POSITION = [0, 0, 50]
+export const CAMERA_NEAR = 0.1
+export const CAMERA_FAR = 2000
 
 export const LIGHT_1_COLOR = 0xeb4634
 export const LIGHT_1_POSITION = [5, 5, 5]
