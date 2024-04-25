@@ -1,7 +1,7 @@
 import {widgetIds} from "./widgets.ts";
 import LeftComponent from "../components/placeholder/LeftComponent.tsx";
 import RightComponent from "../components/placeholder/RightComponent.tsx";
-import ThreeDViewer from "../components/viewers/ThreeDViewer.tsx";
+import ThreeDViewer from "../components/viewers/ThreeD/ThreeDViewer.tsx";
 
 const componentMap = {
     [widgetIds.leftComponent]: LeftComponent,

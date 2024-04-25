@@ -1,6 +1,6 @@
 import {Provider} from "react-redux";
 import {ThemeProvider} from '@mui/material/styles';
-import {Box, Button, CssBaseline} from "@mui/material";
+import {Box, CssBaseline} from "@mui/material";
 import '@metacell/geppetto-meta-ui/flex-layout/style/dark.scss';
 import theme from './theme/index.tsx';
 import './App.css'
@@ -8,7 +8,6 @@ import {useGlobalContext} from "./contexts/GlobalContext.tsx";
 import AppLauncher from "./components/AppLauncher.tsx";
 import Workspace from "./components/Workspace.tsx";
 import React from "react";
-import {createEmptyWorkspace} from "./helpers/initialWorkspacesHelper.ts";
 import {ViewMode} from "./models.ts";
 
 function App() {
