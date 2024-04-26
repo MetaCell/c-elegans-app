@@ -20,6 +20,7 @@
     "@metacell/geppetto-meta-client": "^1.2.8",
     "@metacell/geppetto-meta-core": "^1.2.8",
     "@metacell/geppetto-meta-ui": "^1.2.8",
+    "@mui/icons-material": "^5.15.15",
     "@mui/material": "^5.15.15",
     "@react-three/drei": "^9.105.4",
     "@react-three/fiber": "^8.16.2",

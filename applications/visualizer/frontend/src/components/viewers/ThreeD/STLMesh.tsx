@@ -5,7 +5,7 @@ import {useSelector} from "react-redux";
 import {Workspace} from "../../../models/workspace.ts";
 import {RootState} from "../../../layout-manager/layoutManagerFactory.ts";
 import {DoubleSide, NormalBlending} from "three";
-import {getClosestIntersectedObject, getFurthestIntersectedObject} from "../../../helpers/threeDHelpers.ts";
+import {getFurthestIntersectedObject} from "../../../helpers/threeDHelpers.ts";
 import {OUTLINE_COLOR, OUTLINE_THICKNESS} from "../../../../settings/threeDSettings.ts";
 
 interface Props {
@@ -14,9 +14,10 @@ interface Props {
     color: string;
     opacity: number;
     renderOrder: number;
+    isWireframe: boolean;
 }
 
-const STLMesh: FC<Props> = ({id, color, opacity, renderOrder, stl}) => {
+const STLMesh: FC<Props> = ({id, color, opacity, renderOrder, isWireframe, stl}) => {
     const {workspaces} = useGlobalContext();
     const workspaceId = useSelector((state: RootState) => state.workspaceId);
     const workspace: Workspace = workspaces[workspaceId];
@@ -28,10 +29,7 @@ const STLMesh: FC<Props> = ({id, color, opacity, renderOrder, stl}) => {
     }
 
     const isSelected = id == workspace.highlightedNeuron
-    // TODO: Add outlines for selected
-    // TODO: Test wireframe
     return (
-
         <mesh userData={{id}} onClick={onClick} frustumCulled={false} renderOrder={renderOrder}>
             <primitive attach="geometry" object={stl}/>
             <meshStandardMaterial color={color}
@@ -40,7 +38,9 @@ const STLMesh: FC<Props> = ({id, color, opacity, renderOrder, stl}) => {
                                   depthWrite={false}
                                   depthTest={false}
                                   blending={NormalBlending}
-                                  transparent/>
+                                  wireframe={isWireframe}
+                                  transparent
+            />
             {isSelected && <Outlines thickness={OUTLINE_THICKNESS} color={OUTLINE_COLOR}/>}
         </mesh>
     );

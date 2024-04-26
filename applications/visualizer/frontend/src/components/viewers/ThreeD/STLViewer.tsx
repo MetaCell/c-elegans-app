@@ -10,7 +10,7 @@ interface Props {
     instances: Instance[];
 }
 
-const STLViewer: FC<Props> = ({instances}) => {
+const STLViewer: FC<Props> = ({instances, isWireframe}) => {
     // Todo: Fix typescript warning
     // Check if useLoader caches or do we need to do it ourselves
     const stlObjects = useLoader<STLLoader, BufferGeometry[]>(STLLoader, instances.map(i => i.url));
@@ -26,6 +26,7 @@ const STLViewer: FC<Props> = ({instances}) => {
                         opacity={instances[idx].opacity}
                         color={instances[idx].color}
                         renderOrder={idx}
+                        isWireframe={isWireframe}
                     />
                 ))}
             </group>
