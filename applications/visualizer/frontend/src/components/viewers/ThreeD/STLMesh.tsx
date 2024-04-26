@@ -3,15 +3,17 @@ import {useGlobalContext} from "../../../contexts/GlobalContext.tsx";
 import {useSelector} from "react-redux";
 import {Workspace} from "../../../models/workspace.ts";
 import {RootState} from "../../../layout-manager/layoutManagerFactory.ts";
+import {DoubleSide, NormalBlending} from "three";
 
 interface Props {
     stl: any;
     id: string;
     color: string;
     opacity: number;
+    renderOrder: number;
 }
 
-const STLMesh: FC<Props> = ({id, color, opacity, stl}) => {
+const STLMesh: FC<Props> = ({id, color, opacity, renderOrder, stl}) => {
     const {workspaces} = useGlobalContext();
     const workspaceId = useSelector((state:RootState) => state.workspaceId);
     const workspace: Workspace = workspaces[workspaceId];
@@ -24,9 +26,15 @@ const STLMesh: FC<Props> = ({id, color, opacity, stl}) => {
     // TODO: Add outlines for selected
     // TODO: Test wireframe
     return (
-        <mesh userData={{id}} onClick={onClick}>
+        <mesh userData={{id}} onClick={onClick} frustumCulled={false} renderOrder={renderOrder}>
             <primitive attach="geometry" object={stl}/>
-            <meshStandardMaterial color={color} opacity={opacity} transparent/>
+            <meshStandardMaterial color={color}
+                                  opacity={opacity}
+                                  side={DoubleSide}
+                                  depthWrite={false}
+                                  depthTest={false}
+                                  blending={NormalBlending}
+                                  transparent/>
         </mesh>
     );
 };

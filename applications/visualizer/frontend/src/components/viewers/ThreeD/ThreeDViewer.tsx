@@ -25,8 +25,9 @@ function ThreeDViewer() {
     const [showSynapses, setShowSynapses] = useState<boolean>(true);
     const [instances, setInstances] = useState<Instance[]>([])
 
+
+
     useEffect(() => {
-        // TODO: Understand why adal disappears
         if (showNeurons) {
             setInstances([
                 {
@@ -57,7 +58,7 @@ function ThreeDViewer() {
                     far={CAMERA_FAR}
                 />
                 <CameraControls makeDefault/>
-                <directionalLight color={LIGHT_1_COLOR} position={LIGHT_1_POSITION}/>
+                <ambientLight color={LIGHT_1_COLOR}/>
                 <directionalLight color={LIGHT_2_COLOR} position={LIGHT_2_POSITION}/>
                 <STLViewer instances={instances}/>
                 <GizmoHelper
