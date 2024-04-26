@@ -1,9 +1,12 @@
 import React, {FC} from "react";
+import {Outlines} from '@react-three/drei';
 import {useGlobalContext} from "../../../contexts/GlobalContext.tsx";
 import {useSelector} from "react-redux";
 import {Workspace} from "../../../models/workspace.ts";
 import {RootState} from "../../../layout-manager/layoutManagerFactory.ts";
 import {DoubleSide, NormalBlending} from "three";
+import {getClosestIntersectedObject, getFurthestIntersectedObject} from "../../../helpers/threeDHelpers.ts";
+import {OUTLINE_COLOR, OUTLINE_THICKNESS} from "../../../../settings/threeDSettings.ts";
 
 interface Props {
     stl: any;
@@ -15,17 +18,20 @@ interface Props {
 
 const STLMesh: FC<Props> = ({id, color, opacity, renderOrder, stl}) => {
     const {workspaces} = useGlobalContext();
-    const workspaceId = useSelector((state:RootState) => state.workspaceId);
+    const workspaceId = useSelector((state: RootState) => state.workspaceId);
     const workspace: Workspace = workspaces[workspaceId];
     const onClick = (event) => {
-        const clicked = getClosestIntersectedObject(event)
+        const clicked = getFurthestIntersectedObject(event)
         if (clicked) {
             workspace.highlightNeuron(clicked.userData.id)
         }
     }
+
+    const isSelected = id == workspace.highlightedNeuron
     // TODO: Add outlines for selected
     // TODO: Test wireframe
     return (
+
         <mesh userData={{id}} onClick={onClick} frustumCulled={false} renderOrder={renderOrder}>
             <primitive attach="geometry" object={stl}/>
             <meshStandardMaterial color={color}
@@ -35,20 +41,10 @@ const STLMesh: FC<Props> = ({id, color, opacity, renderOrder, stl}) => {
                                   depthTest={false}
                                   blending={NormalBlending}
                                   transparent/>
+            {isSelected && <Outlines thickness={OUTLINE_THICKNESS} color={OUTLINE_COLOR}/>}
         </mesh>
     );
 };
 
-function getClosestIntersectedObject(event) {
-    if (!event.intersections || event.intersections.length === 0) {
-        return null;
-    }
-
-    // Sort the intersections array by the 'distance' property
-    const sortedIntersections = event.intersections.sort((a, b) => a.distance - b.distance);
-
-    // Return the first object in the sorted array
-    return sortedIntersections[0].object;
-}
 
 export default STLMesh;

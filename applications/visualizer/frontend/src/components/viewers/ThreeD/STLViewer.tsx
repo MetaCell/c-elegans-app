@@ -14,17 +14,15 @@ const STLViewer: FC<Props> = ({instances}) => {
     // Todo: Fix typescript warning
     // Check if useLoader caches or do we need to do it ourselves
     const stlObjects = useLoader<STLLoader, BufferGeometry[]>(STLLoader, instances.map(i => i.url));
-    const {scene} = useThree();
-    window.myScene = scene;
 
     return (
         <Center>
             <group frustumCulled={false}>
                 {stlObjects.map((stl, idx) => (
                     <STLMesh
-                        key={idx}
-                        stl={stl}
+                        key={instances[idx].id}
                         id={instances[idx].id}
+                        stl={stl}
                         opacity={instances[idx].opacity}
                         color={instances[idx].color}
                         renderOrder={idx}

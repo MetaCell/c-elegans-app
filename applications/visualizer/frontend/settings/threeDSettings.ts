@@ -8,3 +8,6 @@ export const LIGHT_2_COLOR = 0xccccff
 export const LIGHT_2_POSITION = [-1, 0.75, -0.5]
 
 export const SCENE_BACKGROUND = '0xd9d8d4'
+
+export const OUTLINE_THICKNESS = 0.05
+export const OUTLINE_COLOR = 'hotpink'
