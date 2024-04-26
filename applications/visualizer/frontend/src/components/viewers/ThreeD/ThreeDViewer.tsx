@@ -52,7 +52,7 @@ function ThreeDViewer() {
 
     return (
         <>
-            <Canvas style={{backgroundColor: SCENE_BACKGROUND}}>
+            <Canvas style={{backgroundColor: SCENE_BACKGROUND}} frameloop={"demand"}>
                 <Suspense fallback={<Loader/>}>
 
                     <PerspectiveCamera
