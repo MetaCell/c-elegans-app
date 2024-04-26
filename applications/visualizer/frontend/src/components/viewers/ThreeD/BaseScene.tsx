@@ -9,17 +9,7 @@ import {
 
 function BaseScene() {
     return <>
-        <PerspectiveCamera
-            makeDefault
-            fov={CAMERA_FOV}
-            aspect={window.innerWidth / window.innerHeight}
-            position={CAMERA_POSITION}
-            near={CAMERA_NEAR}
-            far={CAMERA_FAR}
-        />
-        <CameraControls makeDefault/>
-        <ambientLight color={LIGHT_1_COLOR}/>
-        <directionalLight color={LIGHT_2_COLOR} position={LIGHT_2_POSITION}/>
+
     </>;
 }
 

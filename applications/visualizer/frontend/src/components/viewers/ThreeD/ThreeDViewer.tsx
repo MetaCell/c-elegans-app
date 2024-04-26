@@ -1,12 +1,18 @@
-import {Suspense, useEffect, useState} from "react";
-import {SCENE_BACKGROUND} from "../../../../settings/threeDSettings.ts";
+import {Suspense, useEffect, useRef, useState} from "react";
+import {
+    CAMERA_FAR,
+    CAMERA_FOV,
+    CAMERA_NEAR,
+    CAMERA_POSITION, LIGHT_1_COLOR, LIGHT_2_COLOR, LIGHT_2_POSITION,
+    SCENE_BACKGROUND
+} from "../../../../settings/threeDSettings.ts";
 
 import STLViewer from "./STLViewer.tsx";
 import {Canvas, useThree} from "@react-three/fiber";
 import Loader from "./Loader.tsx";
 import BaseScene from "./BaseScene.tsx";
 import Gizmo from "./Gizmo.tsx";
-import {CameraControls} from "@react-three/drei";
+import {CameraControls, PerspectiveCamera} from "@react-three/drei";
 import SceneControls from "./SceneControls.tsx";
 
 export interface Instance {
@@ -24,6 +30,7 @@ function ThreeDViewer() {
     const [instances, setInstances] = useState<Instance[]>([])
     const [isWireframe, setIsWireframe] = useState<boolean>(false)
 
+    const cameraControlRef = useRef<CameraControls | null>(null);
 
     useEffect(() => {
         if (showNeurons) {
@@ -48,12 +55,29 @@ function ThreeDViewer() {
         <>
             <Canvas style={{backgroundColor: SCENE_BACKGROUND}}>
                 <Suspense fallback={<Loader/>}>
-                    <BaseScene/>
-                    <STLViewer instances={instances} isWireframe={isWireframe}/>
+
+                    <PerspectiveCamera
+                        makeDefault
+                        fov={CAMERA_FOV}
+                        aspect={window.innerWidth / window.innerHeight}
+                        position={CAMERA_POSITION}
+                        near={CAMERA_NEAR}
+                        far={CAMERA_FAR}
+                    />
+                    <CameraControls ref={cameraControlRef}/>
+
+                    <ambientLight color={LIGHT_1_COLOR}/>
+                    <directionalLight color={LIGHT_2_COLOR} position={LIGHT_2_POSITION}/>
+
                     <Gizmo/>
+
+                    <STLViewer instances={instances} isWireframe={isWireframe}/>
                 </Suspense>
             </Canvas>
-            <SceneControls isWireframe={isWireframe} setIsWireframe={setIsWireframe}/>
+            <SceneControls
+                cameraControlRef={cameraControlRef}
+                isWireframe={isWireframe}
+                setIsWireframe={setIsWireframe}/>
         </>
     );
 }

@@ -11,3 +11,5 @@ export const SCENE_BACKGROUND = '0xd9d8d4'
 
 export const OUTLINE_THICKNESS = 0.05
 export const OUTLINE_COLOR = 'hotpink'
+
+export const ZOOM_DELTA = 1
