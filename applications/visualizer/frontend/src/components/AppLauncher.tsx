@@ -1,6 +1,5 @@
 import React from 'react';
 import {Typography, Card, CardContent, CardActionArea, Grid, Container} from '@mui/material';
-import {createEmptyWorkspace} from "../helpers/initialWorkspacesHelper.ts";
 import {useGlobalContext} from "../contexts/GlobalContext.tsx";
 
 function AppLauncher() {

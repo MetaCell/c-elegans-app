@@ -4,12 +4,12 @@ import {useGlobalContext} from "../../../contexts/GlobalContext.tsx";
 import {useSelector} from "react-redux";
 import {Workspace} from "../../../models/workspace.ts";
 import {RootState} from "../../../layout-manager/layoutManagerFactory.ts";
-import {DoubleSide, NormalBlending} from "three";
+import {BufferGeometry, DoubleSide, NormalBlending} from "three";
 import {getFurthestIntersectedObject} from "../../../helpers/threeDHelpers.ts";
 import {OUTLINE_COLOR, OUTLINE_THICKNESS} from "../../../../settings/threeDSettings.ts";
 
 interface Props {
-    stl: any;
+    stl: BufferGeometry;
     id: string;
     color: string;
     opacity: number;
