@@ -1,14 +1,15 @@
 import { createTheme } from "@mui/material/styles";
 import { vars } from "./variables.ts";
-import maximizeIcon from "../assets/maximize_icon.svg";
-import minimizeIcon from "../assets/minimize_icon.svg";
 const {
   primaryFont,
   primary500,
   primaryPurple600,
   gray800,
   white,
-  baseContainerBg,
+  brand600,
+  success50,
+  success200,
+  success700,
   primaryPurple300,
   primaryPurple700,
   gray600,
@@ -48,8 +49,9 @@ const theme = createTheme({
     },
     h3: {
       fontSize: '1.5rem',
-      fontWeight: 500,
+      fontWeight: 600,
       lineHeight: '150%',
+      color: gray800,
     },
     body1: {
       fontSize: '0.875rem',
@@ -58,7 +60,13 @@ const theme = createTheme({
       color: gray700,
     },
     body2: {
-      color: gray700,
+      color: gray500,
+      fontSize: '0.875rem',
+    },
+    h4: {
+      fontSize: '1rem',
+      fontWeight: 500,
+      color: gray600,
     },
     h5: {
       fontSize: '1rem',
@@ -66,12 +74,12 @@ const theme = createTheme({
       lineHeight: '1.5rem'
     },
     h6: {
-      fontSize: '0.875rem',
-      fontWeight:600,
-      color: gray800,
+      fontSize: '1rem',
+      fontWeight:400,
+      color: gray600,
     },
     caption: {
-      fontSize: '0.875rem',
+      fontSize: '0.75rem',
       fontWeight: 400,
       color: gray700A,
     },
@@ -117,75 +125,22 @@ const theme = createTheme({
           padding: 0;
         }
       body {
-          background: ${gray800};
+          background: ${gray50};
           scrollbar-width: thin;
           scrollbar-color: ${gray200S} transparent;
+      }
+      .MuiContainer-center {
+        margin: auto;
+      }
+      .MuiBox-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        padding: 3.5rem 1.5rem 1.5rem;
+        .MuiBox-title {
+          margin-top: 3rem
         }
-      .MuiContainer {
-          display: flex;
-          width: 100%;
-          background: ${baseContainerBg};
-          height: calc(100vh - 3.25rem);
-          margin-top: 3.25rem;
-          overflow: hidden;
-          padding: 1rem;
-          border-radius: 1rem 1rem 0 0;
-        }
-        .MuiContainer:has(> .database-summary) {
-          padding: 0;
-          overflow: auto
-        }
-        .flexlayout__layout {
-          overflow: inherit;
-        }
-        .flexlayout__border_bottom {
-          border: 0;
-          background: transparent;
-        }
-        .flexlayout__tab {
-          margin-top: 0.4em;
-          border-radius: 0 0.5rem 0.5rem 0.5rem;
-        }
-        .flexlayout__tabset {
-          background: transparent;
-          .flexlayout__tabset_tabbar_outer_top {
-            border-bottom: none;
-          }
-          .flexlayout__tab_toolbar_button-min {
-            background: transparent url(${maximizeIcon}) no-repeat right;
-            cursor: pointer;
-          }
-          .flexlayout__tab_toolbar_button-max {
-            background: transparent url(${minimizeIcon}) no-repeat right;
-            cursor: pointer;
-          }
-          .flexlayout__tabset_tabbar_outer {
-            background-color: transparent;
-            height: 2rem !important;
-            .flexlayout__tab_toolbar_button {
-              &:focus {
-                outline: 0;
-              }
-            }
-            .flexlayout__tab_button {
-              margin: 0;
-              border-radius: 0.5rem 0.5rem 0rem 0rem;
-              padding: 0.25rem 0.5rem;
-              margin-right: 0.25rem;
-              color: ${gray800};
-              min-width: 9.375rem;
-              font-size: 0.875rem;
-              font-weight: 600;
-              &.flexlayout__tab_button--selected {
-                background-color: ${white};
-                &:hover {
-                  background-color: ${white};
-                }
-              }
-            }
-          }
-        }
-
+      }
       `
     },
     MuiChip: {
@@ -237,11 +192,71 @@ const theme = createTheme({
         }
       }
     },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: '0.75rem',
+          border: `1px solid ${gray100}`,
+        }
+      }
+    },
+    MuiCardActionArea: {
+      styleOverrides: {
+        root: {
+          height: '100%',
+          '& .MuiCardContent-root': {
+            height: '100%',
+            background: gray25,
+            overflow: 'hidden',
+            padding: '1.5rem',
+            '&:hover': {
+              background: gray100,
+            }
+          },
+          '& .MuiBox-root': {
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: '1rem',
+            alignItems: 'flex-start',
+            '& .MuiTypography-caption': {
+              border: `1px solid black`,
+              borderRadius: '2.5rem',
+              padding: '0.1rem 0.5rem',
+              fontWeight: '500',
+              '&.success': {
+                background:  success50,
+                borderColor: success200,
+                color: success700,
+              },
+              '&.info': {
+                background:  primaryBlue50,
+                borderColor: primaryBlue200,
+                color: primaryBlue700,
+                
+              }
+            }
+          }
+        }
+      }
+    },
     MuiAppBar: {
       styleOverrides : {
         root: {
-          background: gray800,
-          boxShadow: 'none',
+          background: white,
+          '& .MuiApp-button': {
+            background: white,
+            border: `1px solid ${gray200}`,
+            color: gray700,
+            fontSize: '0.875rem',
+            fontWeight: 700,
+            padding: '0.45rem 1rem',
+            borderRadius: '0.5rem',
+            '&:hover, &:focus': {
+              background: 'none',
+              outline: 0,
+              border: `1px solid ${gray200}`,
+            }
+          }
         }
       }
     },
@@ -268,35 +283,21 @@ const theme = createTheme({
     MuiToolbar: {
       styleOverrides: {
         root: {
-          minHeight: '3.25rem !important',
-          '& .MuiButton-root': {
-            color: 'white',
-            margin: 0,
-            fontWeight: 500,
-            marginRight: 6,
-            border: '0.0625rem solid transparent',
-            textTransform: 'none',
-            padding: '0.2rem 0.875rem',
-            '&.active': {
-              background: gray700,
-              borderColor: primaryPurple700,
-            },
-            '&:focus': {
-              borderColor: 'transparent',
-              outline: '0.25rem solid #9B18D83D',
-            },
-            '&:hover': {
-              background: gray700,
-            },
-          }
         }
       }
     },
     MuiButtonBase: {
       styleOverrides: {
         root: {
+          borderRadius: '0.5rem',
           '& .MuiTouchRipple-root' : {
             display: 'none',
+          },
+          '&.MuiButton-summary': {
+            background: gray100,
+            color: brand600,
+            marginTop: '1.5rem',
+            borderRadius: '0.5rem',
           },
           '&:focus': {
             outline: 0,
