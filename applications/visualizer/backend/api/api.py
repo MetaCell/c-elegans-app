@@ -172,19 +172,19 @@ def get_all_cells(request):
 #     # TODO
 
 
-@api.get("/live", tags=["heathcheck"])
+@api.get("/live", tags=["healthcheck"])
 async def live(request):
     """Test if application is healthy"""
     return "I'm alive!"
 
 
-@api.get("/ping", tags=["heathcheck"])
+@api.get("/ping", tags=["healthcheck"])
 async def ping(request):
     """test the application is up"""
     return "Ping!"
 
 
-@api.get("/ready", tags=["heathcheck"])
+@api.get("/ready", tags=["healthcheck"])
 async def ready(request):
     """Test if application is ready to take requests"""
     return "I'm READY!"

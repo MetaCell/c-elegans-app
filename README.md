@@ -4,7 +4,7 @@ This application is visualizer for various C Elegans brain map datasets, with mu
 
 ## Development Setup
 
-The dev enviroment relies on Python 3.11 and Node >= 18.0.
+The dev environment relies on Python 3.11 and Node >= 18.0.
 For "in situ" tests, this project uses Docker and Docker Compose.
 If you don't want to test the app deployed with Docker Composer, you don't need to install it.
 
