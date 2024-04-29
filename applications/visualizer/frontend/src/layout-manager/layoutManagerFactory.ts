@@ -1,7 +1,16 @@
-import {applyMiddleware, combineReducers, compose, createStore} from "@reduxjs/toolkit";
+import {
+    configureStore,
+    Reducer,
+    PreloadedState,
+    combineReducers,
+    AnyAction,
+} from "@reduxjs/toolkit";
 import {callbacksMiddleware} from '@metacell/geppetto-meta-client/common/middleware/geppettoMiddleware';
 import {initLayoutManager} from "@metacell/geppetto-meta-client/common/layout/LayoutManager";
-import geppettoClientReducer, {clientInitialState, ClientState} from '@metacell/geppetto-meta-client/common/reducer/geppettoClient';
+import geppettoClientReducer, {
+    clientInitialState,
+    ClientState
+} from '@metacell/geppetto-meta-client/common/reducer/geppettoClient';
 import {
     layoutInitialState,
     layout,
@@ -21,44 +30,51 @@ export interface RootState {
     workspaceId: string;
 }
 
-const storeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-
-const workspaceReducer = (state = '', action) => {
+const workspaceReducer = (state: string = '', action) => {
     switch (action.type) {
         case 'SET_WORKSPACE_ID':
             return action.payload;
         default:
             return state;
     }
-}
+};
 
 const initialState = {
     client: clientInitialState,
     layout: layoutInitialState,
-    widgets: {}
+    widgets: {},
+    workspaceId: ""
 };
 
-const staticReducers = {
+
+const rootReducer: Reducer<RootState> = reducerDecorator(combineReducers<RootState>({
     client: geppettoClientReducer,
     layout,
     widgets,
     workspaceId: workspaceReducer
-}
+}));
 
 const getLayoutManagerAndStore = (workspaceId: string) => {
     const layoutManager = initLayoutManager(baseLayout, componentMap, undefined, false);
-    const allMiddlewares = [callbacksMiddleware, layoutManager.middleware];
+    const middlewareEnhancer = (getDefaultMiddleware: ReturnType<typeof getDefaultMiddleware>) =>
+        getDefaultMiddleware<RootState>().concat(callbacksMiddleware, layoutManager.middleware);
 
-    const store = createStore(
-        reducerDecorator(combineReducers({...staticReducers})),
-        {...initialState, workspaceId: workspaceId},
-        storeEnhancers(applyMiddleware(...allMiddlewares))
-    );
+    const storeOptions: {
+        preloadedState: PreloadedState<RootState>;
+        reducer: (state: (RootState | undefined), action: AnyAction) => RootState;
+        middleware: (getDefaultMiddleware: ReturnType<ReturnType<any>>) => any
+    } = {
+        reducer: rootReducer,
+        middleware: middlewareEnhancer,
+        preloadedState: {...initialState, workspaceId: workspaceId} as PreloadedState<RootState>,
+    };
+
+    const store = configureStore(storeOptions);
+
     return {
         layoutManager,
         store
-    }
-
-}
+    };
+};
 
 export default getLayoutManagerAndStore;

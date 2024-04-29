@@ -1,5 +1,5 @@
 import {produce, immerable} from "immer"
-import {createStore} from "@reduxjs/toolkit";
+import {configureStore} from "@reduxjs/toolkit";
 import {NeuronGroup, ViewerSynchronizationPair, ViewerType} from "./models.ts";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory.ts";
 
@@ -15,7 +15,7 @@ export class Workspace {
     synchronizations: Record<ViewerSynchronizationPair, boolean>;
     neuronGroups: Record<string, NeuronGroup>;
 
-    store: ReturnType<typeof createStore>;
+    store: ReturnType<typeof configureStore>;
     layoutManager: unknown;
 
     updateContext: (workspace: Workspace) => void;
