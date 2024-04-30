@@ -65,6 +65,8 @@ def install_cloud_harness():
             "feature/CH-100",
             "https://github.com/MetaCell/cloud-harness.git",
         )
+    else:
+        sh.git["-C", "cloud-harness"].pull()
 
     print("Installing cloud-harness")
     sh.bash("cloud-harness/install.sh")
@@ -118,7 +120,7 @@ if __name__ == "__main__":
     install_cloud_harness()
     generate_k8_dev_deployment()
     generate_k8_prod_deployment()
-    generate_local_dev_deployment
+    generate_local_dev_deployment()
 
     install_backend_dependencies()
     install_frontend_dependencies()
