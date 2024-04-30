@@ -72,7 +72,6 @@ def install_cloud_harness():
 
 # fmt: off
 def generate_local_dev_deployment():
-    # harness-deployment cloud-harness . -l -d javelin.local -dtls -n javelin -e local -i dashboard
     sh("harness-deployment",
        "cloud-harness", ".",
        "-l",
@@ -85,26 +84,22 @@ def generate_local_dev_deployment():
     )
 
 
-def generate_dev_deployment():
-    # harness-deployment cloud-harness . -l -d javelin.local -dtls -n javelin -e local -i dashboard
+def generate_k8_dev_deployment():
     sh("harness-deployment",
        "cloud-harness", ".",
        "-n", "celegans",
        "-e", "dev",
        "-i", "visualizer",
-       "--docker-compose"
     )
 
 
 
-def generate_prod_deployment():
-    # harness-deployment cloud-harness . -l -d javelin.local -dtls -n javelin -e local -i dashboard
+def generate_k8_prod_deployment():
     sh("harness-deployment",
        "cloud-harness", ".",
        "-n", "celegans",
        "-e", "prod",
        "-i", "visualizer",
-       "--docker-compose"
     )
 # fmt: on
 
@@ -121,9 +116,9 @@ def install_frontend_dependencies():
 if __name__ == "__main__":
     check_venv_activate()
     install_cloud_harness()
+    generate_k8_dev_deployment()
+    generate_k8_prod_deployment()
     generate_local_dev_deployment
-    # generate_dev_deployment()
-    # generate_prod_deployment()
 
     install_backend_dependencies()
     install_frontend_dependencies()

@@ -1,0 +1,251 @@
+components:
+  schemas:
+    Dataset:
+      properties:
+        axes:
+          anyOf:
+          - type: object
+          - type: 'null'
+          title: Axes
+        collection:
+          maxLength: 20
+          title: Collection
+          type: string
+        description:
+          title: Description
+          type: string
+        id:
+          title: Id
+          type: string
+        name:
+          maxLength: 50
+          title: Name
+          type: string
+        time:
+          title: Time
+          type: number
+        type:
+          maxLength: 50
+          title: Type
+          type: string
+        visualTime:
+          title: Visual Time
+          type: number
+      required:
+      - id
+      - collection
+      - name
+      - description
+      - time
+      - visualTime
+      - type
+      title: Dataset
+      type: object
+    ErrorMessage:
+      properties:
+        detail:
+          title: Detail
+          type: string
+      required:
+      - detail
+      title: ErrorMessage
+      type: object
+    Input:
+      properties:
+        page:
+          default: 1
+          minimum: 1
+          title: Page
+          type: integer
+      title: Input
+      type: object
+    Neuron:
+      properties:
+        embryonic:
+          default: false
+          title: Embryonic
+          type: boolean
+        inhead:
+          default: false
+          title: Inhead
+          type: boolean
+        intail:
+          default: false
+          title: Intail
+          type: boolean
+        name:
+          title: Name
+          type: string
+        nclass:
+          maxLength: 30
+          title: Nclass
+          type: string
+        neurotransmitter:
+          maxLength: 10
+          title: Neurotransmitter
+          type: string
+        type:
+          maxLength: 10
+          title: Type
+          type: string
+      required:
+      - name
+      - nclass
+      - neurotransmitter
+      - type
+      title: Neuron
+      type: object
+    PagedNeuron:
+      properties:
+        count:
+          title: Count
+          type: integer
+        items:
+          items:
+            $ref: '#/components/schemas/Neuron'
+          title: Items
+          type: array
+      required:
+      - items
+      - count
+      title: PagedNeuron
+      type: object
+info:
+  description: ''
+  title: C. Elegans Visualizer
+  version: 1.0.0
+openapi: 3.1.0
+paths:
+  /api/cells:
+    get:
+      description: Returns all the cells (neurons) from the DB
+      operationId: get_all_cells
+      parameters:
+      - in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          title: Page
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedNeuron'
+          description: OK
+      summary: Get All Cells
+      tags:
+      - neurons
+  /api/datasets:
+    get:
+      description: Returns all the datasets from the DB
+      operationId: get_all_datasets
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Dataset'
+                title: Response
+                type: array
+          description: OK
+      summary: Get All Datasets
+      tags:
+      - datasets
+  /api/datasets/{dataset}:
+    get:
+      description: Returns a specific dataset
+      operationId: get_dataset
+      parameters:
+      - in: path
+        name: dataset
+        required: true
+        schema:
+          title: Dataset
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+          description: OK
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Not Found
+      summary: Get Dataset
+      tags:
+      - datasets
+  /api/datasets/{dataset}/neurons:
+    get:
+      description: Returns all the neurons of a dedicated dataset
+      operationId: get_dataset_neurons
+      parameters:
+      - in: path
+        name: dataset
+        required: true
+        schema:
+          title: Dataset
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Neuron'
+                title: Response
+                type: array
+          description: OK
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Not Found
+      summary: Get Dataset Neurons
+      tags:
+      - datasets
+  /api/live:
+    get:
+      description: Test if application is healthy
+      operationId: live
+      parameters: []
+      responses:
+        '200':
+          description: OK
+      summary: Live
+      tags:
+      - healthcheck
+  /api/ping:
+    get:
+      description: test the application is up
+      operationId: ping
+      parameters: []
+      responses:
+        '200':
+          description: OK
+      summary: Ping
+      tags:
+      - healthcheck
+  /api/ready:
+    get:
+      description: Test if application is ready to take requests
+      operationId: ready
+      parameters: []
+      responses:
+        '200':
+          description: OK
+      summary: Ready
+      tags:
+      - healthcheck
+servers: []
+
