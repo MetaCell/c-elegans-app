@@ -30,7 +30,8 @@
   },
   "include": [
     "src",
-    "types/**/*.d.ts"
+    "additional.d.ts",
+    "types/**/*.d.ts",
   ],
   "exclude": [
     "src/layout-manager/layoutManagerFactory.ts"
