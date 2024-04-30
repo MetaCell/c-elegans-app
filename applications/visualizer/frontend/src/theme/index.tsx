@@ -132,10 +132,16 @@ const theme = createTheme({
       .MuiContainer-center {
         margin: auto;
       }
+      .MuiFooterImage {
+        img {
+          display: block;
+          font-size: 0;
+        }
+      }
       .MuiBox-container {
         display: flex;
         flex-direction: column;
-        min-height: 100vh;
+        min-height: calc(100vh - 50px);
         padding: 3.5rem 1.5rem 1.5rem;
         .MuiBox-title {
           margin-top: 3rem
@@ -243,20 +249,7 @@ const theme = createTheme({
       styleOverrides : {
         root: {
           background: white,
-          '& .MuiApp-button': {
-            background: white,
-            border: `1px solid ${gray200}`,
-            color: gray700,
-            fontSize: '0.875rem',
-            fontWeight: 700,
-            padding: '0.45rem 1rem',
-            borderRadius: '0.5rem',
-            '&:hover, &:focus': {
-              background: 'none',
-              outline: 0,
-              border: `1px solid ${gray200}`,
-            }
-          }
+        
         }
       }
     },
@@ -366,13 +359,24 @@ const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          boxShadow: buttonShadow,
+          borderRadius: '0.5rem',
           fontSize: '0.875rem',
           fontWeight: 600,
-          lineHeight: '1.25rem',
-          padding: '0.5rem 0.75rem',
-          borderRadius: '0.25rem',
-          gap: '0.25rem',
+          padding: '0.34rem 1rem',
+        
+        },
+        outlinedSecondary: {
+          borderColor: gray200,
+          color: gray700,
+          '&:hover': {
+            background: 'none',
+            borderColor: gray200,
+          },
+          '&:focus': {
+            background: 'none',
+            borderColor: gray300,
+            outline: '4px solid rgba(0, 0, 0, 0.07)',
+          }
         },
         contained: {
           boxShadow: 'none',

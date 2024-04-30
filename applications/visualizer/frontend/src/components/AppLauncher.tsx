@@ -2,6 +2,7 @@ import React from 'react';
 import { Typography, Card, CardContent, CardActionArea, Grid, Container, Box, AppBar, Toolbar, Button } from '@mui/material';
 import { createEmptyWorkspace } from "../helpers/initialWorkspacesHelper.ts";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
+import footerImage from '../assets/summary-neurons.png';
 
 function AppLauncher() {
 
@@ -33,7 +34,7 @@ function AppLauncher() {
                             sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}
                         >
                         </Typography>
-                        <Button className='MuiApp-button'>About Zhen Lab</Button>
+                        <Button color='secondary' variant='outlined'>About Zhen Lab</Button>
                     </Toolbar>
                 </AppBar>
                 <Box className="MuiBox-container">
@@ -99,6 +100,9 @@ function AppLauncher() {
                             </Grid>
                         </Grid>
                     </Container>
+                </Box>
+                <Box px={2} className="MuiFooterImage">
+                    <img src={footerImage} alt='footerimage' width="100%" height="48"/>
                 </Box>
             </Box>
         </>
