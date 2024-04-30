@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-FRONTENT_FOLDER="applications/visualizer/frontend"
+FRONTENT_FOLDER="applications/celegans/frontend"
 cd "${FRONTENT_FOLDER}"
 
 yarn dev

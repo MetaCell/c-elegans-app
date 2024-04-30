@@ -20,7 +20,7 @@ export default defineConfig(({ command, mode }) => {
   const port = process.env.PORT || PORT
   const theDomain = process.env.DOMAIN || 'http://localhost:8000';
 
-  const replaceHost = (uri: string, appName: string) => (uri.includes("visualizer") && uri.replace("visualizer", appName + '.' + theDomain)) || uri
+  const replaceHost = (uri: string, appName: string) => (uri.includes("celegans") && uri.replace("celegans", appName + '.' + theDomain)) || uri
 
   return {
     ...defaultConfig,
@@ -32,7 +32,7 @@ export default defineConfig(({ command, mode }) => {
       port: Number(port),
       proxy: {
         '/api': {
-          target: replaceHost(theDomain, 'visualizer'),
+          target: replaceHost(theDomain, 'celegans'),
           changeOrigin: isDev,
           secure: !isDev
         }

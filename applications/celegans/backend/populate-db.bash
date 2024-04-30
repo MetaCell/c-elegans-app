@@ -7,7 +7,7 @@ cd "${PARENT_PATH}"
 
 case "$1" in
     "compose")
-      ENV="visualizer"
+      ENV="celegans"
       echo "In postgresql db"
       ;;
     *)

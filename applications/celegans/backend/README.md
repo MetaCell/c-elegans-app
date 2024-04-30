@@ -19,7 +19,7 @@ backend
 │   └── openapi.json         # The openapi.json generated from the routes defined in "api.py"
 ├── populate-db.bash         # the script to populate the DB
 ├── tests/**            # The directory that contains the tests
-└── visualizer
+└── celegans
     ├── asgi.py
     ├── models.py
     ├── settings             # backend settings

@@ -3,7 +3,7 @@ from pathlib import Path
 import sys
 
 HERE = Path(__file__).resolve()
-APP_FOLDER = Path("applications") / "visualizer"
+APP_FOLDER = Path("applications") / "celegans"
 
 
 # Helper for easily creating command
@@ -75,11 +75,11 @@ def generate_local_dev_deployment():
     sh("harness-deployment",
        "cloud-harness", ".",
        "-l",
-       "-d", "celegans.local",
+       "-d", "local",
        "-dtls",
        "-n", "celegans",
        "-e", "dev",
-       "-i", "visualizer",
+       "-i", "celegans",
        "--docker-compose"
     )
 
@@ -89,7 +89,7 @@ def generate_k8_dev_deployment():
        "cloud-harness", ".",
        "-n", "celegans",
        "-e", "dev",
-       "-i", "visualizer",
+       "-i", "celegans",
     )
 
 
@@ -99,7 +99,7 @@ def generate_k8_prod_deployment():
        "cloud-harness", ".",
        "-n", "celegans",
        "-e", "prod",
-       "-i", "visualizer",
+       "-i", "celegans",
     )
 # fmt: on
 
@@ -116,9 +116,9 @@ def install_frontend_dependencies():
 if __name__ == "__main__":
     check_venv_activate()
     install_cloud_harness()
-    generate_k8_dev_deployment()
-    generate_k8_prod_deployment()
-    generate_local_dev_deployment
+    # generate_k8_dev_deployment()
+    # generate_k8_prod_deployment()
+    generate_local_dev_deployment()
 
     install_backend_dependencies()
     install_frontend_dependencies()
