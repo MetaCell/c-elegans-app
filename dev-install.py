@@ -118,8 +118,8 @@ def install_frontend_dependencies():
 if __name__ == "__main__":
     check_venv_activate()
     install_cloud_harness()
-    generate_k8_dev_deployment()
-    generate_k8_prod_deployment()
+    # generate_k8_dev_deployment()
+    # generate_k8_prod_deployment()
     generate_local_dev_deployment()
 
     install_backend_dependencies()
