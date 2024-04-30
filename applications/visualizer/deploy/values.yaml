@@ -27,7 +27,7 @@ harness:
   readinessProbe: {path: /api/ready}
   secured: false
   service: {auto: true, port: 8080}
-  subdomain: celegans
+  subdomain: visualizer
   test:
     api:
       autotest: true
@@ -35,8 +35,8 @@ harness:
       enabled: true
   # uri_role_mapping:
   # - require-any-role: true
-  #   roles: ['celegans:celegans-administrator', 'celegans:celegans-manager',
-  #     'celegans:celegans-user']
+  #   roles: ['visualizer:visualizer-administrator', 'visualizer:visualizer-manager',
+  #     'visualizer:visualizer-user']
   #   uri: /*
   # use_services:
   # - {name: common}

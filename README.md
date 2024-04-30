@@ -78,7 +78,7 @@ skaffold build
 docker compose -f deployment/docker-compose.yaml up
 ```
 
-Then add `celegans.local` for `127.0.0.1` in your `/etc/hosts`, and navigate with your browser to [http://celegans.local](http://celegans.local).
+Then add `visualizer.celegans.local` for `127.0.0.1` in your `/etc/hosts`, and navigate with your browser to [http://visualizer.celegans.local](http://visualizer.celegans.local).
 
 
 ## Populate the DB

@@ -1,6 +1,0 @@
-harness:
-  users:
-  - clientRoles: []
-    email: celegans@testuser.com
-    realmRoles: []
-    username: celegans

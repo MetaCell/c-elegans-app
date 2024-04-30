@@ -1,0 +1,6 @@
+harness:
+  users:
+  - clientRoles: []
+    email: visualizer@testuser.com
+    realmRoles: []
+    username: visualizer

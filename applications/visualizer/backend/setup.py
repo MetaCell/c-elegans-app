@@ -19,12 +19,12 @@ REQUIRES = []
 setup(
     name=NAME,
     version=VERSION,
-    description="CElegans Visualizer",
+    description="visualizer",
     author_email="developers@metacell.us",
     url="",
-    keywords=["OpenAPI", "visualizer", "celegans"],
+    keywords=["OpenAPI", "visualizer"],
     install_requires=REQUIRES,
     packages=find_packages(),
     include_package_data=True,
-    long_description="CElegans Visualizer",
+    long_description="visualizer",
 )
