@@ -1,10 +1,9 @@
-import React from 'react';
-import {Typography, Card, CardContent, CardActionArea, Grid, Container} from '@mui/material';
-import {useGlobalContext} from "../contexts/GlobalContext.tsx";
+import { Typography, Card, CardContent, CardActionArea, Grid, Container } from '@mui/material';
+import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 
 function AppLauncher() {
 
-    const {workspaces, addWorkspace, setCurrentWorkspace} = useGlobalContext();
+    const { workspaces, addWorkspace, setCurrentWorkspace } = useGlobalContext();
 
 
     const handleTemplateClick = () => {
@@ -24,14 +23,14 @@ function AppLauncher() {
     };
 
     return (
-        <Container maxWidth="md" style={{marginTop: '50px'}}>
+        <Container maxWidth="md" style={{ marginTop: '50px' }}>
             <Typography variant="h3" component="h1" gutterBottom align="center">
                 Welcome to C. Elegans
             </Typography>
             <Typography variant="h6" component="p" gutterBottom align="center">
                 Choose one of the options below to get started.
             </Typography>
-            <Grid container spacing={4} justifyContent="center" style={{marginTop: '20px'}}>
+            <Grid container spacing={4} justifyContent="center" style={{ marginTop: '20px' }}>
                 <Grid item xs={12} sm={6} md={4}>
                     <Card>
                         <CardActionArea onClick={handleTemplateClick}>

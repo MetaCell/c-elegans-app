@@ -1,7 +1,7 @@
 {
   "name": "c-elegans-app",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -25,7 +25,7 @@
     "@react-three/drei": "^9.105.4",
     "@react-three/fiber": "^8.16.2",
     "@reduxjs/toolkit": "^2.2.3",
-    "@types/three": "^0.163.0",
+    "@types/three": "^0.164.0",
     "file-saver": "^2.0.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

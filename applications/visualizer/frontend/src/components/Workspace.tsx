@@ -1,20 +1,21 @@
-import {useDispatch, useSelector} from "react-redux";
-import React, {useEffect, useState} from "react";
-import {ThemeProvider} from '@mui/material/styles';
-import {Box, CircularProgress, CssBaseline} from "@mui/material";
-import {addWidget} from '@metacell/geppetto-meta-client/common/layout/actions';
+import { useDispatch, useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { ThemeProvider } from '@mui/material/styles';
+import { Box, CircularProgress, CssBaseline } from "@mui/material";
+import { addWidget } from '@metacell/geppetto-meta-client/common/layout/actions';
 import '@metacell/geppetto-meta-ui/flex-layout/style/dark.scss';
 import theme from '../theme';
-import {useGlobalContext} from "../contexts/GlobalContext.tsx";
-import {rightComponentWidget, threeDViewerWidget} from "../layout-manager/widgets.ts";
+import { useGlobalContext } from "../contexts/GlobalContext.tsx";
+import { rightComponentWidget, threeDViewerWidget } from "../layout-manager/widgets.ts";
+import { RootState } from "../layout-manager/layoutManagerFactory.ts";
 
 
 function Workspace() {
 
     const dispatch = useDispatch();
-    const {workspaces} = useGlobalContext();
+    const { workspaces } = useGlobalContext();
 
-    const workspaceId = useSelector(state => state.workspaceId);
+    const workspaceId = useSelector((state: RootState) => state.workspaceId);
     const [LayoutComponent, setLayoutComponent] = useState<React.ComponentType | undefined>(undefined);
 
 
@@ -38,11 +39,11 @@ function Workspace() {
     return (
         <>
             <ThemeProvider theme={theme}>
-                <CssBaseline/>
+                <CssBaseline />
                 {isLoading ?
-                    <CircularProgress/> :
+                    <CircularProgress /> :
                     <Box className="layout-manager-container">
-                        <LayoutComponent/>
+                        <LayoutComponent />
                     </Box>
                 }
             </ThemeProvider>
