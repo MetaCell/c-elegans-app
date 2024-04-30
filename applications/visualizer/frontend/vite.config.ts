@@ -18,7 +18,7 @@ export default defineConfig(({ command, mode }) => {
   const theDomain = process.env.DOMAIN || 'http://localhost:8000';
 
   const replaceHost = (uri: string, appName: string) => (uri.includes("visualizer") && uri.replace("visualizer", appName + '.' + theDomain)) || uri
-
+  console.log("XXX", replaceHost(theDomain, 'visualizer'))
   return {
     ...defaultConfig,
     build: {
@@ -29,6 +29,11 @@ export default defineConfig(({ command, mode }) => {
       port: Number(port),
       proxy: {
         '/api': {
+          target: replaceHost(theDomain, 'visualizer'),
+          changeOrigin: isDev,
+          secure: !isDev
+        },
+        '/emdata': {
           target: replaceHost(theDomain, 'visualizer'),
           changeOrigin: isDev,
           secure: !isDev

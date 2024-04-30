@@ -1,9 +1,10 @@
-import {Box, Typography} from "@mui/material";
+import { Box, Typography } from "@mui/material";
 
-import {useGlobalContext} from "../contexts/GlobalContext.tsx";
+import { useGlobalContext } from "../contexts/GlobalContext.tsx";
+import EMStackViewer from "./EMStackTilesViewer.tsx";
 
 export default function LeftComponent() {
-    const {datasets, neurons} = useGlobalContext();
+    const { datasets, neurons } = useGlobalContext();
 
     const datasetArray = datasets ? Object.values(datasets) : [];
     const neuronArray = neurons ? Object.values(neurons) : [];
@@ -28,6 +29,7 @@ export default function LeftComponent() {
                     ))
                 }
             </Box>
+            <EMStackViewer />
         </Box>
     );
 }

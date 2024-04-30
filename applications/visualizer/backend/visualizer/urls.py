@@ -21,11 +21,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from api.api import api
-from .views import index
+from .views import index, get_tile
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", api.urls),
     *static(settings.STATIC_URL, document_root=settings.STATIC_ROOT),
+    re_path(
+        r"^emdata/(?P<slice>\d+)/(?P<x>\d+)_(?P<y>\d+)_(?P<zoom>\d+).jpg", get_tile
+    ),
     re_path(r"(?P<path>.*)", index, name="index"),
 ]
