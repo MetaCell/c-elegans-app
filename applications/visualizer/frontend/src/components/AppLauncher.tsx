@@ -1,12 +1,11 @@
 import React from 'react';
 import { Typography, Card, CardContent, CardActionArea, Grid, Container, Box, AppBar, Toolbar, Button } from '@mui/material';
-import { createEmptyWorkspace } from "../helpers/initialWorkspacesHelper.ts";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import footerImage from '../assets/summary-neurons.png';
 
 function AppLauncher() {
 
-    const { workspaces, addWorkspace, switchWorkspace } = useGlobalContext();
+    const { workspaces, addWorkspace, setCurrentWorkspace } = useGlobalContext();
 
 
     const handleTemplateClick = () => {
@@ -14,9 +13,11 @@ function AppLauncher() {
     };
 
     const handleBlankClick = () => {
-        const workspace = createEmptyWorkspace(`Workspace ${Object.keys(workspaces).length + 1}`)
-        addWorkspace(workspace)
-        switchWorkspace(workspace.id)
+        const workspaceId = `workspace-${Date.now()}`;
+        const workspaceName = `Workspace ${Object.keys(workspaces).length + 1}`;
+
+        addWorkspace(workspaceId, workspaceName)
+        setCurrentWorkspace(workspaceId)
     };
 
     const handlePasteUrlClick = () => {

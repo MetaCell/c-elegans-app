@@ -14,5 +14,5 @@ export type { Neuron } from './models/Neuron';
 export type { PagedNeuron } from './models/PagedNeuron';
 
 export { DatasetsService } from './services/DatasetsService';
-export { HeathcheckService } from './services/HeathcheckService';
+export { HealthcheckService } from './services/HealthcheckService';
 export { NeuronsService } from './services/NeuronsService';
