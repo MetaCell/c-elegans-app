@@ -170,7 +170,7 @@
         },
         "description": "Test if application is healthy",
         "tags": [
-          "heathcheck"
+          "healthcheck"
         ]
       }
     },
@@ -186,7 +186,7 @@
         },
         "description": "test the application is up",
         "tags": [
-          "heathcheck"
+          "healthcheck"
         ]
       }
     },
@@ -202,7 +202,7 @@
         },
         "description": "Test if application is ready to take requests",
         "tags": [
-          "heathcheck"
+          "healthcheck"
         ]
       }
     }
