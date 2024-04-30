@@ -3,10 +3,9 @@ FROM node:21.7 as frontend
 ENV APP_DIR=/app
 
 WORKDIR ${APP_DIR}
-RUN npm install typescript -g
 COPY frontend/package.json ${APP_DIR}
 COPY frontend/yarn.lock ${APP_DIR}
-RUN yarn install --production --frozen-lockfile
+RUN yarn install --frozen-lockfile
 
 COPY frontend ${APP_DIR}
 RUN npm run build
