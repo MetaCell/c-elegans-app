@@ -2,7 +2,10 @@ import { CSSObject, Theme } from "@mui/material/styles";
 import { Box, Drawer, Stack } from "@mui/material";
 import { vars } from "../../theme/variables.ts";
 import IconButton from "@mui/material/IconButton";
-import { DataSetsIcon, GrainIcon, SidebarExpandIcon } from "../../icons";
+import { DataSetsIcon, NeuronsIcon, SidebarExpandIcon } from "../../icons";
+import { useState } from "react";
+import DataSets from "./DataSets.tsx";
+import Neurons from "./Neurons.tsx";
 
 const { gray100, white, gray200, gray50, buttonShadow } = vars;
 
@@ -73,6 +76,7 @@ const Sidebar = ({
   drawerHeight: string;
   drawerWidth: string;
 }) => {
+  const [content, setContent] = useState("dataSets");
   const handleDrawerOpen = () => {
     setSidebarOpen(true);
   };
@@ -81,6 +85,9 @@ const Sidebar = ({
     setSidebarOpen(false);
   };
 
+  const handleToggleContent = (e, type) => {
+    setContent(type);
+  };
   return (
     <Drawer
       variant="permanent"
@@ -111,29 +118,40 @@ const Sidebar = ({
         handleDrawerOpen={handleDrawerOpen}
         drawerHeight={drawerHeight}
       />
-      <Stack direction="row" height={1}>
+      <Box
+        sx={{
+          display: "flex",
+        }}
+        height={1}
+      >
         <Stack spacing=".75rem" borderRight={`1px solid ${gray100}`} p=".75rem">
           <IconButton
             sx={{
               padding: ".38rem",
+              borderRadius: content === "dataSets" ? "0.5rem" : "initial",
+              background: content === "dataSets" ? gray50 : "initial",
               "&:hover": {
                 borderRadius: "0.5rem",
                 background: gray50,
               },
             }}
+            onClick={(e) => handleToggleContent(e, "dataSets")}
           >
             <DataSetsIcon />
           </IconButton>
           <IconButton
             sx={{
               padding: ".38rem",
+              borderRadius: content === "neurons" ? "0.5rem" : "initial",
+              background: content === "neurons" ? gray50 : "initial",
               "&:hover": {
                 borderRadius: "0.5rem",
                 background: gray50,
               },
             }}
+            onClick={(e) => handleToggleContent(e, "neurons")}
           >
-            <GrainIcon />
+            <NeuronsIcon />
           </IconButton>
         </Stack>
         {sidebarOpen && (
@@ -142,10 +160,10 @@ const Sidebar = ({
               padding: ".75rem",
             }}
           >
-            sidebar content
+            {content === "dataSets" ? <DataSets /> : <Neurons />}
           </Box>
         )}
-      </Stack>
+      </Box>
     </Drawer>
   );
 };

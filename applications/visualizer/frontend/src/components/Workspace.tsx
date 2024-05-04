@@ -49,8 +49,8 @@ function Workspace() {
             className="layout-manager-container"
             sx={{
               padding: sidebarOpen
-                ? "4.5rem .5rem .5rem 22.75rem"
-                : "4.5rem .5rem .5rem 4.5rem",
+                ? "3.5rem .5rem .5rem 22.75rem"
+                : "3.5rem .5rem .5rem 4.5rem",
             }}
           >
             <Layout sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
