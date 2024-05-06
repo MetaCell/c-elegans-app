@@ -14,7 +14,7 @@ const openedMixin = (theme: Theme): CSSObject => ({
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.enteringScreen,
   }),
-  overflowX: "hidden",
+  overflow: "hidden",
 });
 
 const closedMixin = (theme: Theme): CSSObject => ({
@@ -22,7 +22,7 @@ const closedMixin = (theme: Theme): CSSObject => ({
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  overflowX: "hidden",
+  overflow: "hidden",
   width: `3.5rem`,
 });
 const DrawerHeader = ({
@@ -121,8 +121,9 @@ const Sidebar = ({
       <Box
         sx={{
           display: "flex",
+          height: 'calc(100vh - 3.5rem)',
+          overflow: "hidden"
         }}
-        height={1}
       >
         <Stack spacing=".75rem" borderRight={`1px solid ${gray100}`} p=".75rem">
           <IconButton
@@ -155,13 +156,9 @@ const Sidebar = ({
           </IconButton>
         </Stack>
         {sidebarOpen && (
-          <Box
-            sx={{
-              padding: ".75rem",
-            }}
-          >
+          <>
             {content === "dataSets" ? <DataSets /> : <Neurons />}
-          </Box>
+          </>
         )}
       </Box>
     </Drawer>

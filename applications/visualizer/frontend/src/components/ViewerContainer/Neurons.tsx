@@ -1,12 +1,13 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { vars } from "../../theme/variables.ts";
+import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 const { gray900, gray500 } = vars;
 
 const Neurons = () => {
   return (
     <Box>
-      <Stack spacing=".25rem">
-        <Typography
+      <Stack spacing=".25rem" p=".75rem" mb='1.5rem'>
+      <Typography
           variant="body1"
           component="p"
           color={gray900}
@@ -20,6 +21,8 @@ const Neurons = () => {
           all viewers.
         </Typography>
       </Stack>
+      <CustomEntitiesDropdown />
+      
     </Box>
   );
 };
