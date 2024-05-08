@@ -1,14 +1,13 @@
-import {Provider} from "react-redux";
-import {ThemeProvider} from '@mui/material/styles';
-import {Box, CssBaseline} from "@mui/material";
+import { Provider } from "react-redux";
+import { ThemeProvider } from '@mui/material/styles';
+import { Box, CssBaseline } from "@mui/material";
 import '@metacell/geppetto-meta-ui/flex-layout/style/dark.scss';
 import theme from './theme/index.tsx';
 import './App.css'
-import {useGlobalContext} from "./contexts/GlobalContext.tsx";
+import { useGlobalContext } from "./contexts/GlobalContext.tsx";
 import AppLauncher from "./components/AppLauncher.tsx";
 import Workspace from "./components/Workspace.tsx";
-import React from "react";
-import {ViewMode} from "./models/models.ts";
+import { ViewMode } from "./models/models.ts";
 
 function App() {
     const {
@@ -24,7 +23,7 @@ function App() {
     return (
         <>
             <ThemeProvider theme={theme}>
-                <CssBaseline/>
+                <CssBaseline />
                 {hasLaunched ? (
                     <Box className={"layout-manager-container"}>
                         {viewMode === ViewMode.Compare ?
@@ -35,13 +34,13 @@ function App() {
                             ))
                             :
                             <Provider store={workspaces[currentWorkspaceId].store}>
-                                <Workspace/>
+                                <Workspace />
                             </Provider>
                         }
 
                     </Box>
 
-                ) : <AppLauncher/>}
+                ) : <AppLauncher />}
             </ThemeProvider>
         </>
     )

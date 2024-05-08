@@ -5,21 +5,21 @@ ENV APP_DIR=/app
 WORKDIR ${APP_DIR}
 COPY frontend/package.json ${APP_DIR}
 COPY frontend/yarn.lock ${APP_DIR}
-RUN yarn install --production --frozen-lockfile
+RUN yarn install --frozen-lockfile
 
 COPY frontend ${APP_DIR}
 RUN npm run build
 
 #####
 
-# FROM $CLOUDHARNESS_DJANGO
+ARG NO_SOURCEMAP
 FROM python:3.11
 
 ENV MODULE_NAME=backend
 ENV PORT=8080
 ENV WORKERS=2
 ENV APP_DIR=/usr/src/app
-
+ENV NO_SOURCEMAP=${NO_SOURCEMAP}
 ENV PRODUCTION=true
 
 WORKDIR ${APP_DIR}

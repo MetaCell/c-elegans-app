@@ -1,0 +1,9 @@
+---
+apiVersion: v1
+appVersion: "0.0.1"
+description: Lunenfeld C.Elegans Visualizer
+name: celegans
+version: 0.0.1
+maintainers:
+  - name: Vincent Aranega
+    email: vincent@metacell.us

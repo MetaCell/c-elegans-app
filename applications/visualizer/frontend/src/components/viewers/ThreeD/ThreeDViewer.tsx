@@ -1,4 +1,4 @@
-import {Suspense, useEffect, useRef, useState} from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import {
     CAMERA_FAR,
     CAMERA_FOV,
@@ -8,10 +8,10 @@ import {
 } from "../../../../settings/threeDSettings.ts";
 
 import STLViewer from "./STLViewer.tsx";
-import {Canvas} from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import Loader from "./Loader.tsx";
 import Gizmo from "./Gizmo.tsx";
-import {CameraControls, PerspectiveCamera} from "@react-three/drei";
+import { CameraControls, PerspectiveCamera } from "@react-three/drei";
 import SceneControls from "./SceneControls.tsx";
 
 export interface Instance {
@@ -23,8 +23,9 @@ export interface Instance {
 
 
 function ThreeDViewer() {
-
+    // @ts-ignore
     const [showNeurons, setShowNeurons] = useState<boolean>(true);
+    // @ts-ignore
     const [showSynapses, setShowSynapses] = useState<boolean>(true);
     const [instances, setInstances] = useState<Instance[]>([])
     const [isWireframe, setIsWireframe] = useState<boolean>(false)
@@ -52,8 +53,8 @@ function ThreeDViewer() {
 
     return (
         <>
-            <Canvas style={{backgroundColor: SCENE_BACKGROUND}} frameloop={"demand"}>
-                <Suspense fallback={<Loader/>}>
+            <Canvas style={{ backgroundColor: SCENE_BACKGROUND }} frameloop={"demand"}>
+                <Suspense fallback={<Loader />}>
 
                     <PerspectiveCamera
                         makeDefault
@@ -63,20 +64,20 @@ function ThreeDViewer() {
                         near={CAMERA_NEAR}
                         far={CAMERA_FAR}
                     />
-                    <CameraControls ref={cameraControlRef}/>
+                    <CameraControls ref={cameraControlRef} />
 
-                    <ambientLight color={LIGHT_1_COLOR}/>
-                    <directionalLight color={LIGHT_2_COLOR} position={LIGHT_2_POSITION}/>
+                    <ambientLight color={LIGHT_1_COLOR} />
+                    <directionalLight color={LIGHT_2_COLOR} position={LIGHT_2_POSITION} />
 
-                    <Gizmo/>
+                    <Gizmo />
 
-                    <STLViewer instances={instances} isWireframe={isWireframe}/>
+                    <STLViewer instances={instances} isWireframe={isWireframe} />
                 </Suspense>
             </Canvas>
             <SceneControls
                 cameraControlRef={cameraControlRef}
                 isWireframe={isWireframe}
-                setIsWireframe={setIsWireframe}/>
+                setIsWireframe={setIsWireframe} />
         </>
     );
 }

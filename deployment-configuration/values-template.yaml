@@ -1,0 +1,5 @@
+domain: celegans.metacell.us
+mainapp: visualizer
+tls: false  # temporary
+backup:
+  active: false
