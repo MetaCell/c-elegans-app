@@ -33,8 +33,7 @@ const EMStackViewer = () => {
         if (!indexLayer.current) {
             return
         }
-        // slice.current--;
-        setSlice(slice + 1)
+        setSlice(slice - 1)
         mapRef.current?.removeLayer(indexLayer.current)
         mapRef.current?.addLayer(
             new TileLayer({
@@ -63,9 +62,9 @@ const EMStackViewer = () => {
             target: "mapdiv",
             layers: [
                 indexLayer.current,
-                new TileLayer({
-                    source: new TileDebug(),
-                }),
+                // new TileLayer({
+                //     source: new TileDebug(),
+                // }),
             ],
             view: new View({
                 center: [0, 0],
