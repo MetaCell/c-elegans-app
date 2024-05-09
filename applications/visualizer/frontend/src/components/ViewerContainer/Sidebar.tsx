@@ -95,7 +95,6 @@ const Sidebar = ({
         flexShrink: 0,
         whiteSpace: "nowrap",
         boxSizing: "border-box",
-        zIndex: 20000,
         "& .MuiPaper-root": {
           borderColor: gray100,
         },

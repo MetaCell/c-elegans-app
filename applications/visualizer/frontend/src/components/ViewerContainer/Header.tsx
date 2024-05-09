@@ -17,7 +17,6 @@ const Header = ({
       component="nav"
       position="fixed"
       sx={(theme: Theme) => ({
-        zIndex: theme.zIndex.drawer + 1,
         height: drawerHeight,
         transition: theme.transitions.create(["width", "margin"], {
           easing: theme.transitions.easing.sharp,

@@ -106,7 +106,7 @@ export default function CustomEntitiesDropdown() {
           width: autocompleteOptions.length > 0 ? '55.5rem' : '27.75rem',
           display: 'flex',
           flexDirection: 'column',
-          zIndex: 100000
+          zIndex: 1300
         }}
       >
         <Box display='flex' flex={1} height={autocompleteOptions.length > 0 ? 'calc(100% - 2.75rem)' : 'auto'}>

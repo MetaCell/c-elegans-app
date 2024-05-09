@@ -55,14 +55,31 @@ const IOSSwitch = styled((props: SwitchProps) => (
   },
 }));
 
-const SwitchWidget = ({ data }) => {
+const SwitchWidget = ({ data, showTooltip = true }) => {
   const [checked, setChecked] = useState(false)
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [selectedColor, setSelectedColor] = useState('#000');
   
   const onSwitchChange = (e) => {
     setChecked(e.target.checked)
   }
-
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+    setOpen(true)
+  };
+  
+  
+  const handleClose = () => {
+    setAnchorEl(null);
+    setOpen(false)
+  };
+  
+  const handleColorChange = (color) => {
+    setSelectedColor(color)
+  };
   return (
+    <>
     <FormControlLabel
       control={<IOSSwitch />}
         onChange={onSwitchChange}
@@ -79,28 +96,34 @@ const SwitchWidget = ({ data }) => {
       label={
       <Box>
         <Stack direction="row" alignItems='center' justifyContent="space-between" width={1} spacing='.5rem'>
+          {/*<IconButton onClick={handleClick}>*/}
+          {/*  <ColorLensOutlinedIcon />*/}
+          {/*</IconButton>*/}
           <Typography color={gray600} variant='subtitle1' textWrap='nowrap'>
             {data?.label?.length > 32 ? data?.label.slice(0, 32) + "..." : data?.label}
           </Typography>
-          <Tooltip title={data.helpText} PopperProps={{
-            sx:{
-              zIndex: '100001',
-            }
-          }}>
-            <HelpOutlineIcon sx={{
-              color: gray400B,
-              fontSize: '1rem'
-            }} />
-          </Tooltip>
+          {
+            showTooltip && <Tooltip title={data.helpText}>
+              <HelpOutlineIcon sx={{
+                color: gray400B,
+                fontSize: '1rem'
+              }} />
+            </Tooltip>
+          }
+          
         </Stack>
-        <Typography color={gray500} variant={'caption'}>
-          {data.description}
-        </Typography>
+        {
+          data.description &&  <Typography color={gray500} variant={'caption'}>
+            {data.description}
+          </Typography>
+        }
       </Box>
       
     }
       value={undefined}
     />
+      {/*<PickerWrapper onChange={handleColorChange} selectedColor={selectedColor} onClose={handleColorChange} open={open} anchorEl={anchorEl}/>*/}
+      </>
   );
 };
 
