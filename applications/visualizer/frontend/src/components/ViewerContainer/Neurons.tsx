@@ -1,7 +1,7 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { vars } from "../../theme/variables.ts";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
-import Switch from "./Switch.tsx";
+import CustomListItem from "./CustomListItem.tsx";
 const { gray900, gray500 } = vars;
 
 const Neurons = () => {
@@ -43,7 +43,7 @@ const Neurons = () => {
               {section.title}
             </Typography>
             {section.neurons.map((item, i) => (
-              <Switch key={i} data={item} showTooltip={false} />
+              <CustomListItem key={i} data={item} showTooltip={false} listType='neurons' />
             ))}
           </Stack>
         ))}

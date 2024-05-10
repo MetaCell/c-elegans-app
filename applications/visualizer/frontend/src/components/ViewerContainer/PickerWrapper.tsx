@@ -21,9 +21,7 @@ const PickerWrapper = ({open, anchorEl, onClose, onChange, selectedColor}) => {
                 '& .MuiPopover-paper': {
                     width: '15.375rem',
                     borderRadius: '0.5rem',
-                    height: '18.75rem',
-                    // border: `0.0625rem solid ${headerBorderLeftColor}`,
-                    // background: headerBorderColor,
+                    height: '16rem',
                     boxShadow: '0rem 0.5rem 0.5rem -0.25rem rgba(16, 24, 40, 0.03), 0rem 1.25rem 1.5rem -0.25rem rgba(16, 24, 40, 0.08)',
 
                     '&:after': {

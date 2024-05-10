@@ -1,9 +1,11 @@
-import { Box, Stack, Typography } from "@mui/material";
+import {Box, Stack, Typography, MenuItem, FormControl, IconButton} from "@mui/material";
 import { vars } from "../../theme/variables.ts";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
-import Switch from "./Switch.tsx";
-
-const { gray900, gray500 } = vars;
+import CustomListItem from "./CustomListItem.tsx";
+import Select from '@mui/material/Select';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import FilterListIcon from '@mui/icons-material/FilterList';
+const { gray900, gray500, gray400 } = vars;
 
 const data = [
   {
@@ -41,17 +43,62 @@ const DataSets = () => {
         </Typography>
       </Stack>
       <CustomEntitiesDropdown />
+      <Box p={'.75rem'} display='flex' justifyContent='space-between' alignItems='center'>
+        <FormControl>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={'all'}
+            IconComponent={() => <KeyboardArrowDownIcon />}
+            sx={{
+              minWidth: '2.5rem',
+              border: 0,
+              color: gray400,
+              fontWeight: 500,
+              fontSize: '.875rem',
+              
+              "&.Mui-focused": {
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: 0,
+                }
+              },
+              '& .MuiSelect-select': {
+                padding: 0,
+                paddingRight: '0 !important',
+              },
+              
+              
+              '& .MuiSvgIcon-root': {
+                margin: '0 !important',
+                color: gray400,
+                fontWeight: 500,
+                fontSize: '1.25rem',
+              }
+            }}
+          >
+            <MenuItem value={'all'}>All</MenuItem>
+          </Select>
+        </FormControl>
+        <IconButton>
+          <FilterListIcon sx={{
+            color: gray400,
+            fontWeight: 500,
+            fontSize: '1.25rem',
+          }} />
+        </IconButton>
+       
+      </Box>
       <Box sx={{
         height: "100%",
         overflow: 'auto'
       }}>
         {data.map((section, index) => (
-          <Stack key={index} spacing='.5rem' p='.25rem' mt='1rem'>
+          <Stack key={index} spacing='.5rem' p='.25rem'>
             <Typography color={gray500} variant='subtitle1' padding='.5rem'>
               {section.title}
             </Typography>
             {section.dataSets.map((item, i) => (
-              <Switch key={i} data={item} />
+              <CustomListItem key={i} data={item} listType='dataSets' />
             ))}
           </Stack>
         ))}

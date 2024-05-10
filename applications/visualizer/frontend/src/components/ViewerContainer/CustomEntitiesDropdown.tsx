@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Popper, TextField, InputAdornment } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import {vars} from "../../theme/variables.ts";
+
+const {gray50, brand600} = vars
 
 type OptionDetail = {
   title: string;
@@ -63,7 +66,18 @@ export default function CustomEntitiesDropdown() {
           ),
           endAdornment: open && (
             <InputAdornment position="end">
-              <ArrowForwardIcon sx={{ fontSize: "1.25rem" }} />
+              <Box sx={{
+                borderRadius: '6.25rem',
+                background: gray50,
+                padding: '0.375rem',
+                height: '1.75rem',
+                width: '1.75rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <ArrowForwardIcon sx={{ fontSize: "1.25rem", color: `${brand600} !important`, margin: '0 !important' }} />
+              </Box>
             </InputAdornment>
           ),
         }}
