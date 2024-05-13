@@ -20,6 +20,7 @@ export const vars = {
 
 
   brand50: '#FDFDFC',
+  brand500: '#3382EB',
   brand600: '#1568D5',
 
   primaryPurple25: '#FDFAFE',
