@@ -271,7 +271,12 @@ const theme = createTheme({
           background: gray950,
           borderRadius: "0.5rem",
           fontFamily: primaryFont,
-          padding: "0.375rem 0.75rem",
+          padding: "0.5rem 0.75rem",
+          fontSize: '0.75rem',
+          fontWeight: 600,
+          lineHeight: '150%',
+          boxShadow: '0rem 0.25rem 0.375rem -0.125rem rgba(16, 24, 40, 0.03), 0rem 0.75rem 1rem -0.25rem rgba(16, 24, 40, 0.08)'
+
         },
       },
     },
@@ -318,13 +323,27 @@ const theme = createTheme({
           '&.selected': {
             color: gray700,
 
+            '& > p': {
+              color: gray700,
+            '& > span': {
+              
+              },  
+            },
+
             '& svg': {
               visibility: 'visible'
             }
           },
 
-          '&:not(:first-child)': {
-            marginTop: '0.25rem'
+          '& > p': {
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            lineHeight: '142.857%',
+            color: gray600,
+            '& > span': {
+              marginLeft: '0.5rem',
+              color: gray500,
+            },  
           },
 
           '& h4': {
@@ -336,8 +355,32 @@ const theme = createTheme({
 
           '&.Mui-disabled': {
             opacity: 1,
+            display: 'none',
             padding: '0.25rem 0.5rem'
           }
+        }
+      }
+    },
+
+    MuiList: {
+      styleOverrides: {
+        root: {
+          maxHeight: '12.5rem',
+          '& > div + div': {
+            borderTop: `0.0625rem solid ${gray100}`
+          }
+        }
+      }
+    },
+
+    MuiListSubheader: {
+      styleOverrides: {
+        root: {
+          fontFamily: primaryFont,
+          fontSize: '0.875rem',
+          padding: '0.5625rem 0.5rem',
+          fontWeight: 500,
+          lineHeight: '142.857%',
         }
       }
     },
@@ -352,7 +395,7 @@ const theme = createTheme({
         },
 
         list: {
-          padding: '0.5rem'
+          padding: '0'
         }
       }
     },
@@ -753,7 +796,8 @@ const theme = createTheme({
           },
           "&.Mui-focused": {
             "& .MuiOutlinedInput-notchedOutline": {
-              borderColor: primaryPurple300,
+              borderWidth: '0.0625rem',
+              borderColor: brand600,
             },
           },
         },

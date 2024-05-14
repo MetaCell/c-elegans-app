@@ -1,10 +1,23 @@
 import { Theme } from "@mui/material/styles";
-import { AppBar, Box, Button, ButtonGroup, Dialog, FormControl, FormLabel, IconButton, Menu, MenuItem, Select, SelectChangeEvent, TextField, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Button, ButtonGroup, Chip, Dialog, FormControl, FormLabel, IconButton, ListSubheader, Menu, MenuItem, OutlinedInput, Select, SelectChangeEvent, TextField, Toolbar, Tooltip, Typography, Autocomplete} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { vars } from "../../theme/variables.ts";
 import React, { useState } from "react";
 import { CheckIcon, CloseIcon, MoreOptionsIcon } from "../../icons/index.tsx";
 const { gray100 } = vars;
+
+const VIEW_OPTIONS = [
+  {
+    id: 0,
+    label: 'Default',
+    description: 'Visualize datasets and neurons, without comparing'
+  },
+  {
+    id: 1,
+    label: 'Compare',
+    description: 'Compare between multiple datasets'
+  }
+]
 
 const Header = ({
   sidebarOpen,
@@ -18,9 +31,6 @@ const Header = ({
   const [active, setActive] = useState(0);
   const [selected, setSelected] = useState(0);
   const [showModal, setShowModal] = useState(false);
-  const [age, setAge] = React.useState('0');
-
-
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -47,6 +57,32 @@ const Header = ({
     setShowModal(false)
     setActive(0)
   }
+
+  const NeuronData = [
+    'ADAC', "ARAC", "VBG"
+  ];
+
+  const datasetStages = [
+    {
+      groupName: 'Development Stage 1',
+      options: [
+        { title: 'Witvliet et al., 2020, Dataset 1 (L1)', caption: '0 hours from birth' },
+        { title: 'Witvliet et al., 2020, Dataset 3 (L1)', caption: '0 hours from birth' },
+        { title: 'Witvliet et al., 2020, Dataset 2 (L1)', caption: '0 hours from birth' }
+      ]
+    },
+    {
+      groupName: 'Development Stage 2',
+      options: [
+        { title: 'Witvliet et al., 2020, Dataset 1 (L1)', caption: '0 hours from birth' },
+        { title: 'Witvliet et al., 2020, Dataset 3 (L1)', caption: '0 hours from birth' },
+        { title: 'Witvliet et al., 2020, Dataset 2 (L1)', caption: '0 hours from birth' }
+      ]
+    },
+  ];
+  const allOptions = datasetStages.reduce((acc, curr) => {
+    return [...acc, ...curr.options.map(option => ({ ...option, groupName: curr.groupName }))];
+  }, []);
   return (
     <>
       <AppBar
@@ -86,7 +122,13 @@ const Header = ({
           }}
         >
           <ButtonGroup variant="outlined" aria-label="Basic button group">
-            {['Default', 'Compare'].map((item, index) => <Button className={active === index ? 'active' : ''} onClick={() => onClick(index)} key={index}>{item}</Button>)}
+            {VIEW_OPTIONS.map((item, index) => {
+              return (
+                <Tooltip placement={index === 0 ? 'bottom-start' : 'bottom'} title={item.description} key={index}>
+                  <Button className={active === index ? 'active' : ''} onClick={() => onClick(index)}>{item.label}</Button>
+                </Tooltip>
+              )
+            })}
           </ButtonGroup>
 
           <Box display='flex' gap='0.625rem'>
@@ -143,40 +185,36 @@ const Header = ({
 
           <Box>
             <FormLabel>Datasets</FormLabel>
-            <FormControl fullWidth>
-              <Select
-                value={age}
-                onChange={(event: SelectChangeEvent) => {
-                  setAge(event.target.value as string);
-                }}
-
-                IconComponent={ExpandMoreIcon}
-              >
-                <MenuItem value={0} disabled><em>Select</em></MenuItem>
-                <MenuItem value={10}>Ten</MenuItem>
-                <MenuItem value={20}>Twenty</MenuItem>
-                <MenuItem value={30}>Thirty</MenuItem>
-              </Select>
-            </FormControl>
+            <Autocomplete
+              multiple
+              id="grouped-demo"
+              options={allOptions}
+              groupBy={(option) => option.groupName}
+              getOptionLabel={(option) => option.title}
+              renderInput={(params) => <TextField {...params} placeholder="Start typing to search" />}
+              renderOption={(props, option) => (
+                <li {...props}>
+                  <div>{option.title}</div>
+                  <div>{option.caption}</div>
+                </li>
+              )}
+            />
           </Box>
 
           <Box>
             <FormLabel>Neurons</FormLabel>
-            <FormControl fullWidth>
-              <Select
-                value={age}
-                onChange={(event: SelectChangeEvent) => {
-                  setAge(event.target.value as string);
-                }}
-
-                IconComponent={ExpandMoreIcon}
-              >
-                <MenuItem value={0} disabled><em>Select</em></MenuItem>
-                <MenuItem value={10}>Ten</MenuItem>
-                <MenuItem value={20}>Twenty</MenuItem>
-                <MenuItem value={30}>Thirty</MenuItem>
-              </Select>
-            </FormControl>
+            <Autocomplete
+              multiple
+              id="tags-standard"
+              options={NeuronData}
+              getOptionLabel={(option) => option}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  placeholder="Start typing to search"
+                />
+              )}
+            />
           </Box>
         </Box>
 
