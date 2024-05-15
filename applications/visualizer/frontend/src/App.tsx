@@ -1,7 +1,6 @@
 import { Provider } from "react-redux";
 import { ThemeProvider } from '@mui/material/styles';
 import { Box, CssBaseline } from "@mui/material";
-import '@metacell/geppetto-meta-ui/flex-layout/style/light.scss';
 import theme from './theme/index.tsx';
 import './App.css'
 import { useGlobalContext } from "./contexts/GlobalContext.tsx";
