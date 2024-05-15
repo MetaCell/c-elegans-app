@@ -4,20 +4,48 @@ import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace.ts";
 
 const TwoDViewer = () => {
     const workspace = useSelectedWorkspace()
-    console.log(workspace.activeNeurons)
-
     const cyContainer = useRef(null);
+    const cyRef = useRef(null);
 
+    const updateGraphElements = (cy, workspace) => {
+        if (!workspace) return;
+
+        // Generate nodes and edges based on workspace.activeNeurons
+        const nodes = Object.values(workspace.activeNeurons).map(neuron => ({
+            group: 'nodes',
+            data: {id: neuron.name, label: neuron.name}
+        }));
+
+        // TODO: Mocked edges, replace with real data later
+        const edges = [];
+        if (nodes.length > 1) {
+            for (let i = 0; i < nodes.length - 1; i++) {
+                edges.push({
+                    group: 'edges',
+                    data: {
+                        id: `e${nodes[i].data.id}-${nodes[i + 1].data.id}`,
+                        source: nodes[i].data.id,
+                        target: nodes[i + 1].data.id
+                    }
+                });
+            }
+        }
+
+        const elements = [...nodes, ...edges];
+        cy.elements().remove(); // Remove all existing elements
+        cy.add(elements);       // Add new elements
+        cy.layout({             // Re-run layout
+            name: 'grid',
+            rows: 1
+        }).run();
+    };
+
+    // Initialize Cytoscape only once
     useEffect(() => {
         if (!cyContainer.current) return;
 
         const cy = cytoscape({
             container: cyContainer.current,
-            elements: [
-                {data: {id: 'a', label: 'Neuron A'}},
-                {data: {id: 'b', label: 'Neuron B'}},
-                {data: {id: 'ab', source: 'a', target: 'b'}}
-            ],
             style: [
                 {
                     selector: 'node',
@@ -25,6 +53,10 @@ const TwoDViewer = () => {
                         'background-color': '#666',
                         'label': 'data(label)',
                         'color': '#000',
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'width': '45px',
+                        'height': '45px',
                     }
                 },
                 {
@@ -43,11 +75,19 @@ const TwoDViewer = () => {
                 rows: 1
             }
         });
+        cyRef.current = cy;
+        updateGraphElements(cy, workspace); // Initialize with existing workspace data
 
         return () => {
             cy.destroy();
         };
     }, []);
+
+    // Update graph when workspace changes
+    useEffect(() => {
+        if (!cyRef.current || !workspace) return;
+        updateGraphElements(cyRef.current, workspace);
+    }, [workspace]);
 
     return <div ref={cyContainer} style={{width: '100%', height: '100%'}}/>;
 };

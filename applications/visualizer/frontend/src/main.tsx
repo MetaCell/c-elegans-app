@@ -8,10 +8,8 @@ import {GlobalContextProvider} from "./contexts/GlobalContext.tsx";
 enableMapSet()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-    <React.StrictMode>
-        <GlobalContextProvider>
-            <App/>
-        </GlobalContextProvider>
-    </React.StrictMode>
+    <GlobalContextProvider>
+        <App/>
+    </GlobalContextProvider>
     ,
 )
