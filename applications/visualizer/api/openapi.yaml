@@ -1,5 +1,37 @@
 components:
   schemas:
+    Connection:
+      properties:
+        annotations:
+          default: []
+          items:
+            type: string
+          title: Annotations
+          type: array
+        post:
+          maxLength: 30
+          title: Post
+          type: string
+        pre:
+          maxLength: 30
+          title: Pre
+          type: string
+        synapses:
+          additionalProperties:
+            type: integer
+          default: {}
+          title: Synapses
+          type: object
+        type:
+          maxLength: 20
+          title: Type
+          type: string
+      required:
+      - pre
+      - post
+      - type
+      title: Connection
+      type: object
     Dataset:
       properties:
         axes:
@@ -139,6 +171,70 @@ paths:
       summary: Get All Cells
       tags:
       - neurons
+  /api/connections:
+    get:
+      description: Gets the connections of a dedicated Dataset
+      operationId: get_connections
+      parameters:
+      - in: query
+        name: cells
+        required: true
+        schema:
+          title: Cells
+          type: string
+      - in: query
+        name: dataset_ids
+        required: true
+        schema:
+          title: Dataset Ids
+          type: string
+      - in: query
+        name: dataset_type
+        required: true
+        schema:
+          title: Dataset Type
+          type: string
+      - in: query
+        name: threshold_chemical
+        required: false
+        schema:
+          default: 3
+          title: Threshold Chemical
+          type: integer
+      - in: query
+        name: threshold_electrical
+        required: false
+        schema:
+          default: 3
+          title: Threshold Electrical
+          type: integer
+      - in: query
+        name: include_neighboring_cells
+        required: false
+        schema:
+          default: false
+          title: Include Neighboring Cells
+          type: boolean
+      - in: query
+        name: include_annotations
+        required: false
+        schema:
+          default: false
+          title: Include Annotations
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Connection'
+                title: Response
+                type: array
+          description: OK
+      summary: Get Connections
+      tags:
+      - connectivity
   /api/datasets:
     get:
       description: Returns all the datasets from the DB

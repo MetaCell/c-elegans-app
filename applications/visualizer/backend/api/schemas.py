@@ -1,3 +1,5 @@
+from typing import List, Dict
+
 from ninja import ModelSchema, Schema
 from .models import (
     Dataset as DatasetModel,
@@ -51,9 +53,12 @@ class Neuron(ModelSchema, BilingualSchema):
 
 
 class Connection(ModelSchema, BilingualSchema):
+    annotations: List[str] = []
+    synapses: Dict[str, int] = {}
+
     class Meta:
         model = ConnectionModel
-        fields = ["dataset", "pre", "post", "type", "synapses"]
+        fields = ["pre", "post", "type"]
 
 
 class FullDataset(Dataset):
