@@ -4,6 +4,7 @@ export const widgetIds = {
     leftComponent: 'leftComponent',
     rightComponent: 'rightComponent',
     threeDViewer: 'threeDViewer',
+    twoDViewer: 'twoDViewer',
 }
 
 
@@ -29,6 +30,15 @@ export const threeDViewerWidget = () => ({
     name: "3D Viewer",
     component: widgetIds.threeDViewer,
     panelName: "leftPanel",
+    enableClose: false,
+    status: WidgetStatus.ACTIVE,
+});
+
+export const twoDViewerWidget = () => ({
+    id: widgetIds.twoDViewer,
+    name: "Connectivity Graph",
+    component: widgetIds.twoDViewer,
+    panelName: "rightPanel",
     enableClose: false,
     status: WidgetStatus.ACTIVE,
 });
