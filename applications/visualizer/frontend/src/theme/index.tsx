@@ -10,7 +10,6 @@ const {
   success50,
   success200,
   success700,
-  primaryPurple300,
   primaryPurple700,
   gray600,
   gray700,
@@ -34,7 +33,9 @@ const {
   primaryBlue50,
   primaryBlue200,
   gray400B,
-  brand500
+  brand500,
+  brand300,
+  brand200
 } = vars;
 
 const theme = createTheme({
@@ -376,6 +377,7 @@ const theme = createTheme({
     MuiListSubheader: {
       styleOverrides: {
         root: {
+          top: '-0.5rem',
           fontFamily: primaryFont,
           fontSize: '0.875rem',
           padding: '0.5625rem 0.5rem',
@@ -421,23 +423,6 @@ const theme = createTheme({
       }
     },
 
-    MuiSelect: {
-      styleOverrides: {
-        root: {
-          height: '2.25rem'
-        },
-        select: {
-          '& em': {
-            color: gray400B,
-            fontSize: '0.875rem',
-            fontStyle: 'normal',
-            fontWeight: 400,
-            lineHeight: '142.857%',
-          }
-        }
-      }
-    },
-
     MuiFormLabel: {
       styleOverrides: {
         root: {
@@ -446,10 +431,122 @@ const theme = createTheme({
           fontWeight: 500,
           lineHeight: '142.857%',
 
-          '& + .MuiFormControl-root': {
+          '& + .MuiFormControl-root, + .MuiAutocomplete-root': {
             marginTop: '0.375rem',
           }
         }
+      }
+    },
+
+    MuiAutocomplete: {
+      styleOverrides: {
+        inputRoot: {
+          gap: '0.5rem'
+        },
+        tag: {
+          margin: 0,
+          padding: '0.125rem 0.25rem 0.125rem 0.5rem',
+          borderRadius: '0.375rem',
+          fontSize: '0.875rem',
+          fontWeight: 500,
+          lineHeight: '142.857%',
+          color: gray700,
+          background: gray50,
+          border: `0.0625rem solid ${gray200}`,
+          gap: '0.125rem',
+
+          '& svg': {
+            width: '0.75rem',
+            height: '0.75rem',
+            margin: 0
+          }
+        },
+        groupLabel: {
+          top: '-0.25rem',
+          padding: '0.5rem 0.25rem'
+        },
+        groupUl: {
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.25rem'
+        },
+        option: {
+          padding: '0.5rem !important',
+          borderRadius: '0.375rem',
+          gap: '0.5rem',
+          '& > svg': {
+            visibility: 'hidden'
+          },
+          '&[aria-selected="true"]': {
+            background: `${gray50} !important`,
+            '& > svg': {
+              visibility: 'visible'
+            },
+            '&.Mui-focused': {
+              background: `${gray50} !important`,
+            }
+          },
+          '& > p': {
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            lineHeight: '142.857%',
+            color: gray600,  
+          },
+
+          '& > span': {
+            fontSize: '0.875rem',
+            lineHeight: '142.857%',
+            fontWeight: 400,
+            color: gray500,
+          },
+        },
+        popupIndicator: {
+          padding: '0 !important',
+          margin: '0 !important',
+
+          '& .MuiSvgIcon-root': {
+            margin: 0
+          }
+        },
+        listbox: {
+          padding: '0.5rem',
+          '& > li': {
+            // padding: '0 0.5rem',
+            '&.grouped-list': {
+              margin: '-0.25rem -0.5rem 0',
+              padding: '0 0.5rem',
+              '& + li': {
+                marginTop: '0.25rem',
+                paddingTop: '0.25rem',
+                borderTop: `0.0625rem solid ${gray100}`
+              }
+            }
+            
+          }
+        },
+        paper: {
+          borderRadius: '0.5rem',
+          border: `0.0625rem solid ${gray100}`,
+          boxShadow: '0rem 0.25rem 0.5rem -0.125rem rgba(16, 24, 40, 0.10), 0rem 0.125rem 0.25rem -0.125rem rgba(16, 24, 40, 0.06)',
+        },
+        root: {
+          '&.secondary': {
+            '& .MuiAutocomplete-tag svg path': {
+              fill: primaryBlue700,
+            },
+            '& .MuiChip-root': {
+              borderColor: brand200,
+              background: primaryBlue50,
+              color: primaryBlue700
+            }
+          },
+          '& .MuiOutlinedInput-root': {
+            padding: '0 0.875rem',
+            '& .MuiAutocomplete-input': {
+              padding: 0
+            }
+          }
+        },
       }
     },
 
@@ -784,20 +881,23 @@ const theme = createTheme({
           }
         },
         root: {
-          border: `0.0625rem ${gray100} solid`,
+          // border: `0.0625rem ${gray100} solid`,
           // boxShadow: "0 0 0.25rem rgba(0, 0, 0, 0.1)",
           "& .MuiOutlinedInput-notchedOutline": {
-            borderColor: "transparent",
+            borderColor: gray100,
+            borderWidth: '0.0625rem',
           },
           "&:hover": {
             "& .MuiOutlinedInput-notchedOutline": {
-              borderColor: "transparent",
+              borderWidth: '0.0625rem',
+              borderColor: gray100,
             },
           },
           "&.Mui-focused": {
             "& .MuiOutlinedInput-notchedOutline": {
               borderWidth: '0.0625rem',
-              borderColor: brand600,
+              borderColor: brand300,
+              boxShadow: '0rem 0.0625rem 0.125rem 0rem rgba(16, 24, 40, 0.05), 0rem 0rem 0rem 0.25rem rgba(33, 85, 186, 0.24)'
             },
           },
         },

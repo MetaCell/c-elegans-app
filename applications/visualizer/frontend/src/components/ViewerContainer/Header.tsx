@@ -1,9 +1,8 @@
 import { Theme } from "@mui/material/styles";
-import { AppBar, Box, Button, ButtonGroup, Chip, Dialog, FormControl, FormLabel, IconButton, ListSubheader, Menu, MenuItem, OutlinedInput, Select, SelectChangeEvent, TextField, Toolbar, Tooltip, Typography, Autocomplete} from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { AppBar, Box, Button, ButtonGroup, Dialog, FormLabel, IconButton, ListSubheader, Menu, MenuItem, TextField, Toolbar, Tooltip, Typography, Autocomplete} from "@mui/material";
 import { vars } from "../../theme/variables.ts";
 import React, { useState } from "react";
-import { CheckIcon, CloseIcon, MoreOptionsIcon } from "../../icons/index.tsx";
+import { CaretIcon, CheckIcon, CloseIcon, MoreOptionsIcon } from "../../icons/index.tsx";
 const { gray100 } = vars;
 
 const VIEW_OPTIONS = [
@@ -189,15 +188,29 @@ const Header = ({
               multiple
               id="grouped-demo"
               options={allOptions}
-              groupBy={(option) => option.groupName}
-              getOptionLabel={(option) => option.title}
+              ChipProps={{ deleteIcon: <IconButton sx={{ p: '0 !important', margin: '0 !important' }}><CloseIcon /></IconButton> }}
+              popupIcon={<CaretIcon />}
+              groupBy={(option: any) => option.groupName}
+              getOptionLabel={(option: any) => option.title}
               renderInput={(params) => <TextField {...params} placeholder="Start typing to search" />}
-              renderOption={(props, option) => (
+              renderOption={(props, option: any) => (
                 <li {...props}>
-                  <div>{option.title}</div>
-                  <div>{option.caption}</div>
+                  <CheckIcon />
+                  <Typography>{option.title}</Typography>
+                  <Typography component='span'>{option.caption}</Typography>
                 </li>
               )}
+              renderGroup={(params) => {
+                console.log(params, 'params')
+                return (
+                  <li className="grouped-list" key={params.key}>
+                    <ListSubheader component="div">
+                      {params.group}
+                    </ListSubheader>
+                    <ul style={{ padding: 0 }}>{params.children}</ul>
+                  </li>
+                )
+              }}
             />
           </Box>
 
@@ -205,9 +218,17 @@ const Header = ({
             <FormLabel>Neurons</FormLabel>
             <Autocomplete
               multiple
+              className="secondary"
               id="tags-standard"
               options={NeuronData}
               getOptionLabel={(option) => option}
+              ChipProps={{ deleteIcon: <IconButton sx={{ p: '0 !important', margin: '0 !important' }}><CloseIcon /></IconButton> }}
+              renderOption={(props, option: any) => (
+                <li {...props}>
+                  <CheckIcon />
+                  <Typography>{option}</Typography>
+                </li>
+              )}
               renderInput={(params) => (
                 <TextField
                   {...params}
