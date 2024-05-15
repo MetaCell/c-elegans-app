@@ -12,7 +12,7 @@ jobs:
           node-version: 21.7
       - name: Install dependencies
         working-directory: applications/visualizer/frontend
-        run: yarn install --frozen-lockfile
+        run: yarn install 
       - name: Build App
         working-directory: applications/visualizer/frontend
         run: npm run build
