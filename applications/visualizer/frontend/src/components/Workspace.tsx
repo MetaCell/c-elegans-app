@@ -6,7 +6,7 @@ import { addWidget } from '@metacell/geppetto-meta-client/common/layout/actions'
 import '@metacell/geppetto-meta-ui/flex-layout/style/dark.scss';
 import theme from '../theme';
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
-import {rightComponentWidget, threeDViewerWidget, twoDViewerWidget} from "../layout-manager/widgets.ts";
+import {threeDViewerWidget, twoDViewerWidget} from "../layout-manager/widgets.ts";
 import { RootState } from "../layout-manager/layoutManagerFactory.ts";
 
 
