@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import { Box, CircularProgress, CssBaseline } from "@mui/material";
 import { addWidget } from "@metacell/geppetto-meta-client/common/layout/actions";
@@ -42,9 +42,8 @@ function Workspace() {
     <>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        {isLoading ? (
-          <CircularProgress />
-        ) : (
+        <Suspense fallback={ <CircularProgress />}>
+        {!isLoading && (
           <Box
             className="layout-manager-container"
             sx={{
@@ -57,6 +56,7 @@ function Workspace() {
             <LayoutComponent />
           </Box>
         )}
+        </Suspense>
       </ThemeProvider>
     </>
   );
