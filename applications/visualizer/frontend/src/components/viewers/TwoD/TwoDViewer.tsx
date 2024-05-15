@@ -1,6 +1,7 @@
 import {useEffect, useRef} from 'react';
 import cytoscape from 'cytoscape';
 import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace.ts";
+import {Neuron} from "../../../rest";
 
 const TwoDViewer = () => {
     const workspace = useSelectedWorkspace()
@@ -11,7 +12,7 @@ const TwoDViewer = () => {
         if (!workspace) return;
 
         // Generate nodes and edges based on workspace.activeNeurons
-        const nodes = Object.values(workspace.activeNeurons).map(neuron => ({
+        const nodes = Object.values(workspace.activeNeurons).map((neuron: Neuron) => ({
             group: 'nodes',
             data: {id: neuron.name, label: neuron.name}
         }));

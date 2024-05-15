@@ -10,8 +10,8 @@ export interface GlobalContextType {
     selectedWorkspacesIds: Set<string>;
     setViewMode: (viewMode: ViewMode) => void;
     createWorkspace: (id: string, name: string,
-                      activeDatasets: Record<string, Dataset>,
-                      activeNeurons: Record<string, Neuron>) => void;
+                      activeDatasets?: Record<string, Dataset>,
+                      activeNeurons?: Record<string, Neuron>) => void;
     updateWorkspace: (workspace: Workspace) => void;
     removeWorkspace: (workspaceId: string) => void;
     setCurrentWorkspace: (workspaceId: string) => void;
