@@ -20,7 +20,7 @@ const TwoDViewer = () => {
                     style: {
                         'background-color': '#666',
                         'label': 'data(label)',
-                        'color': '#fff',
+                        'color': '#000',
                     }
                 },
                 {
