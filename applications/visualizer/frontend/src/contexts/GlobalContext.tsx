@@ -1,6 +1,6 @@
-import React, { createContext, ReactNode, useContext, useState } from 'react';
-import { ViewMode } from "../models/models.ts";
-import { Workspace } from "../models/workspace.ts";
+import React, {createContext, ReactNode, useContext, useState} from 'react';
+import {ViewMode} from "../models/models.ts";
+import {Workspace} from "../models/workspace.ts";
 
 export interface GlobalContextType {
     workspaces: Record<string, Workspace>;
@@ -8,7 +8,7 @@ export interface GlobalContextType {
     viewMode: ViewMode;
     selectedWorkspacesIds: Set<string>;
     setViewMode: (viewMode: ViewMode) => void;
-    addWorkspace: (id: string, name: string) => void;
+    createWorkspace: (id: string, name: string) => void;
     updateWorkspace: (workspace: Workspace) => void;
     removeWorkspace: (workspaceId: string) => void;
     setCurrentWorkspace: (workspaceId: string) => void;
@@ -21,16 +21,18 @@ interface GlobalContextProviderProps {
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
 
-export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ children }) => {
+export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({children}) => {
     const [workspaces, setWorkspaces] = useState<Record<string, Workspace>>({});
     const [currentWorkspaceId, setCurrentWorkspaceId] = useState<string | undefined>(undefined);
     const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.Default);
     const [selectedWorkspacesIds, setSelectedWorkspacesIds] = useState<Set<string>>(new Set<string>());
 
 
-    const addWorkspace = (id: string, name: string) => {
-        const newWorkspace = new Workspace(id, name, updateWorkspace);
-        setWorkspaces(prev => ({ ...prev, [id]: newWorkspace }));
+    const createWorkspace = (id: string, name: string,
+                             activeDatasets: Set<string> = new Set(),
+                             activeNeurons: Set<string> = new Set()) => {
+        const newWorkspace = new Workspace(id, name, activeDatasets, activeNeurons, updateWorkspace);
+        setWorkspaces(prev => ({...prev, [id]: newWorkspace}));
     };
 
     const updateWorkspace = (workspace: Workspace) => {
@@ -41,7 +43,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     };
 
     const removeWorkspace = (workspaceId: string) => {
-        const updatedWorkspaces = { ...workspaces };
+        const updatedWorkspaces = {...workspaces};
         delete updatedWorkspaces[workspaceId];
         setWorkspaces(updatedWorkspaces);
     };
@@ -56,7 +58,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
             value={{
                 workspaces,
                 currentWorkspaceId,
-                addWorkspace,
+                createWorkspace,
                 updateWorkspace,
                 removeWorkspace,
                 setCurrentWorkspace,

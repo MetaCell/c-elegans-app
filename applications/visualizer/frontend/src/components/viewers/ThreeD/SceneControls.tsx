@@ -6,8 +6,6 @@ import HouseIcon from '@mui/icons-material/House';
 import {Box, IconButton} from "@mui/material";
 
 function SceneControls({cameraControlRef, isWireframe, setIsWireframe}) {
-    console.log(cameraControlRef)
-
     return (
         <Box position="absolute" top={20} left={20} display="flex" gap="10px" sx={{background: 'white'}}>
             <IconButton onClick={() => {

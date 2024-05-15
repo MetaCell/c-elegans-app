@@ -1,7 +1,11 @@
 import {useEffect, useRef} from 'react';
 import cytoscape from 'cytoscape';
+import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace.ts";
 
 const TwoDViewer = () => {
+    const workspace = useSelectedWorkspace()
+    console.log(workspace.activeNeurons)
+
     const cyContainer = useRef(null);
 
     useEffect(() => {

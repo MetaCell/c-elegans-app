@@ -1,6 +1,6 @@
-import { produce, immerable } from "immer"
-import { configureStore } from "@reduxjs/toolkit";
-import { NeuronGroup, ViewerSynchronizationPair, ViewerType } from "./models.ts";
+import {produce, immerable} from "immer"
+import {configureStore} from "@reduxjs/toolkit";
+import {NeuronGroup, ViewerSynchronizationPair, ViewerType} from "./models.ts";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory.ts";
 
 export class Workspace {
@@ -20,11 +20,13 @@ export class Workspace {
 
     updateContext: (workspace: Workspace) => void;
 
-    constructor(id: string, name: string, updateContext: (workspace: Workspace) => void) {
+    constructor(id: string, name: string,
+                activeDatasets: Set<string>, activeNeurons: Set<string>,
+                updateContext: (workspace: Workspace) => void) {
         this.id = id;
         this.name = name;
-        this.activeDatasets = new Set();
-        this.activeNeurons = new Set();
+        this.activeDatasets = activeDatasets || new Set<string>();
+        this.activeNeurons = activeNeurons || new Set<string>();
         this.highlightedNeuron = undefined;
         this.viewers = {
             [ViewerType.Graph]: true,
@@ -39,7 +41,7 @@ export class Workspace {
         }
         this.neuronGroups = {}
 
-        const { layoutManager, store } = getLayoutManagerAndStore(id);
+        const {layoutManager, store} = getLayoutManagerAndStore(id);
         this.layoutManager = layoutManager
         this.store = store
         this.updateContext = updateContext;
