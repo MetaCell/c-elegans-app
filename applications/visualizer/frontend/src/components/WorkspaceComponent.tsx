@@ -10,7 +10,7 @@ import {threeDViewerWidget, twoDViewerWidget} from "../layout-manager/widgets.ts
 import { RootState } from "../layout-manager/layoutManagerFactory.ts";
 
 
-function Workspace() {
+function WorkspaceComponent() {
 
     const dispatch = useDispatch();
     const { workspaces } = useGlobalContext();
@@ -51,4 +51,4 @@ function Workspace() {
     )
 }
 
-export default Workspace
+export default WorkspaceComponent

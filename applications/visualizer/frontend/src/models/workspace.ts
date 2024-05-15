@@ -2,14 +2,15 @@ import {produce, immerable} from "immer"
 import {configureStore} from "@reduxjs/toolkit";
 import {NeuronGroup, ViewerSynchronizationPair, ViewerType} from "./models.ts";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory.ts";
+import {Dataset, Neuron} from "../rest";
 
 export class Workspace {
     [immerable] = true
 
     id: string;
     name: string;
-    activeDatasets: Set<string>;
-    activeNeurons: Set<string>;
+    activeDatasets: Record<string, Dataset>;
+    activeNeurons: Record<string, Neuron>;
     highlightedNeuron: string | undefined;
     viewers: Record<ViewerType, boolean>;
     synchronizations: Record<ViewerSynchronizationPair, boolean>;
@@ -21,12 +22,13 @@ export class Workspace {
     updateContext: (workspace: Workspace) => void;
 
     constructor(id: string, name: string,
-                activeDatasets: Set<string>, activeNeurons: Set<string>,
+                activeDatasets: Record<string, Dataset>,
+                activeNeurons: Record<string, Neuron>,
                 updateContext: (workspace: Workspace) => void) {
         this.id = id;
         this.name = name;
-        this.activeDatasets = activeDatasets || new Set<string>();
-        this.activeNeurons = activeNeurons || new Set<string>();
+        this.activeDatasets = activeDatasets || {};
+        this.activeNeurons = activeNeurons || {};
         this.highlightedNeuron = undefined;
         this.viewers = {
             [ViewerType.Graph]: true,
@@ -47,30 +49,30 @@ export class Workspace {
         this.updateContext = updateContext;
     }
 
-    activateNeuron(neuronId: string): void {
+        activateNeuron(neuron: Neuron): void {
         const updated = produce(this, (draft: Workspace) => {
-            draft.activeNeurons.add(neuronId);
+            draft.activeNeurons[neuron.name] = neuron;
         });
         this.updateContext(updated);
     }
 
     deactivateNeuron(neuronId: string): void {
         const updated = produce(this, (draft: Workspace) => {
-            draft.activeNeurons.delete(neuronId);
+            delete draft.activeNeurons[neuronId];
         });
         this.updateContext(updated);
     }
 
-    activateDataset(datasetId: string): void {
+    activateDataset(dataset: Dataset): void {
         const updated = produce(this, (draft: Workspace) => {
-            draft.activeDatasets.add(datasetId);
+            draft.activeDatasets[dataset.id] = dataset;
         });
         this.updateContext(updated);
     }
 
     deactivateDataset(datasetId: string): void {
         const updated = produce(this, (draft: Workspace) => {
-            draft.activeDatasets.delete(datasetId);
+            delete draft.activeDatasets[datasetId];
         });
         this.updateContext(updated);
     }
@@ -89,9 +91,9 @@ export class Workspace {
         this.updateContext(updated);
     }
 
-    addNeuronToGroup(neuronId: string, groupId: string): void {
+   addNeuronToGroup(neuronId: string, groupId: string): void {
         const updated = produce(this, (draft: Workspace) => {
-            if (!draft.activeNeurons.has(neuronId)) {
+            if (!draft.activeNeurons[neuronId]) {
                 throw new Error('Neuron not found');
             }
             const group = draft.neuronGroups[groupId];

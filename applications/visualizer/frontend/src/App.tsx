@@ -5,7 +5,7 @@ import theme from './theme/index.tsx';
 import './App.css'
 import { useGlobalContext } from "./contexts/GlobalContext.tsx";
 import AppLauncher from "./components/AppLauncher.tsx";
-import Workspace from "./components/Workspace.tsx";
+import WorkspaceComponent from "./components/WorkspaceComponent.tsx";
 import { ViewMode } from "./models/models.ts";
 
 function App() {
@@ -28,12 +28,12 @@ function App() {
                         {viewMode === ViewMode.Compare ?
                             Array.from(selectedWorkspacesIds).map(id => (
                                 <Provider key={id} store={workspaces[id].store}>
-                                    <Workspace />
+                                    <WorkspaceComponent />
                                 </Provider>
                             ))
                             :
                             <Provider store={workspaces[currentWorkspaceId].store}>
-                                <Workspace />
+                                <WorkspaceComponent />
                             </Provider>
                         }
 

@@ -1,6 +1,7 @@
 import React, {createContext, ReactNode, useContext, useState} from 'react';
 import {ViewMode} from "../models/models.ts";
 import {Workspace} from "../models/workspace.ts";
+import {Dataset, Neuron} from "../rest";
 
 export interface GlobalContextType {
     workspaces: Record<string, Workspace>;
@@ -8,7 +9,9 @@ export interface GlobalContextType {
     viewMode: ViewMode;
     selectedWorkspacesIds: Set<string>;
     setViewMode: (viewMode: ViewMode) => void;
-    createWorkspace: (id: string, name: string) => void;
+    createWorkspace: (id: string, name: string,
+                      activeDatasets: Record<string, Dataset>,
+                      activeNeurons: Record<string, Neuron>) => void;
     updateWorkspace: (workspace: Workspace) => void;
     removeWorkspace: (workspaceId: string) => void;
     setCurrentWorkspace: (workspaceId: string) => void;
@@ -29,8 +32,8 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({chi
 
 
     const createWorkspace = (id: string, name: string,
-                             activeDatasets: Set<string> = new Set(),
-                             activeNeurons: Set<string> = new Set()) => {
+                             activeDatasets: Record<string, Dataset>,
+                             activeNeurons: Record<string, Neuron>) => {
         const newWorkspace = new Workspace(id, name, activeDatasets, activeNeurons, updateWorkspace);
         setWorkspaces(prev => ({...prev, [id]: newWorkspace}));
     };
