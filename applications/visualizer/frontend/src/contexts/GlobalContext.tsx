@@ -1,16 +1,18 @@
-import React, {createContext, ReactNode, useContext, useState} from 'react';
-import {ViewMode} from "../models/models.ts";
-import {Workspace} from "../models/workspace.ts";
+import React, { createContext, ReactNode, useContext, useState } from 'react';
+import { ViewMode } from "../models/models.ts";
+import { Workspace } from "../models/workspace.ts";
 
 export interface GlobalContextType {
     workspaces: Record<string, Workspace>;
     currentWorkspaceId: string | undefined;
+    viewMode: ViewMode;
+    selectedWorkspacesIds: Set<string>;
+    setViewMode: (viewMode: ViewMode) => void;
     addWorkspace: (id: string, name: string) => void;
     updateWorkspace: (workspace: Workspace) => void;
     removeWorkspace: (workspaceId: string) => void;
     setCurrentWorkspace: (workspaceId: string) => void;
-
-    viewMode: ViewMode;
+    setSelectedWorkspacesIds: (workspaceId: Set<string>) => void;
 }
 
 interface GlobalContextProviderProps {
@@ -19,7 +21,7 @@ interface GlobalContextProviderProps {
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
 
-export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({children}) => {
+export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ children }) => {
     const [workspaces, setWorkspaces] = useState<Record<string, Workspace>>({});
     const [currentWorkspaceId, setCurrentWorkspaceId] = useState<string | undefined>(undefined);
     const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.Default);
@@ -28,7 +30,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({chi
 
     const addWorkspace = (id: string, name: string) => {
         const newWorkspace = new Workspace(id, name, updateWorkspace);
-        setWorkspaces(prev => ({...prev, [id]: newWorkspace}));
+        setWorkspaces(prev => ({ ...prev, [id]: newWorkspace }));
     };
 
     const updateWorkspace = (workspace: Workspace) => {
@@ -39,7 +41,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({chi
     };
 
     const removeWorkspace = (workspaceId: string) => {
-        const updatedWorkspaces = {...workspaces};
+        const updatedWorkspaces = { ...workspaces };
         delete updatedWorkspaces[workspaceId];
         setWorkspaces(updatedWorkspaces);
     };

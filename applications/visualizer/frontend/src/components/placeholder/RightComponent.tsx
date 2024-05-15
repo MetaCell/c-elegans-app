@@ -1,16 +1,16 @@
-import {Box, Button, List, ListItem, ListItemText, Typography} from "@mui/material";
-import {useGlobalContext} from "../../contexts/GlobalContext.tsx";
-import {ViewerSynchronizationPair, ViewerType} from "../../models/models.ts";
-import {useSelector} from "react-redux";
-import {Workspace} from "../../models/workspace.ts";
-import {RootState} from "../../layout-manager/layoutManagerFactory.ts";
+import { Box, Button, List, ListItem, ListItemText, Typography } from "@mui/material";
+import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
+import { ViewerSynchronizationPair, ViewerType } from "../../models/models.ts";
+import { useSelector } from "react-redux";
+import { Workspace } from "../../models/workspace.ts";
+import { RootState } from "../../layout-manager/layoutManagerFactory.ts";
 
 
 export default function RightComponent() {
-    const {workspaces} = useGlobalContext();
-    const workspaceId = useSelector((state:RootState) => state.workspaceId);
+    const { workspaces } = useGlobalContext();
+    const workspaceId = useSelector((state: RootState) => state.workspaceId);
 
-    const workspace : Workspace = workspaces[workspaceId];
+    const workspace: Workspace = workspaces[workspaceId];
 
 
     if (!workspace) {
@@ -40,14 +40,14 @@ export default function RightComponent() {
                     Activate Neuron
                 </Button>
                 <Button variant="contained" color="error"
-                        onClick={() => workspace.deactivateNeuron(testNeuron)}>
+                    onClick={() => workspace.deactivateNeuron(testNeuron)}>
                     Deactivate Neuron
                 </Button>
                 <Button variant="contained" color="primary" onClick={() => workspace.activateDataset(testDataset)}>
                     Activate Dataset
                 </Button>
                 <Button variant="contained" color="error"
-                        onClick={() => workspace.deactivateDataset(testDataset)}>
+                    onClick={() => workspace.deactivateDataset(testDataset)}>
                     Deactivate Dataset
                 </Button>
                 <Button
@@ -70,7 +70,7 @@ export default function RightComponent() {
             <List>
                 {Object.entries(workspace.viewers).map(([type, isVisible]) => (
                     <ListItem key={type}>
-                        <ListItemText primary={`${type}: ${isVisible}`}/>
+                        <ListItemText primary={`${type}: ${isVisible}`} />
                     </ListItem>
                 ))}
             </List>
@@ -79,7 +79,7 @@ export default function RightComponent() {
             <List>
                 {Array.from(workspace.activeDatasets).map((id) => (
                     <ListItem key={id}>
-                        <ListItemText primary={`${id}`}/>
+                        <ListItemText primary={`${id}`} />
                     </ListItem>
                 ))}
             </List>
@@ -88,7 +88,7 @@ export default function RightComponent() {
             <List>
                 {Array.from(workspace.activeNeurons).map((id) => (
                     <ListItem key={id}>
-                        <ListItemText primary={`${id}`}/>
+                        <ListItemText primary={`${id}`} />
                     </ListItem>
                 ))}
             </List>
@@ -97,7 +97,7 @@ export default function RightComponent() {
             <List>
                 {Object.entries(workspace.synchronizations).map(([pair, isActive]) => (
                     <ListItem key={pair}>
-                        <ListItemText primary={`${pair}: ${isActive}`}/>
+                        <ListItemText primary={`${pair}: ${isActive}`} />
                     </ListItem>
                 ))}
             </List>

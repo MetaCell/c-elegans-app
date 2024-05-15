@@ -1,12 +1,13 @@
-import React, {FC} from "react";
-import {Outlines} from '@react-three/drei';
-import {useGlobalContext} from "../../../contexts/GlobalContext.tsx";
-import {useSelector} from "react-redux";
-import {Workspace} from "../../../models/workspace.ts";
-import {RootState} from "../../../layout-manager/layoutManagerFactory.ts";
-import {BufferGeometry, DoubleSide, NormalBlending} from "three";
-import {getFurthestIntersectedObject} from "../../../helpers/threeDHelpers.ts";
-import {OUTLINE_COLOR, OUTLINE_THICKNESS} from "../../../../settings/threeDSettings.ts";
+import { FC } from "react";
+import { Outlines } from '@react-three/drei';
+import { useGlobalContext } from "../../../contexts/GlobalContext";
+import { useSelector } from "react-redux";
+import { Workspace } from "../../../models/workspace";
+import { RootState } from "../../../layout-manager/layoutManagerFactory";
+import { BufferGeometry, DoubleSide, NormalBlending } from "three";
+import { ThreeEvent } from "@react-three/fiber";
+import { getFurthestIntersectedObject } from "../../../helpers/threeDHelpers";
+import { OUTLINE_COLOR, OUTLINE_THICKNESS } from "../../../../settings/threeDSettings";
 
 interface Props {
     stl: BufferGeometry;
@@ -17,11 +18,11 @@ interface Props {
     isWireframe: boolean;
 }
 
-const STLMesh: FC<Props> = ({id, color, opacity, renderOrder, isWireframe, stl}) => {
-    const {workspaces} = useGlobalContext();
+const STLMesh: FC<Props> = ({ id, color, opacity, renderOrder, isWireframe, stl }) => {
+    const { workspaces } = useGlobalContext();
     const workspaceId = useSelector((state: RootState) => state.workspaceId);
     const workspace: Workspace = workspaces[workspaceId];
-    const onClick = (event) => {
+    const onClick = (event: ThreeEvent<MouseEvent>) => {
         const clicked = getFurthestIntersectedObject(event)
         if (clicked) {
             workspace.highlightNeuron(clicked.userData.id)
@@ -30,18 +31,18 @@ const STLMesh: FC<Props> = ({id, color, opacity, renderOrder, isWireframe, stl})
 
     const isSelected = id == workspace.highlightedNeuron
     return (
-        <mesh userData={{id}} onClick={onClick} frustumCulled={false} renderOrder={renderOrder}>
-            <primitive attach="geometry" object={stl}/>
+        <mesh userData={{ id }} onClick={onClick} frustumCulled={false} renderOrder={renderOrder}>
+            <primitive attach="geometry" object={stl} />
             <meshStandardMaterial color={color}
-                                  opacity={opacity}
-                                  side={DoubleSide}
-                                  depthWrite={false}
-                                  depthTest={false}
-                                  blending={NormalBlending}
-                                  wireframe={isWireframe}
-                                  transparent
+                opacity={opacity}
+                side={DoubleSide}
+                depthWrite={false}
+                depthTest={false}
+                blending={NormalBlending}
+                wireframe={isWireframe}
+                transparent
             />
-            {isSelected && <Outlines thickness={OUTLINE_THICKNESS} color={OUTLINE_COLOR}/>}
+            {isSelected && <Outlines thickness={OUTLINE_THICKNESS} color={OUTLINE_COLOR} />}
         </mesh>
     );
 };
