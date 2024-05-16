@@ -1,47 +1,79 @@
-import {useEffect, useRef} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import cytoscape from 'cytoscape';
 import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace.ts";
-import {Neuron} from "../../../rest";
+import {ConnectivityService} from "../../../rest";
 
+const LAYOUT = 'cose'
 const TwoDViewer = () => {
     const workspace = useSelectedWorkspace()
     const cyContainer = useRef(null);
     const cyRef = useRef(null);
+    const [connections, setConnections] = useState([]);
 
-    const updateGraphElements = (cy, workspace) => {
-        if (!workspace) return;
-
-        // Generate nodes and edges based on workspace.activeNeurons
-        const nodes = Object.values(workspace.activeNeurons).map((neuron: Neuron) => ({
-            group: 'nodes',
-            data: {id: neuron.name, label: neuron.name}
-        }));
-
-        // TODO: Mocked edges, replace with real data later
+    const updateGraphElements = (cy, connections) => {
+        const nodes = new Set();
         const edges = [];
-        if (nodes.length > 1) {
-            for (let i = 0; i < nodes.length - 1; i++) {
-                edges.push({
-                    group: 'edges',
-                    data: {
-                        id: `e${nodes[i].data.id}-${nodes[i + 1].data.id}`,
-                        source: nodes[i].data.id,
-                        target: nodes[i + 1].data.id
-                    }
-                });
-            }
-        }
 
-        const elements = [...nodes, ...edges];
+        connections.forEach(conn => {
+            nodes.add(conn.pre);
+            nodes.add(conn.post);
+            edges.push({
+                group: 'edges',
+                data: {
+                    id: `${conn.pre}-${conn.post}`,
+                    source: conn.pre,
+                    target: conn.post,
+                    label: conn.type
+                },
+                classes: conn.type
+            });
+        });
+
+        const elements = Array.from(nodes).map(node => ({
+            group: 'nodes',
+            data: {id: node, label: node}
+        })).concat(edges);
+
         cy.elements().remove(); // Remove all existing elements
         cy.add(elements);       // Add new elements
-        cy.layout({             // Re-run layout
-            name: 'grid',
-            rows: 1
+        cy.layout({
+            name: LAYOUT,
         }).run();
     };
 
-    // Initialize Cytoscape only once
+    // Fetch and process connections data
+    useEffect(() => {
+        if (!workspace) return;
+
+        // Convert activeNeurons and activeDatasets to comma-separated strings
+        const cells = Object.values(workspace.activeNeurons).map(neuron => neuron.name).join(',');
+        const datasetIds = Object.values(workspace.activeDatasets).map(dataset => dataset.id).join(',');
+        const datasetType = Object.values(workspace.activeDatasets).map(dataset => dataset.type).join(',');
+
+        ConnectivityService.getConnections({
+            cells,
+            datasetIds,
+            datasetType,
+            thresholdChemical: 1,
+            thresholdElectrical: 1,
+            includeNeighboringCells: true,
+            includeAnnotations: false,
+        }).then(connections => {
+            setConnections(connections);
+        }).catch(error => {
+            console.error("Failed to fetch connections:", error);
+        });
+    }, [workspace]);
+
+    // Update graph when connections change
+    useEffect(() => {
+        if (cyRef.current) {
+            updateGraphElements(cyRef.current, connections);
+        }
+    }, [connections]);
+
+
+    // Initialize and update Cytoscape
     useEffect(() => {
         if (!cyContainer.current) return;
 
@@ -53,11 +85,11 @@ const TwoDViewer = () => {
                     style: {
                         'background-color': '#666',
                         'label': 'data(label)',
-                        'color': '#000',
+                        'color': '#fff',
+                        'text-outline-color': '#000',
+                        'text-outline-width': 2,
                         'text-valign': 'center',
                         'text-halign': 'center',
-                        'width': '45px',
-                        'height': '45px',
                     }
                 },
                 {
@@ -69,26 +101,26 @@ const TwoDViewer = () => {
                         'target-arrow-shape': 'triangle',
                         'curve-style': 'bezier'
                     }
+                },
+                {
+                    selector: '.chemical',
+                    style: {'line-color': 'blue'}
+                },
+                {
+                    selector: '.electrical',
+                    style: {'line-color': 'red'}
                 }
             ],
             layout: {
-                name: 'grid',
-                rows: 1
+                name: LAYOUT,
             }
         });
         cyRef.current = cy;
-        updateGraphElements(cy, workspace); // Initialize with existing workspace data
 
         return () => {
             cy.destroy();
         };
     }, []);
-
-    // Update graph when workspace changes
-    useEffect(() => {
-        if (!cyRef.current || !workspace) return;
-        updateGraphElements(cyRef.current, workspace);
-    }, [workspace]);
 
     return <div ref={cyContainer} style={{width: '100%', height: '100%'}}/>;
 };

@@ -129,7 +129,7 @@ def get_connections(
     return query_connections(
         [c.strip() for c in cells.split(",")],
         [d.strip() for d in dataset_ids.split(",")],
-        dataset_type,
+        [d.strip() for d in dataset_type.split(",")],
         threshold_chemical,
         threshold_electrical,
         include_neighboring_cells,
