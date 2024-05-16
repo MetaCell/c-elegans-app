@@ -450,8 +450,18 @@ const theme = createTheme({
     },
     MuiSvgIcon: {
       styleOverrides: {
+        root: {
+          color: gray500
+        },
         fontSizeSmall: {
           fontSize: "1rem",
+          width: "1rem",
+          height: "1rem",
+        },
+        fontSizeMedium: {
+          fontSize: "1.25rem",
+          width: '1.25rem',
+          height: '1.25rem'
         },
       },
     },
@@ -606,6 +616,18 @@ const theme = createTheme({
             marginLeft: "0.875rem",
             color: gray600,
           },
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          padding: '0.375rem',
+          
+          '&:hover': {
+            borderRadius: "0.5rem",
+            backgroundColor: gray100,
+          }
         },
       },
     },

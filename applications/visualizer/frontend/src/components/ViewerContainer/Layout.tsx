@@ -3,7 +3,7 @@ import Header from "./Header.tsx";
 import Sidebar from "./Sidebar.tsx";
 
 const drawerWidth = "22.25rem";
-const drawerHeight = "3rem";
+const drawerHeight = "3.5rem";
 const Layout = ({
   sidebarOpen,
   setSidebarOpen,

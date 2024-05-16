@@ -1,6 +1,7 @@
 import Switch, { SwitchProps } from '@mui/material/Switch';
 import { styled } from '@mui/material/styles';
 import {vars} from "../../theme/variables.ts";
+import Tooltip from "@mui/material/Tooltip";
 
 const { white, brand600, gray100} = vars
 
@@ -49,7 +50,7 @@ const IOSSwitch = styled((props: SwitchProps) => (
 }));
 
 const CustomSwitch = () => {
-  return <IOSSwitch />;
+  return <Tooltip title={'ss'}><IOSSwitch /></Tooltip>;
 };
 
 export default CustomSwitch;

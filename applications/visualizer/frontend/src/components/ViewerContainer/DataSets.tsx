@@ -11,8 +11,17 @@ const data = [
   {
     title: "Development stage 1",
     dataSets: [
-      { label: 'Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)', checked: true, description: '23 hours after birth', helpText: 'helpText' },
+      { label: 'Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)', checked: true, description: '23 hours after birth', helpText: 'helpText' },
       { label: 'Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)', checked: true, description: '27 hours after birth', helpText: 'helpText' },
+      { label: 'Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)', checked: true, description: 'L4 legacy dataset', helpText: 'helpText' },
+      { label: 'Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)', checked: true, description: 'L4 legacy dataset', helpText: 'helpText' },
+      { label: 'Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)', checked: true, description: 'L4 legacy dataset', helpText: 'helpText' },
+      { label: 'Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)', checked: true, description: 'L4 legacy dataset', helpText: 'helpText' },
+      { label: 'Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)', checked: true, description: 'L4 legacy dataset', helpText: 'helpText' },
+      { label: 'Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)', checked: true, description: 'L4 legacy dataset', helpText: 'helpText' },
+      { label: 'Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)', checked: true, description: 'L4 legacy dataset', helpText: 'helpText' },
+      { label: 'Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)', checked: true, description: 'L4 legacy dataset', helpText: 'helpText' },
+      { label: 'Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)', checked: true, description: 'L4 legacy dataset', helpText: 'helpText' },
       { label: 'Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)', checked: true, description: 'L4 legacy dataset', helpText: 'helpText' },
     ]
   },

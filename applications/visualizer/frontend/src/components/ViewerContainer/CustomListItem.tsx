@@ -1,21 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Stack from '@mui/material/Stack';
 import Typography from "@mui/material/Typography";
 import Tooltip from '@mui/material/Tooltip';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import { Box } from "@mui/material";
+import {Box, IconButton} from "@mui/material";
 import { vars } from "../../theme/variables.ts";
 import CustomSwitch from "./CustomSwitch.tsx";
 import PickerWrapper from "./PickerWrapper.tsx";
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
+import AddIcon from '@mui/icons-material/Add';
 
-const { gray600, gray400B, gray500, white, brand600, gray100 } = vars
+const { gray600, gray400B, gray500, gray50 } = vars;
 
-const CustomListItem = ({ data, showTooltip = true, listType }) => {
+const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions = false }) => {
   const [checked, setChecked] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [open, setOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState('#9FEE9A');
+  const [itemHovered, setItemHovered] = useState(false);
   
   const isNeurons = listType === 'neurons';
   const onSwitchChange = (e) => {
@@ -37,43 +40,65 @@ const CustomListItem = ({ data, showTooltip = true, listType }) => {
     setSelectedColor(color.hex);
   };
   
+    const handleOnMouseEnter = () => {
+    setItemHovered(true);
+  };
+    
+    const handleOnMouseLeave = () => {
+    setItemHovered(false);
+  };
+  
   return (
     <>
       <FormControlLabel
-        control={<CustomSwitch />}
+        control={<Tooltip  title={'data.helpText'}><CustomSwitch /></Tooltip>}
         onChange={onSwitchChange}
+        onMouseEnter={handleOnMouseEnter}
+        onMouseLeave={handleOnMouseLeave}
         sx={{
           m: 1,
           alignItems: "baseline",
           padding: ".5rem",
-          
+          '&:hover': {
+            background: gray50,
+            borderRadius: '.5rem'
+          },
           "& .MuiFormControlLabel-label": {
             width: "100%",
           },
         }}
         checked={checked}
         label={
-          <Box>
+          <Stack>
             <Stack
               direction="row"
               alignItems="center"
               width={1}
               spacing=".5rem"
+              justifyContent='space-between'
             >
-              {isNeurons && <Box
-                onClick={handleClick}
-                sx={{
-                  borderRadius: '0.125rem',
-                  border: '1px solid rgba(0, 0, 0, 0.20)',
-                  background: selectedColor,
-                  width: '0.875rem',
-                  height: '0.875rem'
-                }} />}
-              <Typography color={gray600} variant="subtitle1" textWrap="nowrap">
-                {data?.label?.length > 32
-                  ? data?.label.slice(0, 32) + "..."
-                  : data?.label}
-              </Typography>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent='space-between'
+                spacing=".5rem"
+              >
+                {isNeurons && <Box
+                  onClick={handleClick}
+                  sx={{
+                    borderRadius: '0.125rem',
+                    border: '1px solid rgba(0, 0, 0, 0.20)',
+                    background: selectedColor,
+                    width: '0.875rem',
+                    height: '0.875rem'
+                  }} />}
+                <Typography color={gray600} variant="subtitle1">
+                  {data?.label?.length > 32
+                    ? data?.label.slice(0, 32) + "..."
+                    : data?.label}
+                </Typography>
+              </Stack>
+             
               {showTooltip && (
                 <Tooltip title={data.helpText}>
                   <HelpOutlineIcon
@@ -84,13 +109,23 @@ const CustomListItem = ({ data, showTooltip = true, listType }) => {
                   />
                 </Tooltip>
               )}
+              {
+                showExtraActions && itemHovered && <Box display='flex' alignItems='center' gap='.25rem'>
+                <IconButton>
+                  <DeleteOutlinedIcon fontSize='small' />
+                </IconButton>
+                  <IconButton>
+                    <AddIcon fontSize='small' />
+                  </IconButton>
+                </Box>
+              }
             </Stack>
             {data.description && (
               <Typography color={gray500} variant={"caption"}>
                 {data.description}
               </Typography>
             )}
-          </Box>
+          </Stack>
         }
         value={undefined}
       />

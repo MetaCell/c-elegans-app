@@ -124,7 +124,7 @@ const Sidebar = ({
           overflow: "hidden"
         }}
       >
-        <Stack spacing=".75rem" borderRight={`1px solid ${gray100}`} p=".75rem">
+        <Stack spacing=".75rem" borderRight={`1px solid ${gray100}`} p=".75rem" width='3.5rem'>
           <IconButton
             sx={{
               padding: ".38rem",

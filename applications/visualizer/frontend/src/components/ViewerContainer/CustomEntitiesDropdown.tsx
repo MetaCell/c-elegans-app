@@ -87,6 +87,7 @@ export default function CustomEntitiesDropdown() {
             borderLeft: 0,
             borderRadius: 0,
             padding: '1rem 0.75rem',
+            height: '3.25rem',
             borderColor: '#ECECE9',
             '&.Mui-focused': {
               background: '#ECECE9',
@@ -139,6 +140,7 @@ export default function CustomEntitiesDropdown() {
                         key={option.id}
                         onMouseEnter={() => setHoveredOption(option)}
                         onMouseLeave={() => setHoveredOption(null)}
+                        onClick={() => setAutocompleteOptions([])}
                       >
                         <Typography
                           sx={{ width: 1, height: 1, padding: "0.625rem" }}
