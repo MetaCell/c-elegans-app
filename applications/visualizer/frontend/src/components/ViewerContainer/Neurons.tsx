@@ -3,6 +3,7 @@ import { vars } from "../../theme/variables.ts";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 import CustomListItem from "./CustomListItem.tsx";
 import AddIcon from '@mui/icons-material/Add';
+import Tooltip from "@mui/material/Tooltip";
 const { gray900, gray500 } = vars;
 
 const Neurons = () => {
@@ -36,14 +37,19 @@ const Neurons = () => {
         height: "100%",
         overflow: 'auto'
       }}>
-        <Stack spacing='.5rem' p='.25rem' mt='.5rem'>
-          <Box display='flex' alignItems='center' justifyContent='space-between' padding='.5rem'>
+        <Stack spacing='.5rem' p='0 .25rem' mt='.75rem'>
+          <Box display='flex' alignItems='center' justifyContent='space-between' padding='.25rem .5rem'>
             <Typography color={gray500} variant='subtitle1'>
               {activeNeurons.title}
             </Typography>
-            <IconButton>
-              <AddIcon fontSize='medium' />
-            </IconButton>
+            <Tooltip title='Create new group'>
+              <IconButton sx={{
+                padding: '.25rem',
+                borderRadius: '.25rem',
+              }}>
+                <AddIcon fontSize='medium' />
+              </IconButton>
+            </Tooltip>
           </Box>
           {activeNeurons.neurons.map((item, i) => (
             <CustomListItem key={i} data={item} showTooltip={false} showExtraActions={true} listType='neurons' />

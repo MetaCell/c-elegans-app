@@ -625,8 +625,10 @@ const theme = createTheme({
           padding: '0.375rem',
           
           '&:hover': {
-            borderRadius: "0.5rem",
             backgroundColor: gray100,
+            '& .MuiSvgIcon-root': {
+              color: gray700,
+            }
           }
         },
       },

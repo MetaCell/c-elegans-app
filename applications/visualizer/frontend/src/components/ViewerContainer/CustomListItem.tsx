@@ -11,7 +11,7 @@ import PickerWrapper from "./PickerWrapper.tsx";
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import AddIcon from '@mui/icons-material/Add';
 
-const { gray600, gray400B, gray500, gray50 } = vars;
+const { gray600, gray400B, gray500, gray50, error50, error700 } = vars;
 
 const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions = false }) => {
   const [checked, setChecked] = useState(false);
@@ -58,14 +58,19 @@ const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions =
         sx={{
           m: 1,
           alignItems: "baseline",
-          padding: ".5rem",
+          padding: "0.5rem",
           '&:hover': {
             background: gray50,
-            borderRadius: '.5rem'
+            borderRadius: '.5rem',
           },
           "& .MuiFormControlLabel-label": {
             width: "100%",
           },
+          
+          "& .MuiIconButton-root": {
+            padding: '.25rem',
+            borderRadius: '.25rem',
+          }
         }}
         checked={checked}
         label={
@@ -111,12 +116,25 @@ const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions =
               )}
               {
                 showExtraActions && itemHovered && <Box display='flex' alignItems='center' gap='.25rem'>
-                <IconButton>
-                  <DeleteOutlinedIcon fontSize='small' />
-                </IconButton>
+                <Tooltip title='Remove from all viewers'>
+                  <IconButton sx={{
+                    padding: '0.125rem !important',
+                    
+                    '&:hover': {
+                      backgroundColor: error50,
+                      '& .MuiSvgIcon-root': {
+                        color: error700
+                      }
+                    }
+                  }}>
+                    <DeleteOutlinedIcon fontSize='small' />
+                  </IconButton>
+                </Tooltip>
+                  <Tooltip title='Add to group'>
                   <IconButton>
                     <AddIcon fontSize='small' />
                   </IconButton>
+                  </Tooltip>
                 </Box>
               }
             </Stack>

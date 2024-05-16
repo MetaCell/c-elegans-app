@@ -97,6 +97,8 @@ const Sidebar = ({
         boxSizing: "border-box",
         "& .MuiPaper-root": {
           borderColor: gray100,
+          height: '99vh',
+          paddingBottom: '.75rem'
         },
         ...(sidebarOpen && {
           ...openedMixin(theme),
@@ -120,8 +122,8 @@ const Sidebar = ({
       <Box
         sx={{
           display: "flex",
-          height: 'calc(100vh - 3.5rem)',
-          overflow: "hidden"
+          height: 'calc(100vh - 4rem)',
+          overflow: "hidden",
         }}
       >
         <Stack spacing=".75rem" borderRight={`1px solid ${gray100}`} p=".75rem" width='3.5rem'>
