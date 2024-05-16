@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState } from "react";
 import { ThemeProvider } from "@mui/material/styles";
-import { Box, CircularProgress, CssBaseline } from "@mui/material";
+import { Box, CssBaseline } from "@mui/material";
 import { addWidget } from "@metacell/geppetto-meta-client/common/layout/actions";
 import "@metacell/geppetto-meta-ui/flex-layout/style/dark.scss";
 import theme from "../theme";
@@ -11,15 +11,15 @@ import {
   threeDViewerWidget,
 } from "../layout-manager/widgets.ts";
 import Layout from "./ViewerContainer/Layout.tsx";
+import { RootState } from "../layout-manager/layoutManagerFactory.ts";
+
 
 function Workspace() {
   const dispatch = useDispatch();
   const { workspaces } = useGlobalContext();
 
-  const workspaceId = useSelector((state) => state.workspaceId);
-  const [LayoutComponent, setLayoutComponent] = useState<
-    React.ComponentType | undefined
-  >(undefined);
+  const workspaceId = useSelector((state: RootState) => state.workspaceId);
+  const [LayoutComponent, setLayoutComponent] = useState<React.ComponentType | undefined>(undefined);
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
 
   const workspace = workspaces[workspaceId];
@@ -42,7 +42,6 @@ function Workspace() {
     <>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Suspense fallback={ <CircularProgress />}>
         {!isLoading && (
           <Box
             className="layout-manager-container"
@@ -56,7 +55,6 @@ function Workspace() {
             <LayoutComponent />
           </Box>
         )}
-        </Suspense>
       </ThemeProvider>
     </>
   );

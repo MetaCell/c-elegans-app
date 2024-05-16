@@ -85,7 +85,7 @@ const Sidebar = ({
     setSidebarOpen(false);
   };
 
-  const handleToggleContent = (e, type) => {
+  const handleToggleContent = (_, type) => {
     setContent(type);
   };
   return (
