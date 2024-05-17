@@ -1,12 +1,11 @@
 import {
     configureStore,
     Reducer,
-    PreloadedState,
     combineReducers,
-    AnyAction,
+    Action,
 } from "@reduxjs/toolkit";
-import {callbacksMiddleware} from '@metacell/geppetto-meta-client/common/middleware/geppettoMiddleware';
-import {initLayoutManager} from "@metacell/geppetto-meta-client/common/layout/LayoutManager";
+import { callbacksMiddleware } from '@metacell/geppetto-meta-client/common/middleware/geppettoMiddleware';
+import { initLayoutManager } from "@metacell/geppetto-meta-client/common/layout/LayoutManager";
 import geppettoClientReducer, {
     clientInitialState,
     ClientState
@@ -17,8 +16,8 @@ import {
     widgets,
     LayoutState
 } from '@metacell/geppetto-meta-client/common/reducer/geppettoLayout';
-import {reducerDecorator} from '@metacell/geppetto-meta-client/common/reducer/reducerDecorator';
-import {WidgetMap} from '@metacell/geppetto-meta-client/common/layout/model';
+import { reducerDecorator } from '@metacell/geppetto-meta-client/common/reducer/reducerDecorator';
+import { WidgetMap } from '@metacell/geppetto-meta-client/common/layout/model';
 
 import componentMap from "./componentMap.ts";
 import baseLayout from "./layout.ts";
@@ -51,22 +50,23 @@ const rootReducer: Reducer<RootState> = reducerDecorator(combineReducers<RootSta
     client: geppettoClientReducer,
     layout,
     widgets,
+    // @ts-expect-error
     workspaceId: workspaceReducer
 }));
 
 const getLayoutManagerAndStore = (workspaceId: string) => {
     const layoutManager = initLayoutManager(baseLayout, componentMap, undefined, false);
-    const middlewareEnhancer = (getDefaultMiddleware: ReturnType<typeof getDefaultMiddleware>) =>
-        getDefaultMiddleware<RootState>().concat(callbacksMiddleware, layoutManager.middleware);
+    const middlewareEnhancer = getDefaultMiddleware =>
+        getDefaultMiddleware().concat(callbacksMiddleware, layoutManager.middleware);
 
     const storeOptions: {
-        preloadedState: PreloadedState<RootState>;
-        reducer: (state: (RootState | undefined), action: AnyAction) => RootState;
+        preloadedState: Partial<RootState>;
+        reducer: (state: (RootState | undefined), action: Action) => RootState;
         middleware: (getDefaultMiddleware: ReturnType<ReturnType<any>>) => any
     } = {
         reducer: rootReducer,
         middleware: middlewareEnhancer,
-        preloadedState: {...initialState, workspaceId: workspaceId} as PreloadedState<RootState>,
+        preloadedState: { ...initialState, workspaceId: workspaceId } as Partial<RootState>,
     };
 
     const store = configureStore(storeOptions);

@@ -1,9 +1,8 @@
-import React from 'react';
 import Box from '@mui/material/Box';
 import ChromePicker from 'react-color';
 
 
-const ColorPicker = ({selectedColor, onChange}) => {
+const ColorPicker = ({ selectedColor, onChange }) => {
   return (
     <Box sx={{
       '& > div': {
@@ -11,7 +10,7 @@ const ColorPicker = ({selectedColor, onChange}) => {
         boxShadow: 'none !important',
         background: 'transparent !important',
         fontFamily: "'IBM Plex Sans',sans-serif !important",
-        
+
         '& > div:last-of-type': {
           '& > div:first-of-type': {
             '& > div:first-of-type': {
@@ -21,13 +20,13 @@ const ColorPicker = ({selectedColor, onChange}) => {
             },
           },
         },
-        
+
         '& svg': {
           '&:hover': {
             // background: `${headerBorderLeftColor} !important`,
           },
         },
-        
+
         '& input': {
           // backgroundColor: `${headerBorderLeftColor} !important`,
           boxShadow: 'none !important',

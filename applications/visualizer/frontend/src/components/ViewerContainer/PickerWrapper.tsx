@@ -1,8 +1,7 @@
-import * as React from 'react';
 import { Popover } from '@mui/material';
 import ColorPicker from "./ColorPicker";
 
-const PickerWrapper = ({open, anchorEl, onClose, onChange, selectedColor}) => {
+const PickerWrapper = ({ open, anchorEl, onClose, onChange, selectedColor }) => {
     return (
         <Popover
             id={'id'}

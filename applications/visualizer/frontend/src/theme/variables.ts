@@ -17,8 +17,6 @@ export const vars = {
   success50: '#ECFDF3',
   success200: '#ABEFC6',
   success700: '#067647',
-
-
   brand50: '#FDFDFC',
   brand200: '#BED7F9',
   brand300: '#90BBF4',
@@ -60,6 +58,10 @@ export const vars = {
   gray400B: '#969692',
   gray100A: '#F1F2F4',
   gray200A: '#D5D8DD',
+  
+  orange700: '#B93815',
+  error700: '#B42318',
+  error50: '#FEF3F2',
 
   borderRadius: 8,
   paperShadow:'0px 0px 1px rgba(0, 0, 0, 0.3), 0px 20px 24px -4px rgba(16, 24, 40, 0.08), 0px 8px 8px -4px rgba(16, 24, 40, 0.03)',

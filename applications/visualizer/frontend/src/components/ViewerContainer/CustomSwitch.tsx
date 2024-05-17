@@ -1,8 +1,10 @@
 import Switch, { SwitchProps } from '@mui/material/Switch';
 import { styled } from '@mui/material/styles';
-import {vars} from "../../theme/variables.ts";
+import { vars } from "../../theme/variables.ts";
+import Tooltip from "@mui/material/Tooltip";
+import { useState } from "react";
 
-const { white, brand600, gray100} = vars
+const { white, brand600, gray100 } = vars;
 
 const IOSSwitch = styled((props: SwitchProps) => (
   <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
@@ -31,7 +33,6 @@ const IOSSwitch = styled((props: SwitchProps) => (
       color: gray100,
     },
   },
-  
   '& .MuiSwitch-thumb': {
     boxSizing: 'border-box',
     width: 10.24,
@@ -49,7 +50,17 @@ const IOSSwitch = styled((props: SwitchProps) => (
 }));
 
 const CustomSwitch = () => {
-  return <IOSSwitch />;
+  const [checked, setChecked] = useState(false);
+  
+  const handleChange = (event) => {
+    setChecked(event.target.checked);
+  };
+  
+  return (
+    <Tooltip title={checked ? "Hide" : "Show"}>
+      <IOSSwitch checked={checked} onChange={handleChange} />
+    </Tooltip>
+  );
 };
 
 export default CustomSwitch;

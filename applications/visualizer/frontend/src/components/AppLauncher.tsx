@@ -1,4 +1,3 @@
-import React from 'react';
 import { Typography, Card, CardContent, CardActionArea, Grid, Container, Box, AppBar, Toolbar, Button } from '@mui/material';
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import footerImage from '../assets/summary-neurons.png';
