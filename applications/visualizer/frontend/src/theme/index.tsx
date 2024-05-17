@@ -440,6 +440,9 @@ const theme = createTheme({
 
     MuiAutocomplete: {
       styleOverrides: {
+        input: {
+          height: 'auto'
+        },
         inputRoot: {
           gap: '0.5rem'
         },
@@ -541,7 +544,7 @@ const theme = createTheme({
             }
           },
           '& .MuiOutlinedInput-root': {
-            padding: '0 0.875rem',
+            padding: '0.5rem 0.875rem',
             '& .MuiAutocomplete-input': {
               padding: 0
             }
@@ -557,7 +560,7 @@ const theme = createTheme({
           maxWidth: "43.75rem",
         },
         paper: {
-          borderRadius: 12,
+          borderRadius: '8px',
           maxWidth: "34.375rem",
           '& h3': {
             fontSize: '0.875rem',
@@ -881,8 +884,7 @@ const theme = createTheme({
           }
         },
         root: {
-          // border: `0.0625rem ${gray100} solid`,
-          // boxShadow: "0 0 0.25rem rgba(0, 0, 0, 0.1)",
+          borderRadius: '8px',
           "& .MuiOutlinedInput-notchedOutline": {
             borderColor: gray100,
             borderWidth: '0.0625rem',

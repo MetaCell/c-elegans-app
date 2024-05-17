@@ -187,6 +187,7 @@ const Header = ({
             <Autocomplete
               multiple
               id="grouped-demo"
+              clearIcon={false}
               options={allOptions}
               ChipProps={{ deleteIcon: <IconButton sx={{ p: '0 !important', margin: '0 !important' }}><CloseIcon /></IconButton> }}
               popupIcon={<CaretIcon />}
@@ -220,6 +221,7 @@ const Header = ({
               multiple
               className="secondary"
               id="tags-standard"
+              clearIcon={false}
               options={NeuronData}
               getOptionLabel={(option) => option}
               ChipProps={{ deleteIcon: <IconButton sx={{ p: '0 !important', margin: '0 !important' }}><CloseIcon /></IconButton> }}
