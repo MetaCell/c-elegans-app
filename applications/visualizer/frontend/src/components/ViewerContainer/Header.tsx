@@ -2,8 +2,63 @@ import { Theme } from "@mui/material/styles";
 import { AppBar, Box, Button, ButtonGroup, Dialog, FormLabel, IconButton, ListSubheader, Menu, MenuItem, TextField, Toolbar, Tooltip, Typography, Autocomplete} from "@mui/material";
 import { vars } from "../../theme/variables.ts";
 import React, { useState } from "react";
-import { CaretIcon, CheckIcon, CloseIcon, MoreOptionsIcon } from "../../icons/index.tsx";
+import { CaretIcon, CheckIcon, CiteIcon, CloseIcon, ConnectionsIcon, ContactIcon, ContributeIcon, DataSourceIcon, DownloadIcon, MoreOptionsIcon, TourIcon } from "../../icons/index.tsx";
 const { gray100 } = vars;
+
+const MENU_ARR = [
+  {
+    id: 0,
+    heading: 'Learn',
+    items: [
+      {
+        label: 'Take a tour',
+        icon: TourIcon
+      }
+    ]
+  },
+  {
+    id: 1,
+    heading: 'Data info',
+    items: [
+      {
+        label: 'Data sources',
+        icon: DataSourceIcon
+      },
+      {
+        label: 'Types of connections',
+        icon: ConnectionsIcon
+      },
+      {
+        label: 'Download data',
+        icon: DownloadIcon
+      },
+      {
+        label: 'Cite us',
+        icon: CiteIcon
+      }
+    ]
+  },
+  {
+    id: 2,
+    heading: 'Development',
+    items: [
+      {
+        label: 'Contribute',
+        icon: ContributeIcon
+      }
+    ]
+  },
+  {
+    id: 3,
+    heading: 'Help',
+    items: [
+      {
+        label: 'Contact us',
+        icon: ContactIcon
+      }
+    ]
+  },
+]
 
 const VIEW_OPTIONS = [
   {
@@ -18,6 +73,29 @@ const VIEW_OPTIONS = [
   }
 ]
 
+const NeuronData = [
+  'ADAC', "ARAC", "VBG"
+];
+
+const datasetStages = [
+  {
+    groupName: 'Development Stage 1',
+    options: [
+      { title: 'Witvliet et al., 2020, Dataset 1 (L1)', caption: '0 hours from birth' },
+      { title: 'Witvliet et al., 2020, Dataset 3 (L1)', caption: '0 hours from birth' },
+      { title: 'Witvliet et al., 2020, Dataset 2 (L1)', caption: '0 hours from birth' }
+    ]
+  },
+  {
+    groupName: 'Development Stage 2',
+    options: [
+      { title: 'Witvliet et al., 2020, Dataset 1 (L1)', caption: '0 hours from birth' },
+      { title: 'Witvliet et al., 2020, Dataset 3 (L1)', caption: '0 hours from birth' },
+      { title: 'Witvliet et al., 2020, Dataset 2 (L1)', caption: '0 hours from birth' }
+    ]
+  },
+];
+
 const Header = ({
   sidebarOpen,
   drawerHeight,
@@ -28,16 +106,14 @@ const Header = ({
   drawerWidth: string;
 }) => {
   const [active, setActive] = useState(0);
-  const [selected, setSelected] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  const handleClose = (index: number) => {
+  const handleClose = () => {
     setAnchorEl(null);
-    setSelected(index)
   };
 
   const onClick = (index: number) => {
@@ -57,28 +133,6 @@ const Header = ({
     setActive(0)
   }
 
-  const NeuronData = [
-    'ADAC', "ARAC", "VBG"
-  ];
-
-  const datasetStages = [
-    {
-      groupName: 'Development Stage 1',
-      options: [
-        { title: 'Witvliet et al., 2020, Dataset 1 (L1)', caption: '0 hours from birth' },
-        { title: 'Witvliet et al., 2020, Dataset 3 (L1)', caption: '0 hours from birth' },
-        { title: 'Witvliet et al., 2020, Dataset 2 (L1)', caption: '0 hours from birth' }
-      ]
-    },
-    {
-      groupName: 'Development Stage 2',
-      options: [
-        { title: 'Witvliet et al., 2020, Dataset 1 (L1)', caption: '0 hours from birth' },
-        { title: 'Witvliet et al., 2020, Dataset 3 (L1)', caption: '0 hours from birth' },
-        { title: 'Witvliet et al., 2020, Dataset 2 (L1)', caption: '0 hours from birth' }
-      ]
-    },
-  ];
   const allOptions = datasetStages.reduce((acc, curr) => {
     return [...acc, ...curr.options.map(option => ({ ...option, groupName: curr.groupName }))];
   }, []);
@@ -150,16 +204,19 @@ const Header = ({
                 'aria-labelledby': 'dataset-menu-btn',
               }}
             >
-              <MenuItem disabled>
-                <Typography variant="h4">Datasets</Typography>
-              </MenuItem>
-              {['Witvliet et al., 2020, Dataset 1 (L1)', 'Witvliet et al., 2020, Dataset 2 (L1)', 'Witvliet et al., 2020, Dataset 3 (L1)', 'Witvliet et al., 2020, Dataset 4 (L1)', 'Witvliet et al., 2020, Dataset 5 (L1)'].map((item, index) => {
-                return (
-                  <MenuItem key={index} className={selected === index ? 'selected' : ''} onClick={() => handleClose(index)}>
-                    <CheckIcon />{item}
+              {MENU_ARR.map((menu) => (
+                <Box key={menu.id}>
+                  <MenuItem disabled>
+                    <Typography variant="h4">{menu.heading}</Typography>
                   </MenuItem>
-                )
-              })}
+                  {menu.items.map((item) => (
+                    <MenuItem>
+                      <item.icon/>
+                      {item.label}
+                    </MenuItem>
+                  ))} 
+                </Box>
+              ))}
             </Menu>
           </Box>
         </Toolbar>
@@ -191,10 +248,10 @@ const Header = ({
               options={allOptions}
               ChipProps={{ deleteIcon: <IconButton sx={{ p: '0 !important', margin: '0 !important' }}><CloseIcon /></IconButton> }}
               popupIcon={<CaretIcon />}
-              groupBy={(option: any) => option.groupName}
-              getOptionLabel={(option: any) => option.title}
+              groupBy={(option) => option.groupName}
+              getOptionLabel={(option) => option.title}
               renderInput={(params) => <TextField {...params} placeholder="Start typing to search" />}
-              renderOption={(props, option: any) => (
+              renderOption={(props, option) => (
                 <li {...props}>
                   <CheckIcon />
                   <Typography>{option.title}</Typography>
@@ -225,7 +282,7 @@ const Header = ({
               options={NeuronData}
               getOptionLabel={(option) => option}
               ChipProps={{ deleteIcon: <IconButton sx={{ p: '0 !important', margin: '0 !important' }}><CloseIcon /></IconButton> }}
-              renderOption={(props, option: any) => (
+              renderOption={(props, option) => (
                 <li {...props}>
                   <CheckIcon />
                   <Typography>{option}</Typography>

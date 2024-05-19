@@ -317,9 +317,9 @@ const theme = createTheme({
           fontWeight: 500,
           color: gray600,
 
-          '& svg': {
-            visibility: 'hidden'
-          },
+          // '& svg': {
+          //   visibility: 'hidden'
+          // },
 
           '&.selected': {
             color: gray700,
@@ -356,7 +356,7 @@ const theme = createTheme({
 
           '&.Mui-disabled': {
             opacity: 1,
-            display: 'none',
+            // display: 'none',
             padding: '0.25rem 0.5rem'
           }
         }
@@ -366,8 +366,14 @@ const theme = createTheme({
     MuiList: {
       styleOverrides: {
         root: {
-          maxHeight: '12.5rem',
+          // maxHeight: '12.5rem',
+          maxHeight: '100%',
           '& > div + div': {
+            marginTop: '0.25rem',
+            paddingTop: '0.25rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.25rem',
             borderTop: `0.0625rem solid ${gray100}`
           }
         }
@@ -397,23 +403,12 @@ const theme = createTheme({
         },
 
         list: {
-          padding: '0'
+          // padding: '0'
+          padding: '0.5rem',
         }
       }
     },
 
-    MuiIconButton: {
-      styleOverrides: {
-        root: {
-          padding: '0.375rem',
-          borderRadius: '0.25rem',
-
-          '&:hover': {
-            background: gray50
-          }
-        }
-      }
-    },
 
     MuiBackdrop: {
       styleOverrides: {
@@ -941,6 +936,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           padding: '0.375rem',
+          borderRadius: '0.25rem',
           
           '&:hover': {
             backgroundColor: gray100,
