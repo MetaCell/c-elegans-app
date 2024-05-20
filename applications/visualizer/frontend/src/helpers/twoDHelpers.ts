@@ -19,3 +19,11 @@ export const createNode = (nodeId: string) => {
         data: {id: nodeId, label: nodeId}
     }
 }
+
+export function applyLayout(cyRef: React.MutableRefObject<null>, layout: string) {
+    cyRef.current.layout({
+        name: layout,
+        fit: true,
+        animate: false,
+    }).run();
+}

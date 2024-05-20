@@ -3,20 +3,23 @@ import cytoscape from 'cytoscape';
 import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace.ts";
 import {Connection, ConnectivityService} from "../../../rest";
 import {GRAPH_STYLES} from "../../../theme/twoDStyles.ts";
-import {createEdge, createNode} from "../../../helpers/twoDHelpers.ts";
+import {applyLayout, createEdge, createNode} from "../../../helpers/twoDHelpers.ts";
 import {
-    CHEMICAL_THRESHOLD,
+    CHEMICAL_THRESHOLD, DEFAULT_LAYOUT,
     ELECTRICAL_THRESHOLD,
     INCLUDE_ANNOTATIONS,
     INCLUDE_NEIGHBORING_CELLS
 } from "../../../settings/twoDSettings.ts";
+import TwoDMenu from "./Menu/TwoDMenu.tsx";
 
-const LAYOUT = 'cose'
+
+
 const TwoDViewer = () => {
     const workspace = useSelectedWorkspace()
     const cyContainer = useRef(null);
     const cyRef = useRef(null);
     const [connections, setConnections] = useState<Connection[]>([]);
+    const [layout, setLayout] = useState<string>(DEFAULT_LAYOUT)
     const [thresholdChemical, setThresholdChemical] = useState<number>(CHEMICAL_THRESHOLD);
     const [thresholdElectrical, setThresholdElectrical] = useState<number>(ELECTRICAL_THRESHOLD);
     const [includeNeighboringCells, setIncludeNeighboringCells] = useState<boolean>(INCLUDE_NEIGHBORING_CELLS);
@@ -30,7 +33,7 @@ const TwoDViewer = () => {
             container: cyContainer.current,
             style: GRAPH_STYLES,
             layout: {
-                name: LAYOUT,
+                name: layout,
             }
         });
         cyRef.current = cy;
@@ -83,6 +86,12 @@ const TwoDViewer = () => {
         }
     }, [connections]);
 
+    // Update layout when layout setting changes
+    useEffect(() => {
+        updateLayout();
+    }, [layout]);
+
+
     const updateGraphElements = (cy, connections) => {
         const nodes = new Set<string>();
         const edges = [];
@@ -102,15 +111,18 @@ const TwoDViewer = () => {
 
     const updateLayout = () => {
         if (cyRef.current) {
-            cyRef.current.layout({
-                name: LAYOUT,
-                fit: true,
-                animate: false,
-            }).run();
+            applyLayout(cyRef, layout);
         }
     };
 
-    return <div ref={cyContainer} style={{width: '100%', height: '100%'}}/>;
+    return <div style={{display: 'flex', width: '100%', height: '100%'}}>
+        <TwoDMenu
+            cyRef={cyRef}
+            layout={layout}
+            onLayoutChange={setLayout}
+        />
+        <div ref={cyContainer} style={{width: '100%', height: '100%'}}/>
+    </div>
 };
 
 export default TwoDViewer;
