@@ -1,14 +1,26 @@
 import {useEffect, useRef, useState} from 'react';
 import cytoscape from 'cytoscape';
 import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace.ts";
-import {ConnectivityService} from "../../../rest";
+import {Connection, ConnectivityService} from "../../../rest";
+import {GRAPH_STYLES} from "../../../theme/twoDStyles.ts";
+import {createEdge, createNode} from "../../../helpers/twoDHelpers.ts";
+import {
+    CHEMICAL_THRESHOLD,
+    ELECTRICAL_THRESHOLD,
+    INCLUDE_ANNOTATIONS,
+    INCLUDE_NEIGHBORING_CELLS
+} from "../../../settings/twoDSettings.ts";
 
 const LAYOUT = 'cose'
 const TwoDViewer = () => {
     const workspace = useSelectedWorkspace()
     const cyContainer = useRef(null);
     const cyRef = useRef(null);
-    const [connections, setConnections] = useState([]);
+    const [connections, setConnections] = useState<Connection[]>([]);
+    const [thresholdChemical, setThresholdChemical] = useState<number>(CHEMICAL_THRESHOLD);
+    const [thresholdElectrical, setThresholdElectrical] = useState<number>(ELECTRICAL_THRESHOLD);
+    const [includeNeighboringCells, setIncludeNeighboringCells] = useState<boolean>(INCLUDE_NEIGHBORING_CELLS);
+    const [includeAnnotations, setIncludeAnnotations] = useState<boolean>(INCLUDE_ANNOTATIONS);
 
     const updateGraphElements = (cy, connections) => {
         const nodes = new Set();
@@ -17,22 +29,10 @@ const TwoDViewer = () => {
         connections.forEach(conn => {
             nodes.add(conn.pre);
             nodes.add(conn.post);
-            edges.push({
-                group: 'edges',
-                data: {
-                    id: `${conn.pre}-${conn.post}`,
-                    source: conn.pre,
-                    target: conn.post,
-                    label: conn.type
-                },
-                classes: conn.type
-            });
+            edges.push(createEdge(conn));
         });
 
-        const elements = Array.from(nodes).map(node => ({
-            group: 'nodes',
-            data: {id: node, label: node}
-        })).concat(edges);
+        const elements = Array.from(nodes).map(nodeId => createNode(nodeId)).concat(edges);
 
         cy.elements().remove(); // Remove all existing elements
         cy.add(elements);       // Add new elements
@@ -54,10 +54,10 @@ const TwoDViewer = () => {
             cells,
             datasetIds,
             datasetType,
-            thresholdChemical: 1,
-            thresholdElectrical: 1,
-            includeNeighboringCells: true,
-            includeAnnotations: false,
+            thresholdChemical: thresholdChemical,
+            thresholdElectrical: thresholdElectrical,
+            includeNeighboringCells: includeNeighboringCells,
+            includeAnnotations: includeAnnotations,
         }).then(connections => {
             setConnections(connections);
         }).catch(error => {
@@ -79,38 +79,7 @@ const TwoDViewer = () => {
 
         const cy = cytoscape({
             container: cyContainer.current,
-            style: [
-                {
-                    selector: 'node',
-                    style: {
-                        'background-color': '#666',
-                        'label': 'data(label)',
-                        'color': '#fff',
-                        'text-outline-color': '#000',
-                        'text-outline-width': 2,
-                        'text-valign': 'center',
-                        'text-halign': 'center',
-                    }
-                },
-                {
-                    selector: 'edge',
-                    style: {
-                        'width': 3,
-                        'line-color': '#ccc',
-                        'target-arrow-color': '#ccc',
-                        'target-arrow-shape': 'triangle',
-                        'curve-style': 'bezier'
-                    }
-                },
-                {
-                    selector: '.chemical',
-                    style: {'line-color': 'blue'}
-                },
-                {
-                    selector: '.electrical',
-                    style: {'line-color': 'red'}
-                }
-            ],
+            style: GRAPH_STYLES,
             layout: {
                 name: LAYOUT,
             }

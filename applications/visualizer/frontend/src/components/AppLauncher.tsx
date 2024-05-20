@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import {useGlobalContext} from "../contexts/GlobalContext.tsx";
 import footerImage from '../assets/summary-neurons.png';
-import {TEMPLATE_ACTIVE_DATASETS, TEMPLATE_ACTIVE_NEURONS} from "../../settings/templateWorkspaceSettings.ts";
+import {TEMPLATE_ACTIVE_DATASETS, TEMPLATE_ACTIVE_NEURONS} from "../settings/templateWorkspaceSettings.ts";
 import {fetchAndFilterNeurons, fetchDatasets} from "../helpers/templateWorkspaceHelper.ts";
 
 function AppLauncher() {

@@ -5,7 +5,7 @@ import {
     CAMERA_NEAR,
     CAMERA_POSITION, LIGHT_1_COLOR, LIGHT_2_COLOR, LIGHT_2_POSITION,
     SCENE_BACKGROUND
-} from "../../../../settings/threeDSettings.ts";
+} from "../../../settings/threeDSettings.ts";
 
 import STLViewer from "./STLViewer.tsx";
 import { Canvas } from "@react-three/fiber";
