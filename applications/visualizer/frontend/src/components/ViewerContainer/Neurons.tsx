@@ -17,7 +17,7 @@ const Neurons = () => {
   }
   return (
     <Box>
-      <Stack spacing=".25rem" p=".75rem" mb='1.5rem'>
+      <Stack spacing=".25rem" p=".75rem" mb='1.5rem' pb='0'>
       <Typography
           variant="body1"
           component="p"

@@ -48,7 +48,7 @@ const data = [
 const DataSets = () => {
   return (
     <Box>
-      <Stack spacing=".25rem" p=".75rem" mb="1.5rem">
+      <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb='0'>
         <Typography
           variant="body1"
           component="p"
@@ -131,6 +131,7 @@ const DataSets = () => {
               color={gray500}
               variant="subtitle1"
               padding=".25rem .5rem"
+              mb='.5rem'
             >
               {section.title}
             </Typography>
