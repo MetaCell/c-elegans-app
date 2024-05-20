@@ -1,17 +1,21 @@
-import {useEffect, useRef, useState} from 'react';
 import cytoscape from 'cytoscape';
+import fcose from 'cytoscape-fcose';
+import dagre from 'cytoscape-dagre';
+import {useEffect, useRef, useState} from 'react';
 import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace.ts";
 import {Connection, ConnectivityService} from "../../../rest";
 import {GRAPH_STYLES} from "../../../theme/twoDStyles.ts";
 import {applyLayout, createEdge, createNode} from "../../../helpers/twoDHelpers.ts";
 import {
-    CHEMICAL_THRESHOLD, DEFAULT_LAYOUT,
+    CHEMICAL_THRESHOLD,
     ELECTRICAL_THRESHOLD,
     INCLUDE_ANNOTATIONS,
-    INCLUDE_NEIGHBORING_CELLS
+    INCLUDE_NEIGHBORING_CELLS, GRAPH_LAYOUTS
 } from "../../../settings/twoDSettings.ts";
 import TwoDMenu from "./Menu/TwoDMenu.tsx";
 
+cytoscape.use(fcose);
+cytoscape.use(dagre);
 
 
 const TwoDViewer = () => {
@@ -19,7 +23,7 @@ const TwoDViewer = () => {
     const cyContainer = useRef(null);
     const cyRef = useRef(null);
     const [connections, setConnections] = useState<Connection[]>([]);
-    const [layout, setLayout] = useState<string>(DEFAULT_LAYOUT)
+    const [layout, setLayout] = useState<string>(GRAPH_LAYOUTS.Concentric)
     const [thresholdChemical, setThresholdChemical] = useState<number>(CHEMICAL_THRESHOLD);
     const [thresholdElectrical, setThresholdElectrical] = useState<number>(ELECTRICAL_THRESHOLD);
     const [includeNeighboringCells, setIncludeNeighboringCells] = useState<boolean>(INCLUDE_NEIGHBORING_CELLS);

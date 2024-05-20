@@ -7,7 +7,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DownloadIcon from '@mui/icons-material/Download';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import {ZOOM_DELTA} from "../../../../settings/twoDSettings.ts";
+import {GRAPH_LAYOUTS, ZOOM_DELTA} from "../../../../settings/twoDSettings.ts";
 import {applyLayout} from "../../../../helpers/twoDHelpers.ts";
 
 const TwoDMenu = ({cyRef, layout, onLayoutChange}) => {
@@ -74,9 +74,15 @@ const TwoDMenu = ({cyRef, layout, onLayoutChange}) => {
                 }}
             >
                 <ButtonGroup variant="text" orientation="horizontal">
-                    <Button onClick={() => onLayoutChange('circle')}>Circle</Button>
-                    <Button onClick={() => onLayoutChange('force')}>Force</Button>
-                    <Button onClick={() => onLayoutChange('hierarchical')}>Hierarchical</Button>
+                    {Object.entries(GRAPH_LAYOUTS).map(([key, value]) => (
+                        <Button
+                            key={key}
+                            onClick={() => onLayoutChange(value)}
+                            disabled={layout === value}
+                        >
+                            {key}
+                        </Button>
+                    ))}
                 </ButtonGroup>
             </Popover>
             <IconButton>
