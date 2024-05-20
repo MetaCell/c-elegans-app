@@ -22,24 +22,34 @@ const TwoDViewer = () => {
     const [includeNeighboringCells, setIncludeNeighboringCells] = useState<boolean>(INCLUDE_NEIGHBORING_CELLS);
     const [includeAnnotations, setIncludeAnnotations] = useState<boolean>(INCLUDE_ANNOTATIONS);
 
-    const updateGraphElements = (cy, connections) => {
-        const nodes = new Set();
-        const edges = [];
+    // Initialize and update Cytoscape
+    useEffect(() => {
+        if (!cyContainer.current) return;
 
-        connections.forEach(conn => {
-            nodes.add(conn.pre);
-            nodes.add(conn.post);
-            edges.push(createEdge(conn));
+        const cy = cytoscape({
+            container: cyContainer.current,
+            style: GRAPH_STYLES,
+            layout: {
+                name: LAYOUT,
+            }
         });
+        cyRef.current = cy;
 
-        const elements = Array.from(nodes).map(nodeId => createNode(nodeId)).concat(edges);
+        const resizeObserver = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                if (entry.target === cyContainer.current) {
+                    updateLayout();
+                }
+            }
+        });
+        resizeObserver.observe(cyContainer.current);
 
-        cy.elements().remove(); // Remove all existing elements
-        cy.add(elements);       // Add new elements
-        cy.layout({
-            name: LAYOUT,
-        }).run();
-    };
+
+        return () => {
+            resizeObserver.disconnect();
+            cy.destroy();
+        };
+    }, []);
 
     // Fetch and process connections data
     useEffect(() => {
@@ -49,6 +59,7 @@ const TwoDViewer = () => {
         const cells = Object.values(workspace.activeNeurons).map(neuron => neuron.name).join(',');
         const datasetIds = Object.values(workspace.activeDatasets).map(dataset => dataset.id).join(',');
         const datasetType = Object.values(workspace.activeDatasets).map(dataset => dataset.type).join(',');
+
 
         ConnectivityService.getConnections({
             cells,
@@ -72,24 +83,32 @@ const TwoDViewer = () => {
         }
     }, [connections]);
 
+    const updateGraphElements = (cy, connections) => {
+        const nodes = new Set<string>();
+        const edges = [];
 
-    // Initialize and update Cytoscape
-    useEffect(() => {
-        if (!cyContainer.current) return;
-
-        const cy = cytoscape({
-            container: cyContainer.current,
-            style: GRAPH_STYLES,
-            layout: {
-                name: LAYOUT,
-            }
+        connections.forEach(conn => {
+            nodes.add(conn.pre);
+            nodes.add(conn.post);
+            edges.push(createEdge(conn));
         });
-        cyRef.current = cy;
 
-        return () => {
-            cy.destroy();
-        };
-    }, []);
+        const elements = Array.from(nodes).map((nodeId: string) => createNode(nodeId)).concat(edges);
+
+        cy.elements().remove(); // Remove all existing elements
+        cy.add(elements);       // Add new elements
+        updateLayout()
+    };
+
+    const updateLayout = () => {
+        if (cyRef.current) {
+            cyRef.current.layout({
+                name: LAYOUT,
+                fit: true,
+                animate: false,
+            }).run();
+        }
+    };
 
     return <div ref={cyContainer} style={{width: '100%', height: '100%'}}/>;
 };
