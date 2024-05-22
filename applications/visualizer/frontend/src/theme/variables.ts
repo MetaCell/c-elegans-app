@@ -18,6 +18,9 @@ export const vars = {
   success200: '#ABEFC6',
   success700: '#067647',
   brand50: '#FDFDFC',
+  brand200: '#BED7F9',
+  brand300: '#90BBF4',
+  brand500: '#3382EB',
   brand600: '#1568D5',
 
   primaryPurple25: '#FDFAFE',
