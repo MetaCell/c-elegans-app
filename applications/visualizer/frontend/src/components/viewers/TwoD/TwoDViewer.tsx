@@ -1,4 +1,4 @@
-import cytoscape from 'cytoscape';
+import cytoscape, {Core} from 'cytoscape';
 import fcose from 'cytoscape-fcose';
 import dagre from 'cytoscape-dagre';
 import {useEffect, useRef, useState} from 'react';
@@ -9,10 +9,14 @@ import {applyLayout, createEdge, createNode} from "../../../helpers/twoDHelpers.
 import {
     CHEMICAL_THRESHOLD,
     ELECTRICAL_THRESHOLD,
+    GRAPH_LAYOUTS,
+    GraphColoring,
     INCLUDE_ANNOTATIONS,
-    INCLUDE_NEIGHBORING_CELLS, GRAPH_LAYOUTS
-} from "../../../settings/twoDSettings.ts";
-import TwoDMenu from "./Menu/TwoDMenu.tsx";
+    INCLUDE_NEIGHBORING_CELLS
+} from "../../../settings/twoDSettings.tsx";
+import TwoDMenu from "./TwoDMenu.tsx";
+import TwoDLegend from "./TwoDLegend.tsx";
+import {Box} from "@mui/material";
 
 cytoscape.use(fcose);
 cytoscape.use(dagre);
@@ -21,7 +25,7 @@ cytoscape.use(dagre);
 const TwoDViewer = () => {
     const workspace = useSelectedWorkspace()
     const cyContainer = useRef(null);
-    const cyRef = useRef(null);
+    const cyRef = useRef<Core | null>(null);
     const [connections, setConnections] = useState<Connection[]>([]);
     const [layout, setLayout] = useState<string>(GRAPH_LAYOUTS.Concentric)
     const [thresholdChemical, setThresholdChemical] = useState<number>(CHEMICAL_THRESHOLD);
@@ -119,14 +123,22 @@ const TwoDViewer = () => {
         }
     };
 
-    return <div style={{display: 'flex', width: '100%', height: '100%'}}>
+
+    return <Box sx={{position: 'relative', display: 'flex', width: '100%', height: '100%'}}>
         <TwoDMenu
             cyRef={cyRef}
             layout={layout}
             onLayoutChange={setLayout}
         />
+        <Box sx={{position: 'absolute', top: 0, right: 0, zIndex: 1000}}>
+            <TwoDLegend
+                currentStrategy={GraphColoring.CELL_TYPE}
+                onClick={(type, name) => console.log(`${type} clicked: ${name}`)}
+            />
+        </Box>
+
         <div ref={cyContainer} style={{width: '100%', height: '100%'}}/>
-    </div>
+    </Box>
 };
 
 export default TwoDViewer;

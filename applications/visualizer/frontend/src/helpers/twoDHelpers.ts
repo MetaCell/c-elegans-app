@@ -1,3 +1,4 @@
+import {Core} from 'cytoscape';
 import type {Connection} from "../rest";
 
 export const createEdge = (conn: Connection) => {
@@ -20,10 +21,12 @@ export const createNode = (nodeId: string) => {
     }
 }
 
-export function applyLayout(cyRef: React.MutableRefObject<null>, layout: string) {
-    cyRef.current.layout({
-        name: layout,
-        fit: true,
-        animate: false,
-    }).run();
+export function applyLayout(cyRef: React.MutableRefObject<Core | null>, layout: string) {
+    if (cyRef.current) {
+        cyRef.current.layout({
+            name: layout,
+            fit: true,
+            animate: false,
+        }).run();
+    }
 }

@@ -828,6 +828,11 @@
   dependencies:
     "@babel/types" "^7.20.7"
 
+"@types/cytoscape@^3.21.1":
+  version "3.21.1"
+  resolved "https://registry.npmjs.org/@types/cytoscape/-/cytoscape-3.21.1.tgz"
+  integrity sha512-vBC2w0ciULoay50QnSScFg9Yu/9gimyor3vb4b4gEEI+4Ccfu/AH7gA+YKAcFIvo1mgKVhXaewNxw3zC80cXoA==
+
 "@types/draco3d@^1.4.0":
   version "1.4.9"
   resolved "https://registry.npmjs.org/@types/draco3d/-/draco3d-1.4.9.tgz"

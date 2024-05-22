@@ -25,6 +25,7 @@
     "@react-three/drei": "^9.105.4",
     "@react-three/fiber": "^8.16.2",
     "@reduxjs/toolkit": "^2.2.3",
+    "@types/cytoscape": "^3.21.1",
     "@types/three": "^0.164.0",
     "cytoscape": "^3.29.2",
     "cytoscape-dagre": "^2.5.0",

@@ -7,8 +7,8 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DownloadIcon from '@mui/icons-material/Download';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import {GRAPH_LAYOUTS, ZOOM_DELTA} from "../../../../settings/twoDSettings.ts";
-import {applyLayout} from "../../../../helpers/twoDHelpers.ts";
+import {GRAPH_LAYOUTS, ZOOM_DELTA} from "../../../settings/twoDSettings.tsx";
+import {applyLayout} from "../../../helpers/twoDHelpers.ts";
 
 const TwoDMenu = ({cyRef, layout, onLayoutChange}) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);

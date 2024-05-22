@@ -1,4 +1,3 @@
-
 export enum ViewMode {
     Default = 'Default',
     Compare = 'Compare',
@@ -22,4 +21,8 @@ export interface NeuronGroup {
     name: string;
     color: string;
     neurons: Set<string>;
+}
+
+export interface ColorMap {
+    [key: string]: string;
 }
