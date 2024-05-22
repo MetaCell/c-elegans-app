@@ -29,12 +29,11 @@ const TwoDViewer = () => {
     const [connections, setConnections] = useState<Connection[]>([]);
     const [layout, setLayout] = useState<string>(GRAPH_LAYOUTS.Concentric)
     const [coloringOption, setColoringOption] = useState<ColoringOptions>(ColoringOptions.CELL_TYPE)
-    const coloringStrategy = getColoringStrategy(coloringOption)
+    let coloringStrategy = getColoringStrategy(coloringOption)
     const [thresholdChemical, setThresholdChemical] = useState<number>(CHEMICAL_THRESHOLD);
     const [thresholdElectrical, setThresholdElectrical] = useState<number>(ELECTRICAL_THRESHOLD);
     const [includeNeighboringCells, setIncludeNeighboringCells] = useState<boolean>(INCLUDE_NEIGHBORING_CELLS);
     const [includeAnnotations, setIncludeAnnotations] = useState<boolean>(INCLUDE_ANNOTATIONS);
-
 
 
     // Initialize and update Cytoscape
@@ -98,6 +97,12 @@ const TwoDViewer = () => {
         }
     }, [connections]);
 
+    useEffect(() => {
+        if (cyRef.current) {
+            updateNodeColors();
+        }
+    }, [coloringOption]);
+
     // Update layout when layout setting changes
     useEffect(() => {
         updateLayout();
@@ -119,12 +124,25 @@ const TwoDViewer = () => {
         cy.elements().remove(); // Remove all existing elements
         cy.add(elements);       // Add new elements
         updateLayout()
+        updateNodeColors()
     };
 
     const updateLayout = () => {
         if (cyRef.current) {
             applyLayout(cyRef, layout);
         }
+    };
+
+    const updateNodeColors = () => {
+        if (cyRef.current) {
+            cyRef.current.nodes().forEach(node => {
+                const neuronId = node.id();
+                const neuron = workspace.activeNeurons[neuronId]; // FIXME: should be for all neuron in the scene
+                const color = coloringStrategy.getColor(neuron);
+                node.style('background-color', color);
+            });
+        }
+
     };
 
 
