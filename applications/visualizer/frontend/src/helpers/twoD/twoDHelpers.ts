@@ -1,5 +1,5 @@
 import {Core} from 'cytoscape';
-import type {Connection} from "../rest";
+import type {Connection} from "../../rest";
 
 export const createEdge = (conn: Connection) => {
     return {

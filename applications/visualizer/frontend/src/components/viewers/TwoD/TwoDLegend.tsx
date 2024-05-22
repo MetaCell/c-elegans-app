@@ -1,6 +1,7 @@
 import React from 'react';
 import {Typography, Box, IconButton, Divider} from '@mui/material';
 import {coloringStrategies, connectionsLegend, ColorMapStrategy, GraphType} from "../../../settings/twoDSettings.tsx";
+import {ColoringStrategy} from "../../../helpers/twoD/coloringStrategy/ColoringStrategy.ts";
 
 interface LegendNodeProps {
     name: string;
@@ -49,11 +50,11 @@ const LegendConnection: React.FC<LegendConnectionProps> = ({name, icon, onClick}
 );
 
 interface LegendProps {
-    colorMapStrategy: ColorMapStrategy;
+    coloringStrategy: ColoringStrategy;
 }
 
-const TwoDLegend: React.FC<LegendProps> = ({colorMapStrategy, onClick}) => {
-    const colorMap = coloringStrategies[colorMapStrategy];
+const TwoDLegend: React.FC<LegendProps> = ({coloringStrategy, onClick}) => {
+    const colorMap = coloringStrategy.getColorMap();
 
     return (
         <Box sx={{padding: 2}}>

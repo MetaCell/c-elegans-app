@@ -5,18 +5,18 @@ import {useEffect, useRef, useState} from 'react';
 import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace.ts";
 import {Connection, ConnectivityService} from "../../../rest";
 import {GRAPH_STYLES} from "../../../theme/twoDStyles.ts";
-import {applyLayout, createEdge, createNode} from "../../../helpers/twoDHelpers.ts";
+import {applyLayout, createEdge, createNode} from "../../../helpers/twoD/twoDHelpers.ts";
 import {
     CHEMICAL_THRESHOLD,
     ELECTRICAL_THRESHOLD,
     GRAPH_LAYOUTS,
-    ColorMapStrategy,
     INCLUDE_ANNOTATIONS,
     INCLUDE_NEIGHBORING_CELLS
 } from "../../../settings/twoDSettings.tsx";
 import TwoDMenu from "./TwoDMenu.tsx";
 import TwoDLegend from "./TwoDLegend.tsx";
 import {Box} from "@mui/material";
+import {ColoringOptions, getColoringStrategy} from "../../../helpers/twoD/coloringStrategy/ColoringStrategy.ts";
 
 cytoscape.use(fcose);
 cytoscape.use(dagre);
@@ -28,11 +28,14 @@ const TwoDViewer = () => {
     const cyRef = useRef<Core | null>(null);
     const [connections, setConnections] = useState<Connection[]>([]);
     const [layout, setLayout] = useState<string>(GRAPH_LAYOUTS.Concentric)
-    const [colorMapStrategy, setColorMapStrategy] = useState<ColorMapStrategy>(ColorMapStrategy.CELL_TYPE)
+    const [coloringOption, setColoringOption] = useState<ColoringOptions>(ColoringOptions.CELL_TYPE)
+    const coloringStrategy = getColoringStrategy(coloringOption)
     const [thresholdChemical, setThresholdChemical] = useState<number>(CHEMICAL_THRESHOLD);
     const [thresholdElectrical, setThresholdElectrical] = useState<number>(ELECTRICAL_THRESHOLD);
     const [includeNeighboringCells, setIncludeNeighboringCells] = useState<boolean>(INCLUDE_NEIGHBORING_CELLS);
     const [includeAnnotations, setIncludeAnnotations] = useState<boolean>(INCLUDE_ANNOTATIONS);
+
+
 
     // Initialize and update Cytoscape
     useEffect(() => {
@@ -130,13 +133,13 @@ const TwoDViewer = () => {
             cyRef={cyRef}
             layout={layout}
             onLayoutChange={setLayout}
-            colorMapStrategy={colorMapStrategy}
-            onColorMapStrategyChange={setColorMapStrategy}
+            coloringOption={coloringOption}
+            onColoringOptionChange={setColoringOption}
 
         />
         <Box sx={{position: 'absolute', top: 0, right: 0, zIndex: 1000}}>
             <TwoDLegend
-                colorMapStrategy={colorMapStrategy}
+                coloringStrategy={coloringStrategy}
                 onClick={(type, name) => console.log(`${type} clicked: ${name}`)}
             />
         </Box>

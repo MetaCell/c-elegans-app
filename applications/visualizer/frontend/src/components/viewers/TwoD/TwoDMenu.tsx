@@ -7,21 +7,36 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DownloadIcon from '@mui/icons-material/Download';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import {GRAPH_LAYOUTS, ColorMapStrategy, ZOOM_DELTA} from "../../../settings/twoDSettings.tsx";
-import {applyLayout} from "../../../helpers/twoDHelpers.ts";
+import {GRAPH_LAYOUTS, ZOOM_DELTA} from "../../../settings/twoDSettings.tsx";
+import {applyLayout} from "../../../helpers/twoD/twoDHelpers.ts";
+import {ColoringOptions} from "../../../helpers/twoD/coloringStrategy/ColoringStrategy.ts";
 
-const TwoDMenu = ({cyRef, layout, onLayoutChange, colorMapStrategy, onColorMapStrategyChange}) => {
+const TwoDMenu = ({cyRef, layout, onLayoutChange, coloringOption, onColoringOptionChange}) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
     const onZoomIn = () => {
         if (cyRef.current) {
-            cyRef.current.zoom(cyRef.current.zoom() * (1 + ZOOM_DELTA));
+            const cy = cyRef.current;
+            const zoomLevel = cy.zoom() * (1 + ZOOM_DELTA);
+            const center = {x: cy.width() / 2, y: cy.height() / 2};
+
+            cy.zoom({
+                level: zoomLevel,
+                renderedPosition: center
+            });
         }
     };
 
     const onZoomOut = () => {
         if (cyRef.current) {
-            cyRef.current.zoom(cyRef.current.zoom() * (1 - ZOOM_DELTA));
+            const cy = cyRef.current;
+            const zoomLevel = cy.zoom() * (1 - ZOOM_DELTA);
+            const center = {x: cy.width() / 2, y: cy.height() / 2};
+
+            cy.zoom({
+                level: zoomLevel,
+                renderedPosition: center
+            });
         }
     };
 
@@ -46,7 +61,6 @@ const TwoDMenu = ({cyRef, layout, onLayoutChange, colorMapStrategy, onColorMapSt
 
     return (
         <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px'}}>
-            <Typography>Network Layout</Typography>
             <IconButton onClick={onZoomIn}>
                 <ZoomInIcon/>
             </IconButton>
@@ -77,11 +91,11 @@ const TwoDMenu = ({cyRef, layout, onLayoutChange, colorMapStrategy, onColorMapSt
                 <Box>
                     <Typography>Color nodes by:</Typography>
                     <ButtonGroup variant="text" orientation="horizontal">
-                        {Object.entries(ColorMapStrategy).map(([key, value]) => (
+                        {Object.entries(ColoringOptions).map(([key, value]) => (
                             <Button
                                 key={key}
-                                onClick={() => onColorMapStrategyChange(value)}
-                                disabled={colorMapStrategy === value}
+                                onClick={() => onColoringOptionChange(value)}
+                                disabled={coloringOption === value}
                             >
                                 {value}
                             </Button>
