@@ -10,7 +10,7 @@ import {
     CHEMICAL_THRESHOLD,
     ELECTRICAL_THRESHOLD,
     GRAPH_LAYOUTS,
-    GraphColoring,
+    ColorMapStrategy,
     INCLUDE_ANNOTATIONS,
     INCLUDE_NEIGHBORING_CELLS
 } from "../../../settings/twoDSettings.tsx";
@@ -28,6 +28,7 @@ const TwoDViewer = () => {
     const cyRef = useRef<Core | null>(null);
     const [connections, setConnections] = useState<Connection[]>([]);
     const [layout, setLayout] = useState<string>(GRAPH_LAYOUTS.Concentric)
+    const [colorMapStrategy, setColorMapStrategy] = useState<ColorMapStrategy>(ColorMapStrategy.CELL_TYPE)
     const [thresholdChemical, setThresholdChemical] = useState<number>(CHEMICAL_THRESHOLD);
     const [thresholdElectrical, setThresholdElectrical] = useState<number>(ELECTRICAL_THRESHOLD);
     const [includeNeighboringCells, setIncludeNeighboringCells] = useState<boolean>(INCLUDE_NEIGHBORING_CELLS);
@@ -129,10 +130,13 @@ const TwoDViewer = () => {
             cyRef={cyRef}
             layout={layout}
             onLayoutChange={setLayout}
+            colorMapStrategy={colorMapStrategy}
+            onColorMapStrategyChange={setColorMapStrategy}
+
         />
         <Box sx={{position: 'absolute', top: 0, right: 0, zIndex: 1000}}>
             <TwoDLegend
-                currentStrategy={GraphColoring.CELL_TYPE}
+                colorMapStrategy={colorMapStrategy}
                 onClick={(type, name) => console.log(`${type} clicked: ${name}`)}
             />
         </Box>

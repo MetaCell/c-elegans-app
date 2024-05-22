@@ -1,16 +1,16 @@
 // GraphMenu.tsx
 import React, {useState} from 'react';
-import {IconButton, Popover, ButtonGroup, Button} from '@mui/material';
+import {IconButton, Popover, ButtonGroup, Button, Typography, Box} from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import SettingsIcon from '@mui/icons-material/Settings';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DownloadIcon from '@mui/icons-material/Download';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import {GRAPH_LAYOUTS, ZOOM_DELTA} from "../../../settings/twoDSettings.tsx";
+import {GRAPH_LAYOUTS, ColorMapStrategy, ZOOM_DELTA} from "../../../settings/twoDSettings.tsx";
 import {applyLayout} from "../../../helpers/twoDHelpers.ts";
 
-const TwoDMenu = ({cyRef, layout, onLayoutChange}) => {
+const TwoDMenu = ({cyRef, layout, onLayoutChange, colorMapStrategy, onColorMapStrategyChange}) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
     const onZoomIn = () => {
@@ -45,7 +45,8 @@ const TwoDMenu = ({cyRef, layout, onLayoutChange}) => {
     const id = open ? 'settings-popover' : undefined;
 
     return (
-        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px'}}>
+        <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px'}}>
+            <Typography>Network Layout</Typography>
             <IconButton onClick={onZoomIn}>
                 <ZoomInIcon/>
             </IconButton>
@@ -73,17 +74,35 @@ const TwoDMenu = ({cyRef, layout, onLayoutChange}) => {
                     horizontal: 'center',
                 }}
             >
-                <ButtonGroup variant="text" orientation="horizontal">
-                    {Object.entries(GRAPH_LAYOUTS).map(([key, value]) => (
-                        <Button
-                            key={key}
-                            onClick={() => onLayoutChange(value)}
-                            disabled={layout === value}
-                        >
-                            {key}
-                        </Button>
-                    ))}
-                </ButtonGroup>
+                <Box>
+                    <Typography>Color nodes by:</Typography>
+                    <ButtonGroup variant="text" orientation="horizontal">
+                        {Object.entries(ColorMapStrategy).map(([key, value]) => (
+                            <Button
+                                key={key}
+                                onClick={() => onColorMapStrategyChange(value)}
+                                disabled={colorMapStrategy === value}
+                            >
+                                {value}
+                            </Button>
+                        ))}
+                    </ButtonGroup>
+                </Box>
+                <Box>
+                    <Typography>Network Layout</Typography>
+                    <ButtonGroup variant="text" orientation="horizontal">
+                        {Object.entries(GRAPH_LAYOUTS).map(([key, value]) => (
+                            <Button
+                                key={key}
+                                onClick={() => onLayoutChange(value)}
+                                disabled={layout === value}
+                            >
+                                {key}
+                            </Button>
+                        ))}
+                    </ButtonGroup>
+                </Box>
+
             </Popover>
             <IconButton>
                 <VisibilityIcon/>
@@ -91,7 +110,7 @@ const TwoDMenu = ({cyRef, layout, onLayoutChange}) => {
             <IconButton>
                 <DownloadIcon/>
             </IconButton>
-        </div>
+        </Box>
     );
 };
 
