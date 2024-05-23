@@ -38,9 +38,11 @@ export class CellTypeColoringStrategy implements ColoringStrategy {
         return CellTypeColoringStrategy.instance;
     }
 
-    getColor(node: Neuron): string {
-        const type = cellTypeMap[node.type];
-        return cellTypeColors[type] || '#FFFFFF';
+    getColors(node: Neuron): string[] {
+        return node.type.split('').map(typeChar => {
+            const type = cellTypeMap[typeChar];
+            return cellTypeColors[type] || '#FFFFFF';
+        });
     }
 
     getColorMap(): ColorMap {

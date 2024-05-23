@@ -8,7 +8,7 @@ export interface ColorMap {
 }
 
 export interface ColoringStrategy {
-    getColor(node: Neuron): string;
+    getColors(node: Neuron): string[];
 
     getColorMap(): ColorMap
 }

@@ -96,6 +96,7 @@ const TwoDMenu = ({cyRef, layout, onLayoutChange, coloringOption, onColoringOpti
                                 key={key}
                                 onClick={() => onColoringOptionChange(value)}
                                 disabled={coloringOption === value}
+                                sx={{background: coloringOption === value ? 'grey!important' : null}}
                             >
                                 {value}
                             </Button>
@@ -110,6 +111,7 @@ const TwoDMenu = ({cyRef, layout, onLayoutChange, coloringOption, onColoringOpti
                                 key={key}
                                 onClick={() => onLayoutChange(value)}
                                 disabled={layout === value}
+                                sx={{background: layout === value ? 'grey!important' : null}}
                             >
                                 {key}
                             </Button>

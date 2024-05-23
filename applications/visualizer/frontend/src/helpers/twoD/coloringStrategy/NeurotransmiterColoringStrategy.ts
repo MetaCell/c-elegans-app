@@ -47,9 +47,11 @@ export class NeurotransmitterColoringStrategy implements ColoringStrategy {
         return NeurotransmitterColoringStrategy.instance;
     }
 
-    getColor(node: Neuron): string {
-        const neurotransmitter = neurotransmitterTypeMap[node.neurotransmitter];
-        return neurotransmitterColors[neurotransmitter] || '#FFFFFF';
+    getColors(node: Neuron): string[] {
+        return node.neurotransmitter.split('').map(ntChar => {
+            const nt = neurotransmitterTypeMap[ntChar];
+            return neurotransmitterColors[nt] || '#FFFFFF';
+        });
     }
 
     getColorMap(): ColorMap {

@@ -138,8 +138,12 @@ const TwoDViewer = () => {
             cyRef.current.nodes().forEach(node => {
                 const neuronId = node.id();
                 const neuron = workspace.activeNeurons[neuronId]; // FIXME: should be for all neuron in the scene
-                const color = coloringStrategy.getColor(neuron);
-                node.style('background-color', color);
+                const colors = coloringStrategy.getColors(neuron);
+                colors.forEach((color, index) => {
+                    node.style(`pie-${index + 1}-background-color`, color);
+                    node.style(`pie-${index + 1}-background-size`, 100 / colors.length); // Equal size for each slice
+                });
+                node.style('pie-background-opacity', 1);
             });
         }
 
