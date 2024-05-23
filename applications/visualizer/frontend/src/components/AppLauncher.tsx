@@ -13,7 +13,6 @@ import {
 import {useGlobalContext} from "../contexts/GlobalContext.tsx";
 import footerImage from '../assets/summary-neurons.png';
 import {TEMPLATE_ACTIVE_DATASETS, TEMPLATE_ACTIVE_NEURONS} from "../settings/templateWorkspaceSettings.ts";
-import {fetchAndFilterNeurons, fetchDatasets} from "../helpers/templateWorkspaceHelper.ts";
 
 function AppLauncher() {
 
@@ -23,17 +22,8 @@ function AppLauncher() {
     const handleTemplateClick = async () => {
         const workspaceId = `workspace-${Date.now()}`;
         const workspaceName = `Template Workspace ${Object.keys(workspaces).length + 1}`;
-        let activeDatasets = {}
-        let activeNeurons = {}
 
-        try {
-            activeDatasets = await fetchDatasets(TEMPLATE_ACTIVE_DATASETS);
-            activeNeurons = await fetchAndFilterNeurons(TEMPLATE_ACTIVE_DATASETS, TEMPLATE_ACTIVE_NEURONS);
-
-        } catch (error) {
-            console.error('Failed to create workspace with template data:', error);
-        }
-        createWorkspace(workspaceId, workspaceName, activeDatasets, activeNeurons);
+        createWorkspace(workspaceId, workspaceName, new Set(TEMPLATE_ACTIVE_DATASETS), new Set(TEMPLATE_ACTIVE_NEURONS));
         setCurrentWorkspace(workspaceId);
     };
 

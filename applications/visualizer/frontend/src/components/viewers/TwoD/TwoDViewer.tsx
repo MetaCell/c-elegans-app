@@ -70,7 +70,7 @@ const TwoDViewer = () => {
         if (!workspace) return;
 
         // Convert activeNeurons and activeDatasets to comma-separated strings
-        const cells = Object.values(workspace.activeNeurons).map(neuron => neuron.name).join(',');
+        const cells = Array.from(workspace.activeNeurons).join(',');
         const datasetIds = Object.values(workspace.activeDatasets).map(dataset => dataset.id).join(',');
         const datasetType = Object.values(workspace.activeDatasets).map(dataset => dataset.type).join(',');
 
@@ -137,7 +137,11 @@ const TwoDViewer = () => {
         if (cyRef.current) {
             cyRef.current.nodes().forEach(node => {
                 const neuronId = node.id();
-                const neuron = workspace.activeNeurons[neuronId]; // FIXME: should be for all neuron in the scene
+                const neuron = workspace.neuronsAvailable[neuronId]
+                if(neuron == null){
+                    console.error(`neuron ${neuronId} not found in the active datasets`)
+                    return
+                }
                 const colors = coloringStrategy.getColors(neuron);
                 colors.forEach((color, index) => {
                     node.style(`pie-${index + 1}-background-color`, color);

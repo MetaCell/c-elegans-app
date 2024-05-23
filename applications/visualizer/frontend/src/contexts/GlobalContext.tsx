@@ -10,8 +10,8 @@ export interface GlobalContextType {
     selectedWorkspacesIds: Set<string>;
     setViewMode: (viewMode: ViewMode) => void;
     createWorkspace: (id: string, name: string,
-                      activeDatasets?: Record<string, Dataset>,
-                      activeNeurons?: Record<string, Neuron>) => void;
+                      activeDatasets?: Set<string>,
+                      activeNeurons?: Set<string>) => void;
     updateWorkspace: (workspace: Workspace) => void;
     removeWorkspace: (workspaceId: string) => void;
     setCurrentWorkspace: (workspaceId: string) => void;
@@ -32,8 +32,8 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({chi
 
 
     const createWorkspace = (id: string, name: string,
-                             activeDatasets: Record<string, Dataset>,
-                             activeNeurons: Record<string, Neuron>) => {
+                             activeDatasets: Set<string>,
+                             activeNeurons: Set<string>) => {
         const newWorkspace = new Workspace(id, name, activeDatasets, activeNeurons, updateWorkspace);
         setWorkspaces(prev => ({...prev, [id]: newWorkspace}));
     };

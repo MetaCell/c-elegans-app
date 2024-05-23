@@ -2,15 +2,20 @@ import {produce, immerable} from "immer"
 import {configureStore} from "@reduxjs/toolkit";
 import {NeuronGroup, ViewerSynchronizationPair, ViewerType} from "./models.ts";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory.ts";
-import {Dataset, Neuron} from "../rest";
+import {Dataset, DatasetsService, Neuron} from "../rest";
+import {fetchDatasets} from "../helpers/workspaceHelper.ts";
 
 export class Workspace {
     [immerable] = true
 
     id: string;
     name: string;
+    // datasetID -> Dataset
     activeDatasets: Record<string, Dataset>;
-    activeNeurons: Record<string, Neuron>;
+    // neuronID -> Neurons
+    neuronsAvailable: Record<string, Neuron>;
+    // neuronId
+    activeNeurons: Set<string>;
     highlightedNeuron: string | undefined;
     viewers: Record<ViewerType, boolean>;
     synchronizations: Record<ViewerSynchronizationPair, boolean>;
@@ -22,13 +27,14 @@ export class Workspace {
     updateContext: (workspace: Workspace) => void;
 
     constructor(id: string, name: string,
-                activeDatasets: Record<string, Dataset>,
-                activeNeurons: Record<string, Neuron>,
+                datasetIds: Set<string>,
+                activeNeurons: Set<string>,
                 updateContext: (workspace: Workspace) => void) {
         this.id = id;
         this.name = name;
-        this.activeDatasets = activeDatasets || {};
-        this.activeNeurons = activeNeurons || {};
+        this.activeDatasets = {};
+        this.neuronsAvailable = {};
+        this.activeNeurons = activeNeurons;
         this.highlightedNeuron = undefined;
         this.viewers = {
             [ViewerType.Graph]: true,
@@ -47,9 +53,11 @@ export class Workspace {
         this.layoutManager = layoutManager
         this.store = store
         this.updateContext = updateContext;
+
+        this._initializeActiveDatasets(datasetIds);
     }
 
-        activateNeuron(neuron: Neuron): void {
+    activateNeuron(neuron: Neuron): void {
         const updated = produce(this, (draft: Workspace) => {
             draft.activeNeurons[neuron.name] = neuron;
         });
@@ -63,17 +71,19 @@ export class Workspace {
         this.updateContext(updated);
     }
 
-    activateDataset(dataset: Dataset): void {
-        const updated = produce(this, (draft: Workspace) => {
+    async activateDataset(dataset: Dataset): void {
+        let updated = produce(this, (draft: Workspace) => {
             draft.activeDatasets[dataset.id] = dataset;
         });
+        updated = await this._getAvailableNeurons(updated);
         this.updateContext(updated);
     }
 
-    deactivateDataset(datasetId: string): void {
-        const updated = produce(this, (draft: Workspace) => {
+    async deactivateDataset(datasetId: string): void {
+        let updated = produce(this, (draft: Workspace) => {
             delete draft.activeDatasets[datasetId];
         });
+        updated = await this._getAvailableNeurons(updated);
         this.updateContext(updated);
     }
 
@@ -91,7 +101,7 @@ export class Workspace {
         this.updateContext(updated);
     }
 
-   addNeuronToGroup(neuronId: string, groupId: string): void {
+    addNeuronToGroup(neuronId: string, groupId: string): void {
         const updated = produce(this, (draft: Workspace) => {
             if (!draft.activeNeurons[neuronId]) {
                 throw new Error('Neuron not found');
@@ -121,4 +131,41 @@ export class Workspace {
         });
         this.updateContext(updated);
     }
+
+    async _initializeActiveDatasets(datasetIds: Set<string>) {
+        const datasets = await fetchDatasets(datasetIds);
+        let updated = produce(this, (draft: Workspace) => {
+            draft.activeDatasets = datasets;
+        });
+        updated = await this._getAvailableNeurons(updated);
+        this.updateContext(updated);
+    }
+
+    async _getAvailableNeurons(updatedWorkspace: Workspace): Promise<Workspace> {
+        try {
+            const neuronPromises = Object.keys(updatedWorkspace.activeDatasets).map(datasetId =>
+                DatasetsService.getDatasetNeurons({dataset: datasetId})
+            );
+
+            const neuronArrays = await Promise.all(neuronPromises);
+
+            return produce(updatedWorkspace, (draft: Workspace) => {
+                // Reset the neuronsAvailable map
+                draft.neuronsAvailable = {};
+
+                // Populate neuronsAvailable with neurons from all active datasets
+                neuronArrays.forEach(neurons => {
+                    neurons.forEach((neuron: Neuron) => {
+                        draft.neuronsAvailable[neuron.name] = neuron;
+                    });
+                });
+            });
+
+        } catch (error) {
+            console.error('Failed to fetch neurons:', error);
+            return updatedWorkspace;
+        }
+    }
+
+
 }
