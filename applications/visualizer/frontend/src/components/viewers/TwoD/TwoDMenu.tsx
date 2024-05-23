@@ -1,6 +1,15 @@
 // GraphMenu.tsx
 import React, {useState} from 'react';
-import {IconButton, Popover, ButtonGroup, Button, Typography, Box} from '@mui/material';
+import {
+    IconButton,
+    Popover,
+    ButtonGroup,
+    Button,
+    Typography,
+    Box,
+    ToggleButtonGroup,
+    ToggleButton, Switch, FormControlLabel, FormGroup, FormControl, FormLabel
+} from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -11,7 +20,17 @@ import {GRAPH_LAYOUTS, ZOOM_DELTA} from "../../../settings/twoDSettings.tsx";
 import {applyLayout} from "../../../helpers/twoD/twoDHelpers.ts";
 import {ColoringOptions} from "../../../helpers/twoD/coloringStrategy/ColoringStrategy.ts";
 
-const TwoDMenu = ({cyRef, layout, onLayoutChange, coloringOption, onColoringOptionChange}) => {
+const TwoDMenu = ({
+                      cyRef,
+                      layout,
+                      onLayoutChange,
+                      coloringOption,
+                      onColoringOptionChange,
+                      includeNeighboringCells,
+                      setIncludeNeighboringCells,
+                      includeAnnotations,
+                      setIncludeAnnotations
+                  }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
     const onZoomIn = () => {
@@ -90,35 +109,61 @@ const TwoDMenu = ({cyRef, layout, onLayoutChange, coloringOption, onColoringOpti
             >
                 <Box>
                     <Typography>Color nodes by:</Typography>
-                    <ButtonGroup variant="text" orientation="horizontal">
+                    <ToggleButtonGroup
+                        value={coloringOption}
+                        exclusive
+                        onChange={(event, newColoringOption) => {
+                            if (newColoringOption !== null) { // Prevent deselecting all options
+                                onColoringOptionChange(newColoringOption);
+                            }
+                        }}
+                        aria-label="coloring options"
+                    >
                         {Object.entries(ColoringOptions).map(([key, value]) => (
-                            <Button
-                                key={key}
-                                onClick={() => onColoringOptionChange(value)}
-                                disabled={coloringOption === value}
-                                sx={{background: coloringOption === value ? 'grey!important' : null}}
-                            >
+                            <ToggleButton key={key} value={value} aria-label={value}>
                                 {value}
-                            </Button>
+                            </ToggleButton>
                         ))}
-                    </ButtonGroup>
+                    </ToggleButtonGroup>
                 </Box>
                 <Box>
                     <Typography>Network Layout</Typography>
-                    <ButtonGroup variant="text" orientation="horizontal">
+                    <ToggleButtonGroup
+                        value={layout}
+                        exclusive
+                        onChange={(event, newLayout) => {
+                            if (newLayout !== null) { // Prevent deselecting all options
+                                onLayoutChange(newLayout);
+                            }
+                        }}
+                        aria-label="layout options"
+                    >
                         {Object.entries(GRAPH_LAYOUTS).map(([key, value]) => (
-                            <Button
-                                key={key}
-                                onClick={() => onLayoutChange(value)}
-                                disabled={layout === value}
-                                sx={{background: layout === value ? 'grey!important' : null}}
-                            >
+                            <ToggleButton key={key} value={value} aria-label={key}>
                                 {key}
-                            </Button>
+                            </ToggleButton>
                         ))}
-                    </ButtonGroup>
+                    </ToggleButtonGroup>
                 </Box>
 
+                <Box>
+                    <Typography>Show</Typography>
+                    <FormGroup>
+                        <FormControlLabel
+                            control={<Switch checked={includeNeighboringCells}
+                                             onChange={e => setIncludeNeighboringCells(e.target.checked)}/>}
+                            label="Connected Cells"
+                            labelPlacement="start"
+                        />
+                        <FormControlLabel
+                            control={<Switch checked={includeAnnotations}
+                                             onChange={e => setIncludeAnnotations(e.target.checked)}/>}
+                            label="Types of Connections"
+                            labelPlacement="start"
+
+                        />
+                    </FormGroup>
+                </Box>
             </Popover>
             <IconButton>
                 <VisibilityIcon/>
@@ -127,7 +172,7 @@ const TwoDMenu = ({cyRef, layout, onLayoutChange, coloringOption, onColoringOpti
                 <DownloadIcon/>
             </IconButton>
         </Box>
-    );
+);
 };
 
 export default TwoDMenu;

@@ -88,7 +88,7 @@ const TwoDViewer = () => {
         }).catch(error => {
             console.error("Failed to fetch connections:", error);
         });
-    }, [workspace]);
+    }, [workspace, includeNeighboringCells, includeAnnotations, thresholdElectrical, thresholdChemical]);
 
     // Update graph when connections change
     useEffect(() => {
@@ -157,6 +157,10 @@ const TwoDViewer = () => {
             onLayoutChange={setLayout}
             coloringOption={coloringOption}
             onColoringOptionChange={setColoringOption}
+            includeNeighboringCells={includeNeighboringCells}
+            setIncludeNeighboringCells={setIncludeNeighboringCells}
+            includeAnnotations={includeAnnotations}
+            setIncludeAnnotations={setIncludeAnnotations}
 
         />
         <Box sx={{position: 'absolute', top: 0, right: 0, zIndex: 1000}}>
