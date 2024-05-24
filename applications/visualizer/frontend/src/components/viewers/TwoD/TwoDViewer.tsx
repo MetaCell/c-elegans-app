@@ -5,7 +5,7 @@ import {useEffect, useRef, useState} from 'react';
 import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace.ts";
 import {Connection, ConnectivityService} from "../../../rest";
 import {GRAPH_STYLES} from "../../../theme/twoDStyles.ts";
-import {applyLayout, createEdge, createNode} from "../../../helpers/twoD/twoDHelpers.ts";
+import {applyLayout, createEdge, createNode, filterConnections} from "../../../helpers/twoD/twoDHelpers.ts";
 import {
     CHEMICAL_THRESHOLD,
     ELECTRICAL_THRESHOLD,
@@ -33,6 +33,7 @@ const TwoDViewer = () => {
     const [thresholdChemical, setThresholdChemical] = useState<number>(CHEMICAL_THRESHOLD);
     const [thresholdElectrical, setThresholdElectrical] = useState<number>(ELECTRICAL_THRESHOLD);
     const [includeNeighboringCells, setIncludeNeighboringCells] = useState<boolean>(INCLUDE_NEIGHBORING_CELLS);
+    const [includeNeighboringCellsAsIndividualCells, setIncludeNeighboringCellsAsIndividualCells] = useState<boolean>(false);
     const [includeAnnotations, setIncludeAnnotations] = useState<boolean>(INCLUDE_ANNOTATIONS);
 
 
@@ -84,11 +85,12 @@ const TwoDViewer = () => {
             includeNeighboringCells: includeNeighboringCells,
             includeAnnotations: includeAnnotations,
         }).then(connections => {
-            setConnections(connections);
+            const filteredConnections = filterConnections(connections, workspace, includeNeighboringCells, includeNeighboringCellsAsIndividualCells)
+            setConnections(filteredConnections);
         }).catch(error => {
             console.error("Failed to fetch connections:", error);
         });
-    }, [workspace, includeNeighboringCells, includeAnnotations, thresholdElectrical, thresholdChemical]);
+    }, [workspace, includeNeighboringCells, includeNeighboringCellsAsIndividualCells, includeAnnotations, thresholdElectrical, thresholdChemical]);
 
     // Update graph when connections change
     useEffect(() => {
@@ -137,8 +139,8 @@ const TwoDViewer = () => {
         if (cyRef.current) {
             cyRef.current.nodes().forEach(node => {
                 const neuronId = node.id();
-                const neuron = workspace.neuronsAvailable[neuronId]
-                if(neuron == null){
+                const neuron = workspace.availableNeurons[neuronId]
+                if (neuron == null) {
                     console.error(`neuron ${neuronId} not found in the active datasets`)
                     return
                 }
@@ -153,7 +155,6 @@ const TwoDViewer = () => {
 
     };
 
-
     return <Box sx={{position: 'relative', display: 'flex', width: '100%', height: '100%'}}>
         <TwoDMenu
             cyRef={cyRef}
@@ -163,6 +164,8 @@ const TwoDViewer = () => {
             onColoringOptionChange={setColoringOption}
             includeNeighboringCells={includeNeighboringCells}
             setIncludeNeighboringCells={setIncludeNeighboringCells}
+            includeNeighboringCellsAsIndividualCells={includeNeighboringCellsAsIndividualCells}
+            setIncludeNeighboringCellsAsIndividualCells={setIncludeNeighboringCellsAsIndividualCells}
             includeAnnotations={includeAnnotations}
             setIncludeAnnotations={setIncludeAnnotations}
 

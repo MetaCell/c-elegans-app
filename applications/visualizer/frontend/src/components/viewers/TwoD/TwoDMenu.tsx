@@ -8,7 +8,7 @@ import {
     Typography,
     Box,
     ToggleButtonGroup,
-    ToggleButton, Switch, FormControlLabel, FormGroup, FormControl, FormLabel
+    ToggleButton, Switch, FormControlLabel, FormGroup, FormControl, FormLabel, Tooltip
 } from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
@@ -28,6 +28,8 @@ const TwoDMenu = ({
                       onColoringOptionChange,
                       includeNeighboringCells,
                       setIncludeNeighboringCells,
+                      includeNeighboringCellsAsIndividualCells,
+                      setIncludeNeighboringCellsAsIndividualCells,
                       includeAnnotations,
                       setIncludeAnnotations
                   }) => {
@@ -155,6 +157,19 @@ const TwoDMenu = ({
                             label="Connected Cells"
                             labelPlacement="start"
                         />
+                        <Tooltip title={!includeNeighboringCells ? "Enable 'Connected Cells' to use this switch" : ""}>
+                            <span>
+                                <FormControlLabel
+                                    control={
+                                        <Switch checked={includeNeighboringCellsAsIndividualCells}
+                                                onChange={e => setIncludeNeighboringCellsAsIndividualCells(e.target.checked)}
+                                                disabled={!includeNeighboringCells}/>
+                                    }
+                                    label="as individual cells"
+                                    labelPlacement="start"
+                                />
+                            </span>
+                        </Tooltip>
                         <FormControlLabel
                             control={<Switch checked={includeAnnotations}
                                              onChange={e => setIncludeAnnotations(e.target.checked)}/>}
@@ -172,7 +187,7 @@ const TwoDMenu = ({
                 <DownloadIcon/>
             </IconButton>
         </Box>
-);
+    );
 };
 
 export default TwoDMenu;

@@ -13,7 +13,7 @@ export class Workspace {
     // datasetID -> Dataset
     activeDatasets: Record<string, Dataset>;
     // neuronID -> Neurons
-    neuronsAvailable: Record<string, Neuron>;
+    availableNeurons: Record<string, Neuron>;
     // neuronId
     activeNeurons: Set<string>;
     highlightedNeuron: string | undefined;
@@ -33,7 +33,7 @@ export class Workspace {
         this.id = id;
         this.name = name;
         this.activeDatasets = {};
-        this.neuronsAvailable = {};
+        this.availableNeurons = {};
         this.activeNeurons = activeNeurons;
         this.highlightedNeuron = undefined;
         this.viewers = {
@@ -151,12 +151,15 @@ export class Workspace {
 
             return produce(updatedWorkspace, (draft: Workspace) => {
                 // Reset the neuronsAvailable map
-                draft.neuronsAvailable = {};
+                draft.availableNeurons = {};
 
                 // Populate neuronsAvailable with neurons from all active datasets
                 neuronArrays.forEach(neurons => {
                     neurons.forEach((neuron: Neuron) => {
-                        draft.neuronsAvailable[neuron.name] = neuron;
+                        draft.availableNeurons[neuron.name] = neuron;
+                        // TODO: Validate if this is good enough
+                        const classNeuron = {...neuron, name: neuron.nclass}
+                        draft.availableNeurons[classNeuron.name] = classNeuron;
                     });
                 });
             });
