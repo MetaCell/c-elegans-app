@@ -168,6 +168,10 @@ const TwoDViewer = () => {
             setIncludeNeighboringCellsAsIndividualCells={setIncludeNeighboringCellsAsIndividualCells}
             includeAnnotations={includeAnnotations}
             setIncludeAnnotations={setIncludeAnnotations}
+            thresholdChemical={thresholdChemical}
+            setThresholdChemical={setThresholdChemical}
+            thresholdElectrical={thresholdElectrical}
+            setThresholdElectrical={setThresholdElectrical}
 
         />
         <Box sx={{position: 'absolute', top: 0, right: 0, zIndex: 1000}}>

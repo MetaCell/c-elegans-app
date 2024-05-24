@@ -3,12 +3,10 @@ import React, {useState} from 'react';
 import {
     IconButton,
     Popover,
-    ButtonGroup,
-    Button,
     Typography,
     Box,
     ToggleButtonGroup,
-    ToggleButton, Switch, FormControlLabel, FormGroup, FormControl, FormLabel, Tooltip
+    ToggleButton, Switch, FormControlLabel, FormGroup, FormControl, FormLabel, Tooltip, TextField
 } from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
@@ -16,6 +14,8 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DownloadIcon from '@mui/icons-material/Download';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import RemoveIcon from '@mui/icons-material/Remove';
+import AddIcon from '@mui/icons-material/Add';
 import {GRAPH_LAYOUTS, ZOOM_DELTA} from "../../../settings/twoDSettings.tsx";
 import {applyLayout} from "../../../helpers/twoD/twoDHelpers.ts";
 import {ColoringOptions} from "../../../helpers/twoD/coloringStrategy/ColoringStrategy.ts";
@@ -31,7 +31,11 @@ const TwoDMenu = ({
                       includeNeighboringCellsAsIndividualCells,
                       setIncludeNeighboringCellsAsIndividualCells,
                       includeAnnotations,
-                      setIncludeAnnotations
+                      setIncludeAnnotations,
+                      thresholdChemical,
+                      setThresholdChemical,
+                      thresholdElectrical,
+                      setThresholdElectrical
                   }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
@@ -77,6 +81,15 @@ const TwoDMenu = ({
         setAnchorEl(null);
     };
 
+    const incrementCounter = (setter, value) => () => {
+        setter(value + 1);
+    };
+
+    const decrementCounter = (setter, value) => () => {
+        if (value > 1) {
+            setter(value - 1);
+        }
+    };
     const open = Boolean(anchorEl);
     const id = open ? 'settings-popover' : undefined;
 
@@ -129,6 +142,45 @@ const TwoDMenu = ({
                     </ToggleButtonGroup>
                 </Box>
                 <Box>
+                    <FormControl>
+                        <FormLabel>Neuroconnectors have at least:</FormLabel>
+                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                <Typography>Chemical Synapses</Typography>
+                                <IconButton onClick={decrementCounter(setThresholdChemical, thresholdChemical)}
+                                            disabled={thresholdChemical <= 1}>
+                                    <RemoveIcon/>
+                                </IconButton>
+                                <TextField
+                                    value={thresholdChemical}
+                                    type="number"
+                                    inputProps={{readOnly: true}}
+                                    sx={{width: '60px'}}
+                                />
+                                <IconButton onClick={incrementCounter(setThresholdChemical, thresholdChemical)}>
+                                    <AddIcon/>
+                                </IconButton>
+                            </Box>
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                <Typography>Gap Junctions</Typography>
+                                <IconButton onClick={decrementCounter(setThresholdElectrical, thresholdElectrical)}
+                                            disabled={thresholdElectrical <= 1}>
+                                    <RemoveIcon/>
+                                </IconButton>
+                                <TextField
+                                    value={thresholdElectrical}
+                                    type="number"
+                                    inputProps={{readOnly: true}}
+                                    sx={{width: '60px'}}
+                                />
+                                <IconButton onClick={incrementCounter(setThresholdElectrical, thresholdElectrical)}>
+                                    <AddIcon/>
+                                </IconButton>
+                            </Box>
+                        </Box>
+                    </FormControl>
+                </Box>
+                <Box>
                     <Typography>Network Layout</Typography>
                     <ToggleButtonGroup
                         value={layout}
@@ -179,6 +231,7 @@ const TwoDMenu = ({
                         />
                     </FormGroup>
                 </Box>
+
             </Popover>
             <IconButton>
                 <VisibilityIcon/>
