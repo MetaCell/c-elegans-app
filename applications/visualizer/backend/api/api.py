@@ -116,14 +116,14 @@ def get_all_cells(request):
 @api.get("/connections", response=list[Connection], tags=["connectivity"])
 # @paginate
 def get_connections(
-        request,
-        cells: str,
-        dataset_ids: str,
-        dataset_type: str,
-        threshold_chemical: int = 3,
-        threshold_electrical: int = 3,
-        include_neighboring_cells: bool = False,
-        include_annotations: bool = False,
+    request,
+    cells: str,
+    dataset_ids: str,
+    dataset_type: str,
+    threshold_chemical: int = 3,
+    threshold_electrical: int = 3,
+    include_neighboring_cells: bool = False,
+    include_annotations: bool = False,
 ):
     """Gets the connections of a dedicated Dataset"""
     return query_connections(
@@ -154,9 +154,6 @@ def get_connections(
 #             dataset_id=datasetId, pre__in=neurons, post__in=neurons
 #         ).order_by("pre", "post", "type")
 #     )
-
-
-
 
 
 @api.get("/live", tags=["healthcheck"])

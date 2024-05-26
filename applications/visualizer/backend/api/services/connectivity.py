@@ -6,18 +6,25 @@ from api.models import Annotation, Connection
 
 
 def query_connections(
-        cells: list[str],
-        dataset_ids: list[str],
-        dataset_type: list[str],
-        threshold_chemical: int,
-        threshold_electrical: int,
-        include_neighboring_cells: bool,
-        include_annotations: bool,
+    cells: list[str],
+    dataset_ids: list[str],
+    dataset_type: list[str],
+    threshold_chemical: int,
+    threshold_electrical: int,
+    include_neighboring_cells: bool,
+    include_annotations: bool,
 ):
-    connections = _query_raw_connections(cells, dataset_ids, include_neighboring_cells, threshold_chemical,
-                                         threshold_electrical)
+    connections = _query_raw_connections(
+        cells,
+        dataset_ids,
+        include_neighboring_cells,
+        threshold_chemical,
+        threshold_electrical,
+    )
 
-    annotations_map = _query_annotations(cells, dataset_type, include_annotations, include_neighboring_cells)
+    annotations_map = _query_annotations(
+        cells, dataset_type, include_annotations, include_neighboring_cells
+    )
 
     grouped_connections = defaultdict(list)
     for connection in connections:
@@ -30,13 +37,17 @@ def query_connections(
 
         # It's safe to access the first item directly as group won't be empty by design of the grouping process
         connection = group[0]
-        response_data.append({
-            'pre': connection.pre,
-            'post': connection.post,
-            'type': connection.type,
-            'annotations': annotations_map.get(key, []) if include_annotations else [],
-            'synapses': synapses
-        })
+        response_data.append(
+            {
+                "pre": connection.pre,
+                "post": connection.post,
+                "type": connection.type,
+                "annotations": (
+                    annotations_map.get(key, []) if include_annotations else []
+                ),
+                "synapses": synapses,
+            }
+        )
 
     return response_data
 
@@ -47,13 +58,19 @@ def query_connections(
 #     ${includeNeighboringCells ? 'OR' : 'AND'} post in (${cells}))
 #       AND collection in (${datasetType})
 
-def _query_annotations(cells, dataset_type, include_annotations, include_neighboring_cells):
+
+def _query_annotations(
+    cells, dataset_type, include_annotations, include_neighboring_cells
+):
     annotations_map = {}
     if include_annotations:
         annotations = Annotation.objects.filter(
-            Q(pre__in=cells) | Q(post__in=cells) if include_neighboring_cells else Q(pre__in=cells,
-                                                                                     post__in=cells),
-            collection__in=dataset_type
+            (
+                Q(pre__in=cells) | Q(post__in=cells)
+                if include_neighboring_cells
+                else Q(pre__in=cells, post__in=cells)
+            ),
+            collection__in=dataset_type,
         )
         for annotation in annotations:
             key = _get_connection_key(annotation.pre, annotation.post, annotation.type)
@@ -79,15 +96,26 @@ def _query_annotations(cells, dataset_type, include_annotations, include_neighbo
 # LEFT JOIN connections c ON f.pre = c.pre AND f.post = c.post AND f.type = c.type
 # WHERE c.dataset_id IN (${datasetIds})
 
-def _query_raw_connections(cells, dataset_ids, include_neighboring_cells, threshold_chemical, threshold_electrical):
-    connection_query = Q(pre__in=cells) | Q(post__in=cells) if include_neighboring_cells else Q(pre__in=cells,
-                                                                                                post__in=cells)
-    connection_query &= Q(dataset_id__in=dataset_ids)
-    connection_query &= (
-            Q(type='chemical', synapses__gte=threshold_chemical) |
-            Q(type='electrical', synapses__gte=threshold_electrical)
+
+def _query_raw_connections(
+    cells,
+    dataset_ids,
+    include_neighboring_cells,
+    threshold_chemical,
+    threshold_electrical,
+):
+    connection_query = (
+        Q(pre__in=cells) | Q(post__in=cells)
+        if include_neighboring_cells
+        else Q(pre__in=cells, post__in=cells)
     )
-    return Connection.objects.filter(connection_query).select_related('dataset').distinct()
+    connection_query &= Q(dataset_id__in=dataset_ids)
+    connection_query &= Q(type="chemical", synapses__gte=threshold_chemical) | Q(
+        type="electrical", synapses__gte=threshold_electrical
+    )
+    return (
+        Connection.objects.filter(connection_query).select_related("dataset").distinct()
+    )
 
 
 def _get_connection_key(pre, post, connection_type):
