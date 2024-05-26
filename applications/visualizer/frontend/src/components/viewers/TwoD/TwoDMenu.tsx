@@ -1,5 +1,5 @@
 // GraphMenu.tsx
-import React, {useState} from 'react';
+import {useState} from 'react';
 import {
     IconButton,
     Popover,
@@ -127,7 +127,7 @@ const TwoDMenu = ({
                     <ToggleButtonGroup
                         value={coloringOption}
                         exclusive
-                        onChange={(event, newColoringOption) => {
+                        onChange={(_, newColoringOption) => {
                             if (newColoringOption !== null) { // Prevent deselecting all options
                                 onColoringOptionChange(newColoringOption);
                             }
@@ -185,7 +185,7 @@ const TwoDMenu = ({
                     <ToggleButtonGroup
                         value={layout}
                         exclusive
-                        onChange={(event, newLayout) => {
+                        onChange={(_, newLayout) => {
                             if (newLayout !== null) { // Prevent deselecting all options
                                 onLayoutChange(newLayout);
                             }

@@ -71,20 +71,21 @@ export class Workspace {
         this.updateContext(updated);
     }
 
-    async activateDataset(dataset: Dataset): void {
-        let updated = produce(this, (draft: Workspace) => {
+    async activateDataset(dataset: Dataset): Promise<void> {
+        const updated: Workspace = produce(this, (draft: Workspace) => {
             draft.activeDatasets[dataset.id] = dataset;
         });
-        updated = await this._getAvailableNeurons(updated);
-        this.updateContext(updated);
+        const updatedWithNeurons = await this._getAvailableNeurons(updated);
+        this.updateContext(updatedWithNeurons);
     }
 
-    async deactivateDataset(datasetId: string): void {
-        let updated = produce(this, (draft: Workspace) => {
+    async deactivateDataset(datasetId: string): Promise<void> {
+        const updated: Workspace = produce(this, (draft: Workspace) => {
             delete draft.activeDatasets[datasetId];
         });
-        updated = await this._getAvailableNeurons(updated);
-        this.updateContext(updated);
+
+        const updatedWithNeurons = await this._getAvailableNeurons(updated);
+        this.updateContext(updatedWithNeurons);
     }
 
     highlightNeuron(neuronId: string): void {
@@ -134,11 +135,11 @@ export class Workspace {
 
     async _initializeActiveDatasets(datasetIds: Set<string>) {
         const datasets = await fetchDatasets(datasetIds);
-        let updated = produce(this, (draft: Workspace) => {
+        const updated: Workspace = produce(this, (draft: Workspace) => {
             draft.activeDatasets = datasets;
         });
-        updated = await this._getAvailableNeurons(updated);
-        this.updateContext(updated);
+        const updatedWithNeurons = await this._getAvailableNeurons(updated);
+        this.updateContext(updatedWithNeurons);
     }
 
     async _getAvailableNeurons(updatedWorkspace: Workspace): Promise<Workspace> {

@@ -1,7 +1,6 @@
 import React, {createContext, ReactNode, useContext, useState} from 'react';
 import {ViewMode} from "../models/models.ts";
 import {Workspace} from "../models/workspace.ts";
-import {Dataset, Neuron} from "../rest";
 
 export interface GlobalContextType {
     workspaces: Record<string, Workspace>;

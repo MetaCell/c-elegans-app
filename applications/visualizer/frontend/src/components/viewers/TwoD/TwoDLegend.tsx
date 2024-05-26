@@ -1,6 +1,6 @@
 import React from 'react';
 import {Typography, Box, IconButton, Divider} from '@mui/material';
-import {coloringStrategies, connectionsLegend, ColorMapStrategy, GraphType} from "../../../settings/twoDSettings.tsx";
+import {connectionsLegend, GraphType} from "../../../settings/twoDSettings.tsx";
 import {ColoringStrategy} from "../../../helpers/twoD/coloringStrategy/ColoringStrategy.ts";
 
 interface LegendNodeProps {
@@ -27,7 +27,7 @@ const LegendNode: React.FC<LegendNodeProps> = ({name, color, onClick}) => (
             backgroundColor: 'rgba(0, 0, 0, 0.04)'
         }
     }} onClick={onClick}>
-        <Box sx={{ width: 16, height: 16, borderRadius: '50%', backgroundColor: color, marginRight: 1 }}/>
+        <Box sx={{width: 16, height: 16, borderRadius: '50%', backgroundColor: color, marginRight: 1}}/>
         <Typography variant="body2">{name}</Typography>
     </Box>
 );
@@ -42,7 +42,7 @@ const LegendConnection: React.FC<LegendConnectionProps> = ({name, icon, onClick}
             backgroundColor: 'rgba(0, 0, 0, 0.04)'
         }
     }} onClick={onClick}>
-        <IconButton size="small" sx={{ marginRight: 1 }}>
+        <IconButton size="small" sx={{marginRight: 1}}>
             {icon}
         </IconButton>
         <Typography variant="body2">{name}</Typography>
@@ -51,6 +51,7 @@ const LegendConnection: React.FC<LegendConnectionProps> = ({name, icon, onClick}
 
 interface LegendProps {
     coloringStrategy: ColoringStrategy;
+    onClick: (graphType, name) => void;
 }
 
 const TwoDLegend: React.FC<LegendProps> = ({coloringStrategy, onClick}) => {

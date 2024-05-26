@@ -26,8 +26,6 @@ export function applyLayout(cyRef: React.MutableRefObject<Core | null>, layout: 
     if (cyRef.current) {
         cyRef.current.layout({
             name: layout,
-            fit: true,
-            animate: false,
         }).run();
     }
 }

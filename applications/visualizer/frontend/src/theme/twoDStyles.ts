@@ -1,3 +1,5 @@
+import {Stylesheet} from "cytoscape";
+
 const NODE_STYLE = {
     'background-color': '#666',
     'label': 'data(label)',
@@ -36,4 +38,4 @@ export const GRAPH_STYLES = [
         selector: '.electrical',
         style: ELECTRICAL_STYLE
     }
-]
+] as Stylesheet[]
