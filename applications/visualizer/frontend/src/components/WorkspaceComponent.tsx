@@ -2,16 +2,14 @@ import { useDispatch, useSelector } from "react-redux";
 import React, { Suspense, useEffect, useState } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import { Box, CircularProgress, CssBaseline } from "@mui/material";
-import { addWidget } from "@metacell/geppetto-meta-client/common/layout/actions";
-import "@metacell/geppetto-meta-ui/flex-layout/style/dark.scss";
-import theme from "../theme";
+import { addWidget } from '@metacell/geppetto-meta-client/common/layout/actions';
+import '@metacell/geppetto-meta-ui/flex-layout/style/light.scss';
+import theme from '../theme';
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
-import {
-  rightComponentWidget,
-  threeDViewerWidget,
-} from "../layout-manager/widgets.ts";
-import Layout from "./ViewerContainer/Layout.tsx";
+import {threeDViewerWidget, twoDViewerWidget} from "../layout-manager/widgets.ts";
 import { RootState } from "../layout-manager/layoutManagerFactory.ts";
+import Layout from "./ViewerContainer/Layout.tsx";
+
 
 const LoadingComponent = () => (
   <Box
@@ -26,9 +24,10 @@ const LoadingComponent = () => (
   </Box>
 );
 
-function Workspace() {
-  const dispatch = useDispatch();
-  const { workspaces } = useGlobalContext();
+function WorkspaceComponent() {
+
+    const dispatch = useDispatch();
+    const { workspaces } = useGlobalContext();
 
   const workspaceId = useSelector((state: RootState) => state.workspaceId);
   const [LayoutComponent, setLayoutComponent] = useState<React.ComponentType>(() => LoadingComponent);
@@ -41,12 +40,12 @@ function Workspace() {
       setLayoutComponent(() => workspace.layoutManager.getComponent());
     }
   }, [workspace.layoutManager]);
-  
+
   useEffect(() => {
     dispatch(addWidget(threeDViewerWidget()));
-    dispatch(addWidget(rightComponentWidget()));
+    dispatch(addWidget(twoDViewerWidget()));
   }, [LayoutComponent, dispatch]);
-  
+
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -69,4 +68,4 @@ function Workspace() {
   );
 }
 
-export default Workspace;
+export default WorkspaceComponent;

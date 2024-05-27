@@ -7,7 +7,7 @@ import { RootState } from "../../../layout-manager/layoutManagerFactory";
 import { BufferGeometry, DoubleSide, NormalBlending } from "three";
 import { ThreeEvent } from "@react-three/fiber";
 import { getFurthestIntersectedObject } from "../../../helpers/threeDHelpers";
-import { OUTLINE_COLOR, OUTLINE_THICKNESS } from "../../../../settings/threeDSettings";
+import { OUTLINE_COLOR, OUTLINE_THICKNESS } from "../../../settings/threeDSettings";
 
 interface Props {
     stl: BufferGeometry;
