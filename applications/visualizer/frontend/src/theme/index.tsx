@@ -555,7 +555,7 @@ const theme = createTheme({
           maxWidth: "43.75rem",
         },
         paper: {
-          borderRadius: '8px',
+          borderRadius: '0.5rem',
           maxWidth: "34.375rem",
           '& h3': {
             fontSize: '0.875rem',
@@ -624,7 +624,8 @@ const theme = createTheme({
           borderRadius: "0.5rem",
           fontSize: "0.875rem",
           fontWeight: 600,
-          padding: "0.34rem 1rem",
+          height: '2.25rem',
+          padding: "0 0.75rem",
         },
         outlinedSecondary: {
           borderColor: gray200,
@@ -889,7 +890,7 @@ const theme = createTheme({
           }
         },
         root: {
-          borderRadius: '8px',
+          borderRadius: '0.5rem',
           "& .MuiOutlinedInput-notchedOutline": {
             borderColor: gray100,
             borderWidth: '0.0625rem',

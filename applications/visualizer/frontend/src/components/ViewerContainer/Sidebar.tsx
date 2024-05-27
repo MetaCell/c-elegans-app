@@ -42,7 +42,7 @@ const DrawerHeader = ({
       alignItems: "center",
       padding: ".75rem",
       height: drawerHeight,
-      borderBottom: `1px solid ${gray100}`,
+      borderBottom: `0.0625rem solid ${gray100}`,
     }}
   >
     <IconButton
@@ -50,7 +50,7 @@ const DrawerHeader = ({
       sx={{
         padding: ".38rem",
         borderRadius: "0.375rem",
-        border: `1px solid ${white}`,
+        border: `0.0625rem solid ${white}`,
         "&:hover": {
           background: gray50,
         },
@@ -97,8 +97,8 @@ const Sidebar = ({
         boxSizing: "border-box",
         "& .MuiPaper-root": {
           borderColor: gray100,
-          height: '99vh',
-          paddingBottom: '.75rem'
+          height: '100vh',
+          paddingBottom: '0'
         },
         ...(sidebarOpen && {
           ...openedMixin(theme),
@@ -122,11 +122,11 @@ const Sidebar = ({
       <Box
         sx={{
           display: "flex",
-          height: 'calc(100vh - 4rem)',
+          height: 'calc(100vh - 3.5rem)',
           overflow: "hidden",
         }}
       >
-        <Stack spacing=".75rem" borderRight={`1px solid ${gray100}`} p=".75rem" width='3.5rem'>
+        <Stack spacing=".75rem" borderRight={`0.0625rem solid ${gray100}`} p=".75rem" width='3.5rem'>
           <IconButton
             sx={{
               padding: ".38rem",
