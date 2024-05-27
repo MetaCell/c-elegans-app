@@ -19,6 +19,34 @@ const secondaryTypographyStyles = {
 
 }
 
+const SyncViewersData = [
+  {
+    primaryText: 'Connectivity graph',
+    secondaryText: 'Instance details',
+    selected: false
+  },
+  {
+    primaryText: '3D viewer',
+    secondaryText: 'EM viewer',
+    selected: false
+  },
+  {
+    primaryText: 'Connectivity graph',
+    secondaryText: '3D viewer',
+    selected: true
+  }
+];
+
+const ViewersList = [
+  'Connectivity graph',
+  '3D viewer',
+  'EM viewer',
+];
+
+const textStyles = {...secondaryTypographyStyles, fontWeight: 500, flex: 1};
+const buttonPadding = { p: '0.25rem' }
+const buttonStyle = {...buttonPadding, background: gray50}
+
 const ViewerSettings = ({ open, toggleDrawer }) => {
   return (
     <Drawer 
@@ -74,10 +102,11 @@ const ViewerSettings = ({ open, toggleDrawer }) => {
               color: gray600
             }
           }}>
-            <FormControlLabel control={<CustomSwitch width={28.8} height={16} thumbDimension={12.8} checkedPosition="translateX(0.8125rem)" />} label={<Typography color={gray600} variant="subtitle1">Connectivity graph</Typography>} />
-            <FormControlLabel control={<CustomSwitch width={28.8} height={16} thumbDimension={12.8} checkedPosition="translateX(0.8125rem)" />} label={<Typography color={gray600} variant="subtitle1">3D viewer</Typography>} />
-            <FormControlLabel control={<CustomSwitch width={28.8} height={16} thumbDimension={12.8} checkedPosition="translateX(0.8125rem)" />} label={<Typography color={gray600} variant="subtitle1">EM viewer</Typography>} />
-            <FormControlLabel control={<CustomSwitch width={28.8} height={16} thumbDimension={12.8} checkedPosition="translateX(0.8125rem)" />} label={<Typography color={gray600} variant="subtitle1">Instance details</Typography>} />
+            {ViewersList?.map((viewer) => {
+              return (
+                <FormControlLabel control={<CustomSwitch width={28.8} height={16} thumbDimension={12.8} checkedPosition="translateX(0.8125rem)" />} label={<Typography color={gray600} variant="subtitle1">{viewer} graph</Typography>} />
+              )
+            })}
           </FormGroup>
         </Box>
         <Divider sx={{borderColor: gray100}} />
@@ -89,21 +118,15 @@ const ViewerSettings = ({ open, toggleDrawer }) => {
           >Sync viewers</Typography>
 
           <Box display='flex' gap='0.25rem' flexDirection='column'>
-            <Box display="flex" alignItems='center' gap="0.75rem" py='0.25rem'>
-              <Typography sx={{...secondaryTypographyStyles, flex: 1}}>Show/hide viewers</Typography>
-              <IconButton sx={{p: '0.25rem', background: gray50}}><LinkIcon fill={brand600} /></IconButton>
-              <Typography sx={{...secondaryTypographyStyles, flex: 1}}>Instance details</Typography>
-            </Box>
-            <Box display="flex" alignItems='center' gap="0.75rem" py='0.25rem'>
-              <Typography sx={{...secondaryTypographyStyles, flex: 1}}>Show/hide viewers</Typography>
-              <IconButton sx={{p: '0.25rem', background: gray50}}><LinkIcon fill={brand600} /></IconButton>
-              <Typography sx={{...secondaryTypographyStyles, flex: 1}}>Instance details</Typography>
-            </Box>
-            <Box display="flex" alignItems='center' gap="0.75rem" py='0.25rem'>
-              <Typography sx={{...secondaryTypographyStyles, flex: 1}}>Show/hide viewers</Typography>
-              <IconButton sx={{p: '0.25rem'}}><LinkIcon fill={gray400B} /></IconButton>
-              <Typography sx={{...secondaryTypographyStyles, flex: 1}}>Instance details</Typography>
-            </Box>
+            {SyncViewersData?.map((data) => {
+              return (
+                <Box display="flex" alignItems='center' gap="0.75rem" py='0.25rem'>
+                  <Typography sx={textStyles}>{data.primaryText}</Typography>
+                  <IconButton sx={data.selected ? buttonPadding : buttonStyle}><LinkIcon fill={data.selected ? gray400B : brand600} /></IconButton>
+                  <Typography sx={textStyles}>{data.secondaryText}</Typography>
+                </Box>
+              )
+            })}
           </Box>
         </Box>
       </Box>

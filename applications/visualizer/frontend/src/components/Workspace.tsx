@@ -92,6 +92,11 @@ function Workspace() {
                       onClick={handleClickWorkspace}
                       endIcon={<DownIcon />}>Workspace 1</Button>
                     <Menu
+                      sx={{
+                        '& .MuiPaper-root': {
+                          minWidth: '12.5rem'
+                        }
+                      }}
                       id="Workspace-menu"
                       anchorEl={anchorElWorkspace}
                       open={openWorkspace}
@@ -104,14 +109,14 @@ function Workspace() {
                         <MenuItem disabled>
                           <Typography variant="h4">{'Workspaces'}</Typography>
                         </MenuItem>
-                        <MenuItem>
+                        <MenuItem sx={{ fontWeight: 600 }}>
                           <AddIcon />
                           New workspace
                         </MenuItem>
                       </Box>
                       <Box>
                         <MenuItem>
-                          <CheckIcon />
+                          {/* <CheckIcon /> */}
                           Workspace 1
                         </MenuItem>
                         <MenuItem>

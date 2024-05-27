@@ -413,7 +413,7 @@ const theme = createTheme({
     MuiBackdrop: {
       styleOverrides: {
         root: {
-          background: 'rgba(0,0,0,0.25)'
+          background: 'transparent'
         }
       }
     },
@@ -666,6 +666,15 @@ const theme = createTheme({
         text: {
           boxShadow: "none",
           color: gray500,
+        },
+        textPrimary: {
+          '&:hover': {
+            background: gray50,
+          },
+
+          '&:focus': {
+            background: gray100,
+          }
         },
         containedPrimary: {
           background: primaryPurple500,
