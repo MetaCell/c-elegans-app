@@ -11,7 +11,7 @@ import PickerWrapper from "./PickerWrapper.tsx";
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import AddIcon from '@mui/icons-material/Add';
 
-const { gray600, gray400B, gray500, gray50, error50, error700 } = vars;
+const { gray600, gray400B, gray500, gray50, error700 } = vars;
 
 const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions = false }) => {
   const [checked, setChecked] = useState(false);
@@ -121,7 +121,6 @@ const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions =
                     padding: '0.125rem !important',
                     
                     '&:hover': {
-                      backgroundColor: error50,
                       '& .MuiSvgIcon-root': {
                         color: error700
                       }
