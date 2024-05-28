@@ -4,7 +4,7 @@ import { CloseIcon, LinkIcon } from "../icons/index.tsx";
 import CustomSwitch from "./ViewerContainer/CustomSwitch.tsx";
 import { vars } from "../theme/variables.ts";
 
-const { gray900A, gray600, gray100, white, gray50, gray400B, brand600, gray700 } = vars;
+const { gray900A, gray600, gray100, white, gray700 } = vars;
 
 const typographyStyles = {
   fontSize: '0.875rem',
