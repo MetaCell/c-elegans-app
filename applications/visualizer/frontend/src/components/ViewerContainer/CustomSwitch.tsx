@@ -1,11 +1,22 @@
 import Switch from '@mui/material/Switch';
 import { vars } from "../../theme/variables.ts";
 import Tooltip from "@mui/material/Tooltip";
-import { useState } from "react";
+import React,{ useState } from "react";
 
 const { white, brand600, gray100 } = vars;
+interface CustomSwitchProps {
+  width?: number;
+  height?: number;
+  thumbDimension?: number;
+  checkedPosition?: string;
+}
 
-const CustomSwitch = ({width, height, thumbDimension, checkedPosition}) => {
+const CustomSwitch: React.FC<CustomSwitchProps> = ({
+  width,
+  height,
+  thumbDimension,
+  checkedPosition,
+}) => {
   const [checked, setChecked] = useState(false);
   
   const handleChange = (event) => {
