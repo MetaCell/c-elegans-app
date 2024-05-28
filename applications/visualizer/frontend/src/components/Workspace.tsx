@@ -94,7 +94,7 @@ function Workspace() {
                     <Menu
                       sx={{
                         '& .MuiPaper-root': {
-                          minWidth: '12.5rem'
+                          width: '15.625rem'
                         }
                       }}
                       id="Workspace-menu"
@@ -114,12 +114,18 @@ function Workspace() {
                           New workspace
                         </MenuItem>
                       </Box>
-                      <Box>
+                      <Box sx={{
+                        '& .MuiMenuItem-root': {
+                          '&:not(.Mui-selected) svg': {
+                            visibility: 'hidden'
+                          }
+                        }
+                      }}>
                         <MenuItem>
-                          {/* <CheckIcon /> */}
+                          <CheckIcon />
                           Workspace 1
                         </MenuItem>
-                        <MenuItem>
+                        <MenuItem selected>
                           <CheckIcon />
                           Workspace 2
                         </MenuItem>

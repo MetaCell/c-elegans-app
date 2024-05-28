@@ -22,18 +22,15 @@ const secondaryTypographyStyles = {
 const SyncViewersData = [
   {
     primaryText: 'Connectivity graph',
-    secondaryText: 'Instance details',
-    selected: false
+    secondaryText: 'Instance details'
   },
   {
     primaryText: '3D viewer',
-    secondaryText: 'EM viewer',
-    selected: false
+    secondaryText: 'EM viewer'
   },
   {
     primaryText: 'Connectivity graph',
-    secondaryText: '3D viewer',
-    selected: true
+    secondaryText: '3D viewer'
   }
 ];
 
@@ -44,8 +41,9 @@ const ViewersList = [
 ];
 
 const textStyles = {...secondaryTypographyStyles, fontWeight: 500, flex: 1};
-const buttonPadding = { p: '0.25rem' }
-const buttonStyle = {...buttonPadding, background: gray50}
+const buttonStyle = {
+  p: '0.25rem'
+}
 
 const ViewerSettings = ({ open, toggleDrawer }) => {
   return (
@@ -118,11 +116,11 @@ const ViewerSettings = ({ open, toggleDrawer }) => {
           >Sync viewers</Typography>
 
           <Box display='flex' gap='0.25rem' flexDirection='column'>
-            {SyncViewersData?.map((data) => {
+            {SyncViewersData?.map((data, index) => {
               return (
                 <Box display="flex" alignItems='center' gap="0.75rem" py='0.25rem'>
                   <Typography sx={textStyles}>{data.primaryText}</Typography>
-                  <IconButton sx={data.selected ? buttonPadding : buttonStyle}><LinkIcon fill={data.selected ? gray400B : brand600} /></IconButton>
+                  <IconButton className={index === 2 ? 'active' : ''} sx={buttonStyle}><LinkIcon /></IconButton>
                   <Typography sx={textStyles}>{data.secondaryText}</Typography>
                 </Box>
               )

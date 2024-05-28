@@ -399,6 +399,7 @@ const theme = createTheme({
           borderRadius: '0.5rem',
           border: `0.0625rem solid ${gray100}`,
           background: white,
+          width: '18.75rem',
           boxShadow: '0rem 0.25rem 0.5rem -0.125rem rgba(16, 24, 40, 0.10), 0rem 0.125rem 0.25rem -0.125rem rgba(16, 24, 40, 0.06)',
         },
 
@@ -472,6 +473,11 @@ const theme = createTheme({
           padding: '0.5rem !important',
           borderRadius: '0.375rem',
           gap: '0.5rem',
+
+          '&:not(:first-child)': {
+            marginTop: '0.25rem',
+          },
+
           '& > svg': {
             visibility: 'hidden'
           },
@@ -711,6 +717,7 @@ const theme = createTheme({
           boxShadow: "none",
           "& .MuiButtonBase-root": {
             border: 'none',
+            height: '100%',
             background: white,
             fontSize: '0.875rem',
             borderRadius: '0.5rem',
@@ -947,11 +954,22 @@ const theme = createTheme({
         root: {
           padding: '0.375rem',
           borderRadius: '0.25rem',
+
+          '&.active': {
+            backgroundColor: primaryBlue50,
+            '&:hover': {
+              backgroundColor: primaryBlue50,
+            },
+            '& svg path': {
+              fill: brand600
+            },
+          },
           
           '&:hover': {
-            backgroundColor: gray100,
+            backgroundColor: gray50,
+            
             '& .MuiSvgIcon-root': {
-              color: gray700,
+              color: gray500,
             }
           }
         },
