@@ -399,6 +399,7 @@ const theme = createTheme({
           borderRadius: '0.5rem',
           border: `0.0625rem solid ${gray100}`,
           background: white,
+          width: '18.75rem',
           boxShadow: '0rem 0.25rem 0.5rem -0.125rem rgba(16, 24, 40, 0.10), 0rem 0.125rem 0.25rem -0.125rem rgba(16, 24, 40, 0.06)',
         },
 
@@ -413,7 +414,7 @@ const theme = createTheme({
     MuiBackdrop: {
       styleOverrides: {
         root: {
-          background: 'rgba(0,0,0,0.25)'
+          background: 'transparent'
         }
       }
     },
@@ -472,6 +473,11 @@ const theme = createTheme({
           padding: '0.5rem !important',
           borderRadius: '0.375rem',
           gap: '0.5rem',
+
+          '&:not(:first-child)': {
+            marginTop: '0.25rem',
+          },
+
           '& > svg': {
             visibility: 'hidden'
           },
@@ -555,7 +561,7 @@ const theme = createTheme({
           maxWidth: "43.75rem",
         },
         paper: {
-          borderRadius: '8px',
+          borderRadius: '0.5rem',
           maxWidth: "34.375rem",
           '& h3': {
             fontSize: '0.875rem',
@@ -624,7 +630,8 @@ const theme = createTheme({
           borderRadius: "0.5rem",
           fontSize: "0.875rem",
           fontWeight: 600,
-          padding: "0.34rem 1rem",
+          height: '2.25rem',
+          padding: "0 0.75rem",
         },
         outlinedSecondary: {
           borderColor: gray200,
@@ -666,6 +673,15 @@ const theme = createTheme({
           boxShadow: "none",
           color: gray500,
         },
+        textPrimary: {
+          '&:hover': {
+            background: gray50,
+          },
+
+          '&:focus': {
+            background: gray100,
+          }
+        },
         containedPrimary: {
           background: primaryPurple500,
           color: white,
@@ -701,6 +717,7 @@ const theme = createTheme({
           boxShadow: "none",
           "& .MuiButtonBase-root": {
             border: 'none',
+            height: '100%',
             background: white,
             fontSize: '0.875rem',
             borderRadius: '0.5rem',
@@ -889,7 +906,7 @@ const theme = createTheme({
           }
         },
         root: {
-          borderRadius: '8px',
+          borderRadius: '0.5rem',
           "& .MuiOutlinedInput-notchedOutline": {
             borderColor: gray100,
             borderWidth: '0.0625rem',
@@ -937,11 +954,22 @@ const theme = createTheme({
         root: {
           padding: '0.375rem',
           borderRadius: '0.25rem',
+
+          '&.active': {
+            backgroundColor: primaryBlue50,
+            '&:hover': {
+              backgroundColor: primaryBlue50,
+            },
+            '& svg path': {
+              fill: brand600
+            },
+          },
           
           '&:hover': {
-            backgroundColor: gray100,
+            backgroundColor: gray50,
+            
             '& .MuiSvgIcon-root': {
-              color: gray700,
+              color: gray500,
             }
           }
         },

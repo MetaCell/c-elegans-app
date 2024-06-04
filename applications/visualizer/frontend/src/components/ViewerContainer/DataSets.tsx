@@ -121,7 +121,8 @@ const DataSets = () => {
       </Box>
       <Box
         sx={{
-          height: "calc(100% - 1rem)",
+          height: "calc(100% - 12.75rem)",
+          paddingBottom: '0.5rem',
           overflow: "auto",
         }}
       >
