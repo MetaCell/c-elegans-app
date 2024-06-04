@@ -1,6 +1,7 @@
 import { Typography, Card, CardContent, CardActionArea, Grid, Container, Box, AppBar, Toolbar, Button } from '@mui/material';
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import footerImage from '../assets/summary-neurons.png';
+import {parseURLParams} from "../helpers/parseURLHelper.ts";
 
 function AppLauncher() {
 
@@ -20,7 +21,10 @@ function AppLauncher() {
     };
 
     const handlePasteUrlClick = () => {
-        console.log('Paste URL option clicked');
+        const exampleURL = 'http://localhost:8080/mode=default&ws_name=workspace1&ids=ADAL,AIBR,RIML&ws_name=workspace3&ids=RIFL,REMV&ws_name=test&ids=ADAL';
+        
+        const parsedParams = parseURLParams(exampleURL);
+        console.log(parsedParams)
     };
 
     return (
