@@ -1,11 +1,22 @@
 import Switch from '@mui/material/Switch';
 import { vars } from "../../theme/variables.ts";
 import Tooltip from "@mui/material/Tooltip";
-import { useState } from "react";
+import React,{ useState } from "react";
 
 const { white, brand600, gray100 } = vars;
+interface CustomSwitchProps {
+  width?: number;
+  height?: number;
+  thumbDimension?: number;
+  checkedPosition?: string;
+}
 
-const CustomSwitch = () => {
+const CustomSwitch: React.FC<CustomSwitchProps> = ({
+  width,
+  height,
+  thumbDimension,
+  checkedPosition,
+}) => {
   const [checked, setChecked] = useState(false);
   
   const handleChange = (event) => {
@@ -18,15 +29,15 @@ const CustomSwitch = () => {
     >
       <Switch focusVisibleClassName=".Mui-focusVisible" checked={checked} onChange={handleChange} sx={(theme) => ({
         marginRight: '.5rem',
-        width: 23,
-        height: 13,
+        width: width ?? 23,
+        height: height ?? 13,
         padding: 0,
         '& .MuiSwitch-switchBase': {
           padding: 0,
-          margin: '1.5px',
+          margin: '0.0938rem',
           transitionDuration: '300ms',
           '&.Mui-checked': {
-            transform: 'translateX(9.24px)',
+            transform: checkedPosition ?? 'translateX(0.5775rem)',
             color: white,
             '& + .MuiSwitch-track': {
               backgroundColor: brand600,
@@ -43,8 +54,8 @@ const CustomSwitch = () => {
         },
         '& .MuiSwitch-thumb': {
           boxSizing: 'border-box',
-          width: 10.24,
-          height: 10.24,
+          width: thumbDimension ?? 10.24,
+          height: thumbDimension ?? 10.24,
           boxShadow: 'none'
         },
         '& .MuiSwitch-track': {

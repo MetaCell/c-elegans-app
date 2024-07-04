@@ -38,6 +38,11 @@ const CompareWorkspaceDialog = ({
     <Dialog 
       onClose={onClose} 
       open={showModal}
+      sx={{
+        '& .MuiBackdrop-root': {
+          background: 'rgba(0,0,0,0.25)'
+        }
+      }}
       fullWidth
       maxWidth="lg"
     >
