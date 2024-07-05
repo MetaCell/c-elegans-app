@@ -13,7 +13,12 @@ import Loader from "./Loader.tsx";
 import Gizmo from "./Gizmo.tsx";
 import { CameraControls, PerspectiveCamera } from "@react-three/drei";
 import SceneControls from "./SceneControls.tsx";
+import Select from "@mui/material/Select";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import {FormControl, MenuItem} from "@mui/material";
+import {vars} from "../../../theme/variables.ts";
 
+const {gray400} = vars
 export interface Instance {
     id: string;
     url: string;
@@ -52,33 +57,80 @@ function ThreeDViewer() {
     }, [showNeurons, showSynapses]);
 
     return (
-        <>
-            <Canvas style={{ backgroundColor: SCENE_BACKGROUND }} frameloop={"demand"}>
-                <Suspense fallback={<Loader />}>
+      <>
+        <FormControl
+          sx={{
+            position: "absolute",
+            top: ".5rem",
+            right: ".5rem",
+              zIndex: 1
+          }}
+        >
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={"all"}
+            IconComponent={() => <KeyboardArrowDownIcon />}
+            sx={{
+              minWidth: "2.5rem",
+              border: 0,
+              color: gray400,
+              fontWeight: 500,
+              fontSize: ".875rem",
 
-                    <PerspectiveCamera
-                        makeDefault
-                        fov={CAMERA_FOV}
-                        aspect={window.innerWidth / window.innerHeight}
-                        position={CAMERA_POSITION}
-                        near={CAMERA_NEAR}
-                        far={CAMERA_FAR}
-                    />
-                    <CameraControls ref={cameraControlRef} />
+              "&.Mui-focused": {
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: 0,
+                },
+              },
+              "& .MuiSelect-select": {
+                padding: 0,
+                paddingRight: "0 !important",
+              },
 
-                    <ambientLight color={LIGHT_1_COLOR} />
-                    <directionalLight color={LIGHT_2_COLOR} position={LIGHT_2_POSITION} />
+              "& .MuiSvgIcon-root": {
+                margin: "0 !important",
+                color: gray400,
+                fontWeight: 500,
+                fontSize: "1.25rem",
+              },
+            }}
+          >
+            <MenuItem value={"all"}>All</MenuItem>
+          </Select>
+        </FormControl>
+        <Canvas
+          style={{ backgroundColor: SCENE_BACKGROUND }}
+          frameloop={"demand"}
+        >
+          <Suspense fallback={<Loader />}>
+            <PerspectiveCamera
+              makeDefault
+              fov={CAMERA_FOV}
+              aspect={window.innerWidth / window.innerHeight}
+              position={CAMERA_POSITION}
+              near={CAMERA_NEAR}
+              far={CAMERA_FAR}
+            />
+            <CameraControls ref={cameraControlRef} />
 
-                    <Gizmo />
+            <ambientLight color={LIGHT_1_COLOR} />
+            <directionalLight
+              color={LIGHT_2_COLOR}
+              position={LIGHT_2_POSITION}
+            />
 
-                    <STLViewer instances={instances} isWireframe={isWireframe} />
-                </Suspense>
-            </Canvas>
-            <SceneControls
-                cameraControlRef={cameraControlRef}
-                isWireframe={isWireframe}
-                setIsWireframe={setIsWireframe} />
-        </>
+            <Gizmo />
+
+            <STLViewer instances={instances} isWireframe={isWireframe} />
+          </Suspense>
+        </Canvas>
+        <SceneControls
+          cameraControlRef={cameraControlRef}
+          isWireframe={isWireframe}
+          setIsWireframe={setIsWireframe}
+        />
+      </>
     );
 }
 

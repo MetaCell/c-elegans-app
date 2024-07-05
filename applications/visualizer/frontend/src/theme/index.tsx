@@ -975,6 +975,44 @@ const theme = createTheme({
         },
       },
     },
+    MuiToggleButtonGroup: {
+      styleOverrides: {
+        root: {
+          boxShadow: '0px 1px 2px 0px rgba(16, 24, 40, 0.05)',
+          borderRadius: '.5rem',
+          
+          '& .MuiToggleButtonGroup-firstButton': {
+            borderTopLeftRadius: '.5rem',
+            borderBottomLeftRadius: '.5rem'
+          },
+          '& .MuiToggleButtonGroup-lastButton': {
+            borderTopRightRadius: '.5rem',
+            borderBottomRightRadius: '.5rem'
+          },
+          button: {
+            fontSize: '0.875rem',
+            color: gray700,
+            fontWeight: 600,
+            borderColor: gray200,
+            '&:hover': {
+              backgroundColor: 'transparent',
+            },
+            '&.Mui-selected': {
+              backgroundColor: gray50,
+              color: gray800,
+              
+              '&:not(.MuiToggleButtonGroup-firstButton)': {
+                borderLeft: `1px solid ${gray200}`,
+              },
+              
+              '&:hover': {
+                backgroundColor: gray50,
+              },
+            },
+          },
+        },
+      },
+    },
   },
 });
 

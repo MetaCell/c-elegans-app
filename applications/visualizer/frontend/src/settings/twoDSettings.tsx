@@ -1,5 +1,4 @@
-import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
-import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
+import {ChemicalSynapseIcon, GapJunctionIcon} from "../icons";
 
 export const CHEMICAL_THRESHOLD = 3
 export const ELECTRICAL_THRESHOLD = 2
@@ -23,11 +22,11 @@ export enum GraphType {
 
 export const connectionsLegend = {
     chemical: {
-        icon: <ArrowRightAltIcon/>,
+        icon: <ChemicalSynapseIcon />,
         name: "Chemical Synapse"
     },
     electrical: {
-        icon: <ElectricBoltIcon/>,
+        icon: <GapJunctionIcon />,
         name: "Gap Junction"
     },
 };

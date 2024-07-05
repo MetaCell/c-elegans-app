@@ -29,7 +29,7 @@ const TwoDViewer = () => {
     const [connections, setConnections] = useState<Connection[]>([]);
     const [layout, setLayout] = useState<string>(GRAPH_LAYOUTS.Concentric)
     const [coloringOption, setColoringOption] = useState<ColoringOptions>(ColoringOptions.CELL_TYPE)
-    let coloringStrategy = getColoringStrategy(coloringOption)
+    const coloringStrategy = getColoringStrategy(coloringOption)
     const [thresholdChemical, setThresholdChemical] = useState<number>(CHEMICAL_THRESHOLD);
     const [thresholdElectrical, setThresholdElectrical] = useState<number>(ELECTRICAL_THRESHOLD);
     const [includeNeighboringCells, setIncludeNeighboringCells] = useState<boolean>(INCLUDE_NEIGHBORING_CELLS);
@@ -51,7 +51,7 @@ const TwoDViewer = () => {
         cyRef.current = cy;
 
         const resizeObserver = new ResizeObserver(entries => {
-            for (let entry of entries) {
+            for (const entry of entries) {
                 if (entry.target === cyContainer.current) {
                     updateLayout();
                 }
@@ -71,7 +71,7 @@ const TwoDViewer = () => {
         if (!workspace) return;
 
         // Convert activeNeurons and activeDatasets to comma-separated strings
-        const cells = Array.from(workspace.activeNeurons).join(',');
+        const cells = Array.from(workspace.activeNeurons || []).join(',');
         const datasetIds = Object.values(workspace.activeDatasets).map(dataset => dataset.id).join(',');
         const datasetType = Object.values(workspace.activeDatasets).map(dataset => dataset.type).join(',');
 

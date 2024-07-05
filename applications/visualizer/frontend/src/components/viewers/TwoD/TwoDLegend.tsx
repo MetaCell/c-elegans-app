@@ -2,7 +2,9 @@ import React from 'react';
 import {Typography, Box, IconButton, Divider} from '@mui/material';
 import {connectionsLegend, GraphType} from "../../../settings/twoDSettings.tsx";
 import {ColoringStrategy} from "../../../helpers/twoD/coloringStrategy/ColoringStrategy.ts";
+import {vars} from "../../../theme/variables.ts";
 
+const {gray100} = vars
 interface LegendNodeProps {
     name: string;
     color: string;
@@ -21,11 +23,8 @@ const LegendNode: React.FC<LegendNodeProps> = ({name, color, onClick}) => (
     <Box sx={{
         display: 'flex',
         alignItems: 'center',
-        margin: '8px 0',
+        margin: '.75rem 0',
         cursor: 'pointer',
-        '&:hover': {
-            backgroundColor: 'rgba(0, 0, 0, 0.04)'
-        }
     }} onClick={onClick}>
         <Box sx={{width: 16, height: 16, borderRadius: '50%', backgroundColor: color, marginRight: 1}}/>
         <Typography variant="body2">{name}</Typography>
@@ -36,13 +35,15 @@ const LegendConnection: React.FC<LegendConnectionProps> = ({name, icon, onClick}
     <Box sx={{
         display: 'flex',
         alignItems: 'center',
-        margin: '8px 0',
+        margin: '.75rem 0',
         cursor: 'pointer',
-        '&:hover': {
-            backgroundColor: 'rgba(0, 0, 0, 0.04)'
-        }
     }} onClick={onClick}>
-        <IconButton size="small" sx={{marginRight: 1}}>
+        <IconButton size="small" sx={{
+          marginRight: 1,
+          '&:hover': {
+            backgroundColor: 'transparent',
+          },
+        }}>
             {icon}
         </IconButton>
         <Typography variant="body2">{name}</Typography>
@@ -58,11 +59,11 @@ const TwoDLegend: React.FC<LegendProps> = ({coloringStrategy, onClick}) => {
     const colorMap = coloringStrategy.getColorMap();
 
     return (
-        <Box sx={{padding: 2}}>
+        <Box sx={{padding: '1rem', borderRadius: '0.5rem', backgroundColor: 'rgba(245, 245, 244, 0.80)', backdropFilter: 'blur(20px)'}}>
             {Object.entries(colorMap).map(([name, color]) => (
                 <LegendNode key={name} name={name} color={color} onClick={() => onClick(GraphType.Node, name)}/>
             ))}
-            <Divider sx={{my: 1}}/>
+            <Divider sx={{my: 1, borderColor: gray100}}/>
             {Object.entries(connectionsLegend).map(([key, {name, icon}]) => (
                 <LegendConnection key={key} name={name} icon={icon}
                                   onClick={() => onClick(GraphType.Connection, name)}/>

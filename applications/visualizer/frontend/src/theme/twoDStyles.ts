@@ -4,22 +4,23 @@ const NODE_STYLE = {
     'background-color': '#666',
     'label': 'data(label)',
     'color': '#fff',
-    'text-outline-color': '#000',
-    'text-outline-width': 2,
     'text-valign': 'center',
     'text-halign': 'center',
-}
+    'font-size': '16px',
+    width: '48px',
+    height: '48px',
+};
 
 const EDGE_STYLE = {
-    'width': 3,
     'line-color': '#ccc',
     'target-arrow-color': '#ccc',
     'target-arrow-shape': 'triangle',
-    'curve-style': 'bezier'
-}
+    'curve-style': 'bezier',
+    'arrow-scale': 0.3,
+};
 
-const CHEMICAL_STYLE = {'line-color': 'blue'}
-const ELECTRICAL_STYLE = {'line-color': 'yellow'}
+const CHEMICAL_STYLE = { 'line-color': '#63625F', 'width': 0.5 };
+const ELECTRICAL_STYLE = { 'line-color': 'yellow', 'width': 0.5 };
 
 export const GRAPH_STYLES = [
     {
