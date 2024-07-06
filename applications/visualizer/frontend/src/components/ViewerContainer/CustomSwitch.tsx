@@ -10,8 +10,8 @@ interface CustomSwitchProps {
   height?: number;
   thumbDimension?: number;
   checkedPosition?: string;
-  checked: boolean;
-  onChange: (e) => void;
+  checked?: boolean;
+  onChange?: (e) => void;
   disabled?: boolean;
   showTooltip?: boolean;
 }
