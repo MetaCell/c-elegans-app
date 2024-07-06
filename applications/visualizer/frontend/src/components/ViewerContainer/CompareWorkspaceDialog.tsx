@@ -1,39 +1,30 @@
-import { Box, Button, Dialog, FormLabel, IconButton, ListSubheader, TextField, Typography, Autocomplete} from "@mui/material";
+import { Box, Button, Dialog, FormLabel, IconButton, TextField, Typography} from "@mui/material";
 import { vars } from "../../theme/variables.ts";
-import { CaretIcon, CheckIcon, CloseIcon } from "../../icons/index.tsx";
+import { CaretIcon, CheckIcon, CloseIcon } from "../../icons";
+import CustomAutocomplete from "../CustomAutocomplete.tsx";
+import { NeuronsService} from "../../rest";
+import {useEffect, useState} from "react";
 const { gray100 } = vars;
-
-
-const NeuronData = [
-  'ADAC', "ARAC", "VBG"
-];
-
-const datasetStages = [
-  {
-    groupName: 'Development Stage 1',
-    options: [
-      { title: 'Witvliet et al., 2020, Dataset 1 (L1)', caption: '0 hours from birth' },
-      { title: 'Witvliet et al., 2020, Dataset 3 (L1)', caption: '0 hours from birth' },
-      { title: 'Witvliet et al., 2020, Dataset 2 (L1)', caption: '0 hours from birth' }
-    ]
-  },
-  {
-    groupName: 'Development Stage 2',
-    options: [
-      { title: 'Witvliet et al., 2020, Dataset 1 (L1)', caption: '0 hours from birth' },
-      { title: 'Witvliet et al., 2020, Dataset 3 (L1)', caption: '0 hours from birth' },
-      { title: 'Witvliet et al., 2020, Dataset 2 (L1)', caption: '0 hours from birth' }
-    ]
-  },
-];
-
 const CompareWorkspaceDialog = ({
   onClose,
   showModal,
+  datasets
 }) => {
-  const allOptions = datasetStages.reduce((acc, curr) => {
-    return [...acc, ...curr.options.map(option => ({ ...option, groupName: curr.groupName }))];
+  
+  const [neurons, setNeurons] = useState([])
+  const fetchNeurons = async () => {
+    try {
+      const response = await NeuronsService.getAllCells({ page: 1 });
+      setNeurons(response.items)
+    } catch (error) {
+      console.error('Failed to fetch datasets', error);
+    }
+  };
+  
+  useEffect(() => {
+    fetchNeurons();
   }, []);
+
   return (
     <Dialog 
       onClose={onClose} 
@@ -59,59 +50,43 @@ const CompareWorkspaceDialog = ({
 
         <Box>
           <FormLabel>Datasets</FormLabel>
-          <Autocomplete
-            multiple
-            id="grouped-demo"
-            clearIcon={false}
-            options={allOptions}
-            ChipProps={{ deleteIcon: <IconButton sx={{ p: '0 !important', margin: '0 !important' }}><CloseIcon /></IconButton> }}
-            popupIcon={<CaretIcon />}
-            groupBy={(option) => option.groupName}
-            getOptionLabel={(option) => option.title}
-            renderInput={(params) => <TextField {...params} placeholder="Start typing to search" />}
+          <CustomAutocomplete
+            options={datasets}
+            getOptionLabel={(option) => option.name}
             renderOption={(props, option) => (
               <li {...props}>
                 <CheckIcon />
-                <Typography>{option.title}</Typography>
-                <Typography component='span'>{option.caption}</Typography>
+                <Typography>{option.name}</Typography>
               </li>
             )}
-            renderGroup={(params) => {
-              console.log(params, 'params')
-              return (
-                <li className="grouped-list" key={params.key}>
-                  <ListSubheader component="div">
-                    {params.group}
-                  </ListSubheader>
-                  <ul style={{ padding: 0 }}>{params.children}</ul>
-                </li>
-              )
+            placeholder="Start typing to search"
+            id="grouped-demo"
+            popupIcon={<CaretIcon />}
+            ChipProps={{
+              deleteIcon: <IconButton sx={{ p: '0 !important', margin: '0 !important' }}><CloseIcon /></IconButton>
             }}
           />
         </Box>
 
         <Box>
           <FormLabel>Neurons</FormLabel>
-          <Autocomplete
-            multiple
-            className="secondary"
-            id="tags-standard"
-            clearIcon={false}
-            options={NeuronData}
-            getOptionLabel={(option) => option}
-            ChipProps={{ deleteIcon: <IconButton sx={{ p: '0 !important', margin: '0 !important' }}><CloseIcon /></IconButton> }}
+          <CustomAutocomplete
+            options={neurons}
+            getOptionLabel={(option) => option.name}
             renderOption={(props, option) => (
               <li {...props}>
                 <CheckIcon />
-                <Typography>{option}</Typography>
+                <Typography>{option.name}</Typography>
               </li>
             )}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                placeholder="Start typing to search"
-              />
-            )}
+            placeholder="Start typing to search"
+            className="secondary"
+            id="tags-standard"
+            popupIcon={<CaretIcon />}
+            ChipProps={{
+              deleteIcon: <IconButton sx={{ p: '0 !important', margin: '0 !important' }}><CloseIcon /></IconButton>
+            }}
+            clearIcon={false}
           />
         </Box>
       </Box>

@@ -13,12 +13,14 @@ import Loader from "./Loader.tsx";
 import Gizmo from "./Gizmo.tsx";
 import { CameraControls, PerspectiveCamera } from "@react-three/drei";
 import SceneControls from "./SceneControls.tsx";
-import Select from "@mui/material/Select";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import {FormControl, MenuItem} from "@mui/material";
+import { IconButton, Typography} from "@mui/material";
 import {vars} from "../../../theme/variables.ts";
+import {useGlobalContext} from "../../../contexts/GlobalContext.tsx";
+import {CheckIcon, CloseIcon} from "../../../icons";
+import CustomAutocomplete from "../../CustomAutocomplete.tsx";
 
-const {gray400} = vars
+const {gray100, gray600} = vars
 export interface Instance {
     id: string;
     url: string;
@@ -34,6 +36,7 @@ function ThreeDViewer() {
     const [showSynapses, setShowSynapses] = useState<boolean>(true);
     const [instances, setInstances] = useState<Instance[]>([])
     const [isWireframe, setIsWireframe] = useState<boolean>(false)
+    const { datasets} = useGlobalContext();
 
     const cameraControlRef = useRef<CameraControls | null>(null);
 
@@ -58,47 +61,59 @@ function ThreeDViewer() {
 
     return (
       <>
-        <FormControl
+        <CustomAutocomplete
+          multiple={false}
+          options={datasets}
+          getOptionLabel={(option) => option.name}
+          renderOption={(props, option) => (
+            <li {...props}>
+              <CheckIcon />
+              <Typography>{option.name}</Typography>
+            </li>
+          )}
+          placeholder="Start typing to search"
+          className="secondary"
+          id="tags-standard"
+          popupIcon={<KeyboardArrowDownIcon />}
+          ChipProps={{
+            deleteIcon: <IconButton sx={{ p: '0 !important', margin: '0 !important' }}><CloseIcon /></IconButton>
+          }}
           sx={{
             position: "absolute",
             top: ".5rem",
             right: ".5rem",
-              zIndex: 1
-          }}
-        >
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            value={"all"}
-            IconComponent={() => <KeyboardArrowDownIcon />}
-            sx={{
-              minWidth: "2.5rem",
-              border: 0,
-              color: gray400,
-              fontWeight: 500,
-              fontSize: ".875rem",
-
-              "&.Mui-focused": {
+            zIndex: 1,
+            minWidth: "17.5rem",
+            '& .MuiInputBase-root': {
+              padding: "0.5rem 2rem 0.5rem 0.75rem !important",
+              backgroundColor: gray100,
+              boxShadow: "0px 1px 2px 0px rgba(16, 24, 40, 0.05)",
+              '&.Mui-focused': {
                 "& .MuiOutlinedInput-notchedOutline": {
-                  border: 0,
-                },
+                  borderColor: gray100,
+                  boxShadow: 'none'
+                }
               },
-              "& .MuiSelect-select": {
-                padding: 0,
-                paddingRight: "0 !important",
-              },
-
-              "& .MuiSvgIcon-root": {
-                margin: "0 !important",
-                color: gray400,
-                fontWeight: 500,
-                fontSize: "1.25rem",
-              },
-            }}
-          >
-            <MenuItem value={"all"}>All</MenuItem>
-          </Select>
-        </FormControl>
+              '& .MuiInputBase-input': {
+                color: gray600,
+                fontWeight: 500
+              }
+            }
+          }}
+          componentsProps={{
+            paper: {
+              sx: {
+                "& .MuiAutocomplete-listbox": {
+                  "& .MuiAutocomplete-option": {
+                    '&[aria-selected="true"]': {
+                      backgroundColor: 'transparent !important'
+                    }
+                  }
+                }
+              }
+            }
+          }}
+        />
         <Canvas
           style={{ backgroundColor: SCENE_BACKGROUND }}
           frameloop={"demand"}

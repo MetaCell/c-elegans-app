@@ -1,7 +1,7 @@
-import React, {createContext, ReactNode, useContext, useState} from 'react';
+import React, {createContext, ReactNode, useContext, useEffect, useState} from 'react';
 import {ViewMode} from "../models/models.ts";
 import {Workspace} from "../models/workspace.ts";
-
+import { Dataset, DatasetsService } from '../rest';
 export interface GlobalContextType {
     workspaces: Record<string, Workspace>;
     currentWorkspaceId: string | undefined;
@@ -15,6 +15,8 @@ export interface GlobalContextType {
     removeWorkspace: (workspaceId: string) => void;
     setCurrentWorkspace: (workspaceId: string) => void;
     setSelectedWorkspacesIds: (workspaceId: Set<string>) => void;
+    datasets: Array<Dataset>;
+    fetchDatasets: () => void;
 }
 
 interface GlobalContextProviderProps {
@@ -28,7 +30,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({chi
     const [currentWorkspaceId, setCurrentWorkspaceId] = useState<string | undefined>(undefined);
     const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.Default);
     const [selectedWorkspacesIds, setSelectedWorkspacesIds] = useState<Set<string>>(new Set<string>());
-
+  const [datasets, setDatasets] = useState<Array<Dataset>>([]);
 
     const createWorkspace = (id: string, name: string,
                              activeDatasets: Set<string>,
@@ -53,8 +55,20 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({chi
     const setCurrentWorkspace = (workspaceId: string) => {
         setCurrentWorkspaceId(workspaceId);
     };
-
-
+  
+  const fetchDatasets = async () => {
+    try {
+      const response = await DatasetsService.getAllDatasets();
+      setDatasets(response);
+    } catch (error) {
+      console.error('Failed to fetch datasets', error);
+    }
+  };
+  
+  useEffect(() => {
+    fetchDatasets();
+  }, []);
+  
     return (
         <GlobalContext.Provider
             value={{
@@ -68,6 +82,8 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({chi
                 setViewMode,
                 selectedWorkspacesIds,
                 setSelectedWorkspacesIds,
+                fetchDatasets,
+                datasets
             }}>
             {children}
         </GlobalContext.Provider>

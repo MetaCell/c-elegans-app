@@ -2,8 +2,9 @@ import { Theme } from "@mui/material/styles";
 import { AppBar, Box, Button, ButtonGroup, IconButton, Menu, MenuItem, Toolbar, Tooltip, Typography} from "@mui/material";
 import { vars } from "../../theme/variables.ts";
 import React, { useState } from "react";
-import { CiteIcon, ConnectionsIcon, ContactIcon, ContributeIcon, DataSourceIcon, DownloadIcon, MoreOptionsIcon, TourIcon } from "../../icons/index.tsx";
+import { CiteIcon, ConnectionsIcon, ContactIcon, ContributeIcon, DataSourceIcon, DownloadIcon, MoreOptionsIcon, TourIcon } from "../../icons";
 import CompareWorkspaceDialog from "./CompareWorkspaceDialog.tsx";
+import {useGlobalContext} from "../../contexts/GlobalContext.tsx";
 const { gray100 } = vars;
 
 const MENU_ARR = [
@@ -87,6 +88,7 @@ const Header = ({
   const [showModal, setShowModal] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const { datasets } = useGlobalContext();
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -197,7 +199,7 @@ const Header = ({
         </Toolbar>
       </AppBar>
 
-      <CompareWorkspaceDialog showModal={showModal} onClose={onClose}/>
+      <CompareWorkspaceDialog showModal={showModal} onClose={onClose} datasets={datasets}/>
     </>
   );
 };

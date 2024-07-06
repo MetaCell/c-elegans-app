@@ -23,7 +23,7 @@ export class Workspace {
 
     store: ReturnType<typeof configureStore>;
     layoutManager: any;
-
+    datasets: Array<Dataset>;
     updateContext: (workspace: Workspace) => void;
 
     constructor(id: string, name: string,
