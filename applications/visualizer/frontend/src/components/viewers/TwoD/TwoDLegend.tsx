@@ -1,8 +1,8 @@
 import React from 'react';
 import {Typography, Box, IconButton, Divider} from '@mui/material';
 import {connectionsLegend, GraphType} from "../../../settings/twoDSettings.tsx";
-import {ColoringStrategy} from "../../../helpers/twoD/coloringStrategy/ColoringStrategy.ts";
 import {vars} from "../../../theme/variables.ts";
+import {ColoringOptions, getColorMap} from "../../../helpers/twoD/coloringHelper.ts";
 
 const {gray100} = vars
 interface LegendNodeProps {
@@ -51,24 +51,24 @@ const LegendConnection: React.FC<LegendConnectionProps> = ({name, icon, onClick}
 );
 
 interface LegendProps {
-    coloringStrategy: ColoringStrategy;
-    onClick: (graphType, name) => void;
+    coloringOption: ColoringOptions;
+    onClick: (type: GraphType, name: string) => void;
 }
 
-const TwoDLegend: React.FC<LegendProps> = ({coloringStrategy, onClick}) => {
-    const colorMap = coloringStrategy.getColorMap();
+const TwoDLegend: React.FC<LegendProps> = ({ coloringOption, onClick }) => {
+    const colorMap = getColorMap(coloringOption);
 
     return (
-        <Box sx={{padding: '1rem', borderRadius: '0.5rem', backgroundColor: 'rgba(245, 245, 244, 0.80)', backdropFilter: 'blur(20px)'}}>
+        <Box sx={{ padding: '1rem', borderRadius: '0.5rem', backgroundColor: 'rgba(245, 245, 244, 0.80)', backdropFilter: 'blur(20px)' }}>
             {Object.entries(colorMap).map(([name, color]) => (
-                <LegendNode key={name} name={name} color={color} onClick={() => onClick(GraphType.Node, name)}/>
+                <LegendNode key={name} name={name} color={color} onClick={() => onClick(GraphType.Node, name)} />
             ))}
-            <Divider sx={{my: 1, borderColor: gray100}}/>
-            {Object.entries(connectionsLegend).map(([key, {name, icon}]) => (
-                <LegendConnection key={key} name={name} icon={icon}
-                                  onClick={() => onClick(GraphType.Connection, name)}/>
+            <Divider sx={{ my: 1, borderColor: gray100 }} />
+            {Object.entries(connectionsLegend).map(([key, { name, icon }]) => (
+                <LegendConnection key={key} name={name} icon={icon} onClick={() => onClick(GraphType.Connection, name)} />
             ))}
         </Box>
     );
 };
+
 export default TwoDLegend;

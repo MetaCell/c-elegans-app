@@ -16,11 +16,11 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import { GRAPH_LAYOUTS, ZOOM_DELTA } from "../../../settings/twoDSettings.tsx";
 import { applyLayout } from "../../../helpers/twoD/twoDHelpers.ts";
-import { ColoringOptions } from "../../../helpers/twoD/coloringStrategy/ColoringStrategy.ts";
 import {FileDownloadOutlined, HomeOutlined, TuneOutlined, VisibilityOutlined} from "@mui/icons-material";
 import { vars } from "../../../theme/variables.ts";
 import QuantityInput from "./NumberInput.tsx";
-import CustomSwitch from "../../ViewerContainer/CustomSwitch.tsx"; // Import NumberInput component
+import CustomSwitch from "../../ViewerContainer/CustomSwitch.tsx";
+import {ColoringOptions} from "../../../helpers/twoD/coloringHelper.ts"; // Import NumberInput component
 
 const { gray500 } = vars;
 
