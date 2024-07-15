@@ -8,9 +8,29 @@
   "paths": {
     "/api/datasets": {
       "get": {
-        "operationId": "get_all_datasets",
-        "summary": "Get All Datasets",
-        "parameters": [],
+        "operationId": "get_datasets",
+        "summary": "Get Datasets",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ids",
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ids"
+            },
+            "required": false
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -27,7 +47,7 @@
             }
           }
         },
-        "description": "Returns all the datasets from the DB",
+        "description": "Returns all datasets or a filtered list based on provided IDs",
         "tags": [
           "datasets"
         ]
