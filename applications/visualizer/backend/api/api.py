@@ -56,6 +56,7 @@ async def get_datasets(request, ids: Optional[list[str]] = Query(None)):
         datasets = await to_list(DatasetModel.objects.all())
     return datasets
 
+
 # @api.get("/datasets/{dataset}/full", response=FullDataset, tags=["datasets"])
 # async def get_full_dataset(request, dataset: str):
 #     return await DatasetModel.objects.prefetch_related("connections").aget(id=dataset)
