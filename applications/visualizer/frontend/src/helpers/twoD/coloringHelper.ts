@@ -74,7 +74,7 @@ export const getColor = (node: Neuron, option: ColoringOptions): string[] => {
 
 export const getColorMap = (option: ColoringOptions): { [key: string]: string } => {
     const config = colorConfigMap[option];
-    return Object.fromEntries(Object.entries(config).map(([key, value]) => [value.type, value.color]));
+    return Object.fromEntries(Object.entries(config).map(([, value]) => [value.type, value.color]));
 };
 
 const extractColors = (config: Config, chars: string): string[] => {

@@ -7,7 +7,7 @@ const PORT = 9000;
 const defaultConfig = {
   plugins: [react()],
   build: {
-    sourcemap: !Boolean(process.env.NO_SOURCEMAP),
+    sourcemap: !process.env.NO_SOURCEMAP,
   }
   // publicDir: 'src/assets',
 }

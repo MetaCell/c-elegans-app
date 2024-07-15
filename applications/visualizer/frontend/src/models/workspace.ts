@@ -4,6 +4,7 @@ import {NeuronGroup, ViewerSynchronizationPair, ViewerType} from "./models.ts";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory.ts";
 import {Dataset, DatasetsService, Neuron} from "../rest";
 import {fetchDatasets} from "../helpers/workspaceHelper.ts";
+import { LayoutManager } from '@metacell/geppetto-meta-client/common/layout/LayoutManager';
 
 export class Workspace {
     [immerable] = true
@@ -22,7 +23,7 @@ export class Workspace {
     neuronGroups: Record<string, NeuronGroup>;
 
     store: ReturnType<typeof configureStore>;
-    layoutManager: any;
+    layoutManager: LayoutManager;
 
     updateContext: (workspace: Workspace) => void;
 

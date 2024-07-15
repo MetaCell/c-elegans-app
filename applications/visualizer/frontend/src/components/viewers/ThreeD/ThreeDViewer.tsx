@@ -28,9 +28,9 @@ export interface Instance {
 
 
 function ThreeDViewer() {
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [showNeurons, setShowNeurons] = useState<boolean>(true);
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [showSynapses, setShowSynapses] = useState<boolean>(true);
     const [instances, setInstances] = useState<Instance[]>([])
     const [isWireframe, setIsWireframe] = useState<boolean>(false)

@@ -23,7 +23,6 @@ const STLViewer: FC<Props> = ({ instances, isWireframe }) => {
                     <STLMesh
                         key={instances[idx].id}
                         id={instances[idx].id}
-                        // @ts-expect-error
                         stl={stl}
                         opacity={instances[idx].opacity}
                         color={instances[idx].color}

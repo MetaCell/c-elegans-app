@@ -50,7 +50,6 @@ const rootReducer: Reducer<RootState> = reducerDecorator(combineReducers<RootSta
     client: geppettoClientReducer,
     layout,
     widgets,
-    // @ts-expect-error
     workspaceId: workspaceReducer
 }));
 
@@ -62,7 +61,7 @@ const getLayoutManagerAndStore = (workspaceId: string) => {
     const storeOptions: {
         preloadedState: Partial<RootState>;
         reducer: (state: (RootState | undefined), action: Action) => RootState;
-        middleware: (getDefaultMiddleware: ReturnType<ReturnType<any>>) => any
+        middleware: (getDefaultMiddleware: typeof getDefaultMiddleware) => ReturnType<typeof middlewareEnhancer>;
     } = {
         reducer: rootReducer,
         middleware: middlewareEnhancer,

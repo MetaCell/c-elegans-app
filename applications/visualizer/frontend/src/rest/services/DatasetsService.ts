@@ -1,7 +1,7 @@
 /* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
-/* eslint-disable */
+ 
 import type { Dataset } from '../models/Dataset';
 import type { Neuron } from '../models/Neuron';
 import type { CancelablePromise } from '../core/CancelablePromise';
