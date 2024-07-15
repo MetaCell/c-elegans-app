@@ -116,8 +116,7 @@ const TwoDViewer = () => {
         const edges = [];
 
         connections.forEach(conn => {
-            nodes.add(conn.pre);
-            nodes.add(conn.post);
+            nodes.add(conn.pre).add(conn.post);
             edges.push(createEdge(conn));
         });
 
@@ -136,28 +135,28 @@ const TwoDViewer = () => {
     };
 
     const updateNodeColors = () => {
-        if (cyRef.current) {
-            cyRef.current.nodes().forEach(node => {
-                const neuronId = node.id();
-                const neuron = workspace.availableNeurons[neuronId]
-                if (neuron == null) {
-                    console.error(`neuron ${neuronId} not found in the active datasets`)
-                    return
-                }
-                const colors = coloringStrategy.getColors(neuron);
-                colors.forEach((color, index) => {
-                    node.style(`pie-${index + 1}-background-color`, color);
-                    node.style(`pie-${index + 1}-background-size`, 100 / colors.length); // Equal size for each slice
-                });
-                node.style('pie-background-opacity', 1);
-            });
+        if (!cyRef.current) {
+            return
         }
-
+        cyRef.current.nodes().forEach(node => {
+            const neuronId = node.id();
+            const neuron = workspace.availableNeurons[neuronId]
+            if (neuron == null) {
+                console.error(`neuron ${neuronId} not found in the active datasets`)
+                return
+            }
+            const colors = coloringStrategy.getColors(neuron);
+            colors.forEach((color, index) => {
+                node.style(`pie-${index + 1}-background-color`, color);
+                node.style(`pie-${index + 1}-background-size`, 100 / colors.length); // Equal size for each slice
+            });
+            node.style('pie-background-opacity', 1);
+        });
     };
 
     return <Box sx={{position: 'relative', display: 'flex', width: '100%', height: '100%'}}>
         <TwoDMenu
-            cyRef={cyRef}
+            cy={cyRef.current}
             layout={layout}
             onLayoutChange={setLayout}
             coloringOption={coloringOption}
