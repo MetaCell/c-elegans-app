@@ -1,38 +1,33 @@
 import Switch from '@mui/material/Switch';
 import { vars } from "../../theme/variables.ts";
 import Tooltip from "@mui/material/Tooltip";
-import React from "react";
+import React,{ useState } from "react";
 
-const { white, brand600, gray100, gray50 } = vars;
-
+const { white, brand600, gray100 } = vars;
 interface CustomSwitchProps {
   width?: number;
   height?: number;
   thumbDimension?: number;
   checkedPosition?: string;
-  checked?: boolean;
-  onChange?: (e) => void;
-  disabled?: boolean;
-  showTooltip?: boolean;
 }
 
 const CustomSwitch: React.FC<CustomSwitchProps> = ({
-   width,
-   height,
-   thumbDimension,
-   checkedPosition,
-   checked,
-   onChange,
-   disabled = false,
-   showTooltip = true,
- }) => {
-  const switchComponent = (
-    <Switch
-      disabled={disabled}
-      focusVisibleClassName=".Mui-focusVisible"
-      checked={checked}
-      onChange={onChange}
-      sx={(theme) => ({
+  width,
+  height,
+  thumbDimension,
+  checkedPosition,
+}) => {
+  const [checked, setChecked] = useState(false);
+  
+  const handleChange = (event) => {
+    setChecked(event.target.checked);
+  };
+  
+  return (
+    <Tooltip
+      title={checked ? "Hide" : "Show"}
+    >
+      <Switch focusVisibleClassName=".Mui-focusVisible" checked={checked} onChange={handleChange} sx={(theme) => ({
         marginRight: '.5rem',
         width: width ?? 23,
         height: height ?? 13,
@@ -49,41 +44,30 @@ const CustomSwitch: React.FC<CustomSwitchProps> = ({
               opacity: 1,
               border: 0,
             },
+            '&.Mui-disabled + .MuiSwitch-track': {
+              opacity: 0.5,
+            },
           },
           '&.Mui-disabled .MuiSwitch-thumb': {
-            color: gray50,
+            color: gray100,
           },
         },
         '& .MuiSwitch-thumb': {
           boxSizing: 'border-box',
           width: thumbDimension ?? 10.24,
           height: thumbDimension ?? 10.24,
-          boxShadow: 'none',
-          opacity: 1,
-          
+          boxShadow: 'none'
         },
         '& .MuiSwitch-track': {
           borderRadius: 26 / 2,
           backgroundColor: gray100,
-          opacity: '1 !important',
+          opacity: 1,
           transition: theme.transitions.create(['background-color'], {
             duration: 500,
           }),
-          
-          '&.Mui-disabled': {
-            opacity: '1 !important',
-          }
         },
-      })}
-    />
-  );
-  
-  return showTooltip !== false ? (
-    <Tooltip title={checked ? "Hide" : "Show"}>
-      {switchComponent}
+      })} />
     </Tooltip>
-  ) : (
-    switchComponent
   );
 };
 
