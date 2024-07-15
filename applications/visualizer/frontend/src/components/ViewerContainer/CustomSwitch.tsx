@@ -4,11 +4,16 @@ import Tooltip from "@mui/material/Tooltip";
 import React,{ useState } from "react";
 
 const { white, brand600, gray100 } = vars;
+
 interface CustomSwitchProps {
   width?: number;
   height?: number;
   thumbDimension?: number;
   checkedPosition?: string;
+  checked?: boolean;
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void;
+  showTooltip?: boolean;
+  disabled?: boolean;
 }
 
 const CustomSwitch: React.FC<CustomSwitchProps> = ({

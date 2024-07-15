@@ -28,8 +28,10 @@ export interface Instance {
 
 
 function ThreeDViewer() {
+    // @ts-expect-error 'setShowNeurons' is declared but its value is never read.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [showNeurons, setShowNeurons] = useState<boolean>(true);
+    // @ts-expect-error 'setShowSynapses' is declared but its value is never read.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [showSynapses, setShowSynapses] = useState<boolean>(true);
     const [instances, setInstances] = useState<Instance[]>([])
