@@ -22,7 +22,3 @@ export interface NeuronGroup {
     color: string;
     neurons: Set<string>;
 }
-
-export interface ColorMap {
-    [key: string]: string;
-}
