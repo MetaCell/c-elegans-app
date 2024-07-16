@@ -23,7 +23,7 @@ const STLViewer: FC<Props> = ({ instances, isWireframe }) => {
                     <STLMesh
                         key={instances[idx].id}
                         id={instances[idx].id}
-                        // @ts-expect-error
+                        // @ts-expect-error Type 'ConditionalType<LoaderReturnType<T, L>, GLTFLike, LoaderReturnType<T, L> & ObjectMap, LoaderReturnType<T, L>>' is not assignable to type 'BufferGeometry<NormalBufferAttributes>'.
                         stl={stl}
                         opacity={instances[idx].opacity}
                         color={instances[idx].color}

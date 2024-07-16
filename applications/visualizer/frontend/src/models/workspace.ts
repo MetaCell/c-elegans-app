@@ -4,6 +4,7 @@ import {NeuronGroup, ViewerSynchronizationPair, ViewerType} from "./models.ts";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory.ts";
 import {Dataset, DatasetsService, Neuron} from "../rest";
 import {fetchDatasets} from "../helpers/workspaceHelper.ts";
+import { LayoutManager } from '@metacell/geppetto-meta-client/common/layout/LayoutManager';
 
 export class Workspace {
     [immerable] = true
@@ -22,8 +23,7 @@ export class Workspace {
     neuronGroups: Record<string, NeuronGroup>;
 
     store: ReturnType<typeof configureStore>;
-    layoutManager: any;
-    datasets: Array<Dataset>;
+    layoutManager: LayoutManager;
     updateContext: (workspace: Workspace) => void;
 
     constructor(id: string, name: string,
@@ -149,19 +149,23 @@ export class Workspace {
             );
 
             const neuronArrays = await Promise.all(neuronPromises);
+            const uniqueNeurons = new Set<Neuron>();
+
+            // Flatten and deduplicate neurons
+            neuronArrays.flat().forEach(neuron => {
+                uniqueNeurons.add(neuron);
+                // Add class neuron as well
+                const classNeuron = { ...neuron, name: neuron.nclass };
+                uniqueNeurons.add(classNeuron);
+            });
 
             return produce(updatedWorkspace, (draft: Workspace) => {
-                // Reset the neuronsAvailable map
+                // Reset the availableNeurons map
                 draft.availableNeurons = {};
 
-                // Populate neuronsAvailable with neurons from all active datasets
-                neuronArrays.forEach(neurons => {
-                    neurons.forEach((neuron: Neuron) => {
-                        draft.availableNeurons[neuron.name] = neuron;
-                        // TODO: Validate if this is good enough
-                        const classNeuron = {...neuron, name: neuron.nclass}
-                        draft.availableNeurons[classNeuron.name] = classNeuron;
-                    });
+                // Populate availableNeurons with unique neurons
+                uniqueNeurons.forEach(neuron => {
+                    draft.availableNeurons[neuron.name] = neuron;
                 });
             });
 

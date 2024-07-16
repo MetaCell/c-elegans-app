@@ -31,8 +31,8 @@ const LoadingComponent = () => (
 
 function WorkspaceComponent() {
 
-    const dispatch = useDispatch();
-    const { workspaces } = useGlobalContext();
+  const dispatch = useDispatch();
+  const { workspaces } = useGlobalContext();
 
   const workspaceId = useSelector((state: RootState) => state.workspaceId);
   const [LayoutComponent, setLayoutComponent] = useState<React.ComponentType>(() => LoadingComponent);

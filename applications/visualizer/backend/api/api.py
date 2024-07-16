@@ -1,5 +1,7 @@
+from typing import Optional
+
 from django.http import HttpResponse
-from ninja import NinjaAPI, Router, Schema
+from ninja import NinjaAPI, Router, Schema, Query
 from ninja.pagination import paginate, PageNumberPagination
 from django.shortcuts import aget_object_or_404
 from django.db.models import Q
@@ -46,9 +48,13 @@ api = CElegansAPI(title="C. Elegans Visualizer", default_router=ByAliasRouter())
 
 
 @api.get("/datasets", response=list[Dataset], tags=["datasets"])
-async def get_all_datasets(request):
-    """Returns all the datasets from the DB"""
-    return await to_list(DatasetModel.objects.all())
+async def get_datasets(request, ids: Optional[list[str]] = Query(None)):
+    """Returns all datasets or a filtered list based on provided IDs"""
+    if ids:
+        datasets = await to_list(DatasetModel.objects.filter(id__in=ids))
+    else:
+        datasets = await to_list(DatasetModel.objects.all())
+    return datasets
 
 
 # @api.get("/datasets/{dataset}/full", response=FullDataset, tags=["datasets"])

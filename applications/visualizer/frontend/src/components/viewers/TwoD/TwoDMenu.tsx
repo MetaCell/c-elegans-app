@@ -26,11 +26,13 @@ import {
 import { vars } from "../../../theme/variables.ts";
 import QuantityInput from "./NumberInput.tsx";
 import CustomSwitch from "../../ViewerContainer/CustomSwitch.tsx";
+import {ColoringOptions} from "../../../helpers/twoD/coloringHelper.ts"; // Import NumberInput component
+import CustomSwitch from "../../ViewerContainer/CustomSwitch.tsx";
 
 const { gray500 } = vars;
 
 const TwoDMenu = ({
-                    cyRef,
+                    cy,
                     layout,
                     onLayoutChange,
                     coloringOption,
@@ -47,51 +49,51 @@ const TwoDMenu = ({
                     setThresholdElectrical
                   }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  
+
   const onZoomIn = () => {
-    if (cyRef.current) {
-      const cy = cyRef.current;
-      const zoomLevel = cy.zoom() * (1 + ZOOM_DELTA);
-      const center = { x: cy.width() / 2, y: cy.height() / 2 };
-      
-      cy.zoom({
+    if (!cy) {
+        return
+    }
+    const zoomLevel = cy.zoom() * (1 + ZOOM_DELTA);
+    const center = { x: cy.width() / 2, y: cy.height() / 2 };
+
+    cy.zoom({
         level: zoomLevel,
         renderedPosition: center
-      });
-    }
+    });
   };
-  
+
   const onZoomOut = () => {
-    if (cyRef.current) {
-      const cy = cyRef.current;
-      const zoomLevel = cy.zoom() * (1 - ZOOM_DELTA);
-      const center = { x: cy.width() / 2, y: cy.height() / 2 };
-      
-      cy.zoom({
+    if (!cy) {
+        return
+    }
+    const zoomLevel = cy.zoom() * (1 - ZOOM_DELTA);
+    const center = { x: cy.width() / 2, y: cy.height() / 2 };
+    cy.zoom({
         level: zoomLevel,
         renderedPosition: center
-      });
-    }
+    });
   };
-  
+
   const onResetView = () => {
-    if (cyRef.current) {
-      cyRef.current.reset();  // Reset the zoom and pan positions
-      applyLayout(cyRef, layout)
+    if (!cy) {
+        return
     }
+    cy.reset();  // Reset the zoom and pan positions
+    applyLayout(cy, layout)
   };
-  
+
   const handleOpenSettings = (event) => {
     setAnchorEl(event.currentTarget);
   };
-  
+
   const handleCloseSettings = () => {
     setAnchorEl(null);
   };
-  
+
   const open = Boolean(anchorEl);
   const id = open ? 'settings-popover' : undefined;
-  
+
   return (
     <Box sx={{
       display: 'flex',
@@ -146,7 +148,7 @@ const TwoDMenu = ({
             sx: {
               padding: '.5rem 0',
               borderRadius: '0.5rem',
-              
+
               '& .MuiDivider-root': {
                 margin: '.25rem 0'
               }

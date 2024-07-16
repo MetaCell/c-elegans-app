@@ -62,22 +62,21 @@ def query_connections(
 def _query_annotations(
     cells, dataset_type, include_annotations, include_neighboring_cells
 ):
-    annotations_map = {}
-    if include_annotations:
-        annotations = Annotation.objects.filter(
-            (
-                Q(pre__in=cells) | Q(post__in=cells)
-                if include_neighboring_cells
-                else Q(pre__in=cells, post__in=cells)
-            ),
-            collection__in=dataset_type,
-        )
-        for annotation in annotations:
-            key = _get_connection_key(annotation.pre, annotation.post, annotation.type)
-            if key in annotations_map:
-                annotations_map[key].append(annotation.annotation)
-            else:
-                annotations_map[key] = [annotation.annotation]
+    if not include_annotations:
+        return {}
+
+    annotations_map = defaultdict(list)
+    annotations = Annotation.objects.filter(
+        (
+            Q(pre__in=cells) | Q(post__in=cells)
+            if include_neighboring_cells
+            else Q(pre__in=cells, post__in=cells)
+        ),
+        collection__in=dataset_type,
+    )
+    for annotation in annotations:
+        key = _get_connection_key(annotation.pre, annotation.post, annotation.type)
+        annotations_map[key].append(annotation.annotation)
     return annotations_map
 
 
