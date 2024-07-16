@@ -1,33 +1,52 @@
-import { Box, Button, Dialog, FormLabel, IconButton, TextField, Typography} from "@mui/material";
+import { Box, Button, Dialog, FormLabel, IconButton, TextField, Typography } from "@mui/material";
 import { vars } from "../../theme/variables.ts";
 import { CaretIcon, CheckIcon, CloseIcon } from "../../icons";
 import CustomAutocomplete from "../CustomAutocomplete.tsx";
-import { NeuronsService} from "../../rest";
-import {useEffect, useState} from "react";
+import { NeuronsService } from "../../rest";
+import { useEffect, useState } from "react";
+
 const { gray100 } = vars;
+
+interface Dataset {
+  name: string;
+  // Add other properties as needed
+}
+
+interface Neuron {
+  name: string;
+  // Add other properties as needed
+}
+
+interface CompareWorkspaceDialogProps {
+  onClose: () => void;
+  showModal: boolean;
+  datasets: Dataset[];
+}
+
 const CompareWorkspaceDialog = ({
   onClose,
   showModal,
   datasets
-}) => {
-  
-  const [neurons, setNeurons] = useState([])
+}: CompareWorkspaceDialogProps) => {
+
+  const [neurons, setNeurons] = useState<Neuron[]>([]);
+
   const fetchNeurons = async () => {
     try {
       const response = await NeuronsService.getAllCells({ page: 1 });
-      setNeurons(response.items)
+      setNeurons(response.items);
     } catch (error) {
       console.error('Failed to fetch datasets', error);
     }
   };
-  
+
   useEffect(() => {
     fetchNeurons();
   }, []);
 
   return (
-    <Dialog 
-      onClose={onClose} 
+    <Dialog
+      onClose={onClose}
       open={showModal}
       sx={{
         '& .MuiBackdrop-root': {
@@ -50,7 +69,7 @@ const CompareWorkspaceDialog = ({
 
         <Box>
           <FormLabel>Datasets</FormLabel>
-          <CustomAutocomplete
+          <CustomAutocomplete<Dataset>
             options={datasets}
             getOptionLabel={(option) => option.name}
             renderOption={(props, option) => (
@@ -70,7 +89,7 @@ const CompareWorkspaceDialog = ({
 
         <Box>
           <FormLabel>Neurons</FormLabel>
-          <CustomAutocomplete
+          <CustomAutocomplete<Neuron>
             options={neurons}
             getOptionLabel={(option) => option.name}
             renderOption={(props, option) => (
@@ -92,8 +111,8 @@ const CompareWorkspaceDialog = ({
       </Box>
 
       <Box borderTop={`0.0625rem solid ${gray100}`} px="1rem" py="0.75rem" gap={0.5} display='flex' justifyContent='flex-end'>
-          <Button variant="text">Start with an empty workspace</Button>
-          <Button variant="contained" color="info">Configure workspace</Button>
+        <Button variant="text">Start with an empty workspace</Button>
+        <Button variant="contained" color="info">Configure workspace</Button>
       </Box>
     </Dialog>
   );

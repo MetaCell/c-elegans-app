@@ -58,7 +58,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({chi
   
   const fetchDatasets = async () => {
     try {
-      const response = await DatasetsService.getAllDatasets();
+      const response = await DatasetsService.getDatasets({});
       setDatasets(response);
     } catch (error) {
       console.error('Failed to fetch datasets', error);

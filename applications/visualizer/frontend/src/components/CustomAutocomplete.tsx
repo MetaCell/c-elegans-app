@@ -1,40 +1,42 @@
-import Autocomplete from '@mui/material/Autocomplete';
+import Autocomplete, { AutocompleteProps, AutocompleteRenderInputParams, AutocompleteRenderGroupParams } from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import React from "react";
-// @ts-ignore
-interface CustomAutocompleteProps {
-  options: any[];
-  getOptionLabel: (option: any) => string;
-  renderOption: (props: any, option: any) => React.ReactNode;
-  renderInput?: (params: never) => React.ReactNode;
-  groupBy?: (option: any) => string;
-  renderGroup?: (params: any) => React.ReactNode;
+import { SxProps } from '@mui/system';
+import { ChipProps } from '@mui/material/Chip';
+interface CustomAutocompleteProps<T> {
+  options: T[];
+  getOptionLabel: (option: T) => string;
+  renderOption: (props: React.HTMLAttributes<HTMLLIElement>, option: T) => React.ReactNode;
+  renderInput?: (params: AutocompleteRenderInputParams) => React.ReactNode;
+  groupBy?: (option: T) => string;
+  renderGroup?: (params: AutocompleteRenderGroupParams) => React.ReactNode;
   placeholder?: string;
   className?: string;
   id: string;
   multiple?: boolean;
   popupIcon: React.ReactNode;
-  clearIcon?: boolean;
-  ChipProps?: any;
-  sx?: any;
-  componentsProps?: any;
+  clearIcon?: React.ReactNode; // Change to React.ReactNode to be consistent with popupIcon
+  ChipProps?: ChipProps;
+  sx?: SxProps;
+  componentsProps?: AutocompleteProps<T, boolean, boolean, boolean>['componentsProps'];
 }
-const CommonAutocomplete = ({
-    options,
-    getOptionLabel,
-    renderOption,
-    groupBy,
-    renderGroup,
-    placeholder = "Start typing to search",
-    className = "",
-    id,
-    multiple = true,
-    popupIcon,
-    clearIcon = false,
-    ChipProps,
-    sx = {},
-    componentsProps = {},
-  }: CustomAutocompleteProps) => {
+
+const CommonAutocomplete = <T,>({
+  options,
+  getOptionLabel,
+  renderOption,
+  groupBy,
+  renderGroup,
+  placeholder = "Start typing to search",
+  className = "",
+  id,
+  multiple = true,
+  popupIcon,
+  clearIcon,
+  ChipProps,
+  sx = {},
+  componentsProps = {},
+}: CustomAutocompleteProps<T>) => {
   return (
     <Autocomplete
       multiple={multiple}
