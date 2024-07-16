@@ -72,7 +72,7 @@ const DataSets = () => {
           Toggle on and off to view datasets on the workspace. This will affect all viewers.
         </Typography>
       </Stack>
-      <CustomEntitiesDropdown />
+      <CustomEntitiesDropdown options={[]} onSelect={()=>{}}/>
       <Box p={".75rem"} display="flex" justifyContent="space-between" alignItems="center">
         <FormControl>
           <Select
