@@ -4,7 +4,7 @@ import {NeuronGroup, ViewerSynchronizationPair, ViewerType} from "./models.ts";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory.ts";
 import {Dataset, DatasetsService, Neuron} from "../rest";
 import {fetchDatasets} from "../helpers/workspaceHelper.ts";
-import { LayoutManager } from '@metacell/geppetto-meta-client/common/layout/LayoutManager';
+import {LayoutManager} from '@metacell/geppetto-meta-client/common/layout/LayoutManager';
 
 export class Workspace {
     [immerable] = true
@@ -59,14 +59,14 @@ export class Workspace {
 
     activateNeuron(neuron: Neuron): void {
         const updated = produce(this, (draft: Workspace) => {
-            draft.activeNeurons[neuron.name] = neuron;
+            draft.activeNeurons.add(neuron.name);
         });
         this.updateContext(updated);
     }
 
     deactivateNeuron(neuronId: string): void {
         const updated = produce(this, (draft: Workspace) => {
-            delete draft.activeNeurons[neuronId];
+            draft.activeNeurons.delete(neuronId);
         });
         this.updateContext(updated);
     }
@@ -155,7 +155,7 @@ export class Workspace {
             neuronArrays.flat().forEach(neuron => {
                 uniqueNeurons.add(neuron);
                 // Add class neuron as well
-                const classNeuron = { ...neuron, name: neuron.nclass };
+                const classNeuron = {...neuron, name: neuron.nclass};
                 uniqueNeurons.add(classNeuron);
             });
 
