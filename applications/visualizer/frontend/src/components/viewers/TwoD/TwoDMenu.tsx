@@ -16,11 +16,16 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import { GRAPH_LAYOUTS, ZOOM_DELTA } from "../../../settings/twoDSettings.tsx";
 import { applyLayout } from "../../../helpers/twoD/twoDHelpers.ts";
-import {FileDownloadOutlined, HomeOutlined, TuneOutlined, VisibilityOutlined} from "@mui/icons-material";
+import {
+  GetAppOutlined,
+  HomeOutlined,
+  TuneOutlined,
+  VisibilityOutlined
+} from "@mui/icons-material";
 import { vars } from "../../../theme/variables.ts";
 import QuantityInput from "./NumberInput.tsx";
 import CustomSwitch from "../../ViewerContainer/CustomSwitch.tsx";
-import {ColoringOptions} from "../../../helpers/twoD/coloringHelper.ts"; // Import NumberInput component
+import {ColoringOptions} from "../../../helpers/twoD/coloringHelper.ts";
 
 const { gray500 } = vars;
 
@@ -102,20 +107,27 @@ const TwoDMenu = ({
       padding: '0.25rem',
       zIndex: 1,
     }}>
-      <IconButton onClick={onZoomIn}>
-        <ZoomInIcon />
-      </IconButton>
-      <IconButton onClick={onResetView}>
-        <HomeOutlined />
-      </IconButton>
-      <IconButton onClick={onZoomOut}>
-        <ZoomOutIcon />
-      </IconButton>
+      <Tooltip title='Zoom in' placement="right-start">
+        <IconButton onClick={onZoomIn}>
+          <ZoomInIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title='Return to original size' placement="right-start">
+        <IconButton onClick={onResetView}>
+          <HomeOutlined />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title='Zoom out' placement="right-start">
+        <IconButton onClick={onZoomOut}>
+          <ZoomOutIcon />
+        </IconButton>
+      </Tooltip>
       <Divider />
-      <IconButton onClick={handleOpenSettings}>
-        <TuneOutlined />
-      </IconButton>
-
+      <Tooltip title='Set parameters' placement="right-start">
+        <IconButton onClick={handleOpenSettings}>
+          <TuneOutlined />
+        </IconButton>
+      </Tooltip>
       <Popover
         id={id}
         open={open}
@@ -255,13 +267,17 @@ const TwoDMenu = ({
           </FormGroup>
         </Box>
       </Popover>
-      <IconButton>
-        <VisibilityOutlined />
-      </IconButton>
+      <Tooltip title='Show/Hide neurons' placement="right-start">
+        <IconButton>
+          <VisibilityOutlined />
+        </IconButton>
+      </Tooltip>
       <Divider />
-      <IconButton>
-        <FileDownloadOutlined />
-      </IconButton>
+      <Tooltip title='Download graph' placement="right-start">
+        <IconButton>
+          <GetAppOutlined />
+        </IconButton>
+      </Tooltip>
     </Box>
   );
 };

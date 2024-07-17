@@ -1,4 +1,4 @@
-import {Workspace} from "../models/workspace.ts";
+import {Workspace} from "../models";
 import { useSelector } from "react-redux";
 import {useGlobalContext} from "../contexts/GlobalContext.tsx";
 import {RootState} from "../layout-manager/layoutManagerFactory.ts";

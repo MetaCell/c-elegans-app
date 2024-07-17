@@ -6,14 +6,14 @@ const NODE_STYLE = {
     'color': '#fff',
     'text-valign': 'center',
     'text-halign': 'center',
-    'font-size': '16px',
-    width: '48px',
-    height: '48px',
+    'font-size': 8,
+    width: 24,
+    height: 24,
 };
 
 const EDGE_STYLE = {
-    'line-color': '#ccc',
-    'target-arrow-color': '#ccc',
+    'line-color': '#63625F',
+    'target-arrow-color': '#63625F',
     'target-arrow-shape': 'triangle',
     'curve-style': 'bezier',
     'arrow-scale': 0.3,

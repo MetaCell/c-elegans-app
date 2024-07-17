@@ -24,7 +24,6 @@ export class Workspace {
 
     store: ReturnType<typeof configureStore>;
     layoutManager: LayoutManager;
-
     updateContext: (workspace: Workspace) => void;
 
     constructor(id: string, name: string,
