@@ -13,7 +13,7 @@ backend
 │   │   └── commands
 │   │       └── populatedb.py   # the custom command to run the DB population
 │   ├── models.py               # the Django model (DB model)
-│   ├── populatedb.py           # dedicated function to take the raw-data and create the django entities
+│   ├── populatedb.py           # dedicated function to take the database raw data and create the django entities
 │   └── schemas.py              # the django-ninja Schemas
 ├── openapi
 │   └── openapi.json         # The openapi.json generated from the routes defined in "api.py"

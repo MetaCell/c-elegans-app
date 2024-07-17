@@ -3,3 +3,5 @@ docker-compose.yaml
 # deployment/
 cloud-harness/
 .vscode/
+node_modules
+secret.json

@@ -88,7 +88,7 @@ There is two modes, either you can populate the dev DB, which is basically a sql
 
 ### Populate the Dev DB
 
-Run the following script that will take all the data from `raw-data`, process them and insert them in the sqlite3 db.
+Run the following script that will take all the data from `data/db-raw-data`, process them and insert them in the sqlite3 db.
 
 ```
 bash applications/visualizer/backend/populate-db.bash
@@ -99,7 +99,7 @@ This command will apply the necessary migrations to the file db and populate it.
 ### Populate the Docker Compose DB
 
 First, you need to have your docker compose services running (ensure you are running the `docker compose -f deployment/docker-compose.yaml up` command).
-Then, run the following script that will take all the data from `raw-data`, process them and insert them in the postgresql db
+Then, run the following script that will take all the data from `data/db-raw-data`, process them and insert them in the postgresql db
 
 ```
 bash applications/visualizer/backend/populate-db.bash compose
