@@ -3,6 +3,8 @@ from .common import *
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+GCS_BUCKET_URL = BASE_DIR.parent.parent.parent / "data"
+
 INSTALLED_APPS += ["django_extensions"]
 
 # Database
