@@ -2,7 +2,7 @@ import { FC } from "react";
 import { Outlines } from '@react-three/drei';
 import { useGlobalContext } from "../../../contexts/GlobalContext";
 import { useSelector } from "react-redux";
-import { Workspace } from "../../../models/workspace";
+import { Workspace } from "../../../models";
 import { RootState } from "../../../layout-manager/layoutManagerFactory";
 import { BufferGeometry, DoubleSide, NormalBlending } from "three";
 import { ThreeEvent } from "@react-three/fiber";

@@ -1,21 +1,11 @@
 import { Box, Button, Dialog, FormLabel, IconButton, TextField, Typography } from "@mui/material";
-import { vars } from "../../theme/variables.ts";
+import { vars as colors  } from "../../theme/variables.ts";
 import { CaretIcon, CheckIcon, CloseIcon } from "../../icons";
 import CustomAutocomplete from "../CustomAutocomplete.tsx";
 import { NeuronsService } from "../../rest";
 import { useEffect, useState } from "react";
+import { Dataset, Neuron } from '../../models';
 
-const { gray100 } = vars;
-
-interface Dataset {
-  name: string;
-  // Add other properties as needed
-}
-
-interface Neuron {
-  name: string;
-  // Add other properties as needed
-}
 
 interface CompareWorkspaceDialogProps {
   onClose: () => void;
@@ -56,7 +46,7 @@ const CompareWorkspaceDialog = ({
       fullWidth
       maxWidth="lg"
     >
-      <Box borderBottom={`0.0625rem solid ${gray100}`} px="1rem" py="0.5rem" display='flex' alignItems='center' justifyContent='space-between'>
+      <Box borderBottom={`0.0625rem solid ${colors.gray100}`} px="1rem" py="0.5rem" display='flex' alignItems='center' justifyContent='space-between'>
         <Typography component="h3">New workspace configuration</Typography>
         <IconButton onClick={onClose}><CloseIcon /></IconButton>
       </Box>
@@ -110,7 +100,7 @@ const CompareWorkspaceDialog = ({
         </Box>
       </Box>
 
-      <Box borderTop={`0.0625rem solid ${gray100}`} px="1rem" py="0.75rem" gap={0.5} display='flex' justifyContent='flex-end'>
+      <Box borderTop={`0.0625rem solid ${colors.gray100}`} px="1rem" py="0.75rem" gap={0.5} display='flex' justifyContent='flex-end'>
         <Button variant="text">Start with an empty workspace</Button>
         <Button variant="contained" color="info">Configure workspace</Button>
       </Box>

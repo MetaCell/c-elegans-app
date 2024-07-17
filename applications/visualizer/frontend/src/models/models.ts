@@ -22,3 +22,14 @@ export interface NeuronGroup {
     color: string;
     neurons: Set<string>;
 }
+
+
+export interface Dataset {
+    name: string;
+    // Add other properties as needed
+}
+
+export interface Neuron {
+    name: string;
+    // Add other properties as needed
+}

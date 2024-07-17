@@ -1,6 +1,6 @@
 import React, {createContext, ReactNode, useContext, useEffect, useState} from 'react';
-import {ViewMode} from "../models/models.ts";
-import {Workspace} from "../models/workspace.ts";
+import {ViewMode} from "../models";
+import {Workspace} from "../models";
 import { Dataset, DatasetsService } from '../rest';
 export interface GlobalContextType {
     workspaces: Record<string, Workspace>;
@@ -55,7 +55,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({chi
     const setCurrentWorkspace = (workspaceId: string) => {
         setCurrentWorkspaceId(workspaceId);
     };
-  
+
   const fetchDatasets = async () => {
     try {
       const response = await DatasetsService.getDatasets({});
@@ -64,11 +64,11 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({chi
       console.error('Failed to fetch datasets', error);
     }
   };
-  
+
   useEffect(() => {
     fetchDatasets();
   }, []);
-  
+
     return (
         <GlobalContext.Provider
             value={{
