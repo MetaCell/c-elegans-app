@@ -16,7 +16,7 @@ import {
 import TwoDMenu from "./TwoDMenu.tsx";
 import TwoDLegend from "./TwoDLegend.tsx";
 import { Box } from "@mui/material";
-import {ColoringOptions, getColor} from "../../../helpers/twoD/coloringHelper.ts";
+import { ColoringOptions, getColor } from "../../../helpers/twoD/coloringHelper.ts";
 
 cytoscape.use(fcose);
 cytoscape.use(dagre);
@@ -144,7 +144,7 @@ const TwoDViewer = () => {
                 node.style(`pie-${index + 1}-background-color`, color);
                 node.style(`pie-${index + 1}-background-size`, 100 / colors.length); // Equal size for each slice
             });
-            node.style('pie-background-opacity', 1);
+            // node.style('pie-background-opacity', 1);
         });
     };
 

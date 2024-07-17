@@ -14,15 +14,15 @@ const NumberInput = React.forwardRef(function CustomNumberInput(
   ref: React.ForwardedRef<HTMLDivElement>,
 ) {
   const { value, onIncrement, onDecrement, ...otherProps } = props;
-  
+
   const handleIncrementClick = () => {
     onIncrement();
   };
-  
+
   const handleDecrementClick = () => {
     onDecrement();
   };
-  
+
   return (
     <BaseNumberInput
       slots={{
