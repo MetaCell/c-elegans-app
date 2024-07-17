@@ -106,7 +106,21 @@ const TwoDViewer = () => {
     }, [layout]);
 
     const updateGraphElements = (cy, connections) => {
-        const nodes = new Set<string>();
+        const filteredNeurons = Array.from(workspace.activeNeurons).filter(neuronId => {
+        const neuron = workspace.availableNeurons[neuronId];
+        if (!neuron) {
+            return false;
+        }
+        const nclass = neuron.nclass;
+        // Include the neuron if neuronId is the same as its nclass
+        if (neuronId === nclass) {
+            return true;
+        }
+        // Exclude the neuron if both neuronId and its nclass are in activeNeurons
+        return !(workspace.activeNeurons.has(neuronId) && workspace.activeNeurons.has(nclass));
+    });
+
+        const nodes = new Set<string>(filteredNeurons);
         const edges = [];
 
         connections.forEach(conn => {
