@@ -96,6 +96,11 @@ bash applications/visualizer/backend/populate-db.bash
 
 This command will apply the necessary migrations to the file db and populate it.
 
+### 3D Data and Data for Local Development
+
+Data files that are related to the 3D artifacts, segmentation, EM Images, ..., can be placed in local in the `data` folder of this repository.
+The development settings are configured to automatically fetch files from this folder instead of the bucket (which is configured for the docker compose and k8s deployment).
+
 ### Populate the Docker Compose DB
 
 First, you need to have your docker compose services running (ensure you are running the `docker compose -f deployment/docker-compose.yaml up` command).
