@@ -14,6 +14,7 @@ export interface GlobalContextType {
     updateWorkspace: (workspace: Workspace) => void;
     removeWorkspace: (workspaceId: string) => void;
     setCurrentWorkspace: (workspaceId: string) => void;
+    getCurrentWorkspace: () => Workspace;
     setSelectedWorkspacesIds: (workspaceId: Set<string>) => void;
     datasets: Array<Dataset>;
     fetchDatasets: () => void;
@@ -30,7 +31,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({chi
     const [currentWorkspaceId, setCurrentWorkspaceId] = useState<string | undefined>(undefined);
     const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.Default);
     const [selectedWorkspacesIds, setSelectedWorkspacesIds] = useState<Set<string>>(new Set<string>());
-  const [datasets, setDatasets] = useState<Array<Dataset>>([]);
+    const [datasets, setDatasets] = useState<Array<Dataset>>([]);
 
     const createWorkspace = (id: string, name: string,
                              activeDatasets: Set<string>,
@@ -56,6 +57,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({chi
         setCurrentWorkspaceId(workspaceId);
     };
 
+    const getCurrentWorkspace = () => {
+        return workspaces[currentWorkspaceId];
+    }
+
   const fetchDatasets = async () => {
     try {
       const response = await DatasetsService.getDatasets({});
@@ -74,6 +79,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({chi
             value={{
                 workspaces,
                 currentWorkspaceId,
+                getCurrentWorkspace,
                 createWorkspace,
                 updateWorkspace,
                 removeWorkspace,

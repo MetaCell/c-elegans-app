@@ -19,6 +19,7 @@ import {vars} from "../../../theme/variables.ts";
 import {useGlobalContext} from "../../../contexts/GlobalContext.tsx";
 import {CheckIcon, CloseIcon} from "../../../icons";
 import CustomAutocomplete from "../../CustomAutocomplete.tsx";
+import { Dataset } from "../../../models/models.ts";
 
 const {gray100, gray600} = vars
 export interface Instance {
@@ -38,7 +39,7 @@ function ThreeDViewer() {
     const [showSynapses, setShowSynapses] = useState<boolean>(true);
     const [instances, setInstances] = useState<Instance[]>([])
     const [isWireframe, setIsWireframe] = useState<boolean>(false)
-    const { datasets} = useGlobalContext();
+    const activeDatasets = Object.values(useGlobalContext().getCurrentWorkspace().activateDataset);
 
     const cameraControlRef = useRef<CameraControls | null>(null);
 
@@ -65,8 +66,8 @@ function ThreeDViewer() {
       <>
         <CustomAutocomplete
           multiple={false}
-          options={datasets}
-          getOptionLabel={(option) => option.name}
+          options={activeDatasets}
+          getOptionLabel={(option: Dataset) => option.name}
           renderOption={(props, option) => (
             <li {...props}>
               <CheckIcon />
