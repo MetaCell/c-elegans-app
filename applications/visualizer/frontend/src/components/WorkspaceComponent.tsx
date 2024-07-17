@@ -3,15 +3,13 @@ import React, { Suspense, useEffect, useState } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import { Box, Button, CircularProgress, CssBaseline, Divider, IconButton, Menu, MenuItem, Typography } from "@mui/material";
 import { addWidget } from "@metacell/geppetto-meta-client/common/layout/actions";
-import "@metacell/geppetto-meta-ui/flex-layout/style/dark.scss";
+import "@metacell/geppetto-meta-ui/flex-layout/style/light.scss";
 import theme from "../theme";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
-import {
-  rightComponentWidget,
-  threeDViewerWidget,
-} from "../layout-manager/widgets.ts";
-import Layout from "./ViewerContainer/Layout.tsx";
+import {threeDViewerWidget, twoDViewerWidget} from "../layout-manager/widgets.ts";
 import { RootState } from "../layout-manager/layoutManagerFactory.ts";
+import Layout from "./ViewerContainer/Layout.tsx";
+
 import { AddIcon, CheckIcon, DownIcon, DownloadIcon, LinkIcon, ViewerSettings as ViewerSettingsIcon } from "../icons/index.tsx";
 import { vars } from "../theme/variables.ts";
 import ViewerSettings from "./ViewerSettings.tsx";
@@ -31,7 +29,8 @@ const LoadingComponent = () => (
   </Box>
 );
 
-function Workspace() {
+function WorkspaceComponent() {
+
   const dispatch = useDispatch();
   const { workspaces } = useGlobalContext();
 
@@ -51,11 +50,12 @@ function Workspace() {
       setLayoutComponent(() => workspace.layoutManager.getComponent());
     }
   }, [workspace.layoutManager]);
-  
+
   useEffect(() => {
     dispatch(addWidget(threeDViewerWidget()));
-    dispatch(addWidget(rightComponentWidget()));
+    dispatch(addWidget(twoDViewerWidget()));
   }, [LayoutComponent, dispatch]);
+
 
   const [anchorElWorkspace, setAnchorElWorkspace] = React.useState<null | HTMLElement>(null);
   const openWorkspace = Boolean(anchorElWorkspace);
@@ -65,7 +65,7 @@ function Workspace() {
   const handleCloseWorkspace = () => {
     setAnchorElWorkspace(null);
   };
-  
+
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -84,7 +84,7 @@ function Workspace() {
               <Box flex={1} borderRadius='0.25rem' border={`0.0625rem solid ${gray100}`} height={1} display='flex' flexDirection='column' sx={{background: white}}>
                 <Box p={1.5} display='flex' alignItems='center' justifyContent='space-between' borderBottom={`0.0625rem solid ${gray100}`}>
                   <Box display='flex' alignItems='center' gap={0.5}>
-                    <Button 
+                    <Button
                       id="dataset-menu-btn"
                       aria-controls={openWorkspace ? 'Workspace-menu' : undefined}
                       aria-haspopup="true"
@@ -150,4 +150,4 @@ function Workspace() {
   );
 }
 
-export default Workspace;
+export default WorkspaceComponent;

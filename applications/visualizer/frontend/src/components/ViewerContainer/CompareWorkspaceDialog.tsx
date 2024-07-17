@@ -1,42 +1,42 @@
-import { Box, Button, Dialog, FormLabel, IconButton, ListSubheader, TextField, Typography, Autocomplete} from "@mui/material";
-import { vars } from "../../theme/variables.ts";
-import { CaretIcon, CheckIcon, CloseIcon } from "../../icons/index.tsx";
-const { gray100 } = vars;
+import { Box, Button, Dialog, FormLabel, IconButton, TextField, Typography } from "@mui/material";
+import { vars as colors  } from "../../theme/variables.ts";
+import { CaretIcon, CheckIcon, CloseIcon } from "../../icons";
+import CustomAutocomplete from "../CustomAutocomplete.tsx";
+import { NeuronsService } from "../../rest";
+import { useEffect, useState } from "react";
+import { Dataset, Neuron } from '../../models';
 
 
-const NeuronData = [
-  'ADAC', "ARAC", "VBG"
-];
-
-const datasetStages = [
-  {
-    groupName: 'Development Stage 1',
-    options: [
-      { title: 'Witvliet et al., 2020, Dataset 1 (L1)', caption: '0 hours from birth' },
-      { title: 'Witvliet et al., 2020, Dataset 3 (L1)', caption: '0 hours from birth' },
-      { title: 'Witvliet et al., 2020, Dataset 2 (L1)', caption: '0 hours from birth' }
-    ]
-  },
-  {
-    groupName: 'Development Stage 2',
-    options: [
-      { title: 'Witvliet et al., 2020, Dataset 1 (L1)', caption: '0 hours from birth' },
-      { title: 'Witvliet et al., 2020, Dataset 3 (L1)', caption: '0 hours from birth' },
-      { title: 'Witvliet et al., 2020, Dataset 2 (L1)', caption: '0 hours from birth' }
-    ]
-  },
-];
+interface CompareWorkspaceDialogProps {
+  onClose: () => void;
+  showModal: boolean;
+  datasets: Dataset[];
+}
 
 const CompareWorkspaceDialog = ({
   onClose,
   showModal,
-}) => {
-  const allOptions = datasetStages.reduce((acc, curr) => {
-    return [...acc, ...curr.options.map(option => ({ ...option, groupName: curr.groupName }))];
+  datasets
+}: CompareWorkspaceDialogProps) => {
+
+  const [neurons, setNeurons] = useState<Neuron[]>([]);
+
+  const fetchNeurons = async () => {
+    try {
+      const response = await NeuronsService.getAllCells({ page: 1 });
+      setNeurons(response.items);
+    } catch (error) {
+      console.error('Failed to fetch datasets', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNeurons();
   }, []);
+
   return (
-    <Dialog 
-      onClose={onClose} 
+    <Dialog
+      onClose={onClose}
       open={showModal}
       sx={{
         '& .MuiBackdrop-root': {
@@ -46,7 +46,7 @@ const CompareWorkspaceDialog = ({
       fullWidth
       maxWidth="lg"
     >
-      <Box borderBottom={`0.0625rem solid ${gray100}`} px="1rem" py="0.5rem" display='flex' alignItems='center' justifyContent='space-between'>
+      <Box borderBottom={`0.0625rem solid ${colors.gray100}`} px="1rem" py="0.5rem" display='flex' alignItems='center' justifyContent='space-between'>
         <Typography component="h3">New workspace configuration</Typography>
         <IconButton onClick={onClose}><CloseIcon /></IconButton>
       </Box>
@@ -59,66 +59,50 @@ const CompareWorkspaceDialog = ({
 
         <Box>
           <FormLabel>Datasets</FormLabel>
-          <Autocomplete
-            multiple
-            id="grouped-demo"
-            clearIcon={false}
-            options={allOptions}
-            ChipProps={{ deleteIcon: <IconButton sx={{ p: '0 !important', margin: '0 !important' }}><CloseIcon /></IconButton> }}
-            popupIcon={<CaretIcon />}
-            groupBy={(option) => option.groupName}
-            getOptionLabel={(option) => option.title}
-            renderInput={(params) => <TextField {...params} placeholder="Start typing to search" />}
+          <CustomAutocomplete<Dataset>
+            options={datasets}
+            getOptionLabel={(option) => option.name}
             renderOption={(props, option) => (
               <li {...props}>
                 <CheckIcon />
-                <Typography>{option.title}</Typography>
-                <Typography component='span'>{option.caption}</Typography>
+                <Typography>{option.name}</Typography>
               </li>
             )}
-            renderGroup={(params) => {
-              console.log(params, 'params')
-              return (
-                <li className="grouped-list" key={params.key}>
-                  <ListSubheader component="div">
-                    {params.group}
-                  </ListSubheader>
-                  <ul style={{ padding: 0 }}>{params.children}</ul>
-                </li>
-              )
+            placeholder="Start typing to search"
+            id="grouped-demo"
+            popupIcon={<CaretIcon />}
+            ChipProps={{
+              deleteIcon: <IconButton sx={{ p: '0 !important', margin: '0 !important' }}><CloseIcon /></IconButton>
             }}
           />
         </Box>
 
         <Box>
           <FormLabel>Neurons</FormLabel>
-          <Autocomplete
-            multiple
-            className="secondary"
-            id="tags-standard"
-            clearIcon={false}
-            options={NeuronData}
-            getOptionLabel={(option) => option}
-            ChipProps={{ deleteIcon: <IconButton sx={{ p: '0 !important', margin: '0 !important' }}><CloseIcon /></IconButton> }}
+          <CustomAutocomplete<Neuron>
+            options={neurons}
+            getOptionLabel={(option) => option.name}
             renderOption={(props, option) => (
               <li {...props}>
                 <CheckIcon />
-                <Typography>{option}</Typography>
+                <Typography>{option.name}</Typography>
               </li>
             )}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                placeholder="Start typing to search"
-              />
-            )}
+            placeholder="Start typing to search"
+            className="secondary"
+            id="tags-standard"
+            popupIcon={<CaretIcon />}
+            ChipProps={{
+              deleteIcon: <IconButton sx={{ p: '0 !important', margin: '0 !important' }}><CloseIcon /></IconButton>
+            }}
+            clearIcon={false}
           />
         </Box>
       </Box>
 
-      <Box borderTop={`0.0625rem solid ${gray100}`} px="1rem" py="0.75rem" gap={0.5} display='flex' justifyContent='flex-end'>
-          <Button variant="text">Start with an empty workspace</Button>
-          <Button variant="contained" color="info">Configure workspace</Button>
+      <Box borderTop={`0.0625rem solid ${colors.gray100}`} px="1rem" py="0.75rem" gap={0.5} display='flex' justifyContent='flex-end'>
+        <Button variant="text">Start with an empty workspace</Button>
+        <Button variant="contained" color="info">Configure workspace</Button>
       </Box>
     </Dialog>
   );

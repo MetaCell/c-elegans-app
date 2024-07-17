@@ -50,7 +50,7 @@ const rootReducer: Reducer<RootState> = reducerDecorator(combineReducers<RootSta
     client: geppettoClientReducer,
     layout,
     widgets,
-    // @ts-expect-error
+     // @ts-expect-error Type '(state: string, action: any) => any' is not assignable to type 'string'.
     workspaceId: workspaceReducer
 }));
 
@@ -62,6 +62,7 @@ const getLayoutManagerAndStore = (workspaceId: string) => {
     const storeOptions: {
         preloadedState: Partial<RootState>;
         reducer: (state: (RootState | undefined), action: Action) => RootState;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         middleware: (getDefaultMiddleware: ReturnType<ReturnType<any>>) => any
     } = {
         reducer: rootReducer,

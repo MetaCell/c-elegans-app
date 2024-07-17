@@ -1,18 +1,23 @@
-import React, { createContext, ReactNode, useContext, useState } from 'react';
-import { ViewMode } from "../models/models.ts";
-import { Workspace } from "../models/workspace.ts";
-
+import React, {createContext, ReactNode, useContext, useEffect, useState} from 'react';
+import {ViewMode} from "../models";
+import {Workspace} from "../models";
+import { Dataset, DatasetsService } from '../rest';
 export interface GlobalContextType {
     workspaces: Record<string, Workspace>;
     currentWorkspaceId: string | undefined;
     viewMode: ViewMode;
     selectedWorkspacesIds: Set<string>;
     setViewMode: (viewMode: ViewMode) => void;
-    addWorkspace: (id: string, name: string) => void;
+    createWorkspace: (id: string, name: string,
+                      activeDatasets?: Set<string>,
+                      activeNeurons?: Set<string>) => void;
     updateWorkspace: (workspace: Workspace) => void;
     removeWorkspace: (workspaceId: string) => void;
     setCurrentWorkspace: (workspaceId: string) => void;
+    getCurrentWorkspace: () => Workspace;
     setSelectedWorkspacesIds: (workspaceId: Set<string>) => void;
+    datasets: Array<Dataset>;
+    fetchDatasets: () => void;
 }
 
 interface GlobalContextProviderProps {
@@ -21,16 +26,18 @@ interface GlobalContextProviderProps {
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
 
-export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ children }) => {
+export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({children}) => {
     const [workspaces, setWorkspaces] = useState<Record<string, Workspace>>({});
     const [currentWorkspaceId, setCurrentWorkspaceId] = useState<string | undefined>(undefined);
     const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.Default);
     const [selectedWorkspacesIds, setSelectedWorkspacesIds] = useState<Set<string>>(new Set<string>());
+    const [datasets, setDatasets] = useState<Array<Dataset>>([]);
 
-
-    const addWorkspace = (id: string, name: string) => {
-        const newWorkspace = new Workspace(id, name, updateWorkspace);
-        setWorkspaces(prev => ({ ...prev, [id]: newWorkspace }));
+    const createWorkspace = (id: string, name: string,
+                             activeDatasets: Set<string>,
+                             activeNeurons: Set<string>) => {
+        const newWorkspace = new Workspace(id, name, activeDatasets, activeNeurons, updateWorkspace);
+        setWorkspaces(prev => ({...prev, [id]: newWorkspace}));
     };
 
     const updateWorkspace = (workspace: Workspace) => {
@@ -41,7 +48,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     };
 
     const removeWorkspace = (workspaceId: string) => {
-        const updatedWorkspaces = { ...workspaces };
+        const updatedWorkspaces = {...workspaces};
         delete updatedWorkspaces[workspaceId];
         setWorkspaces(updatedWorkspaces);
     };
@@ -50,13 +57,30 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
         setCurrentWorkspaceId(workspaceId);
     };
 
+    const getCurrentWorkspace = () => {
+        return workspaces[currentWorkspaceId];
+    }
+
+  const fetchDatasets = async () => {
+    try {
+      const response = await DatasetsService.getDatasets({});
+      setDatasets(response);
+    } catch (error) {
+      console.error('Failed to fetch datasets', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDatasets();
+  }, []);
 
     return (
         <GlobalContext.Provider
             value={{
                 workspaces,
                 currentWorkspaceId,
-                addWorkspace,
+                getCurrentWorkspace,
+                createWorkspace,
                 updateWorkspace,
                 removeWorkspace,
                 setCurrentWorkspace,
@@ -64,6 +88,8 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
                 setViewMode,
                 selectedWorkspacesIds,
                 setSelectedWorkspacesIds,
+                fetchDatasets,
+                datasets
             }}>
             {children}
         </GlobalContext.Provider>

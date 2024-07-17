@@ -8,9 +8,29 @@
   "paths": {
     "/api/datasets": {
       "get": {
-        "operationId": "get_all_datasets",
-        "summary": "Get All Datasets",
-        "parameters": [],
+        "operationId": "get_datasets",
+        "summary": "Get Datasets",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ids",
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ids"
+            },
+            "required": false
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -27,7 +47,7 @@
             }
           }
         },
-        "description": "Returns all the datasets from the DB",
+        "description": "Returns all datasets or a filtered list based on provided IDs",
         "tags": [
           "datasets"
         ]
@@ -155,6 +175,101 @@
         "description": "Returns all the cells (neurons) from the DB",
         "tags": [
           "neurons"
+        ]
+      }
+    },
+    "/api/connections": {
+      "get": {
+        "operationId": "get_connections",
+        "summary": "Get Connections",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cells",
+            "schema": {
+              "title": "Cells",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "dataset_ids",
+            "schema": {
+              "title": "Dataset Ids",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "dataset_type",
+            "schema": {
+              "title": "Dataset Type",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "threshold_chemical",
+            "schema": {
+              "default": 3,
+              "title": "Threshold Chemical",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "threshold_electrical",
+            "schema": {
+              "default": 3,
+              "title": "Threshold Electrical",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "include_neighboring_cells",
+            "schema": {
+              "default": false,
+              "title": "Include Neighboring Cells",
+              "type": "boolean"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "include_annotations",
+            "schema": {
+              "default": false,
+              "title": "Include Annotations",
+              "type": "boolean"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Connection"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "Gets the connections of a dedicated Dataset",
+        "tags": [
+          "connectivity"
         ]
       }
     },
@@ -356,6 +471,48 @@
           "count"
         ],
         "title": "PagedNeuron",
+        "type": "object"
+      },
+      "Connection": {
+        "properties": {
+          "annotations": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Annotations",
+            "type": "array"
+          },
+          "synapses": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "default": {},
+            "title": "Synapses",
+            "type": "object"
+          },
+          "pre": {
+            "maxLength": 30,
+            "title": "Pre",
+            "type": "string"
+          },
+          "post": {
+            "maxLength": 30,
+            "title": "Post",
+            "type": "string"
+          },
+          "type": {
+            "maxLength": 20,
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pre",
+          "post",
+          "type"
+        ],
+        "title": "Connection",
         "type": "object"
       }
     }

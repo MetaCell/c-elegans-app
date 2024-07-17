@@ -1,15 +1,18 @@
-from ninja import NinjaAPI, Router, Schema
+from typing import Optional
+
+from django.http import HttpResponse
+from ninja import NinjaAPI, Router, Schema, Query
 from ninja.pagination import paginate, PageNumberPagination
 from django.shortcuts import aget_object_or_404
 from django.db.models import Q
 
-
-from .schemas import Dataset, FullDataset, Neuron, Connection, ConnectionRequest
+from .schemas import Dataset, Neuron, Connection
 from .models import (
     Dataset as DatasetModel,
     Neuron as NeuronModel,
     Connection as ConnectionModel,
 )
+from .services.connectivity import query_connections
 
 
 class ErrorMessage(Schema):
@@ -45,9 +48,13 @@ api = CElegansAPI(title="C. Elegans Visualizer", default_router=ByAliasRouter())
 
 
 @api.get("/datasets", response=list[Dataset], tags=["datasets"])
-async def get_all_datasets(request):
-    """Returns all the datasets from the DB"""
-    return await to_list(DatasetModel.objects.all())
+async def get_datasets(request, ids: Optional[list[str]] = Query(None)):
+    """Returns all datasets or a filtered list based on provided IDs"""
+    if ids:
+        datasets = await to_list(DatasetModel.objects.filter(id__in=ids))
+    else:
+        datasets = await to_list(DatasetModel.objects.all())
+    return datasets
 
 
 # @api.get("/datasets/{dataset}/full", response=FullDataset, tags=["datasets"])
@@ -112,30 +119,28 @@ def get_all_cells(request):
 # #     return query_connections(**options.dict())
 
 
-# @api.get("/connections", response=list[Connection], tags=["connectivity"])
-# # @paginate
-# def get_connections(
-#     request,
-#     cells: str,
-#     datasetIds: str,
-#     datasetType: str,
-#     thresholdChemical: int = 3,
-#     thresholdElectrical: int = 3,
-#     includeNeighboringCells: bool = False,
-#     includeAnnotations: bool = False,
-# ):
-#     """Gets the connections of a dedicated Dataset"""
-#     # res = ConnectionModel.objects.filter(dataset_id=dataset))
-#     # # import ipdb; ipdb.set_trace()  # fmt: skip
-#     return query_connections(
-#             [c.strip() for c in cells.split(",")],
-#             [d.strip() for d in datasetIds.split(",")],
-#             datasetType,
-#             thresholdChemical,
-#             thresholdElectrical,
-#             includeNeighboringCells,
-#             includeAnnotations,
-#         )
+@api.get("/connections", response=list[Connection], tags=["connectivity"])
+# @paginate
+def get_connections(
+    request,
+    cells: str,
+    dataset_ids: str,
+    dataset_type: str,
+    threshold_chemical: int = 3,
+    threshold_electrical: int = 3,
+    include_neighboring_cells: bool = False,
+    include_annotations: bool = False,
+):
+    """Gets the connections of a dedicated Dataset"""
+    return query_connections(
+        [c.strip() for c in cells.split(",")],
+        [d.strip() for d in dataset_ids.split(",")],
+        [d.strip() for d in dataset_type.split(",")],
+        threshold_chemical,
+        threshold_electrical,
+        include_neighboring_cells,
+        include_annotations,
+    )
 
 
 # @api.get("/connections/{dataset}", response=list[Connection], tags=["connectivity"])
@@ -155,21 +160,6 @@ def get_all_cells(request):
 #             dataset_id=datasetId, pre__in=neurons, post__in=neurons
 #         ).order_by("pre", "post", "type")
 #     )
-
-
-# def query_connections(
-#     cells: list[str],
-#     dataset_ids: list[str],
-#     dataset_type: str,
-#     threshold_chemical: int,
-#     threshold_electrical: int,
-#     include_neighboringcells: bool,
-#     include_annotations: bool,
-# ):
-#     if len(cells) == 0:
-#         return []
-
-#     # TODO
 
 
 @api.get("/live", tags=["healthcheck"])

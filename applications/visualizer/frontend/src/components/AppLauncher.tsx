@@ -1,28 +1,44 @@
-import { Typography, Card, CardContent, CardActionArea, Grid, Container, Box, AppBar, Toolbar, Button } from '@mui/material';
-import { useGlobalContext } from "../contexts/GlobalContext.tsx";
+import {
+    Typography,
+    Card,
+    CardContent,
+    CardActionArea,
+    Grid,
+    Container,
+    Box,
+    AppBar,
+    Toolbar,
+    Button
+} from '@mui/material';
+import {useGlobalContext} from "../contexts/GlobalContext.tsx";
 import footerImage from '../assets/summary-neurons.png';
 import {parseURLParams} from "../helpers/parseURLHelper.ts";
+import {TEMPLATE_ACTIVE_DATASETS, TEMPLATE_ACTIVE_NEURONS} from "../settings/templateWorkspaceSettings.ts";
 
 function AppLauncher() {
 
-    const { workspaces, addWorkspace, setCurrentWorkspace } = useGlobalContext();
+    const {workspaces, createWorkspace, setCurrentWorkspace} = useGlobalContext();
 
 
-    const handleTemplateClick = () => {
-        console.log('Template option clicked');
+    const handleTemplateClick = async () => {
+        const workspaceId = `workspace-${Date.now()}`;
+        const workspaceName = `Template Workspace ${Object.keys(workspaces).length + 1}`;
+
+        createWorkspace(workspaceId, workspaceName, new Set(TEMPLATE_ACTIVE_DATASETS), new Set(TEMPLATE_ACTIVE_NEURONS));
+        setCurrentWorkspace(workspaceId);
     };
 
     const handleBlankClick = () => {
         const workspaceId = `workspace-${Date.now()}`;
         const workspaceName = `Workspace ${Object.keys(workspaces).length + 1}`;
 
-        addWorkspace(workspaceId, workspaceName)
+        createWorkspace(workspaceId, workspaceName)
         setCurrentWorkspace(workspaceId)
     };
 
     const handlePasteUrlClick = () => {
         const exampleURL = 'http://localhost:8080/mode=default&ws_name=workspace1&ids=ADAL,AIBR,RIML&ws_name=workspace3&ids=RIFL,REMV&ws_name=test&ids=ADAL';
-        
+
         const parsedParams = parseURLParams(exampleURL);
         console.log(parsedParams)
     };
@@ -35,7 +51,7 @@ function AppLauncher() {
                         <Typography
                             variant="h6"
                             component="div"
-                            sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}
+                            sx={{flexGrow: 1, display: {xs: 'none', sm: 'block'}}}
                         >
                         </Typography>
                         <Button color='secondary' variant='outlined'>About Zhen Lab</Button>
@@ -47,7 +63,8 @@ function AppLauncher() {
                             Welcome to C. Elegans
                         </Typography>
                         <Typography variant="h6" component="p">
-                            Explore, query and visualize C. elegans datasets. To get started, choose from one of the options below.
+                            Explore, query and visualize C. elegans datasets. To get started, choose from one of the
+                            options below.
                         </Typography>
                     </Box>
                     <Container className='MuiContainer-center'>
@@ -58,11 +75,12 @@ function AppLauncher() {
                                     <CardActionArea onClick={handleTemplateClick}>
                                         <CardContent>
                                             <Box>
-                                               <Typography variant='h4'> Start with a simple dataset</Typography>
-                                               <Typography className='success' variant='caption'>Simple</Typography>
+                                                <Typography variant='h4'> Start with a simple dataset</Typography>
+                                                <Typography className='success' variant='caption'>Simple</Typography>
                                             </Box>
                                             <Typography variant="body2">
-                                                Start exploring the application without a particular dataset in mind. We’ll load a simple dataset for you to start exploring.
+                                                Start exploring the application without a particular dataset in mind.
+                                                We’ll load a simple dataset for you to start exploring.
                                             </Typography>
                                         </CardContent>
                                     </CardActionArea>
@@ -73,11 +91,12 @@ function AppLauncher() {
                                     <CardActionArea onClick={handleBlankClick}>
                                         <CardContent>
                                             <Box>
-                                               <Typography variant='h4'>Blank canvas</Typography>
-                                               <Typography className="info" variant='caption'>Advanced</Typography>
+                                                <Typography variant='h4'>Blank canvas</Typography>
+                                                <Typography className="info" variant='caption'>Advanced</Typography>
                                             </Box>
                                             <Typography variant="body2">
-                                            Start with a blank canvas and select the datasets and neurons of your choice.
+                                                Start with a blank canvas and select the datasets and neurons of your
+                                                choice.
                                             </Typography>
                                         </CardContent>
                                     </CardActionArea>
@@ -88,10 +107,11 @@ function AppLauncher() {
                                     <CardActionArea onClick={handlePasteUrlClick}>
                                         <CardContent>
                                             <Box>
-                                               <Typography variant='h4'>Paste URL</Typography>
+                                                <Typography variant='h4'>Paste URL</Typography>
                                             </Box>
                                             <Typography variant="body2">
-                                                Paste URL from your pre-designed view or from one that your collaborators sent to you
+                                                Paste URL from your pre-designed view or from one that your
+                                                collaborators sent to you
                                             </Typography>
                                         </CardContent>
                                     </CardActionArea>
@@ -99,7 +119,8 @@ function AppLauncher() {
                             </Grid>
                             <Grid item xs={12}>
                                 <Box textAlign="center">
-                                    <Button className='MuiButton-summary'>Summary of available datasets and neurons</Button>
+                                    <Button className='MuiButton-summary'>Summary of available datasets and
+                                        neurons</Button>
                                 </Box>
                             </Grid>
                         </Grid>

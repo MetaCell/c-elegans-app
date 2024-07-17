@@ -59,7 +59,7 @@ export const vars = {
   gray400B: '#969692',
   gray100A: '#F1F2F4',
   gray200A: '#D5D8DD',
-  
+
   orange700: '#B93815',
   error700: '#B42318',
   error50: '#FEF3F2',

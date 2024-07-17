@@ -51,9 +51,12 @@ class Neuron(ModelSchema, BilingualSchema):
 
 
 class Connection(ModelSchema, BilingualSchema):
+    annotations: list[str] = []
+    synapses: dict[str, int] = {}
+
     class Meta:
         model = ConnectionModel
-        fields = ["dataset", "pre", "post", "type", "synapses"]
+        fields = ["pre", "post", "type"]
 
 
 class FullDataset(Dataset):
