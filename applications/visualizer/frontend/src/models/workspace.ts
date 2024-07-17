@@ -34,7 +34,7 @@ export class Workspace {
         this.name = name;
         this.activeDatasets = {};
         this.availableNeurons = {};
-        this.activeNeurons = activeNeurons;
+        this.activeNeurons = activeNeurons || new Set();
         this.highlightedNeuron = undefined;
         this.viewers = {
             [ViewerType.Graph]: true,
@@ -134,6 +134,9 @@ export class Workspace {
     }
 
     async _initializeActiveDatasets(datasetIds: Set<string>) {
+        if (!datasetIds) {
+            return;
+        }
         const datasets = await fetchDatasets(datasetIds);
         const updated: Workspace = produce(this, (draft: Workspace) => {
             draft.activeDatasets = datasets;

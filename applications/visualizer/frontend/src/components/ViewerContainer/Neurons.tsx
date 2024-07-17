@@ -25,14 +25,14 @@ const Neurons = () => {
   }));
 
   // Transform active neurons data to the format expected by CustomListItem
-  const neuronList = Array.from(activeNeurons).map(neuronName => {
+  const neuronList = activeNeurons? Array.from(activeNeurons).map(neuronName => {
     const neuron = availableNeurons[neuronName];
     return {
       id: neuron.name,
       label: neuron.name,
       checked: true,
     };
-  });
+  }) : [];
 
   // Handle activation and deactivation of neurons
   const handleSwitchChange = (neuronName: string, checked: boolean) => {
