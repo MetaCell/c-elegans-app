@@ -1,9 +1,9 @@
-name: Build Frontend
+name: Check format
 
 on: [push, pull_request]
 
 jobs:
-  build:
+  format:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
