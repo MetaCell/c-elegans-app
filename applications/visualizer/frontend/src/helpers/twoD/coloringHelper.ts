@@ -1,4 +1,4 @@
-import { Neuron } from "../../rest";
+import type { Neuron } from "../../rest";
 
 export enum ColoringOptions {
   CELL_TYPE = "Cell type",

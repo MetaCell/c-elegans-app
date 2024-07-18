@@ -1,7 +1,8 @@
-import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import type React from "react";
+import { createContext, type ReactNode, useContext, useEffect, useState } from "react"
 import { ViewMode } from "../models";
 import { Workspace } from "../models";
-import { Dataset, DatasetsService } from "../rest";
+import { type Dataset, DatasetsService } from "../rest";
 export interface GlobalContextType {
   workspaces: Record<string, Workspace>;
   currentWorkspaceId: string | undefined;

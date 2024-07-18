@@ -1,4 +1,4 @@
-import { CSSObject, Theme } from "@mui/material/styles";
+import type { CSSObject, Theme } from "@mui/material/styles";
 import { Box, Drawer, Stack } from "@mui/material";
 import { vars } from "../../theme/variables.ts";
 import IconButton from "@mui/material/IconButton";

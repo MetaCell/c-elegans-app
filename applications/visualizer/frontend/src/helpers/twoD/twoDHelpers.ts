@@ -1,6 +1,6 @@
-import { Core } from "cytoscape";
+import type { Core } from "cytoscape";
 import type { Connection } from "../../rest";
-import { Workspace } from "../../models";
+import type { Workspace } from "../../models";
 
 export const createEdge = (conn: Connection) => {
   return {

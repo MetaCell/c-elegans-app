@@ -11,9 +11,9 @@ export enum ViewerType {
 }
 
 export enum ViewerSynchronizationPair {
-  Graph_InstanceDetails,
-  Graph_ThreeD,
-  ThreeD_EM,
+  Graph_InstanceDetails = 0,
+  Graph_ThreeD = 1,
+  ThreeD_EM = 2,
 }
 
 export interface NeuronGroup {

@@ -1,4 +1,4 @@
-import { Theme } from "@mui/material/styles";
+import type { Theme } from "@mui/material/styles";
 import { AppBar, Box, Button, ButtonGroup, IconButton, Menu, MenuItem, Toolbar, Tooltip, Typography } from "@mui/material";
 import { vars } from "../../theme/variables.ts";
 import React, { useState } from "react";

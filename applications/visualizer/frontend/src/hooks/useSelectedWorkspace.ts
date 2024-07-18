@@ -1,7 +1,7 @@
-import { Workspace } from "../models";
+import type { Workspace } from "../models";
 import { useSelector } from "react-redux";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
-import { RootState } from "../layout-manager/layoutManagerFactory.ts";
+import type { RootState } from "../layout-manager/layoutManagerFactory.ts";
 
 export function useSelectedWorkspace(): Workspace | undefined {
   const { workspaces } = useGlobalContext();

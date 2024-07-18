@@ -1,11 +1,11 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { Outlines } from "@react-three/drei";
 import { useGlobalContext } from "../../../contexts/GlobalContext";
 import { useSelector } from "react-redux";
-import { Workspace } from "../../../models";
-import { RootState } from "../../../layout-manager/layoutManagerFactory";
-import { BufferGeometry, DoubleSide, NormalBlending } from "three";
-import { ThreeEvent } from "@react-three/fiber";
+import type { Workspace } from "../../../models";
+import type { RootState } from "../../../layout-manager/layoutManagerFactory";
+import { type BufferGeometry, DoubleSide, NormalBlending } from "three";
+import type { ThreeEvent } from "@react-three/fiber";
 import { getFurthestIntersectedObject } from "../../../helpers/threeDHelpers";
 import { OUTLINE_COLOR, OUTLINE_THICKNESS } from "../../../settings/threeDSettings";
 

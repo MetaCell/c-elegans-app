@@ -7,7 +7,7 @@ import "@metacell/geppetto-meta-ui/flex-layout/style/light.scss";
 import theme from "../theme";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import { threeDViewerWidget, twoDViewerWidget } from "../layout-manager/widgets.ts";
-import { RootState } from "../layout-manager/layoutManagerFactory.ts";
+import type { RootState } from "../layout-manager/layoutManagerFactory.ts";
 import Layout from "./ViewerContainer/Layout.tsx";
 
 import { AddIcon, CheckIcon, DownIcon, DownloadIcon, LinkIcon, ViewerSettings as ViewerSettingsIcon } from "../icons/index.tsx";

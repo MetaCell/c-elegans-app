@@ -15,8 +15,8 @@ export enum GRAPH_LAYOUTS {
 }
 
 export enum GraphType {
-  Node,
-  Connection,
+  Node = 0,
+  Connection = 1,
 }
 
 export const connectionsLegend = {

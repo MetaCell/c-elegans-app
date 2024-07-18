@@ -22,7 +22,7 @@ import { vars } from "../../../theme/variables.ts";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { CheckIcon, CloseIcon } from "../../../icons";
 import CustomAutocomplete from "../../CustomAutocomplete.tsx";
-import { Dataset } from "../../../models/models.ts";
+import type { Dataset } from "../../../models/models.ts";
 
 const { gray100, gray600 } = vars;
 export interface Instance {

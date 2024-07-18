@@ -4,7 +4,7 @@ import { CaretIcon, CheckIcon, CloseIcon } from "../../icons";
 import CustomAutocomplete from "../CustomAutocomplete.tsx";
 import { NeuronsService } from "../../rest";
 import { useEffect, useState } from "react";
-import { Dataset, Neuron } from "../../models";
+import type { Dataset, Neuron } from "../../models";
 
 interface CompareWorkspaceDialogProps {
   onClose: () => void;

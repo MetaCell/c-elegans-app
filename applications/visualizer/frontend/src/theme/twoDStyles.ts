@@ -1,4 +1,4 @@
-import { Stylesheet } from "cytoscape";
+import type { Stylesheet } from "cytoscape";
 
 const NODE_STYLE = {
   "background-color": "#666",

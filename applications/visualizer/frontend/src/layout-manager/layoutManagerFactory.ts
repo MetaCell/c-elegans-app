@@ -1,10 +1,10 @@
-import { configureStore, Reducer, combineReducers, Action } from "@reduxjs/toolkit";
+import { configureStore, type Reducer, combineReducers, type Action } from "@reduxjs/toolkit";
 import { callbacksMiddleware } from "@metacell/geppetto-meta-client/common/middleware/geppettoMiddleware";
 import { initLayoutManager } from "@metacell/geppetto-meta-client/common/layout/LayoutManager";
-import geppettoClientReducer, { clientInitialState, ClientState } from "@metacell/geppetto-meta-client/common/reducer/geppettoClient";
-import { layoutInitialState, layout, widgets, LayoutState } from "@metacell/geppetto-meta-client/common/reducer/geppettoLayout";
+import geppettoClientReducer, { clientInitialState, type ClientState } from "@metacell/geppetto-meta-client/common/reducer/geppettoClient";
+import { layoutInitialState, layout, widgets, type LayoutState } from "@metacell/geppetto-meta-client/common/reducer/geppettoLayout";
 import { reducerDecorator } from "@metacell/geppetto-meta-client/common/reducer/reducerDecorator";
-import { WidgetMap } from "@metacell/geppetto-meta-client/common/layout/model";
+import type { WidgetMap } from "@metacell/geppetto-meta-client/common/layout/model";
 
 import componentMap from "./componentMap.ts";
 import baseLayout from "./layout.ts";
@@ -16,7 +16,7 @@ export interface RootState {
   workspaceId: string;
 }
 
-const workspaceReducer = (state: string = "", action) => {
+const workspaceReducer = (state = "", action) => {
   switch (action.type) {
     case "SET_WORKSPACE_ID":
       return action.payload;

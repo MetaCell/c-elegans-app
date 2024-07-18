@@ -1,8 +1,8 @@
-import Autocomplete, { AutocompleteProps, AutocompleteRenderInputParams, AutocompleteRenderGroupParams } from "@mui/material/Autocomplete";
+import Autocomplete, { type AutocompleteProps, type AutocompleteRenderInputParams, type AutocompleteRenderGroupParams } from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
-import React from "react";
-import { SxProps } from "@mui/system";
-import { ChipProps } from "@mui/material/Chip";
+import type React from "react";
+import type { SxProps } from "@mui/system";
+import type { ChipProps } from "@mui/material/Chip";
 interface CustomAutocompleteProps<T> {
   options: T[];
   getOptionLabel: (option: T) => string;

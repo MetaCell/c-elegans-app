@@ -1,4 +1,4 @@
-import { Dataset, DatasetsService } from "../rest";
+import { type Dataset, DatasetsService } from "../rest";
 
 export async function fetchDatasets(datasetIds: Set<string>): Promise<Record<string, Dataset>> {
   const datasetIdsArray = Array.from(datasetIds || []);

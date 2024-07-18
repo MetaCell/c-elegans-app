@@ -1,9 +1,9 @@
-import cytoscape, { Core } from "cytoscape";
+import cytoscape, { type Core } from "cytoscape";
 import fcose from "cytoscape-fcose";
 import dagre from "cytoscape-dagre";
 import { useEffect, useRef, useState } from "react";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
-import { Connection, ConnectivityService } from "../../../rest";
+import { type Connection, ConnectivityService } from "../../../rest";
 import { GRAPH_STYLES } from "../../../theme/twoDStyles.ts";
 import { applyLayout, createEdge, createNode, filterConnections } from "../../../helpers/twoD/twoDHelpers.ts";
 import { CHEMICAL_THRESHOLD, ELECTRICAL_THRESHOLD, GRAPH_LAYOUTS, INCLUDE_ANNOTATIONS, INCLUDE_NEIGHBORING_CELLS } from "../../../settings/twoDSettings.tsx";
