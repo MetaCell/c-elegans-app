@@ -147,21 +147,21 @@ export class Workspace {
       const uniqueNeurons = new Set<Neuron>();
 
       // Flatten and deduplicate neurons
-      neuronArrays.flat().forEach((neuron) => {
+      for (const neuron of neuronArrays.flat()) {
         uniqueNeurons.add(neuron);
         // Add class neuron as well
         const classNeuron = { ...neuron, name: neuron.nclass };
         uniqueNeurons.add(classNeuron);
-      });
+      }
 
       return produce(updatedWorkspace, (draft: Workspace) => {
         // Reset the availableNeurons map
         draft.availableNeurons = {};
 
         // Populate availableNeurons with unique neurons
-        uniqueNeurons.forEach((neuron) => {
+        for (const neuron of uniqueNeurons) {
           draft.availableNeurons[neuron.name] = neuron;
-        });
+        }
       });
     } catch (error) {
       console.error("Failed to fetch neurons:", error);

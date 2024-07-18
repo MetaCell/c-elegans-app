@@ -109,10 +109,10 @@ const TwoDViewer = () => {
     const nodes = new Set<string>();
     const edges = [];
 
-    connections.forEach((conn) => {
+    for (const conn of connections) {
       nodes.add(conn.pre).add(conn.post);
       edges.push(createEdge(conn));
-    });
+    }
 
     const elements = Array.from(nodes)
       .map((nodeId: string) => createNode(nodeId))
@@ -134,7 +134,7 @@ const TwoDViewer = () => {
     if (!cyRef.current) {
       return;
     }
-    cyRef.current.nodes().forEach((node) => {
+    for (const node of cyRef.current.nodes()) {
       const neuronId = node.id();
       const neuron = workspace.availableNeurons[neuronId];
       if (neuron == null) {
@@ -147,7 +147,7 @@ const TwoDViewer = () => {
         node.style(`pie-${index + 1}-background-size`, 100 / colors.length); // Equal size for each slice
       });
       // node.style('pie-background-opacity', 1);
-    });
+    }
   };
 
   return (

@@ -111,6 +111,7 @@ const ViewerSettings = ({ open, toggleDrawer }) => {
               return (
                 <FormControlLabel
                   control={<CustomSwitch width={28.8} height={16} thumbDimension={12.8} checkedPosition="translateX(0.8125rem)" />}
+                  key={`viewer-${viewer}`}
                   label={
                     <Typography color={gray600} variant="subtitle1">
                       {viewer} graph
@@ -129,7 +130,7 @@ const ViewerSettings = ({ open, toggleDrawer }) => {
           <Box display="flex" gap="0.25rem" flexDirection="column">
             {SyncViewersData?.map((data, index) => {
               return (
-                <Box display="flex" alignItems="center" gap="0.75rem" py="0.25rem">
+                <Box display="flex" alignItems="center" gap="0.75rem" py="0.25rem" key={data.primaryText}>
                   <Typography sx={textStyles}>{data.primaryText}</Typography>
                   <IconButton className={index === 2 ? "active" : ""} sx={buttonStyle}>
                     <LinkIcon />

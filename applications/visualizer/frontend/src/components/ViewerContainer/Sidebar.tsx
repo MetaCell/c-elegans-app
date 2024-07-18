@@ -23,7 +23,7 @@ const closedMixin = (theme: Theme): CSSObject => ({
     duration: theme.transitions.duration.leavingScreen,
   }),
   overflow: "hidden",
-  width: `3.5rem`,
+  width: "3.5rem",
 });
 const DrawerHeader = ({
   sidebarOpen,

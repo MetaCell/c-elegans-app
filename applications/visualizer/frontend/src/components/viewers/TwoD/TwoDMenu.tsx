@@ -2,7 +2,6 @@ import { GetAppOutlined, HomeOutlined, TuneOutlined, VisibilityOutlined } from "
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import { Box, Divider, FormControlLabel, FormGroup, IconButton, Popover, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from "@mui/material";
-// GraphMenu.tsx
 import { useState } from "react";
 import { ColoringOptions } from "../../../helpers/twoD/coloringHelper.ts";
 import { applyLayout } from "../../../helpers/twoD/twoDHelpers.ts";

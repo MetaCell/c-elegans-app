@@ -162,6 +162,6 @@ export const ChemicalSynapseIcon = () => (
 
 export const GapJunctionIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="22" height="6" viewBox="0 0 22 6" fill="none">
-    <path d="M1 3.06061L8.5 3L9 1L10 5L11 1L12 5L12.5 3L21 3.06061" stroke="#63625F" stroke-linecap="round" />
+    <path d="M1 3.06061L8.5 3L9 1L10 5L11 1L12 5L12.5 3L21 3.06061" stroke="#63625F" strokeLinecap="round" />
   </svg>
 );

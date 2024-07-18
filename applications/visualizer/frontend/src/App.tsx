@@ -11,7 +11,7 @@ import { ViewMode } from "./models";
 function App() {
   const { workspaces, currentWorkspaceId, viewMode, selectedWorkspacesIds } = useGlobalContext();
 
-  const hasLaunched = currentWorkspaceId != undefined;
+  const hasLaunched = currentWorkspaceId !== undefined;
 
   return (
     <>

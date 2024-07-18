@@ -191,7 +191,7 @@ const Header = ({
                     <Typography variant="h4">{menu.heading}</Typography>
                   </MenuItem>
                   {menu.items.map((item) => (
-                    <MenuItem>
+                    <MenuItem key={`menu-${item.label}`}>
                       <item.icon />
                       {item.label}
                     </MenuItem>

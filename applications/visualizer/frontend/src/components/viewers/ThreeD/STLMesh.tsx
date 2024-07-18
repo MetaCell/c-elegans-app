@@ -29,7 +29,7 @@ const STLMesh: FC<Props> = ({ id, color, opacity, renderOrder, isWireframe, stl 
     }
   };
 
-  const isSelected = id == workspace.highlightedNeuron;
+  const isSelected = id === workspace.highlightedNeuron;
   return (
     <mesh userData={{ id }} onClick={onClick} frustumCulled={false} renderOrder={renderOrder}>
       <primitive attach="geometry" object={stl} />

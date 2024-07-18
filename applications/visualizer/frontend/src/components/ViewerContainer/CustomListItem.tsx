@@ -94,7 +94,7 @@ const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions =
                   />
                 )}
                 <Typography color={gray600} variant="subtitle1">
-                  {data?.label?.length > 32 ? data?.label.slice(0, 32) + "..." : data?.label}
+                  {data?.label?.length > 32 ? `${data?.label.slice(0, 32)}...` : data?.label}
                 </Typography>
               </Stack>
 

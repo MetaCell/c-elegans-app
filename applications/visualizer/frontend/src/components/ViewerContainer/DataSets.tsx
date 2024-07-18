@@ -192,13 +192,13 @@ const DataSets = () => {
         }}
       >
         {data.map((section, index) => (
-          <Box p="0 .25rem" mt={index === 0 ? 0 : "1rem"}>
+          <Box p="0 .25rem" mt={index === 0 ? 0 : "1rem"} key={`section-${section.title}`}>
             <Typography color={gray500} variant="subtitle1" padding=".25rem .5rem" mb=".5rem">
               {section.title}
             </Typography>
-            <Stack key={index} spacing=".5rem">
+            <Stack spacing=".5rem">
               {section.dataSets.map((item, i) => (
-                <CustomListItem key={i} data={item} listType="dataSets" />
+                <CustomListItem key={`item-${item.label}`} data={item} listType="dataSets" />
               ))}
             </Stack>
           </Box>

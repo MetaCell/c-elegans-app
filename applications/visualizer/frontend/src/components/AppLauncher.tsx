@@ -35,7 +35,7 @@ function AppLauncher() {
       <Box>
         <AppBar component="nav">
           <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1, display: { xs: "none", sm: "block" } }}></Typography>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1, display: { xs: "none", sm: "block" } }} />
             <Button color="secondary" variant="outlined">
               About Zhen Lab
             </Button>

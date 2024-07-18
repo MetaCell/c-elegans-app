@@ -49,8 +49,7 @@ export function filterConnections(
 
     if (includeNeighboringCellsAsIndividualCells) {
       return !preClassIncluded && !postClassIncluded;
-    } else {
-      return preClassIncluded || postClassIncluded;
     }
+    return preClassIncluded || postClassIncluded;
   });
 }

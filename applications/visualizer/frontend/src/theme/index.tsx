@@ -230,7 +230,7 @@ const theme = createTheme({
             marginBottom: "1rem",
             alignItems: "flex-start",
             "& .MuiTypography-caption": {
-              border: `0.0625rem solid black`,
+              border: "0.0625rem solid black",
               borderRadius: "2.5rem",
               padding: "0.1rem 0.5rem",
               fontWeight: "500",
