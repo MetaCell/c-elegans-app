@@ -12,6 +12,7 @@ const data = [
     title: "Development stage 1",
     dataSets: [
       {
+        id: "id1",
         label:
           "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
         checked: true,
@@ -19,48 +20,56 @@ const data = [
         helpText: "helpText",
       },
       {
+        id: "id2",
         label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
         checked: true,
         description: "27 hours after birth",
         helpText: "helpText",
       },
       {
+        id: "id3",
         label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
         checked: true,
         description: "L4 legacy dataset",
         helpText: "helpText",
       },
       {
+        id: "id4",
         label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
         checked: true,
         description: "L4 legacy dataset",
         helpText: "helpText",
       },
       {
+        id: "id5",
         label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
         checked: true,
         description: "L4 legacy dataset",
         helpText: "helpText",
       },
       {
+        id: "id6",
         label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
         checked: true,
         description: "L4 legacy dataset",
         helpText: "helpText",
       },
       {
+        id: "id7",
         label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
         checked: true,
         description: "L4 legacy dataset",
         helpText: "helpText",
       },
       {
+        id: "id8",
         label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
         checked: true,
         description: "L4 legacy dataset",
         helpText: "helpText",
       },
       {
+        id: "id9",
         label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
         checked: true,
         description: "L4 legacy dataset",
@@ -72,18 +81,21 @@ const data = [
     title: "Development stage 2",
     dataSets: [
       {
+        id: "id10",
         label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
         checked: true,
         description: "L4 legacy dataset",
         helpText: "helpText",
       },
       {
+        id: "id11",
         label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
         checked: true,
         description: "L4 legacy dataset",
         helpText: "helpText",
       },
       {
+        id: "id12",
         label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
         checked: true,
         description: "L4 legacy dataset",
@@ -95,12 +107,14 @@ const data = [
     title: "Development stage 3",
     dataSets: [
       {
+        id: "id13",
         label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
         checked: true,
         description: "L4 legacy dataset",
         helpText: "helpText",
       },
       {
+        id: "id14",
         label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
         checked: true,
         description: "L4 legacy dataset",
@@ -112,6 +126,7 @@ const data = [
     title: "Adult",
     dataSets: [
       {
+        id: "id15",
         label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
         checked: true,
         description: "50 hours after birth",
@@ -197,8 +212,8 @@ const DataSets = () => {
               {section.title}
             </Typography>
             <Stack spacing=".5rem">
-              {section.dataSets.map((item, i) => (
-                <CustomListItem key={`item-${item.label}`} data={item} listType="dataSets" />
+              {section.dataSets.map((item) => (
+                <CustomListItem key={item.id} data={item} listType="dataSets" />
               ))}
             </Stack>
           </Box>
