@@ -15,12 +15,14 @@ export const createEdge = (conn: Connection) => {
     }
 }
 
-export const createNode = (nodeId: string) => {
+export const createNode = (nodeId: string, selected: boolean) => {
     return {
         group: 'nodes',
-        data: {id: nodeId, label: nodeId}
-    }
-}
+        data: { id: nodeId, label: nodeId },
+        classes: selected ? 'selected' : ''
+    };
+};
+
 
 export function applyLayout(cyRef: React.MutableRefObject<Core | null>, layout: string) {
     if (cyRef.current) {

@@ -113,7 +113,6 @@ const TwoDViewer = () => {
         const handleNodeClick = (event) => {
             const neuronId = event.target.id();
             workspace.toggleSelectedNeuron(neuronId);
-            updateNodeSelection();
             event.stopPropagation();
 
         };
@@ -123,7 +122,6 @@ const TwoDViewer = () => {
                 return
             }
             workspace.clearSelectedNeurons();
-            updateNodeSelection();
         };
 
         cy.on('tap', 'node', handleNodeClick);
@@ -158,13 +156,14 @@ const TwoDViewer = () => {
             edges.push(createEdge(conn));
         });
 
-        const elements = Array.from(nodes).map((nodeId: string) => createNode(nodeId)).concat(edges);
+        const elements = Array.from(nodes)
+            .map((nodeId: string) => createNode(nodeId, workspace.selectedNeurons.has(nodeId)))
+            .concat(edges);
 
         cy.elements().remove(); // Remove all existing elements
         cy.add(elements);       // Add new elements
         updateLayout();
         updateNodeColors();
-        updateNodeSelection();
     };
 
     const updateLayout = () => {
@@ -190,19 +189,6 @@ const TwoDViewer = () => {
                 node.style(`pie-${index + 1}-background-size`, 100 / colors.length); // Equal size for each slice
             });
             node.style('pie-background-opacity', 1);
-        });
-    };
-
-    const updateNodeSelection = () => {
-        if (!cyRef.current) return;
-
-        cyRef.current.nodes().forEach(node => {
-            const neuronId = node.id();
-            if (workspace.selectedNeurons.has(neuronId)) {
-                node.addClass('selected');
-            } else {
-                node.removeClass('selected');
-            }
         });
     };
 
