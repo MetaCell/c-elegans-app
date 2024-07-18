@@ -99,6 +99,13 @@ export class Workspace {
         this.updateContext(updated);
     }
 
+    clearSelectedNeurons(): void {
+        const updated = produce(this, (draft: Workspace) => {
+            draft.selectedNeurons.clear();
+        });
+        this.updateContext(updated);
+    }
+
     updateViewerSynchronizationStatus(pair: ViewerSynchronizationPair, isActive: boolean): void {
         const updated = produce(this, (draft: Workspace) => {
             draft.synchronizations[pair] = isActive;

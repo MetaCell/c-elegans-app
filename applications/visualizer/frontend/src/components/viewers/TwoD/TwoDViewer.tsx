@@ -110,15 +110,28 @@ const TwoDViewer = () => {
         if (!cyRef.current) return;
 
         const cy = cyRef.current;
-        const handleClick = (event) => {
+        const handleNodeClick = (event) => {
             const neuronId = event.target.id();
             workspace.toggleSelectedNeuron(neuronId);
+            updateNodeSelection();
+            event.stopPropagation();
+
         };
 
-        cy.on('click', 'node', handleClick);
+        const handleBackgroundClick = (event) => {
+            if(event.target !== cy){
+                return
+            }
+            workspace.clearSelectedNeurons();
+            updateNodeSelection();
+        };
+
+        cy.on('tap', 'node', handleNodeClick);
+        cy.on('tap', handleBackgroundClick);
 
         return () => {
-            cy.off('click', 'node', handleClick);
+            cy.off('click', 'node', handleNodeClick);
+            cy.off('click', 'background', handleBackgroundClick);
         };
     }, [workspace]);
 
