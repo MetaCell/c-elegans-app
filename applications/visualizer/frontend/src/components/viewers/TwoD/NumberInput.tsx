@@ -1,9 +1,9 @@
+import { Unstable_NumberInput as BaseNumberInput, type NumberInputProps } from "@mui/base/Unstable_NumberInput";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
+import { Box } from "@mui/system";
 // NumberInput.tsx
 import * as React from "react";
-import { Unstable_NumberInput as BaseNumberInput, type NumberInputProps } from "@mui/base/Unstable_NumberInput";
-import { Box } from "@mui/system";
-import RemoveIcon from "@mui/icons-material/Remove";
-import AddIcon from "@mui/icons-material/Add";
 
 const NumberInput = React.forwardRef(function CustomNumberInput(
   props: NumberInputProps & {

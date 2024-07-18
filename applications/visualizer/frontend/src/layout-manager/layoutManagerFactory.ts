@@ -1,10 +1,10 @@
-import { configureStore, type Reducer, combineReducers, type Action } from "@reduxjs/toolkit";
-import { callbacksMiddleware } from "@metacell/geppetto-meta-client/common/middleware/geppettoMiddleware";
 import { initLayoutManager } from "@metacell/geppetto-meta-client/common/layout/LayoutManager";
-import geppettoClientReducer, { clientInitialState, type ClientState } from "@metacell/geppetto-meta-client/common/reducer/geppettoClient";
-import { layoutInitialState, layout, widgets, type LayoutState } from "@metacell/geppetto-meta-client/common/reducer/geppettoLayout";
-import { reducerDecorator } from "@metacell/geppetto-meta-client/common/reducer/reducerDecorator";
 import type { WidgetMap } from "@metacell/geppetto-meta-client/common/layout/model";
+import { callbacksMiddleware } from "@metacell/geppetto-meta-client/common/middleware/geppettoMiddleware";
+import geppettoClientReducer, { clientInitialState, type ClientState } from "@metacell/geppetto-meta-client/common/reducer/geppettoClient";
+import { type LayoutState, layout, layoutInitialState, widgets } from "@metacell/geppetto-meta-client/common/reducer/geppettoLayout";
+import { reducerDecorator } from "@metacell/geppetto-meta-client/common/reducer/reducerDecorator";
+import { type Action, type Reducer, combineReducers, configureStore } from "@reduxjs/toolkit";
 
 import componentMap from "./componentMap.ts";
 import baseLayout from "./layout.ts";

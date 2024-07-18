@@ -1,15 +1,15 @@
-import { useState } from "react";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import Tooltip from "@mui/material/Tooltip";
-import FormControlLabel from "@mui/material/FormControlLabel";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { Box, IconButton } from "@mui/material";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Stack from "@mui/material/Stack";
+import Tooltip from "@mui/material/Tooltip";
+import Typography from "@mui/material/Typography";
+import { useState } from "react";
 import { vars } from "../../theme/variables.ts";
 import CustomSwitch from "./CustomSwitch.tsx";
 import PickerWrapper from "./PickerWrapper.tsx";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import AddIcon from "@mui/icons-material/Add";
 
 const { gray600, gray400B, gray500, gray50, error700 } = vars;
 

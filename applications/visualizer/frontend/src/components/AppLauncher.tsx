@@ -1,6 +1,6 @@
-import { Typography, Card, CardContent, CardActionArea, Grid, Container, Box, AppBar, Toolbar, Button } from "@mui/material";
-import { useGlobalContext } from "../contexts/GlobalContext.tsx";
+import { AppBar, Box, Button, Card, CardActionArea, CardContent, Container, Grid, Toolbar, Typography } from "@mui/material";
 import footerImage from "../assets/summary-neurons.png";
+import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import { parseURLParams } from "../helpers/parseURLHelper.ts";
 import { TEMPLATE_ACTIVE_DATASETS, TEMPLATE_ACTIVE_NEURONS } from "../settings/templateWorkspaceSettings.ts";
 

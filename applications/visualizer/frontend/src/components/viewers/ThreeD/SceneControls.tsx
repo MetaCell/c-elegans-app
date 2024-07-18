@@ -1,7 +1,7 @@
+import { GetAppOutlined, HomeOutlined, PlayArrowOutlined, RadioButtonCheckedOutlined, SettingsOutlined, TonalityOutlined } from "@mui/icons-material";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import { Box, Divider, IconButton, Popover, Typography } from "@mui/material";
-import { GetAppOutlined, HomeOutlined, PlayArrowOutlined, RadioButtonCheckedOutlined, SettingsOutlined, TonalityOutlined } from "@mui/icons-material";
 import Tooltip from "@mui/material/Tooltip";
 import { useState } from "react";
 import { vars } from "../../../theme/variables.ts";

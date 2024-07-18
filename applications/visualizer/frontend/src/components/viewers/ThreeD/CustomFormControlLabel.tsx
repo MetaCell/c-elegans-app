@@ -1,7 +1,7 @@
-import { FormControlLabel, Tooltip, Box, Stack, Typography } from "@mui/material";
-import CustomSwitch from "../../ViewerContainer/CustomSwitch.tsx";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import { Box, FormControlLabel, Stack, Tooltip, Typography } from "@mui/material";
 import { vars } from "../../../theme/variables.ts"; // Adjust the import path as needed
+import CustomSwitch from "../../ViewerContainer/CustomSwitch.tsx";
 
 const { gray50, gray600, gray400B } = vars;
 const CustomFormControlLabel = ({ label, tooltipTitle, helpText }) => {

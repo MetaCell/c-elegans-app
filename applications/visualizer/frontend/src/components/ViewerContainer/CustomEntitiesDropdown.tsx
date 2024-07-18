@@ -1,8 +1,8 @@
-import type React from "react";
-import { useState, useEffect } from "react";
-import { Box, Typography, Popper, TextField, InputAdornment } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import SearchIcon from "@mui/icons-material/Search";
+import { Box, InputAdornment, Popper, TextField, Typography } from "@mui/material";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { vars } from "../../theme/variables.ts";
 
 const { gray50, brand600 } = vars;

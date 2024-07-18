@@ -1,10 +1,10 @@
-import { produce, immerable } from "immer";
+import type { LayoutManager } from "@metacell/geppetto-meta-client/common/layout/LayoutManager";
 import type { configureStore } from "@reduxjs/toolkit";
-import { type NeuronGroup, ViewerSynchronizationPair, ViewerType } from "./models.ts";
+import { immerable, produce } from "immer";
+import { fetchDatasets } from "../helpers/workspaceHelper.ts";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory.ts";
 import { type Dataset, DatasetsService, type Neuron } from "../rest";
-import { fetchDatasets } from "../helpers/workspaceHelper.ts";
-import type { LayoutManager } from "@metacell/geppetto-meta-client/common/layout/LayoutManager";
+import { type NeuronGroup, ViewerSynchronizationPair, ViewerType } from "./models.ts";
 
 export class Workspace {
   [immerable] = true;

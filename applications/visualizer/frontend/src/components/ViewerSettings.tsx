@@ -1,7 +1,7 @@
 import { Box, Divider, Drawer, FormControlLabel, FormGroup, IconButton, Typography } from "@mui/material";
 import { CloseIcon, LinkIcon } from "../icons/index.tsx";
-import CustomSwitch from "./ViewerContainer/CustomSwitch.tsx";
 import { vars } from "../theme/variables.ts";
+import CustomSwitch from "./ViewerContainer/CustomSwitch.tsx";
 
 const { gray900A, gray600, gray100, white, gray700 } = vars;
 

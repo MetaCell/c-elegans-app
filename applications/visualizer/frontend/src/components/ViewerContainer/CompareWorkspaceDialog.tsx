@@ -1,10 +1,10 @@
 import { Box, Button, Dialog, FormLabel, IconButton, TextField, Typography } from "@mui/material";
-import { vars as colors } from "../../theme/variables.ts";
-import { CaretIcon, CheckIcon, CloseIcon } from "../../icons";
-import CustomAutocomplete from "../CustomAutocomplete.tsx";
-import { NeuronsService } from "../../rest";
 import { useEffect, useState } from "react";
+import { CaretIcon, CheckIcon, CloseIcon } from "../../icons";
 import type { Dataset, Neuron } from "../../models";
+import { NeuronsService } from "../../rest";
+import { vars as colors } from "../../theme/variables.ts";
+import CustomAutocomplete from "../CustomAutocomplete.tsx";
 
 interface CompareWorkspaceDialogProps {
   onClose: () => void;

@@ -1,10 +1,10 @@
-import { Box, Stack, Typography, MenuItem, FormControl, IconButton } from "@mui/material";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { Box, FormControl, IconButton, MenuItem, Stack, Typography } from "@mui/material";
+import Select from "@mui/material/Select";
 import { vars } from "../../theme/variables.ts";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 import CustomListItem from "./CustomListItem.tsx";
-import Select from "@mui/material/Select";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import FilterListIcon from "@mui/icons-material/FilterList";
 const { gray900, gray500, gray400 } = vars;
 
 const data = [

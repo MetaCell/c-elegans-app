@@ -1,8 +1,8 @@
 import Switch from "@mui/material/Switch";
-import { vars } from "../../theme/variables.ts";
 import Tooltip from "@mui/material/Tooltip";
 import type React from "react";
 import { useState } from "react";
+import { vars } from "../../theme/variables.ts";
 
 const { white, brand600, gray100 } = vars;
 

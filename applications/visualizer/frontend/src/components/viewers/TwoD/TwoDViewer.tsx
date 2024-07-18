@@ -1,16 +1,16 @@
+import { Box } from "@mui/material";
 import cytoscape, { type Core } from "cytoscape";
-import fcose from "cytoscape-fcose";
 import dagre from "cytoscape-dagre";
+import fcose from "cytoscape-fcose";
 import { useEffect, useRef, useState } from "react";
+import { ColoringOptions, getColor } from "../../../helpers/twoD/coloringHelper.ts";
+import { applyLayout, createEdge, createNode, filterConnections } from "../../../helpers/twoD/twoDHelpers.ts";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
 import { type Connection, ConnectivityService } from "../../../rest";
-import { GRAPH_STYLES } from "../../../theme/twoDStyles.ts";
-import { applyLayout, createEdge, createNode, filterConnections } from "../../../helpers/twoD/twoDHelpers.ts";
 import { CHEMICAL_THRESHOLD, ELECTRICAL_THRESHOLD, GRAPH_LAYOUTS, INCLUDE_ANNOTATIONS, INCLUDE_NEIGHBORING_CELLS } from "../../../settings/twoDSettings.tsx";
-import TwoDMenu from "./TwoDMenu.tsx";
+import { GRAPH_STYLES } from "../../../theme/twoDStyles.ts";
 import TwoDLegend from "./TwoDLegend.tsx";
-import { Box } from "@mui/material";
-import { ColoringOptions, getColor } from "../../../helpers/twoD/coloringHelper.ts";
+import TwoDMenu from "./TwoDMenu.tsx";
 
 cytoscape.use(fcose);
 cytoscape.use(dagre);

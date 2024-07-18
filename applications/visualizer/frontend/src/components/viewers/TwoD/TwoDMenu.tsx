@@ -1,15 +1,15 @@
-// GraphMenu.tsx
-import { useState } from "react";
-import { IconButton, Popover, Typography, Box, ToggleButtonGroup, ToggleButton, FormControlLabel, FormGroup, Tooltip, Divider } from "@mui/material";
+import { GetAppOutlined, HomeOutlined, TuneOutlined, VisibilityOutlined } from "@mui/icons-material";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
-import { GRAPH_LAYOUTS, ZOOM_DELTA } from "../../../settings/twoDSettings.tsx";
-import { applyLayout } from "../../../helpers/twoD/twoDHelpers.ts";
-import { GetAppOutlined, HomeOutlined, TuneOutlined, VisibilityOutlined } from "@mui/icons-material";
-import { vars } from "../../../theme/variables.ts";
-import QuantityInput from "./NumberInput.tsx";
-import CustomSwitch from "../../ViewerContainer/CustomSwitch.tsx";
+import { Box, Divider, FormControlLabel, FormGroup, IconButton, Popover, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from "@mui/material";
+// GraphMenu.tsx
+import { useState } from "react";
 import { ColoringOptions } from "../../../helpers/twoD/coloringHelper.ts";
+import { applyLayout } from "../../../helpers/twoD/twoDHelpers.ts";
+import { GRAPH_LAYOUTS, ZOOM_DELTA } from "../../../settings/twoDSettings.tsx";
+import { vars } from "../../../theme/variables.ts";
+import CustomSwitch from "../../ViewerContainer/CustomSwitch.tsx";
+import QuantityInput from "./NumberInput.tsx";
 
 const { gray500 } = vars;
 

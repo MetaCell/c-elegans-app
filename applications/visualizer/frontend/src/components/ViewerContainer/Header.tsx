@@ -1,10 +1,10 @@
-import type { Theme } from "@mui/material/styles";
 import { AppBar, Box, Button, ButtonGroup, IconButton, Menu, MenuItem, Toolbar, Tooltip, Typography } from "@mui/material";
-import { vars } from "../../theme/variables.ts";
+import type { Theme } from "@mui/material/styles";
 import React, { useState } from "react";
-import { CiteIcon, ConnectionsIcon, ContactIcon, ContributeIcon, DataSourceIcon, DownloadIcon, MoreOptionsIcon, TourIcon } from "../../icons";
-import CompareWorkspaceDialog from "./CompareWorkspaceDialog.tsx";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
+import { CiteIcon, ConnectionsIcon, ContactIcon, ContributeIcon, DataSourceIcon, DownloadIcon, MoreOptionsIcon, TourIcon } from "../../icons";
+import { vars } from "../../theme/variables.ts";
+import CompareWorkspaceDialog from "./CompareWorkspaceDialog.tsx";
 const { gray100 } = vars;
 
 const MENU_ARR = [

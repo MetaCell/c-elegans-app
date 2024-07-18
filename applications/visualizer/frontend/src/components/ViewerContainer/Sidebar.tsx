@@ -1,9 +1,9 @@
-import type { CSSObject, Theme } from "@mui/material/styles";
 import { Box, Drawer, Stack } from "@mui/material";
-import { vars } from "../../theme/variables.ts";
 import IconButton from "@mui/material/IconButton";
-import { DataSetsIcon, NeuronsIcon, SidebarExpandIcon } from "../../icons";
+import type { CSSObject, Theme } from "@mui/material/styles";
 import { useState } from "react";
+import { DataSetsIcon, NeuronsIcon, SidebarExpandIcon } from "../../icons";
+import { vars } from "../../theme/variables.ts";
 import DataSets from "./DataSets.tsx";
 import Neurons from "./Neurons.tsx";
 

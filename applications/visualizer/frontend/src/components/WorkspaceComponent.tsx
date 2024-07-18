@@ -1,13 +1,13 @@
-import { useDispatch, useSelector } from "react-redux";
-import React, { Suspense, useEffect, useState } from "react";
-import { ThemeProvider } from "@mui/material/styles";
-import { Box, Button, CircularProgress, CssBaseline, Divider, IconButton, Menu, MenuItem, Typography } from "@mui/material";
 import { addWidget } from "@metacell/geppetto-meta-client/common/layout/actions";
+import { Box, Button, CircularProgress, CssBaseline, Divider, IconButton, Menu, MenuItem, Typography } from "@mui/material";
+import { ThemeProvider } from "@mui/material/styles";
+import React, { Suspense, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import "@metacell/geppetto-meta-ui/flex-layout/style/light.scss";
-import theme from "../theme";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
-import { threeDViewerWidget, twoDViewerWidget } from "../layout-manager/widgets.ts";
 import type { RootState } from "../layout-manager/layoutManagerFactory.ts";
+import { threeDViewerWidget, twoDViewerWidget } from "../layout-manager/widgets.ts";
+import theme from "../theme";
 import Layout from "./ViewerContainer/Layout.tsx";
 
 import { AddIcon, CheckIcon, DownIcon, DownloadIcon, LinkIcon, ViewerSettings as ViewerSettingsIcon } from "../icons/index.tsx";

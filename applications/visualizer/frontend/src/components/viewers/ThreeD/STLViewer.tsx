@@ -1,10 +1,10 @@
-import type { FC } from "react";
 import { Center } from "@react-three/drei";
 import { useLoader } from "@react-three/fiber";
-import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
+import type { FC } from "react";
 import type { BufferGeometry } from "three";
-import type { Instance } from "./ThreeDViewer.tsx";
+import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
 import STLMesh from "./STLMesh.tsx";
+import type { Instance } from "./ThreeDViewer.tsx";
 
 interface Props {
   instances: Instance[];

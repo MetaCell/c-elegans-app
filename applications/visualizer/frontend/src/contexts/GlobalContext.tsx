@@ -1,5 +1,5 @@
 import type React from "react";
-import { createContext, type ReactNode, useContext, useEffect, useState } from "react"
+import { type ReactNode, createContext, useContext, useEffect, useState } from "react";
 import { ViewMode } from "../models";
 import { Workspace } from "../models";
 import { type Dataset, DatasetsService } from "../rest";

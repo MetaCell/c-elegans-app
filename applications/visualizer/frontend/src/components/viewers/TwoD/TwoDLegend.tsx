@@ -1,8 +1,8 @@
+import { Box, Divider, IconButton, Typography } from "@mui/material";
 import type React from "react";
-import { Typography, Box, IconButton, Divider } from "@mui/material";
-import { connectionsLegend, GraphType } from "../../../settings/twoDSettings.tsx";
-import { vars } from "../../../theme/variables.ts";
 import { type ColoringOptions, getColorMap } from "../../../helpers/twoD/coloringHelper.ts";
+import { GraphType, connectionsLegend } from "../../../settings/twoDSettings.tsx";
+import { vars } from "../../../theme/variables.ts";
 
 const { gray100 } = vars;
 interface LegendNodeProps {

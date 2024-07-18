@@ -1,11 +1,11 @@
-import { Provider } from "react-redux";
-import { ThemeProvider } from "@mui/material/styles";
 import { Box, CssBaseline } from "@mui/material";
+import { ThemeProvider } from "@mui/material/styles";
+import { Provider } from "react-redux";
 import theme from "./theme/index.tsx";
 import "./App.css";
-import { useGlobalContext } from "./contexts/GlobalContext.tsx";
 import AppLauncher from "./components/AppLauncher.tsx";
 import WorkspaceComponent from "./components/WorkspaceComponent.tsx";
+import { useGlobalContext } from "./contexts/GlobalContext.tsx";
 import { ViewMode } from "./models";
 
 function App() {
