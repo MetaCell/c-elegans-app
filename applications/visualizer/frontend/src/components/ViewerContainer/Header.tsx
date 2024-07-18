@@ -1,79 +1,79 @@
 import { Theme } from "@mui/material/styles";
-import { AppBar, Box, Button, ButtonGroup, IconButton, Menu, MenuItem, Toolbar, Tooltip, Typography} from "@mui/material";
+import { AppBar, Box, Button, ButtonGroup, IconButton, Menu, MenuItem, Toolbar, Tooltip, Typography } from "@mui/material";
 import { vars } from "../../theme/variables.ts";
 import React, { useState } from "react";
 import { CiteIcon, ConnectionsIcon, ContactIcon, ContributeIcon, DataSourceIcon, DownloadIcon, MoreOptionsIcon, TourIcon } from "../../icons";
 import CompareWorkspaceDialog from "./CompareWorkspaceDialog.tsx";
-import {useGlobalContext} from "../../contexts/GlobalContext.tsx";
+import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 const { gray100 } = vars;
 
 const MENU_ARR = [
   {
     id: 0,
-    heading: 'Learn',
+    heading: "Learn",
     items: [
       {
-        label: 'Take a tour',
-        icon: TourIcon
-      }
-    ]
+        label: "Take a tour",
+        icon: TourIcon,
+      },
+    ],
   },
   {
     id: 1,
-    heading: 'Data info',
+    heading: "Data info",
     items: [
       {
-        label: 'Data sources',
-        icon: DataSourceIcon
+        label: "Data sources",
+        icon: DataSourceIcon,
       },
       {
-        label: 'Types of connections',
-        icon: ConnectionsIcon
+        label: "Types of connections",
+        icon: ConnectionsIcon,
       },
       {
-        label: 'Download data',
-        icon: DownloadIcon
+        label: "Download data",
+        icon: DownloadIcon,
       },
       {
-        label: 'Cite us',
-        icon: CiteIcon
-      }
-    ]
+        label: "Cite us",
+        icon: CiteIcon,
+      },
+    ],
   },
   {
     id: 2,
-    heading: 'Development',
+    heading: "Development",
     items: [
       {
-        label: 'Contribute',
-        icon: ContributeIcon
-      }
-    ]
+        label: "Contribute",
+        icon: ContributeIcon,
+      },
+    ],
   },
   {
     id: 3,
-    heading: 'Help',
+    heading: "Help",
     items: [
       {
-        label: 'Contact us',
-        icon: ContactIcon
-      }
-    ]
+        label: "Contact us",
+        icon: ContactIcon,
+      },
+    ],
   },
-]
+];
 
 const VIEW_OPTIONS = [
   {
     id: 0,
-    label: 'Default',
-    description: 'Visualize datasets and neurons, without comparing'
+    label: "Default",
+    description: "Visualize datasets and neurons, without comparing",
   },
   {
     id: 1,
-    label: 'Compare',
-    description: 'Compare between multiple datasets'
-  }
-]
+    label: "Compare",
+    description: "Compare between multiple datasets",
+  },
+];
 
 const Header = ({
   sidebarOpen,
@@ -99,19 +99,19 @@ const Header = ({
   const onClick = (index: number) => {
     setActive(index);
 
-    switch(index) {
+    switch (index) {
       case 1:
         setShowModal(true);
         break;
       default:
         setShowModal(false);
     }
-  }
+  };
 
   const onClose = () => {
-    setShowModal(false)
-    setActive(0)
-  }
+    setShowModal(false);
+    setActive(0);
+  };
 
   return (
     <>
@@ -154,20 +154,24 @@ const Header = ({
           <ButtonGroup variant="outlined" aria-label="Basic button group">
             {VIEW_OPTIONS.map((item, index) => {
               return (
-                <Tooltip placement={index === 0 ? 'bottom-start' : 'bottom'} title={item.description} key={index}>
-                  <Button className={active === index ? 'active' : ''} onClick={() => onClick(index)}>{item.label}</Button>
+                <Tooltip placement={index === 0 ? "bottom-start" : "bottom"} title={item.description} key={index}>
+                  <Button className={active === index ? "active" : ""} onClick={() => onClick(index)}>
+                    {item.label}
+                  </Button>
                 </Tooltip>
-              )
+              );
             })}
           </ButtonGroup>
 
-          <Box display='flex' gap='0.625rem'>
-            <Button color="info" variant="contained">Share</Button>
+          <Box display="flex" gap="0.625rem">
+            <Button color="info" variant="contained">
+              Share
+            </Button>
             <IconButton
               id="dataset-menu-btn"
-              aria-controls={open ? 'dataset-menu' : undefined}
+              aria-controls={open ? "dataset-menu" : undefined}
               aria-haspopup="true"
-              aria-expanded={open ? 'true' : undefined}
+              aria-expanded={open ? "true" : undefined}
               onClick={handleClick}
             >
               <MoreOptionsIcon />
@@ -178,7 +182,7 @@ const Header = ({
               open={open}
               onClose={handleClose}
               MenuListProps={{
-                'aria-labelledby': 'dataset-menu-btn',
+                "aria-labelledby": "dataset-menu-btn",
               }}
             >
               {MENU_ARR.map((menu) => (
@@ -188,10 +192,10 @@ const Header = ({
                   </MenuItem>
                   {menu.items.map((item) => (
                     <MenuItem>
-                      <item.icon/>
+                      <item.icon />
                       {item.label}
                     </MenuItem>
-                  ))} 
+                  ))}
                 </Box>
               ))}
             </Menu>
@@ -199,7 +203,7 @@ const Header = ({
         </Toolbar>
       </AppBar>
 
-      <CompareWorkspaceDialog showModal={showModal} onClose={onClose} datasets={datasets}/>
+      <CompareWorkspaceDialog showModal={showModal} onClose={onClose} datasets={datasets} />
     </>
   );
 };

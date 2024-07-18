@@ -6,7 +6,7 @@ import { addWidget } from "@metacell/geppetto-meta-client/common/layout/actions"
 import "@metacell/geppetto-meta-ui/flex-layout/style/light.scss";
 import theme from "../theme";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
-import {threeDViewerWidget, twoDViewerWidget} from "../layout-manager/widgets.ts";
+import { threeDViewerWidget, twoDViewerWidget } from "../layout-manager/widgets.ts";
 import { RootState } from "../layout-manager/layoutManagerFactory.ts";
 import Layout from "./ViewerContainer/Layout.tsx";
 
@@ -19,10 +19,10 @@ const { gray100, white } = vars;
 const LoadingComponent = () => (
   <Box
     sx={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100%',
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "100%",
     }}
   >
     <CircularProgress />
@@ -30,7 +30,6 @@ const LoadingComponent = () => (
 );
 
 function WorkspaceComponent() {
-
   const dispatch = useDispatch();
   const { workspaces } = useGlobalContext();
 
@@ -56,7 +55,6 @@ function WorkspaceComponent() {
     dispatch(addWidget(twoDViewerWidget()));
   }, [LayoutComponent, dispatch]);
 
-
   const [anchorElWorkspace, setAnchorElWorkspace] = React.useState<null | HTMLElement>(null);
   const openWorkspace = Boolean(anchorElWorkspace);
   const handleClickWorkspace = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -74,53 +72,64 @@ function WorkspaceComponent() {
           <Box
             className="layout-manager-container"
             sx={{
-              padding: sidebarOpen
-                ? "3.5rem 0 0 22.25rem"
-                : "3.5rem 0 0 3.5rem",
+              padding: sidebarOpen ? "3.5rem 0 0 22.25rem" : "3.5rem 0 0 3.5rem",
             }}
           >
             <Layout sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-            <Box p={1} height={1} display='flex'>
-              <Box flex={1} borderRadius='0.25rem' border={`0.0625rem solid ${gray100}`} height={1} display='flex' flexDirection='column' sx={{background: white}}>
-                <Box p={1.5} display='flex' alignItems='center' justifyContent='space-between' borderBottom={`0.0625rem solid ${gray100}`}>
-                  <Box display='flex' alignItems='center' gap={0.5}>
+            <Box p={1} height={1} display="flex">
+              <Box
+                flex={1}
+                borderRadius="0.25rem"
+                border={`0.0625rem solid ${gray100}`}
+                height={1}
+                display="flex"
+                flexDirection="column"
+                sx={{ background: white }}
+              >
+                <Box p={1.5} display="flex" alignItems="center" justifyContent="space-between" borderBottom={`0.0625rem solid ${gray100}`}>
+                  <Box display="flex" alignItems="center" gap={0.5}>
                     <Button
                       id="dataset-menu-btn"
-                      aria-controls={openWorkspace ? 'Workspace-menu' : undefined}
+                      aria-controls={openWorkspace ? "Workspace-menu" : undefined}
                       aria-haspopup="true"
-                      aria-expanded={openWorkspace ? 'true' : undefined}
+                      aria-expanded={openWorkspace ? "true" : undefined}
                       onClick={handleClickWorkspace}
-                      endIcon={<DownIcon />}>Workspace 1</Button>
+                      endIcon={<DownIcon />}
+                    >
+                      Workspace 1
+                    </Button>
                     <Menu
                       sx={{
-                        '& .MuiPaper-root': {
-                          width: '15.625rem'
-                        }
+                        "& .MuiPaper-root": {
+                          width: "15.625rem",
+                        },
                       }}
                       id="Workspace-menu"
                       anchorEl={anchorElWorkspace}
                       open={openWorkspace}
                       onClose={handleCloseWorkspace}
                       MenuListProps={{
-                        'aria-labelledby': 'Workspace-menu-btn',
+                        "aria-labelledby": "Workspace-menu-btn",
                       }}
                     >
                       <Box>
                         <MenuItem disabled>
-                          <Typography variant="h4">{'Workspaces'}</Typography>
+                          <Typography variant="h4">{"Workspaces"}</Typography>
                         </MenuItem>
                         <MenuItem sx={{ fontWeight: 600 }}>
                           <AddIcon />
                           New workspace
                         </MenuItem>
                       </Box>
-                      <Box sx={{
-                        '& .MuiMenuItem-root': {
-                          '&:not(.Mui-selected) svg': {
-                            visibility: 'hidden'
-                          }
-                        }
-                      }}>
+                      <Box
+                        sx={{
+                          "& .MuiMenuItem-root": {
+                            "&:not(.Mui-selected) svg": {
+                              visibility: "hidden",
+                            },
+                          },
+                        }}
+                      >
                         <MenuItem>
                           <CheckIcon />
                           Workspace 1
@@ -131,16 +140,24 @@ function WorkspaceComponent() {
                         </MenuItem>
                       </Box>
                     </Menu>
-                    <Divider sx={{width: '0.0625rem', height: '1.9375rem', background: gray100}} />
-                    <Box display='flex' alignItems='center' gap={0.5} px={1.5}>
-                      <IconButton><LinkIcon /></IconButton>
-                      <IconButton><DownloadIcon /></IconButton>
+                    <Divider sx={{ width: "0.0625rem", height: "1.9375rem", background: gray100 }} />
+                    <Box display="flex" alignItems="center" gap={0.5} px={1.5}>
+                      <IconButton>
+                        <LinkIcon />
+                      </IconButton>
+                      <IconButton>
+                        <DownloadIcon />
+                      </IconButton>
                     </Box>
                   </Box>
-                  <Button variant="outlined" onClick={toggleDrawer(true)} startIcon={<ViewerSettingsIcon />}>Viewer settings</Button>
+                  <Button variant="outlined" onClick={toggleDrawer(true)} startIcon={<ViewerSettingsIcon />}>
+                    Viewer settings
+                  </Button>
                   <ViewerSettings open={open} toggleDrawer={toggleDrawer} />
                 </Box>
-                <Box p={1.5} height={1} display='flex'><LayoutComponent /></Box>
+                <Box p={1.5} height={1} display="flex">
+                  <LayoutComponent />
+                </Box>
               </Box>
             </Box>
           </Box>

@@ -97,8 +97,8 @@ const Sidebar = ({
         boxSizing: "border-box",
         "& .MuiPaper-root": {
           borderColor: gray100,
-          height: '100vh',
-          paddingBottom: '0'
+          height: "100vh",
+          paddingBottom: "0",
         },
         ...(sidebarOpen && {
           ...openedMixin(theme),
@@ -113,20 +113,15 @@ const Sidebar = ({
         }),
       })}
     >
-      <DrawerHeader
-        sidebarOpen={sidebarOpen}
-        handleDrawerClose={handleDrawerClose}
-        handleDrawerOpen={handleDrawerOpen}
-        drawerHeight={drawerHeight}
-      />
+      <DrawerHeader sidebarOpen={sidebarOpen} handleDrawerClose={handleDrawerClose} handleDrawerOpen={handleDrawerOpen} drawerHeight={drawerHeight} />
       <Box
         sx={{
           display: "flex",
-          height: 'calc(100vh - 3.5rem)',
+          height: "calc(100vh - 3.5rem)",
           overflow: "hidden",
         }}
       >
-        <Stack spacing=".75rem" borderRight={`0.0625rem solid ${gray100}`} p=".75rem" width='3.5rem'>
+        <Stack spacing=".75rem" borderRight={`0.0625rem solid ${gray100}`} p=".75rem" width="3.5rem">
           <IconButton
             sx={{
               padding: ".38rem",
@@ -156,11 +151,7 @@ const Sidebar = ({
             <NeuronsIcon />
           </IconButton>
         </Stack>
-        {sidebarOpen && (
-          <>
-            {content === "dataSets" ? <DataSets /> : <Neurons />}
-          </>
-        )}
+        {sidebarOpen && <>{content === "dataSets" ? <DataSets /> : <Neurons />}</>}
       </Box>
     </Drawer>
   );

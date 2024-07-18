@@ -2,11 +2,7 @@
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": [
-      "ES2020",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
     /* Bundler mode */
@@ -23,19 +19,10 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
-    "typeRoots": [
-      "./node_modules/@types",
-      "./types"
-    ]
+    "typeRoots": ["./node_modules/@types", "./types"]
   },
-  "include": [
-    "src",
-    "additional.d.ts",
-    "types/**/*.d.ts",
-  ],
-  "exclude": [
-    "src/layout-manager/layoutManagerFactory.ts"
-  ],
+  "include": ["src", "additional.d.ts", "types/**/*.d.ts"],
+  "exclude": ["src/layout-manager/layoutManagerFactory.ts"],
   "references": [
     {
       "path": "./tsconfig.node.json"
