@@ -5,7 +5,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace";
 import { Connection, ConnectivityService } from "../../../rest";
 import { GRAPH_STYLES } from "../../../theme/twoDStyles";
-import { applyLayout, createEdge, createNode, filterConnections } from "../../../helpers/twoD/twoDHelpers";
+import {
+    applyLayout,
+    createEdge,
+    createNode,
+    filterConnections,
+    updateHighlighted
+} from "../../../helpers/twoD/twoDHelpers";
 import {
     CHEMICAL_THRESHOLD,
     ELECTRICAL_THRESHOLD,
@@ -164,7 +170,10 @@ const TwoDViewer = () => {
         cy.add(elements);       // Add new elements
         updateLayout();
         updateNodeColors();
-    };
+        updateHighlighted(cy,
+            Array.from(workspace.activeNeurons),
+            Array.from(workspace.selectedNeurons),
+            [])};
 
     const updateLayout = () => {
         if (cyRef.current) {

@@ -54,3 +54,81 @@ export function filterConnections(
         }
     });
 }
+
+export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights) => {
+        // Remove all highlights and return if nothing is selected and no legend item activated.
+        cy.elements().removeClass('faded');
+        if (selectedIds.length === 0 && legendHighlights.length === 0) {
+            return;
+        }
+
+        // Use selected nodes as source if present, otherwise use input nodes.
+        let sourceIds = selectedIds.length ? selectedIds : inputIds;
+        let sourceNodes = cy.collection();
+
+        sourceIds.forEach(id => {
+            let node = cy.getElementById(id);
+
+            if (node.isParent()) {
+                sourceNodes = sourceNodes.union(node.children());
+            } else {
+                sourceNodes = sourceNodes.union(node);
+            }
+        });
+
+        // Filter network by edges, as set by legend.
+        let edgeSel = 'edge';
+        legendHighlights.forEach(highlight => {
+            let list = highlight.split('-')[0];
+            let type = highlight.substr(highlight.indexOf('-') + 1);
+
+            if (list == 'edge') {
+                if (type.includes('typ')) {
+                    edgeSel += '[type=' + type.slice(-1) + ']';
+                } else {
+                    edgeSel += '.' + type;
+                }
+            }
+        });
+
+        let connectedNodes = sourceNodes.neighborhood(edgeSel).connectedNodes();
+
+        // Filter network by nodes, as set by legend.
+        legendHighlights.forEach(highlight => {
+            let list = highlight.split('-')[0];
+            let type = highlight.split('-')[1];
+
+            if (['type', 'nt'].includes(list)) {
+                connectedNodes = connectedNodes.filter('[?' + type + ']');
+            }
+        });
+
+        // Filter to the neighborhood of the selected nodes.
+        if (selectedIds.length > 0) {
+            let allowedNodes = cy.collection();
+
+            for (let i = 0; i < sourceNodes.length; i++) {
+                let sourceNode = sourceNodes[i];
+                let nodes = sourceNode.neighborhood(edgeSel).connectedNodes();
+
+                if (i === 0) {
+                    allowedNodes = allowedNodes.union(nodes);
+                } else {
+                    allowedNodes = allowedNodes.intersection(nodes);
+                }
+            }
+            connectedNodes = connectedNodes.intersection(allowedNodes);
+        }
+
+        // Fade out any nodes and edges that were filtered out.
+        let highlightedNodes = sourceNodes.union(connectedNodes);
+        highlightedNodes = highlightedNodes.union(highlightedNodes.parents());
+
+        let highlightedEdges = highlightedNodes.edgesWith(highlightedNodes);
+        highlightedEdges = highlightedEdges.filter(edgeSel);
+
+        cy.elements()
+            .not(highlightedNodes)
+            .not(highlightedEdges)
+            .addClass('faded');
+    };
