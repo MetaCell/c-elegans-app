@@ -21,11 +21,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from api.api import api
-from .views import index
+from .views import index, access_bucket_artifact
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", api.urls),
     *static(settings.STATIC_URL, document_root=settings.STATIC_ROOT),
+    re_path(r"resources/(?P<path>.+)", access_bucket_artifact, name="resources"),
     re_path(r"(?P<path>.*)", index, name="index"),
 ]
