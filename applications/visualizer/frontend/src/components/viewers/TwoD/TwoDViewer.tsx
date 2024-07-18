@@ -1,7 +1,7 @@
+import React, { useState, useEffect, useRef } from 'react';
 import cytoscape, { Core } from 'cytoscape';
 import fcose from 'cytoscape-fcose';
 import dagre from 'cytoscape-dagre';
-import { useEffect, useRef, useState } from 'react';
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace";
 import { Connection, ConnectivityService } from "../../../rest";
 import { GRAPH_STYLES } from "../../../theme/twoDStyles";
@@ -23,6 +23,7 @@ import TwoDMenu from "./TwoDMenu";
 import TwoDLegend from "./TwoDLegend";
 import { Box } from "@mui/material";
 import { ColoringOptions, getColor } from "../../../helpers/twoD/coloringHelper";
+import ContextMenu from './ContextMenu';
 
 cytoscape.use(fcose);
 cytoscape.use(dagre);
@@ -39,6 +40,11 @@ const TwoDViewer = () => {
     const [includeNeighboringCells, setIncludeNeighboringCells] = useState<boolean>(INCLUDE_NEIGHBORING_CELLS);
     const [includeNeighboringCellsAsIndividualCells, setIncludeNeighboringCellsAsIndividualCells] = useState<boolean>(false);
     const [includeAnnotations, setIncludeAnnotations] = useState<boolean>(INCLUDE_ANNOTATIONS);
+    const [mousePosition, setMousePosition] = useState<{ mouseX: number, mouseY: number } | null>(null);
+
+    const handleContextMenuClose = () => {
+        setMousePosition(null);
+    };
 
     // Initialize and update Cytoscape
     useEffect(() => {
@@ -61,6 +67,10 @@ const TwoDViewer = () => {
             }
         });
         resizeObserver.observe(cyContainer.current);
+
+        cyContainer.current.addEventListener('contextmenu', function (event) {
+          event.preventDefault();
+        });
 
         return () => {
             resizeObserver.disconnect();
@@ -111,33 +121,46 @@ const TwoDViewer = () => {
         updateLayout();
     }, [layout]);
 
-    // Add event listener for node clicks to toggle neuron selection
+    // Add event listener for node clicks to toggle neuron selection and right-click context menu
     useEffect(() => {
         if (!cyRef.current) return;
 
         const cy = cyRef.current;
+
         const handleNodeClick = (event) => {
             const neuronId = event.target.id();
             workspace.toggleSelectedNeuron(neuronId);
-            event.stopPropagation();
-
         };
 
         const handleBackgroundClick = (event) => {
-            if(event.target !== cy){
-                return
+            if (event.target === cy) {
+                workspace.clearSelectedNeurons();
             }
-            workspace.clearSelectedNeurons();
+        };
+
+        const handleContextMenu = (event: MouseEvent) => {
+            event.preventDefault();
+
+            if (workspace.selectedNeurons.size > 0) {
+                setMousePosition({
+                    mouseX: event.originalEvent.clientX,
+                    mouseY: event.originalEvent.clientY
+                });
+            } else {
+                setMousePosition(null);
+            }
         };
 
         cy.on('tap', 'node', handleNodeClick);
         cy.on('tap', handleBackgroundClick);
+        cy.on('cxttap', handleContextMenu);
 
         return () => {
-            cy.off('click', 'node', handleNodeClick);
-            cy.off('click', 'background', handleBackgroundClick);
+            cy.off('tap', 'node', handleNodeClick);
+            cy.off('tap', handleBackgroundClick);
+            cy.off('cxttap', handleContextMenu);
         };
-    }, [workspace]);
+    }, [workspace, connections]);
 
     const updateGraphElements = (cy, connections) => {
         const filteredNeurons = Array.from(workspace.activeNeurons).filter(neuronId => {
@@ -227,6 +250,12 @@ const TwoDViewer = () => {
                 />
             </Box>
             <div ref={cyContainer} style={{ width: '100%', height: '100%' }} />
+            <ContextMenu
+                open={Boolean(mousePosition)}
+                onClose={handleContextMenuClose}
+                workspace={workspace}
+                position={mousePosition}
+            />
         </Box>
     );
 };
