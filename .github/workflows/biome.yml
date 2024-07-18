@@ -1,4 +1,4 @@
-name: Check format
+name: Check JS/TS/TSX/JSX format
 
 on: [push, pull_request]
 
