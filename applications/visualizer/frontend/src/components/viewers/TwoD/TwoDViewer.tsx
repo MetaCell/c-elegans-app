@@ -2,32 +2,32 @@ import cytoscape, { Core } from 'cytoscape';
 import fcose from 'cytoscape-fcose';
 import dagre from 'cytoscape-dagre';
 import { useEffect, useRef, useState } from 'react';
-import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
+import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace";
 import { Connection, ConnectivityService } from "../../../rest";
-import { GRAPH_STYLES } from "../../../theme/twoDStyles.ts";
-import { applyLayout, createEdge, createNode, filterConnections } from "../../../helpers/twoD/twoDHelpers.ts";
+import { GRAPH_STYLES } from "../../../theme/twoDStyles";
+import { applyLayout, createEdge, createNode, filterConnections } from "../../../helpers/twoD/twoDHelpers";
 import {
     CHEMICAL_THRESHOLD,
     ELECTRICAL_THRESHOLD,
     GRAPH_LAYOUTS,
     INCLUDE_ANNOTATIONS,
     INCLUDE_NEIGHBORING_CELLS
-} from "../../../settings/twoDSettings.tsx";
-import TwoDMenu from "./TwoDMenu.tsx";
-import TwoDLegend from "./TwoDLegend.tsx";
+} from "../../../settings/twoDSettings";
+import TwoDMenu from "./TwoDMenu";
+import TwoDLegend from "./TwoDLegend";
 import { Box } from "@mui/material";
-import {ColoringOptions, getColor} from "../../../helpers/twoD/coloringHelper.ts";
+import { ColoringOptions, getColor } from "../../../helpers/twoD/coloringHelper";
 
 cytoscape.use(fcose);
 cytoscape.use(dagre);
 
 const TwoDViewer = () => {
-    const workspace = useSelectedWorkspace()
+    const workspace = useSelectedWorkspace();
     const cyContainer = useRef(null);
     const cyRef = useRef<Core | null>(null);
     const [connections, setConnections] = useState<Connection[]>([]);
-    const [layout, setLayout] = useState<string>(GRAPH_LAYOUTS.Concentric)
-    const [coloringOption, setColoringOption] = useState<ColoringOptions>(ColoringOptions.CELL_TYPE)
+    const [layout, setLayout] = useState<string>(GRAPH_LAYOUTS.Concentric);
+    const [coloringOption, setColoringOption] = useState<ColoringOptions>(ColoringOptions.CELL_TYPE);
     const [thresholdChemical, setThresholdChemical] = useState<number>(CHEMICAL_THRESHOLD);
     const [thresholdElectrical, setThresholdElectrical] = useState<number>(ELECTRICAL_THRESHOLD);
     const [includeNeighboringCells, setIncludeNeighboringCells] = useState<boolean>(INCLUDE_NEIGHBORING_CELLS);
@@ -80,7 +80,7 @@ const TwoDViewer = () => {
             includeNeighboringCells: includeNeighboringCells,
             includeAnnotations: includeAnnotations,
         }).then(connections => {
-            const filteredConnections = filterConnections(connections, workspace, includeNeighboringCells, includeNeighboringCellsAsIndividualCells)
+            const filteredConnections = filterConnections(connections, workspace, includeNeighboringCells, includeNeighboringCellsAsIndividualCells);
             setConnections(filteredConnections);
         }).catch(error => {
             console.error("Failed to fetch connections:", error);
@@ -105,20 +105,37 @@ const TwoDViewer = () => {
         updateLayout();
     }, [layout]);
 
+    // Add event listener for node clicks to toggle neuron selection
+    useEffect(() => {
+        if (!cyRef.current) return;
+
+        const cy = cyRef.current;
+        const handleClick = (event) => {
+            const neuronId = event.target.id();
+            workspace.toggleSelectedNeuron(neuronId);
+        };
+
+        cy.on('click', 'node', handleClick);
+
+        return () => {
+            cy.off('click', 'node', handleClick);
+        };
+    }, [workspace]);
+
     const updateGraphElements = (cy, connections) => {
         const filteredNeurons = Array.from(workspace.activeNeurons).filter(neuronId => {
-        const neuron = workspace.availableNeurons[neuronId];
-        if (!neuron) {
-            return false;
-        }
-        const nclass = neuron.nclass;
-        // Include the neuron if neuronId is the same as its nclass
-        if (neuronId === nclass) {
-            return true;
-        }
-        // Exclude the neuron if both neuronId and its nclass are in activeNeurons
-        return !(workspace.activeNeurons.has(neuronId) && workspace.activeNeurons.has(nclass));
-    });
+            const neuron = workspace.availableNeurons[neuronId];
+            if (!neuron) {
+                return false;
+            }
+            const nclass = neuron.nclass;
+            // Include the neuron if neuronId is the same as its nclass
+            if (neuronId === nclass) {
+                return true;
+            }
+            // Exclude the neuron if both neuronId and its nclass are in activeNeurons
+            return !(workspace.activeNeurons.has(neuronId) && workspace.activeNeurons.has(nclass));
+        });
 
         const nodes = new Set<string>(filteredNeurons);
         const edges = [];
@@ -134,6 +151,7 @@ const TwoDViewer = () => {
         cy.add(elements);       // Add new elements
         updateLayout();
         updateNodeColors();
+        updateNodeSelection();
     };
 
     const updateLayout = () => {
@@ -162,32 +180,47 @@ const TwoDViewer = () => {
         });
     };
 
-    return <Box sx={{ position: 'relative', display: 'flex', width: '100%', height: '100%' }}>
-        <TwoDMenu
-            cy={cyRef.current}
-            layout={layout}
-            onLayoutChange={setLayout}
-            coloringOption={coloringOption}
-            onColoringOptionChange={setColoringOption}
-            includeNeighboringCells={includeNeighboringCells}
-            setIncludeNeighboringCells={setIncludeNeighboringCells}
-            includeNeighboringCellsAsIndividualCells={includeNeighboringCellsAsIndividualCells}
-            setIncludeNeighboringCellsAsIndividualCells={setIncludeNeighboringCellsAsIndividualCells}
-            includeAnnotations={includeAnnotations}
-            setIncludeAnnotations={setIncludeAnnotations}
-            thresholdChemical={thresholdChemical}
-            setThresholdChemical={setThresholdChemical}
-            thresholdElectrical={thresholdElectrical}
-            setThresholdElectrical={setThresholdElectrical}
-        />
-        <Box sx={{ position: 'absolute', top: 0, right: 0, zIndex: 1000 }}>
-            <TwoDLegend
+    const updateNodeSelection = () => {
+        if (!cyRef.current) return;
+
+        cyRef.current.nodes().forEach(node => {
+            const neuronId = node.id();
+            if (workspace.selectedNeurons.has(neuronId)) {
+                node.addClass('selected');
+            } else {
+                node.removeClass('selected');
+            }
+        });
+    };
+
+    return (
+        <Box sx={{ position: 'relative', display: 'flex', width: '100%', height: '100%' }}>
+            <TwoDMenu
+                cy={cyRef.current}
+                layout={layout}
+                onLayoutChange={setLayout}
                 coloringOption={coloringOption}
-                onClick={(type, name) => console.log(`${type} clicked: ${name}`)}
+                onColoringOptionChange={setColoringOption}
+                includeNeighboringCells={includeNeighboringCells}
+                setIncludeNeighboringCells={setIncludeNeighboringCells}
+                includeNeighboringCellsAsIndividualCells={includeNeighboringCellsAsIndividualCells}
+                setIncludeNeighboringCellsAsIndividualCells={setIncludeNeighboringCellsAsIndividualCells}
+                includeAnnotations={includeAnnotations}
+                setIncludeAnnotations={setIncludeAnnotations}
+                thresholdChemical={thresholdChemical}
+                setThresholdChemical={setThresholdChemical}
+                thresholdElectrical={thresholdElectrical}
+                setThresholdElectrical={setThresholdElectrical}
             />
+            <Box sx={{ position: 'absolute', top: 0, right: 0, zIndex: 1000 }}>
+                <TwoDLegend
+                    coloringOption={coloringOption}
+                    onClick={(type, name) => console.log(`${type} clicked: ${name}`)}
+                />
+            </Box>
+            <div ref={cyContainer} style={{ width: '100%', height: '100%' }} />
         </Box>
-        <div ref={cyContainer} style={{ width: '100%', height: '100%' }} />
-    </Box>;
+    );
 };
 
 export default TwoDViewer;

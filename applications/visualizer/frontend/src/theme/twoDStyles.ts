@@ -11,6 +11,11 @@ const NODE_STYLE = {
     height: 24,
 };
 
+const SELECTED_NODE_STYLE = {
+    'border-width': 2,
+    'border-color': 'black'
+};
+
 const EDGE_STYLE = {
     'line-color': '#63625F',
     'target-arrow-color': '#63625F',
@@ -26,6 +31,10 @@ export const GRAPH_STYLES = [
     {
         selector: 'node',
         style: NODE_STYLE
+    },
+    {
+        selector: 'node.selected',
+        style: SELECTED_NODE_STYLE
     },
     {
         selector: 'edge',

@@ -25,11 +25,11 @@ const STLMesh: FC<Props> = ({ id, color, opacity, renderOrder, isWireframe, stl 
     const onClick = (event: ThreeEvent<MouseEvent>) => {
         const clicked = getFurthestIntersectedObject(event)
         if (clicked) {
-            workspace.highlightNeuron(clicked.userData.id)
+            workspace.toggleSelectedNeuron(clicked.userData.id)
         }
     }
 
-    const isSelected = id == workspace.highlightedNeuron
+    const isSelected = id in workspace.selectedNeurons
     return (
         <mesh userData={{ id }} onClick={onClick} frustumCulled={false} renderOrder={renderOrder}>
             <primitive attach="geometry" object={stl} />
