@@ -7,8 +7,6 @@ import { Connection, ConnectivityService } from "../../../rest";
 import { GRAPH_STYLES } from "../../../theme/twoDStyles";
 import {
     applyLayout,
-    createEdge,
-    createNode,
     filterConnections,
     updateHighlighted
 } from "../../../helpers/twoD/twoDHelpers";
@@ -24,6 +22,7 @@ import TwoDLegend from "./TwoDLegend";
 import { Box } from "@mui/material";
 import { ColoringOptions, getColor } from "../../../helpers/twoD/coloringHelper";
 import ContextMenu from './ContextMenu';
+import {computeGraphDifferences} from "../../../helpers/twoD/graphRendering.ts";
 
 cytoscape.use(fcose);
 cytoscape.use(dagre);
@@ -129,12 +128,20 @@ const TwoDViewer = () => {
 
         const handleNodeClick = (event) => {
             const neuronId = event.target.id();
+            const isSelected = workspace.selectedNeurons.has(neuronId);
             workspace.toggleSelectedNeuron(neuronId);
+
+            if (isSelected) {
+                event.target.removeClass('selected');
+            } else {
+                event.target.addClass('selected');
+            }
         };
 
         const handleBackgroundClick = (event) => {
             if (event.target === cy) {
                 workspace.clearSelectedNeurons();
+                cy.nodes('.selected').removeClass('selected');
             }
         };
 
@@ -162,41 +169,23 @@ const TwoDViewer = () => {
         };
     }, [workspace, connections]);
 
-    const updateGraphElements = (cy, connections) => {
-        const filteredNeurons = Array.from(workspace.activeNeurons).filter(neuronId => {
-            const neuron = workspace.availableNeurons[neuronId];
-            if (!neuron) {
-                return false;
-            }
-            const nclass = neuron.nclass;
-            // Include the neuron if neuronId is the same as its nclass
-            if (neuronId === nclass) {
-                return true;
-            }
-            // Exclude the neuron if both neuronId and its nclass are in activeNeurons
-            return !(workspace.activeNeurons.has(neuronId) && workspace.activeNeurons.has(nclass));
+    const updateGraphElements = (cy: Core, connections: any[]) => {
+        const { nodesToAdd, nodesToRemove, edgesToAdd, edgesToRemove } = computeGraphDifferences(cy, connections, workspace);
+
+        cy.batch(() => {
+            cy.remove(nodesToRemove);
+            cy.remove(edgesToRemove);
+            cy.add(nodesToAdd);
+            cy.add(edgesToAdd);
         });
 
-        const nodes = new Set<string>(filteredNeurons);
-        const edges = [];
-
-        connections.forEach(conn => {
-            nodes.add(conn.pre).add(conn.post);
-            edges.push(createEdge(conn));
-        });
-
-        const elements = Array.from(nodes)
-            .map((nodeId: string) => createNode(nodeId, workspace.selectedNeurons.has(nodeId)))
-            .concat(edges);
-
-        cy.elements().remove(); // Remove all existing elements
-        cy.add(elements);       // Add new elements
         updateLayout();
         updateNodeColors();
         updateHighlighted(cy,
             Array.from(workspace.activeNeurons),
             Array.from(workspace.selectedNeurons),
-            [])};
+            []);
+    };
 
     const updateLayout = () => {
         if (cyRef.current) {
