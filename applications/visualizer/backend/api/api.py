@@ -4,7 +4,8 @@ from django.http import HttpResponse
 from ninja import NinjaAPI, Router, Schema, Query
 from ninja.pagination import paginate, PageNumberPagination
 from django.shortcuts import aget_object_or_404
-from django.db.models import Q
+from django.db.models import Q, F, Value, CharField, Func, OuterRef
+from django.db.models.functions import Coalesce, Concat
 
 from .schemas import Dataset, Neuron, Connection
 from .models import (
@@ -104,11 +105,55 @@ async def get_dataset_neurons(request, dataset: str):
         )
     )
 
+@api.get("/cells/search", response=list[Neuron], tags=["neurons"])
+def search_cells(
+    request,
+    name: Optional[str] = Query(None),
+    dataset_ids: Optional[list[str]] = Query(None)
+):
+    if name:
+        return NeuronModel.objects.filter(name__istartswith=name)
+    return NeuronModel.objects.all()
+
+#[{
+# ...
+# datasets_id: [
+#   ...
+# ]
+# }]
+
+# Define a custom aggregate function to concatenate values
+class GroupConcat(Func):
+    function = 'GROUP_CONCAT'
+    template = '%(function)s(%(distinct)s%(expressions)s)'
+    allow_distinct = True
 
 @api.get("/cells", response=list[Neuron], tags=["neurons"])
-@paginate(PageNumberPagination, page_size=50)
-def get_all_cells(request):
+@paginate(PageNumberPagination, page_size=50) # BUG: this is not being applied
+def get_all_cells(request, dataset_ids: Optional[list[str]] = Query(None)):
     """Returns all the cells (neurons) from the DB"""
+    if dataset_ids:
+        neurons = NeuronModel.objects.filter(
+            Q(name__in=ConnectionModel.objects.filter(dataset__id__in=dataset_ids).values_list("pre", flat=True))
+            | Q (name__in=ConnectionModel.objects.filter(dataset__id__in=dataset_ids).values_list("post", flat=True))
+        ).annotate(
+            datasets_pre=ConnectionModel.objects.filter(pre=OuterRef('name')).values('dataset_id'),
+            datasets_post=ConnectionModel.objects.filter(post=OuterRef('name')).values('dataset_id')
+        ).annotate(
+            concatenated_datasets=Concat(
+                Coalesce(F('datasets_pre'), Value('')),
+                Value(','),
+                Coalesce(F('datasets_post'), Value('')),
+                output_field=CharField()
+            )
+        )
+
+        for neuron in neurons:
+            print(f"{neuron.name} datasets={neuron.concatenated_datasets}")
+
+        return neurons
+
+
     return NeuronModel.objects.all()
 
 
