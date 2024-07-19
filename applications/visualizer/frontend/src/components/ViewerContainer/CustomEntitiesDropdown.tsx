@@ -1,8 +1,8 @@
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import SearchIcon from "@mui/icons-material/Search";
-import { Box, InputAdornment, Popper, TextField, Typography } from "@mui/material";
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { Box, Typography, Popper, TextField, InputAdornment, ClickAwayListener } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { vars } from "../../theme/variables.ts";
 
 const { gray50, brand600 } = vars;
@@ -28,20 +28,6 @@ const CustomEntitiesDropdown: React.FC<CustomEntitiesDropdownProps> = ({ options
   const [hoveredOption, setHoveredOption] = useState<Option | null>(null);
   const [autocompleteOptions, setAutocompleteOptions] = useState<Option[]>(options);
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (anchorEl && !anchorEl.contains(event.target as Node)) {
-        setAnchorEl(null);
-        setOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [anchorEl]);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);

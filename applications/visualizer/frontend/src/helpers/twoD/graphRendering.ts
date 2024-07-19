@@ -1,18 +1,20 @@
 // src/helpers/twoD/graphDiffUtils.ts
-import type { Core } from "cytoscape";
+import type { Core, ElementDefinition, CollectionReturnValue } from "cytoscape";
 import { createEdge, createNode } from "./twoDHelpers";
+import type { Connection } from "../../rest";
+import type { Workspace } from "../../models";
 
-export const computeGraphDifferences = (cy: Core, connections: any[], workspace: any) => {
+export const computeGraphDifferences = (cy: Core, connections: Connection[], workspace: Workspace) => {
   const currentNodes = new Set(cy.nodes().map((node) => node.id()));
   const currentEdges = new Set(cy.edges().map((edge) => edge.id()));
 
   const newNodes = new Set<string>();
   const newEdges = new Set<string>();
 
-  const nodesToAdd: any[] = [];
-  const nodesToRemove: any[] = [];
-  const edgesToAdd: any[] = [];
-  const edgesToRemove: any[] = [];
+  const nodesToAdd: ElementDefinition[] = [];
+  const nodesToRemove: CollectionReturnValue = cy.collection();
+  const edgesToAdd: ElementDefinition[] = [];
+  const edgesToRemove: CollectionReturnValue = cy.collection();
 
   // Compute new nodes and edges based on the current connections and workspace state
   const filteredActiveNeurons = Array.from(workspace.activeNeurons).filter((neuronId: string) => {
@@ -27,32 +29,32 @@ export const computeGraphDifferences = (cy: Core, connections: any[], workspace:
     return !(workspace.activeNeurons.has(neuronId) && workspace.activeNeurons.has(nclass));
   });
 
-  filteredActiveNeurons.forEach((nodeId: string) => {
+  for (const nodeId of filteredActiveNeurons) {
     newNodes.add(nodeId);
     if (!currentNodes.has(nodeId)) {
       nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId)));
     }
-  });
+  }
 
-  currentNodes.forEach((nodeId) => {
+  for (const nodeId of currentNodes) {
     if (!newNodes.has(nodeId)) {
-      nodesToRemove.push(cy.getElementById(nodeId));
+      nodesToRemove.merge(cy.getElementById(nodeId));
     }
-  });
+  }
 
-  connections.forEach((conn) => {
+  for (const conn of connections) {
     const edgeId = `${conn.pre}-${conn.post}`;
     newEdges.add(edgeId);
     if (!currentEdges.has(edgeId)) {
       edgesToAdd.push(createEdge(conn));
     }
-  });
+  }
 
-  currentEdges.forEach((edgeId) => {
+  for (const edgeId of currentEdges) {
     if (!newEdges.has(edgeId)) {
-      edgesToRemove.push(cy.getElementById(edgeId));
+      edgesToRemove.merge(cy.getElementById(edgeId));
     }
-  });
+  }
 
-  return { nodesToAdd, nodesToRemove: cy.collection(nodesToRemove), edgesToAdd, edgesToRemove: cy.collection(edgesToRemove) };
+  return { nodesToAdd, nodesToRemove, edgesToAdd, edgesToRemove };
 };
