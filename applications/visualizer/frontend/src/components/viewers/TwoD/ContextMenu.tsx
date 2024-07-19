@@ -1,5 +1,5 @@
 // ContextMenu.tsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Menu, MenuItem } from '@mui/material';
 
 interface ContextMenuProps {
@@ -13,16 +13,35 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, workspace, pos
 
     const handleAction1 = () => {
         console.log("Action 1 clicked");
-        // Add your action 1 logic here
         workspace.clearSelectedNeurons();  // Example action
         onClose();
     };
 
-    const handleAction2 = () => {
-        console.log("Action 2 clicked");
-        // Add your action 2 logic here
+    const handleJoin = () => {
+        console.log("Join clicked");
+        // Implement join logic here
         onClose();
     };
+
+    const handleSplit = () => {
+        console.log("Split clicked");
+        // Implement split logic here
+        onClose();
+    };
+
+    const joinEnabled = useMemo(() => {
+        return Array.from(workspace.selectedNeurons).some(neuronId => {
+            const neuron = workspace.availableNeurons[neuronId];
+            return neuron && neuron.name !== neuron.nclass;
+        });
+    }, [workspace.selectedNeurons, workspace.availableNeurons]);
+
+    const splitEnabled = useMemo(() => {
+        return Array.from(workspace.selectedNeurons).some(neuronId => {
+            const neuron = workspace.availableNeurons[neuronId];
+            return neuron && neuron.name === neuron.nclass;
+        });
+    }, [workspace.selectedNeurons, workspace.availableNeurons]);
 
 
     const handleContextMenu = (event: React.MouseEvent) => {
@@ -42,7 +61,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, workspace, pos
             onContextMenu={handleContextMenu}
         >
             <MenuItem onClick={handleAction1}>Clear Selections</MenuItem>
-            <MenuItem onClick={handleAction2}>Action 2</MenuItem>
+            <MenuItem onClick={handleJoin} disabled={!joinEnabled}>Join</MenuItem>
+            <MenuItem onClick={handleSplit} disabled={!splitEnabled}>Split</MenuItem>
         </Menu>
     );
 };
