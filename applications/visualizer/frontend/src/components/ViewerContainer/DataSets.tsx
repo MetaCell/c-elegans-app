@@ -2,10 +2,10 @@ import { Box, Stack, Typography, MenuItem, FormControl, IconButton, Select } fro
 import { vars } from "../../theme/variables.ts";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 import CustomListItem from "./CustomListItem.tsx";
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import FilterListIcon from '@mui/icons-material/FilterList';
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
-import { Dataset } from "../../rest";
+import type { Dataset } from "../../rest";
 
 const { gray900, gray500, gray400 } = vars;
 
@@ -15,10 +15,10 @@ const categorizeDatasets = (datasets: Dataset[]) => {
     "Development stage 1": [],
     "Development stage 2": [],
     "Development stage 3": [],
-    "Adult": []
+    Adult: [],
   };
 
-  datasets.forEach(dataset => {
+  datasets.forEach((dataset) => {
     if (dataset.visualTime >= 0 && dataset.visualTime < 10) {
       categories["Development stage 1"].push(dataset);
     } else if (dataset.visualTime >= 10 && dataset.visualTime < 20) {
@@ -52,7 +52,7 @@ const DataSets = () => {
 
   // Handle activation and deactivation of datasets
   const handleSwitchChange = async (datasetId: string, checked: boolean) => {
-    const dataset = datasets.find(ds => ds.id === datasetId);
+    const dataset = datasets.find((ds) => ds.id === datasetId);
     if (!dataset) return;
 
     if (checked) {
@@ -64,7 +64,7 @@ const DataSets = () => {
 
   return (
     <Box>
-      <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb='0'>
+      <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb="0">
         <Typography variant="body1" component="p" color={gray900} fontWeight={500}>
           Datasets
         </Typography>
@@ -72,7 +72,7 @@ const DataSets = () => {
           Toggle on and off to view datasets on the workspace. This will affect all viewers.
         </Typography>
       </Stack>
-      <CustomEntitiesDropdown options={[]} onSelect={()=>{}}/>
+      <CustomEntitiesDropdown options={[]} onSelect={() => {}} />
       <Box p={".75rem"} display="flex" justifyContent="space-between" alignItems="center">
         <FormControl>
           <Select
@@ -113,13 +113,13 @@ const DataSets = () => {
       <Box
         sx={{
           height: "calc(100% - 12.75rem)",
-          paddingBottom: '0.5rem',
+          paddingBottom: "0.5rem",
           overflow: "auto",
         }}
       >
         {Object.entries(categorizedDatasets).map(([category, datasets], index) => (
           <Box key={category} p="0 .25rem" mt={index === 0 ? 0 : "1rem"}>
-            <Typography color={gray500} variant="subtitle1" padding=".25rem .5rem" mb='.5rem'>
+            <Typography color={gray500} variant="subtitle1" padding=".25rem .5rem" mb=".5rem">
               {category}
             </Typography>
             <Stack spacing=".5rem">

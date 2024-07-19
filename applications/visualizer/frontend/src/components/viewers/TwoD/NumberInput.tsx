@@ -1,9 +1,9 @@
+import { Unstable_NumberInput as BaseNumberInput, type NumberInputProps } from "@mui/base/Unstable_NumberInput";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
+import { Box } from "@mui/system";
 // NumberInput.tsx
-import * as React from 'react';
-import { Unstable_NumberInput as BaseNumberInput, NumberInputProps } from '@mui/base/Unstable_NumberInput';
-import { Box } from '@mui/system';
-import RemoveIcon from '@mui/icons-material/Remove';
-import AddIcon from '@mui/icons-material/Add';
+import * as React from "react";
 
 const NumberInput = React.forwardRef(function CustomNumberInput(
   props: NumberInputProps & {
@@ -14,15 +14,15 @@ const NumberInput = React.forwardRef(function CustomNumberInput(
   ref: React.ForwardedRef<HTMLDivElement>,
 ) {
   const { value, onIncrement, onDecrement, ...otherProps } = props;
-  
+
   const handleIncrementClick = () => {
     onIncrement();
   };
-  
+
   const handleDecrementClick = () => {
     onDecrement();
   };
-  
+
   return (
     <BaseNumberInput
       slots={{
@@ -57,64 +57,64 @@ export default NumberInput;
 
 const rootSx = {
   fontWeight: 400,
-  display: 'flex',
-  flexFlow: 'row nowrap',
-  justifyContent: 'center',
-  alignItems: 'center',
+  display: "flex",
+  flexFlow: "row nowrap",
+  justifyContent: "center",
+  alignItems: "center",
 };
 
 const inputSx = {
-  fontSize: '0.875rem',
-  fontFamily: 'inherit',
+  fontSize: "0.875rem",
+  fontFamily: "inherit",
   fontWeight: 400,
   lineHeight: 1.375,
-  padding: '.5rem 1px',
+  padding: ".5rem 1px",
   outline: 0,
   minWidth: 0,
-  width: '2.375rem',
-  height: '2.25rem',
-  textAlign: 'center',
-  border: '1px solid #BABAB5',
+  width: "2.375rem",
+  height: "2.25rem",
+  textAlign: "center",
+  border: "1px solid #BABAB5",
   borderLeft: 0,
   borderRight: 0,
-  color: '#63625F',
+  color: "#63625F",
 };
 
 const buttonSx = {
-  fontFamily: 'IBM Plex Sans, sans-serif',
-  fontSize: '0.875rem',
-  boxSizing: 'border-box',
+  fontFamily: "IBM Plex Sans, sans-serif",
+  fontSize: "0.875rem",
+  boxSizing: "border-box",
   lineHeight: 1.5,
-  border: '1px solid #BABAB5',
-  width: '2.25rem',
-  height: '2.25rem',
-  display: 'flex',
-  flexFlow: 'row nowrap',
-  justifyContent: 'center',
-  alignItems: 'center',
-  transitionProperty: 'all',
-  transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
-  transitionDuration: '120ms',
+  border: "1px solid #BABAB5",
+  width: "2.25rem",
+  height: "2.25rem",
+  display: "flex",
+  flexFlow: "row nowrap",
+  justifyContent: "center",
+  alignItems: "center",
+  transitionProperty: "all",
+  transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+  transitionDuration: "120ms",
   outline: 0,
-  backgroundColor: 'transparent',
+  backgroundColor: "transparent",
 
-  '&:hover': {
-    cursor: 'pointer',
+  "&:hover": {
+    cursor: "pointer",
   },
-  '&:focus-visible': {
+  "&:focus-visible": {
     outline: 0,
   },
-  '&.increment': {
+  "&.increment": {
     order: 1,
-    borderTopRightRadius: '.5rem',
-    borderBottomRightRadius: '.5rem',
+    borderTopRightRadius: ".5rem",
+    borderBottomRightRadius: ".5rem",
   },
-  '&.decrement': {
-    borderTopLeftRadius: '.5rem',
-    borderBottomLeftRadius: '.5rem',
+  "&.decrement": {
+    borderTopLeftRadius: ".5rem",
+    borderBottomLeftRadius: ".5rem",
   },
-  '& .MuiSvgIcon-root': {
+  "& .MuiSvgIcon-root": {
     margin: 0,
-    color: '#757570',
+    color: "#757570",
   },
 };

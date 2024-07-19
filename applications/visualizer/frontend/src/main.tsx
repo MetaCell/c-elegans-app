@@ -1,14 +1,13 @@
-import ReactDOM from 'react-dom/client'
-import {enableMapSet} from "immer"
-import App from './App.tsx'
-import './index.css'
-import {GlobalContextProvider} from "./contexts/GlobalContext.tsx";
+import { enableMapSet } from "immer";
+import ReactDOM from "react-dom/client";
+import App from "./App.tsx";
+import "./index.css";
+import { GlobalContextProvider } from "./contexts/GlobalContext.tsx";
 
-enableMapSet()
+enableMapSet();
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-    <GlobalContextProvider>
-        <App/>
-    </GlobalContextProvider>
-    ,
-)
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <GlobalContextProvider>
+    <App />
+  </GlobalContextProvider>,
+);

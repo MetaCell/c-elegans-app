@@ -1,8 +1,8 @@
-import Autocomplete, { AutocompleteProps, AutocompleteRenderInputParams, AutocompleteRenderGroupParams } from '@mui/material/Autocomplete';
-import TextField from '@mui/material/TextField';
-import React from "react";
-import { SxProps } from '@mui/system';
-import { ChipProps } from '@mui/material/Chip';
+import Autocomplete, { type AutocompleteProps, type AutocompleteRenderInputParams, type AutocompleteRenderGroupParams } from "@mui/material/Autocomplete";
+import type { ChipProps } from "@mui/material/Chip";
+import TextField from "@mui/material/TextField";
+import type { SxProps } from "@mui/system";
+import type React from "react";
 interface CustomAutocompleteProps<T> {
   options: T[];
   getOptionLabel: (option: T) => string;
@@ -18,7 +18,7 @@ interface CustomAutocompleteProps<T> {
   clearIcon?: React.ReactNode; // Change to React.ReactNode to be consistent with popupIcon
   ChipProps?: ChipProps;
   sx?: SxProps;
-  componentsProps?: AutocompleteProps<T, boolean, boolean, boolean>['componentsProps'];
+  componentsProps?: AutocompleteProps<T, boolean, boolean, boolean>["componentsProps"];
 }
 
 const CommonAutocomplete = <T,>({
@@ -50,9 +50,7 @@ const CommonAutocomplete = <T,>({
       groupBy={groupBy}
       renderGroup={renderGroup}
       renderOption={renderOption}
-      renderInput={(params) => (
-        <TextField {...params} placeholder={placeholder} />
-      )}
+      renderInput={(params) => <TextField {...params} placeholder={placeholder} />}
       sx={sx}
       componentsProps={componentsProps}
     />

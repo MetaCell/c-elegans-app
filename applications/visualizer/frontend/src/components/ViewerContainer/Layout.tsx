@@ -14,17 +14,8 @@ const Layout = ({
   return (
     <>
       <CssBaseline />
-      <Header
-        sidebarOpen={sidebarOpen}
-        drawerHeight={drawerHeight}
-        drawerWidth={drawerWidth}
-      />
-      <Sidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        drawerHeight={drawerHeight}
-        drawerWidth={drawerWidth}
-      />
+      <Header sidebarOpen={sidebarOpen} drawerHeight={drawerHeight} drawerWidth={drawerWidth} />
+      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} drawerHeight={drawerHeight} drawerWidth={drawerWidth} />
     </>
   );
 };

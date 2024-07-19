@@ -1,6 +1,6 @@
-import Switch from '@mui/material/Switch';
+import Switch from "@mui/material/Switch";
 import Tooltip from "@mui/material/Tooltip";
-import React from "react";
+import type React from "react";
 import { vars } from "../../theme/variables.ts";
 
 const { white, brand600, gray100 } = vars;
@@ -16,16 +16,7 @@ interface CustomSwitchProps {
   disabled?: boolean;
 }
 
-const CustomSwitch: React.FC<CustomSwitchProps> = ({
-  width,
-  height,
-  thumbDimension,
-  checkedPosition,
-  checked,
-  onChange,
-  showTooltip,
-  disabled
-}) => {
+const CustomSwitch: React.FC<CustomSwitchProps> = ({ width, height, thumbDimension, checkedPosition, checked, onChange, showTooltip, disabled }) => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (onChange) {
       onChange(event, event.target.checked);
@@ -33,50 +24,48 @@ const CustomSwitch: React.FC<CustomSwitchProps> = ({
   };
 
   return (
-    <Tooltip
-      title={showTooltip ? (checked ? "Hide" : "Show") : ""}
-    >
+    <Tooltip title={showTooltip ? (checked ? "Hide" : "Show") : ""}>
       <Switch
         focusVisibleClassName=".Mui-focusVisible"
         checked={checked}
         onChange={handleChange}
         disabled={disabled}
         sx={(theme) => ({
-          marginRight: '.5rem',
+          marginRight: ".5rem",
           width: width ?? 23,
           height: height ?? 13,
           padding: 0,
-          '& .MuiSwitch-switchBase': {
+          "& .MuiSwitch-switchBase": {
             padding: 0,
-            margin: '0.0938rem',
-            transitionDuration: '300ms',
-            '&.Mui-checked': {
-              transform: checkedPosition ?? 'translateX(0.5775rem)',
+            margin: "0.0938rem",
+            transitionDuration: "300ms",
+            "&.Mui-checked": {
+              transform: checkedPosition ?? "translateX(0.5775rem)",
               color: white,
-              '& + .MuiSwitch-track': {
+              "& + .MuiSwitch-track": {
                 backgroundColor: brand600,
                 opacity: 1,
                 border: 0,
               },
-              '&.Mui-disabled + .MuiSwitch-track': {
+              "&.Mui-disabled + .MuiSwitch-track": {
                 opacity: 0.5,
               },
             },
-            '&.Mui-disabled .MuiSwitch-thumb': {
+            "&.Mui-disabled .MuiSwitch-thumb": {
               color: gray100,
             },
           },
-          '& .MuiSwitch-thumb': {
-            boxSizing: 'border-box',
+          "& .MuiSwitch-thumb": {
+            boxSizing: "border-box",
             width: thumbDimension ?? 10.24,
             height: thumbDimension ?? 10.24,
-            boxShadow: 'none'
+            boxShadow: "none",
           },
-          '& .MuiSwitch-track': {
+          "& .MuiSwitch-track": {
             borderRadius: 26 / 2,
             backgroundColor: gray100,
             opacity: 1,
-            transition: theme.transitions.create(['background-color'], {
+            transition: theme.transitions.create(["background-color"], {
               duration: 500,
             }),
           },
