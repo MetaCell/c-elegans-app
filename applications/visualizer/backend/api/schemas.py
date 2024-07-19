@@ -37,7 +37,7 @@ class Dataset(ModelSchema, BilingualSchema):
 
 class Neuron(ModelSchema, BilingualSchema):
     name: str
-    # dataset_ids: list[str]
+    dataset_ids: list[str]
 
     class Meta:
         model = NeuronModel
