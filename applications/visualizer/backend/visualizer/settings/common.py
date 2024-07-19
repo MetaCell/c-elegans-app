@@ -137,8 +137,6 @@ INSTALLED_APPS += ["api"]
 STATIC_ROOT = BASE_DIR / "static"
 STATIC_URL = "static/"
 
-DATA_FOLDER_FRAGMENT = "data"
-GCS_BUCKET = "celegans"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
