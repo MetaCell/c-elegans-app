@@ -66,11 +66,7 @@ export const computeGraphDifferences = (cy: Core, connections: Connection[], wor
     const group = workspace.neuronGroups[groupId];
     groupNodes.add(groupId);
     if (!currentNodes.has(groupId)) {
-      nodesToAdd.push({
-        group: 'nodes',
-        data: { id: groupId, label: group.name },
-        classes: '',
-      });
+      nodesToAdd.push(createNode(groupId, workspace.selectedNeurons.has(groupId)));
     }
   }
 
