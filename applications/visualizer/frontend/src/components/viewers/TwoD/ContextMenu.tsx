@@ -1,47 +1,72 @@
-// ContextMenu.tsx
-import type React from "react";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { Menu, MenuItem } from "@mui/material";
+import {NeuronGroup, Workspace} from "../../../models";
 
 interface ContextMenuProps {
   open: boolean;
   onClose: () => void;
-  workspace: any;
+  workspace: Workspace;
   position: { mouseX: number; mouseY: number } | null;
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, workspace, position }) => {
-  const handleAction1 = () => {
-    console.log("Action 1 clicked");
-    workspace.clearSelectedNeurons(); // Example action
+  const handleClearSelections = () => {
+    workspace.clearSelectedNeurons();
     onClose();
   };
 
-  const handleJoin = () => {
-    console.log("Join clicked");
-    // Implement join logic here
-    onClose();
-  };
+  const handleGroup = () => {
+    const newGroupId = `group-${Date.now()}`;
+    const newGroupNeurons = new Set<string>();
 
-  const handleSplit = () => {
-    console.log("Split clicked");
-    // Implement split logic here
-    onClose();
-  };
+    for (const neuronId of workspace.selectedNeurons) {
+      const group = workspace.neuronGroups[neuronId];
+      if (group) {
+        for (const groupedNeuronId of group.neurons) {
+          newGroupNeurons.add(groupedNeuronId);
+        }
+      } else {
+        newGroupNeurons.add(neuronId);
+      }
+    }
 
-  const joinEnabled = useMemo(() => {
-    return Array.from(workspace.selectedNeurons).some((neuronId) => {
-      const neuron = workspace.availableNeurons[neuronId];
-      return neuron && neuron.name !== neuron.nclass;
+    const newGroup: NeuronGroup = {
+      id: newGroupId,
+      name: newGroupId,
+      color: "#9FEE9A",
+      neurons: newGroupNeurons,
+    };
+
+    workspace.batchUpdate(draft => {
+      draft.neuronGroups[newGroupId] = newGroup;
+      draft.selectedNeurons.clear();
+      draft.selectedNeurons.add(newGroupId);
     });
-  }, [workspace.selectedNeurons, workspace.availableNeurons]);
+    onClose();
+  };
 
-  const splitEnabled = useMemo(() => {
-    return Array.from(workspace.selectedNeurons).some((neuronId) => {
-      const neuron = workspace.availableNeurons[neuronId];
-      return neuron && neuron.name === neuron.nclass;
+   const handleUngroup = () => {
+    workspace.batchUpdate(draft => {
+      for (const elementId of draft.selectedNeurons) {
+        if (draft.neuronGroups[elementId]) {
+          const group = draft.neuronGroups[elementId];
+          for (const groupedNeuronId of group.neurons) {
+            draft.selectedNeurons.add(groupedNeuronId);
+          }
+          delete draft.neuronGroups[elementId];
+        }
+      }
     });
-  }, [workspace.selectedNeurons, workspace.availableNeurons]);
+    onClose();
+  };
+
+  const groupEnabled = useMemo(() => {
+    return Array.from(workspace.selectedNeurons).some((neuronId) => !workspace.neuronGroups[neuronId]);
+  }, [workspace.selectedNeurons, workspace.neuronGroups]);
+
+  const ungroupEnabled = useMemo(() => {
+    return Array.from(workspace.selectedNeurons).some((neuronId) => workspace.neuronGroups[neuronId]);
+  }, [workspace.selectedNeurons, workspace.neuronGroups]);
 
   const handleContextMenu = (event: React.MouseEvent) => {
     event.preventDefault(); // Prevent default context menu
@@ -55,12 +80,12 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, workspace, pos
       onClose={onClose}
       onContextMenu={handleContextMenu}
     >
-      <MenuItem onClick={handleAction1}>Clear Selections</MenuItem>
-      <MenuItem onClick={handleJoin} disabled={!joinEnabled}>
-        Join
+      <MenuItem onClick={handleClearSelections}>Clear Selections</MenuItem>
+      <MenuItem onClick={handleGroup} disabled={!groupEnabled}>
+        Group
       </MenuItem>
-      <MenuItem onClick={handleSplit} disabled={!splitEnabled}>
-        Split
+      <MenuItem onClick={handleUngroup} disabled={!ungroupEnabled}>
+        Ungroup
       </MenuItem>
     </Menu>
   );

@@ -1,4 +1,4 @@
-import type {Core, ElementDefinition} from "cytoscape";
+import type { Core, ElementDefinition } from "cytoscape";
 import type { Connection } from "../../rest";
 import type { Workspace } from "../../models/workspace.ts";
 
@@ -16,13 +16,12 @@ export const createEdge = (conn: Connection): ElementDefinition => {
 };
 
 export const createNode = (nodeId: string, selected: boolean): ElementDefinition => {
-    return {
-        group: 'nodes',
-        data: { id: nodeId, label: nodeId },
-        classes: selected ? 'selected' : ''
-    };
+  return {
+    group: "nodes",
+    data: { id: nodeId, label: nodeId },
+    classes: selected ? "selected" : "",
+  };
 };
-
 
 export function applyLayout(cyRef: React.MutableRefObject<Core | null>, layout: string) {
   if (cyRef.current) {
