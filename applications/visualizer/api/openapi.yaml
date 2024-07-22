@@ -93,6 +93,11 @@ components:
       type: object
     Neuron:
       properties:
+        datasetIds:
+          items:
+            type: string
+          title: Datasetids
+          type: array
         embryonic:
           default: false
           title: Embryonic
@@ -122,6 +127,7 @@ components:
           type: string
       required:
       - name
+      - datasetIds
       - nclass
       - neurotransmitter
       - type
@@ -154,6 +160,16 @@ paths:
       operationId: get_all_cells
       parameters:
       - in: query
+        name: dataset_ids
+        required: false
+        schema:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Dataset Ids
+      - in: query
         name: page
         required: false
         schema:
@@ -169,6 +185,41 @@ paths:
                 $ref: '#/components/schemas/PagedNeuron'
           description: OK
       summary: Get All Cells
+      tags:
+      - neurons
+  /api/cells/search:
+    get:
+      operationId: search_cells
+      parameters:
+      - in: query
+        name: name
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+      - in: query
+        name: dataset_ids
+        required: false
+        schema:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Dataset Ids
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Neuron'
+                title: Response
+                type: array
+          description: OK
+      summary: Search Cells
       tags:
       - neurons
   /api/connections:
