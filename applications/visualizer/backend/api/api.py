@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Optional
 
 from django.http import HttpResponse
@@ -5,6 +6,7 @@ from ninja import NinjaAPI, Router, Schema, Query
 from ninja.pagination import paginate, PageNumberPagination
 from django.shortcuts import aget_object_or_404
 from django.db.models import Q, F, Value, CharField, Func, OuterRef
+from django.db.models.manager import BaseManager
 from django.db.models.functions import Coalesce, Concat
 
 from .schemas import Dataset, Neuron, Connection
@@ -106,30 +108,56 @@ async def get_dataset_neurons(request, dataset: str):
     )
 
 
+def annotate_neurons_w_dataset_ids(neurons: BaseManager[NeuronModel]) -> None:
+    """ Queries the datasets ids for each neuron. """
+    neuron_names = neurons.values_list("name", flat=True).distinct()
+    pre = ConnectionModel.objects.filter(pre__in=neuron_names).values_list("pre", "dataset").distinct()
+    post = ConnectionModel.objects.filter(post__in=neuron_names).values_list("post", "dataset").distinct()
+
+    # Filter out repeated dataset ids
+    neurons_dataset_ids = defaultdict(set)
+    for neuron, dataset in pre.union(post):
+        neurons_dataset_ids[neuron].add(dataset)
+
+    for neuron in neurons:
+        neuron.dataset_ids = neurons_dataset_ids[neuron.name]  # type: ignore
+
+
+def neurons_from_dataset_ids(
+    neurons: BaseManager[NeuronModel],
+    dataset_ids: list[str]
+) -> BaseManager[NeuronModel]:
+    """ Filters neurons belonging to specific datasets. """
+    return neurons.filter(
+        Q(
+            name__in=ConnectionModel.objects.filter(
+                dataset__id__in=dataset_ids
+            ).values_list("pre", flat=True)
+        )
+        | Q(
+            name__in=ConnectionModel.objects.filter(
+                dataset__id__in=dataset_ids
+            ).values_list("post", flat=True)
+        )
+    )
+
 @api.get("/cells/search", response=list[Neuron], tags=["neurons"])
 def search_cells(
     request,
     name: Optional[str] = Query(None),
     dataset_ids: Optional[list[str]] = Query(None),
 ):
+    neurons = NeuronModel.objects
+
     if name:
-        return NeuronModel.objects.filter(name__istartswith=name)
-    return NeuronModel.objects.all()
+        neurons = neurons.filter(name__istartswith=name)
 
+    if dataset_ids:
+        neurons = neurons_from_dataset_ids(neurons, dataset_ids)
+    
+    annotate_neurons_w_dataset_ids(neurons)
 
-# [{
-# ...
-# datasets_id: [
-#   ...
-# ]
-# }]
-
-
-# Define a custom aggregate function to concatenate values
-class GroupConcat(Func):
-    function = "GROUP_CONCAT"
-    template = "%(function)s(%(distinct)s%(expressions)s)"
-    allow_distinct = True
+    return neurons
 
 
 @api.get("/cells", response=list[Neuron], tags=["neurons"])
@@ -139,22 +167,11 @@ def get_all_cells(request, dataset_ids: Optional[list[str]] = Query(None)):
     neurons = NeuronModel.objects
 
     if dataset_ids:
-        neurons = neurons.filter(
-            Q(
-                name__in=ConnectionModel.objects.filter(
-                    dataset__id__in=dataset_ids
-                ).values_list("pre", flat=True)
-            )
-            | Q(
-                name__in=ConnectionModel.objects.filter(
-                    dataset__id__in=dataset_ids
-                ).values_list("post", flat=True)
-            )
-        )
+        neurons = neurons_from_dataset_ids(neurons, dataset_ids)
+    else:
+        neurons = neurons.all()
 
-    # Manually annotating the neurons
-    for neuron in neurons:
-        neuron.dataset_ids = ConnectionModel.objects.filter(Q(pre=neuron.name) | Q(post=neuron.name)).values_list("dataset", flat=True).distinct()  # type: ignore
+    annotate_neurons_w_dataset_ids(neurons)
 
     return neurons
 
