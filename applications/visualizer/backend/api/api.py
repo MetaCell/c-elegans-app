@@ -108,7 +108,7 @@ def annotate_neurons_w_dataset_ids(neurons: BaseManager[NeuronModel]) -> None:
         neuron.dataset_ids = neurons_dataset_ids[neuron.name]  # type: ignore
 
 
-def neurons_from_dataset_ids(
+def neurons_from_datasets(
     neurons: BaseManager[NeuronModel], dataset_ids: list[str]
 ) -> BaseManager[NeuronModel]:
     """Filters neurons belonging to specific datasets."""
@@ -133,7 +133,7 @@ def neurons_from_dataset_ids(
 )
 def get_dataset_neurons(request, dataset: str):
     """Returns all the neurons of a dedicated dataset"""
-    neurons = neurons_from_dataset_ids(NeuronModel.objects, [dataset])
+    neurons = neurons_from_datasets(NeuronModel.objects, [dataset])
     annotate_neurons_w_dataset_ids(neurons)
     return neurons
 
@@ -150,7 +150,7 @@ def search_cells(
         neurons = neurons.filter(name__istartswith=name)
 
     if dataset_ids:
-        neurons = neurons_from_dataset_ids(neurons, dataset_ids)
+        neurons = neurons_from_datasets(neurons, dataset_ids)
     else:
         neurons = neurons.all()
 
@@ -166,7 +166,7 @@ def get_all_cells(request, dataset_ids: Optional[list[str]] = Query(None)):
     neurons = NeuronModel.objects
 
     if dataset_ids:
-        neurons = neurons_from_dataset_ids(neurons, dataset_ids)
+        neurons = neurons_from_datasets(neurons, dataset_ids)
     else:
         neurons = neurons.all()
 
