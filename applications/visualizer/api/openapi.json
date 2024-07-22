@@ -143,11 +143,92 @@
         ]
       }
     },
+    "/api/cells/search": {
+      "get": {
+        "operationId": "search_cells",
+        "summary": "Search Cells",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Name"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "dataset_ids",
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dataset Ids"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Neuron"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "neurons"
+        ]
+      }
+    },
     "/api/cells": {
       "get": {
         "operationId": "get_all_cells",
         "summary": "Get All Cells",
         "parameters": [
+          {
+            "in": "query",
+            "name": "dataset_ids",
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dataset Ids"
+            },
+            "required": false
+          },
           {
             "in": "query",
             "name": "page",
@@ -400,6 +481,13 @@
             "title": "Name",
             "type": "string"
           },
+          "datasetIds": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Datasetids",
+            "type": "array"
+          },
           "nclass": {
             "maxLength": 30,
             "title": "Nclass",
@@ -433,6 +521,7 @@
         },
         "required": [
           "name",
+          "datasetIds",
           "nclass",
           "neurotransmitter",
           "type"
