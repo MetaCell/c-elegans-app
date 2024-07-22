@@ -85,34 +85,19 @@ async def get_dataset(request, dataset: str):
     return await aget_object_or_404(DatasetModel, id=dataset)
 
 
-@api.get(
-    "/datasets/{dataset}/neurons",
-    response={200: list[Neuron], 404: ErrorMessage},
-    tags=["datasets"],
-)
-async def get_dataset_neurons(request, dataset: str):
-    """Returns all the neurons of a dedicated dataset"""
-    return await to_list(
-        NeuronModel.objects.filter(
-            Q(
-                name__in=ConnectionModel.objects.filter(
-                    dataset__id=dataset
-                ).values_list("pre", flat=True)
-            )
-            | Q(
-                name__in=ConnectionModel.objects.filter(
-                    dataset__id=dataset
-                ).values_list("post", flat=True)
-            )
-        )
-    )
-
-
 def annotate_neurons_w_dataset_ids(neurons: BaseManager[NeuronModel]) -> None:
-    """ Queries the datasets ids for each neuron. """
+    """Queries the datasets ids for each neuron."""
     neuron_names = neurons.values_list("name", flat=True).distinct()
-    pre = ConnectionModel.objects.filter(pre__in=neuron_names).values_list("pre", "dataset").distinct()
-    post = ConnectionModel.objects.filter(post__in=neuron_names).values_list("post", "dataset").distinct()
+    pre = (
+        ConnectionModel.objects.filter(pre__in=neuron_names)
+        .values_list("pre", "dataset")
+        .distinct()
+    )
+    post = (
+        ConnectionModel.objects.filter(post__in=neuron_names)
+        .values_list("post", "dataset")
+        .distinct()
+    )
 
     # Filter out repeated dataset ids
     neurons_dataset_ids = defaultdict(set)
@@ -124,10 +109,9 @@ def annotate_neurons_w_dataset_ids(neurons: BaseManager[NeuronModel]) -> None:
 
 
 def neurons_from_dataset_ids(
-    neurons: BaseManager[NeuronModel],
-    dataset_ids: list[str]
+    neurons: BaseManager[NeuronModel], dataset_ids: list[str]
 ) -> BaseManager[NeuronModel]:
-    """ Filters neurons belonging to specific datasets. """
+    """Filters neurons belonging to specific datasets."""
     return neurons.filter(
         Q(
             name__in=ConnectionModel.objects.filter(
@@ -140,6 +124,19 @@ def neurons_from_dataset_ids(
             ).values_list("post", flat=True)
         )
     )
+
+
+@api.get(
+    "/datasets/{dataset}/neurons",
+    response={200: list[Neuron], 404: ErrorMessage},
+    tags=["datasets"],
+)
+def get_dataset_neurons(request, dataset: str):
+    """Returns all the neurons of a dedicated dataset"""
+    neurons = neurons_from_dataset_ids(NeuronModel.objects, [dataset])
+    annotate_neurons_w_dataset_ids(neurons)
+    return neurons
+
 
 @api.get("/cells/search", response=list[Neuron], tags=["neurons"])
 def search_cells(
@@ -154,7 +151,9 @@ def search_cells(
 
     if dataset_ids:
         neurons = neurons_from_dataset_ids(neurons, dataset_ids)
-    
+    else:
+        neurons = neurons.all()
+
     annotate_neurons_w_dataset_ids(neurons)
 
     return neurons
@@ -174,6 +173,7 @@ def get_all_cells(request, dataset_ids: Optional[list[str]] = Query(None)):
     annotate_neurons_w_dataset_ids(neurons)
 
     return neurons
+
 
 # # @api.post("/connections", response=list[Connection], tags=["connectivity"])
 # # # @paginate
