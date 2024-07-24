@@ -9,6 +9,9 @@ const defaultConfig = {
   build: {
     sourcemap: !process.env.NO_SOURCEMAP,
   },
+  optimizeDeps: {
+    include: ["@mui/material", "@emotion/react", "@emotion/styled"],
+  },
   // publicDir: 'src/assets',
 };
 
