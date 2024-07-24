@@ -144,3 +144,8 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 NINJA_PAGINATION_PER_PAGE = 100
+
+# Fragments for various artifacts
+NEURON_REPRESENTATION_3D_URL_FORMAT = "resources/{{dataset}}/3d-model/{name}"
+DATASET_NEURON_REPRESENTATION_3D_URL_FORMAT = "resources/{dataset}/3d-model/{{name}}"
+DATASET_EMDATA_URL_FORMAT = "resources/{dataset}/em-data"
