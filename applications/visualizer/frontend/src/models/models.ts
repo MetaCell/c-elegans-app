@@ -1,5 +1,3 @@
-import type { Neuron as NeuronAPI } from "../rest";
-
 export enum ViewMode {
   Default = "Default",
   Compare = "Compare",
@@ -33,7 +31,7 @@ export interface Dataset {
 
 export interface Neuron {
   name: string;
-  model3D: string;
+  model3DUrl: string;
   // Add other properties as needed
 }
 
@@ -42,7 +40,7 @@ const buildUrlFromFormat = (s: string, param: string) => {
 };
 
 export function getNeuronUrlForDataset(neuron: Neuron, datasetId: string) {
-  return buildUrlFromFormat(neuron.model3D, datasetId);
+  return buildUrlFromFormat(neuron.model3DUrl, datasetId);
 }
 
 export function getNeuronURL(dataset: Dataset, neuronName: string) {

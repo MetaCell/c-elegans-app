@@ -2,7 +2,6 @@ import { Box, Button, Dialog, FormLabel, IconButton, TextField, Typography } fro
 import { useEffect, useState } from "react";
 import { CaretIcon, CheckIcon, CloseIcon } from "../../icons";
 import type { Dataset, Neuron } from "../../models";
-import { getNeuronUrlForDataset } from "../../models/models.ts";
 import { NeuronsService } from "../../rest";
 import { vars as colors } from "../../theme/variables.ts";
 import CustomAutocomplete from "../CustomAutocomplete.tsx";
@@ -20,9 +19,7 @@ const CompareWorkspaceDialog = ({ onClose, showModal, datasets }: CompareWorkspa
     const fetchNeurons = async () => {
       try {
         const response = await NeuronsService.getAllCells({ page: 1 });
-        setNeurons(response.items as Neuron[]);
-
-        console.log(getNeuronUrlForDataset(response.items[0], "dddd"));
+        setNeurons(response.items);
       } catch (error) {
         console.error("Failed to fetch datasets", error);
       }
