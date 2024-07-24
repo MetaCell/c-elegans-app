@@ -2,8 +2,11 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { EMData } from './EMData';
 export type Dataset = {
     id: string;
+    neuron3DUrl: string;
+    emData?: (EMData | null);
     collection: string;
     name: string;
     description: string;
