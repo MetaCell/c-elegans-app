@@ -36,4 +36,4 @@ def access_bucket_artifact(request, path):
         except FileNotFoundError:
             return index(request, "")  # index.html
 
-    return redirect(f"{settings.GCS_BUCKET_URL}/{path}")
+    return redirect(f"{settings.GCS_BUCKET_URL}/{path}", permanent=True)
