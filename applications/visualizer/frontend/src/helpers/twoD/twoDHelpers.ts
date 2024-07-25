@@ -33,29 +33,6 @@ export function applyLayout(cyRef: React.MutableRefObject<Core | null>, layout: 
   }
 }
 
-export function filterConnections(
-  connections: Array<Connection>,
-  workspace: Workspace,
-  includeNeighboringCells: boolean,
-  includeNeighboringCellsAsIndividualCells: boolean,
-) {
-  if (!includeNeighboringCells) {
-    return connections;
-  }
-  const neuronClasses = new Set(Object.values(workspace.availableNeurons).map((neuron) => neuron.nclass));
-
-  return connections.filter((connection) => {
-    const preClassIncluded = neuronClasses.has(connection.pre);
-    const postClassIncluded = neuronClasses.has(connection.post);
-
-    if (includeNeighboringCellsAsIndividualCells) {
-      return !preClassIncluded && !postClassIncluded;
-    } else {
-      return preClassIncluded || postClassIncluded;
-    }
-  });
-}
-
 export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights) => {
   // Remove all highlights and return if nothing is selected and no legend item activated.
   cy.elements().removeClass("faded");

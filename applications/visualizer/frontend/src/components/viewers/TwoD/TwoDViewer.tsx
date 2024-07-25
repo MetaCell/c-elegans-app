@@ -5,7 +5,7 @@ import dagre from "cytoscape-dagre";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace";
 import { type Connection, ConnectivityService } from "../../../rest";
 import { GRAPH_STYLES } from "../../../theme/twoDStyles";
-import { applyLayout, filterConnections, updateHighlighted } from "../../../helpers/twoD/twoDHelpers";
+import { applyLayout, updateHighlighted } from "../../../helpers/twoD/twoDHelpers";
 import { CHEMICAL_THRESHOLD, ELECTRICAL_THRESHOLD, GRAPH_LAYOUTS, INCLUDE_ANNOTATIONS, INCLUDE_NEIGHBORING_CELLS } from "../../../settings/twoDSettings";
 import TwoDMenu from "./TwoDMenu";
 import TwoDLegend from "./TwoDLegend";
@@ -28,6 +28,8 @@ const TwoDViewer = () => {
   const [thresholdElectrical, setThresholdElectrical] = useState<number>(ELECTRICAL_THRESHOLD);
   const [includeNeighboringCells, setIncludeNeighboringCells] = useState<boolean>(INCLUDE_NEIGHBORING_CELLS);
   const [includeNeighboringCellsAsIndividualCells, setIncludeNeighboringCellsAsIndividualCells] = useState<boolean>(false);
+  const [toSplit, setToSplit] = useState<Set<string>>(new Set());
+  const [toJoin, setToJoin] = useState<Set<string>>(new Set());
   const [includeAnnotations, setIncludeAnnotations] = useState<boolean>(INCLUDE_ANNOTATIONS);
   const [mousePosition, setMousePosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
 
@@ -90,8 +92,7 @@ const TwoDViewer = () => {
       includeAnnotations: includeAnnotations,
     })
       .then((connections) => {
-        const filteredConnections = filterConnections(connections, workspace, includeNeighboringCells, includeNeighboringCellsAsIndividualCells);
-        setConnections(filteredConnections);
+        setConnections(connections);
       })
       .catch((error) => {
         console.error("Failed to fetch connections:", error);
@@ -166,7 +167,7 @@ const TwoDViewer = () => {
   }, [workspace, connections]);
 
   const updateGraphElements = (cy: Core, connections: any[]) => {
-    const { nodesToAdd, nodesToRemove, edgesToAdd, edgesToRemove } = computeGraphDifferences(cy, connections, workspace);
+    const { nodesToAdd, nodesToRemove, edgesToAdd, edgesToRemove } = computeGraphDifferences(cy, connections, workspace, toSplit, toJoin, includeNeighboringCellsAsIndividualCells);
 
     cy.batch(() => {
       cy.remove(nodesToRemove);
