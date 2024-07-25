@@ -58,19 +58,6 @@ def parse_entries(metadata_path: Path):
     return entries
 
 
-def transform_point(src_point, src_bbox, dst_bbox=((-179, 85), (179, -85))):
-    (src_x_min, src_y_min), (src_x_max, src_y_max) = src_bbox
-    (dst_x_min, dst_y_min), (dst_x_max, dst_y_max) = dst_bbox
-
-    scale_x = (dst_x_max - dst_x_min) / (src_x_max - src_x_min)
-    scale_y = (dst_y_max - dst_y_min) / (src_y_max - src_y_min)
-
-    dst_x = dst_x_min + (src_point[0] - src_x_min) * scale_x
-    dst_y = dst_y_min + (src_point[1] - src_y_min) * scale_y
-
-    return (dst_x, dst_y)
-
-
 def parse_entry(line, fields):
     name_start = line.index('"')
     values = line[:name_start].split()
@@ -163,6 +150,9 @@ def extract(
                     cpy.putpixel((x, y), metadata_entries[v].color1)
         cpy.save(result_img_path)
 
+    def flip_y(x, y, image_height):
+        return (x, image_height - y)
+
     if write_json:
         features = [
             Feature(
@@ -177,7 +167,7 @@ def extract(
         ]
         fc = FeatureCollection(features)
         geojson.utils.map_tuples(
-            lambda coord: transform_point(coord, ((0, 0), shape)), fc
+            lambda coord: flip_y(*coord, image_height=shape[1]), fc
         )
 
         result_json_path.write_text(rewind(geojson.dumps(fc)))
