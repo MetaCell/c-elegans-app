@@ -1,26 +1,58 @@
 // src/helpers/twoD/graphDiffUtils.ts
 import type { Core, ElementDefinition, CollectionReturnValue } from 'cytoscape';
 import { createEdge, createNode } from './twoDHelpers';
-import {Workspace} from "../../models";
+import {NeuronGroup, Workspace} from "../../models";
 import {Connection} from "../../rest";
 
-const getGroupedNeurons = (workspace: Workspace): Set<string> => {
-  const groupedNeurons = new Set<string>();
-  for (const groupId in workspace.neuronGroups) {
-    for (const neuronId of workspace.neuronGroups[groupId].neurons) {
-      groupedNeurons.add(neuronId);
+// Replace individual neurons with group nodes
+const replaceNodesWithGroups = (expectedNodes: Set<string>, neuronGroups: Record<string, NeuronGroup>) => {
+  const nodesToAdd = new Set<string>();
+  const nodesToRemove = new Set<string>();
+
+  expectedNodes.forEach(nodeId => {
+    for (const groupId in neuronGroups) {
+      const group = neuronGroups[groupId];
+      if (group.neurons.has(nodeId)) {
+        nodesToAdd.add(groupId);
+        nodesToRemove.add(nodeId);
+      }
     }
-  }
-  return groupedNeurons;
+  });
+
+  nodesToRemove.forEach(nodeId => expectedNodes.delete(nodeId));
+  nodesToAdd.forEach(nodeId => expectedNodes.add(nodeId));
 };
 
-const getNeuronGroupId = (neuronId: string, workspace: Workspace): string | null => {
-  for (const groupId in workspace.neuronGroups) {
-    if (workspace.neuronGroups[groupId].neurons.has(neuronId)) {
-      return groupId;
+// Replace edges involving individual neurons with edges involving group nodes
+const replaceEdgesWithGroups = (expectedEdges: Set<string>, neuronGroups: Record<string, NeuronGroup>) => {
+  const edgesToAdd = new Set<string>();
+  const edgesToRemove = new Set<string>();
+
+  expectedEdges.forEach(edgeId => {
+    const [pre, post, type] = edgeId.split('-');
+
+    let newPre = pre;
+    let newPost = post;
+
+    for (const groupId in neuronGroups) {
+      const group = neuronGroups[groupId];
+      if (group.neurons.has(pre)) {
+        newPre = groupId;
+      }
+      if (group.neurons.has(post)) {
+        newPost = groupId;
+      }
     }
-  }
-  return null;
+
+    const newEdgeId = `${newPre}-${newPost}-${type}`;
+    if (newEdgeId !== edgeId) {
+      edgesToAdd.add(newEdgeId);
+      edgesToRemove.add(edgeId);
+    }
+  });
+
+  edgesToRemove.forEach(edgeId => expectedEdges.delete(edgeId));
+  edgesToAdd.forEach(edgeId => expectedEdges.add(edgeId));
 };
 
 export const computeGraphDifferences = (cy: Core, connections: Connection[], workspace: Workspace) => {
@@ -63,6 +95,10 @@ export const computeGraphDifferences = (cy: Core, connections: Connection[], wor
     const edgeId = `${conn.pre}-${conn.post}-${conn.type}`;
     expectedEdges.add(edgeId);
   }
+
+  // Replace individual neurons and edges with groups if necessary
+  replaceNodesWithGroups(expectedNodes, workspace.neuronGroups);
+  replaceEdgesWithGroups(expectedEdges, workspace.neuronGroups);
 
   // Determine nodes to add and remove
   for (const nodeId of expectedNodes) {

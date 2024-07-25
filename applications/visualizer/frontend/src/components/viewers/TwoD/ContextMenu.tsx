@@ -16,7 +16,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, workspace, pos
   };
 
   const handleGroup = () => {
-    const newGroupId = `group-${Date.now()}`;
+    const newGroupId = `group_${Date.now()}`;
     const newGroupNeurons = new Set<string>();
 
     for (const neuronId of workspace.selectedNeurons) {
