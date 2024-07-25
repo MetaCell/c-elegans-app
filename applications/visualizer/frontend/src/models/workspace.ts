@@ -96,6 +96,13 @@ export class Workspace {
         this.updateContext(updated);
     }
 
+    setActiveNeurons(newActiveNeurons: Set<string>): void {
+        const updated = produce(this, (draft: Workspace) => {
+            draft.activeNeurons = newActiveNeurons;
+        });
+        this.updateContext(updated);
+    }
+
     clearSelectedNeurons(): void {
         const updated = produce(this, (draft: Workspace) => {
             draft.selectedNeurons.clear();

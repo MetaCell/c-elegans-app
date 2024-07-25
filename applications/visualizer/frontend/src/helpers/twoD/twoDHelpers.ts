@@ -2,6 +2,8 @@ import type { Core, ElementDefinition } from "cytoscape";
 import type { Connection } from "../../rest";
 import type { Workspace } from "../../models/workspace.ts";
 
+export const CONNECTION_SEPARATOR = '-'
+
 export const createEdge = (conn: Connection): ElementDefinition => {
   return {
     group: "edges",
@@ -107,3 +109,18 @@ export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights) =
 
   cy.elements().not(highlightedNodes).not(highlightedEdges).addClass("faded");
 };
+
+// Helper functions
+export const isCell = (neuronId: string, workspace: Workspace): boolean => {
+  const neuron = workspace.availableNeurons[neuronId];
+  return neuron ? neuron.name !== neuron.nclass : false;
+};
+
+export const isClass = (neuronId: string, workspace: Workspace): boolean => {
+  const neuron = workspace.availableNeurons[neuronId];
+  return neuron ? neuron.name === neuron.nclass : false;
+};
+
+export const getEdgeName = (pre: string, post: string, type: string): string => {
+  return `${pre}${CONNECTION_SEPARATOR}${post}${CONNECTION_SEPARATOR}${type}`;
+}
