@@ -4,15 +4,15 @@ import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import EMStackViewer from "./EMStackTilesViewer.tsx";
 
 export default function LeftComponent() {
-    const { datasets, neurons } = useGlobalContext();
+  const { datasets, neurons } = useGlobalContext();
 
-    const datasetArray = datasets ? Object.values(datasets) : [];
-    const neuronArray = neurons ? Object.values(neurons) : [];
-    return (
-        <Box>
-            <Typography variant="h1">Vite + React + Typescript</Typography>
-            <Typography variant="h3">All datasets names:</Typography>
-            <Box>
+  const datasetArray = datasets ? Object.values(datasets) : [];
+  const neuronArray = neurons ? Object.values(neurons) : [];
+  return (
+    <Box>
+      <Typography variant="h1">Vite + React + Typescript</Typography>
+      <Typography variant="h3">All datasets names:</Typography>
+      {/* <Box>
                 {
                     // Render each dataset name
                     datasetArray.map(dataset => (
@@ -28,8 +28,8 @@ export default function LeftComponent() {
                         <Typography key={neuron.id} variant="body1">{neuron.name}</Typography>
                     ))
                 }
-            </Box>
-            <EMStackViewer />
-        </Box>
-    );
+            </Box> */}
+      <EMStackViewer />
+    </Box>
+  );
 }
