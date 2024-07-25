@@ -24,20 +24,20 @@ const getNeuronGroupId = (neuronId: string, workspace: Workspace): string | null
 };
 
 export const computeGraphDifferences = (cy: Core, connections: Connection[], workspace: Workspace) => {
+  // Current nodes and edges in the Cytoscape instance
   const currentNodes = new Set(cy.nodes().map((node) => node.id()));
   const currentEdges = new Set(cy.edges().map((edge) => edge.id()));
 
-  const newNodes = new Set<string>();
-  const newEdges = new Set<string>();
+  // Expected nodes and edges
+  const expectedNodes = new Set<string>();
+  const expectedEdges = new Set<string>();
 
   const nodesToAdd: ElementDefinition[] = [];
   const nodesToRemove: CollectionReturnValue = cy.collection();
   const edgesToAdd: ElementDefinition[] = [];
   const edgesToRemove: CollectionReturnValue = cy.collection();
 
-  const groupedNeurons = getGroupedNeurons(workspace);
-
-  // Compute new nodes and edges based on the current connections and workspace state
+  // Compute expected nodes based on workspace.activeNeurons and connections
   const filteredActiveNeurons = Array.from(workspace.activeNeurons).filter((neuronId: string) => {
     const neuron = workspace.availableNeurons[neuronId];
     if (!neuron) {
@@ -50,69 +50,47 @@ export const computeGraphDifferences = (cy: Core, connections: Connection[], wor
     return !(workspace.activeNeurons.has(neuronId) && workspace.activeNeurons.has(nclass));
   });
 
-  const groupNodes = new Set<string>();
-
+  // Add active neurons to expected nodes
   for (const neuronId of filteredActiveNeurons) {
-    if (groupedNeurons.has(neuronId)) {
-      continue; // Skip neurons that are part of a group
-    }
-    newNodes.add(neuronId);
-    if (!currentNodes.has(neuronId)) {
-      nodesToAdd.push(createNode(neuronId, workspace.selectedNeurons.has(neuronId)));
-    }
+    expectedNodes.add(neuronId);
   }
 
-  for (const groupId in workspace.neuronGroups) {
-    const group = workspace.neuronGroups[groupId];
-    groupNodes.add(groupId);
-    if (!currentNodes.has(groupId)) {
-      nodesToAdd.push(createNode(groupId, workspace.selectedNeurons.has(groupId)));
+  // Add nodes from connections to expected nodes
+  for (const conn of connections) {
+    expectedNodes.add(conn.pre);
+    expectedNodes.add(conn.post);
+
+    const edgeId = `${conn.pre}-${conn.post}-${conn.type}`;
+    expectedEdges.add(edgeId);
+  }
+
+  // Determine nodes to add and remove
+  for (const nodeId of expectedNodes) {
+    if (!currentNodes.has(nodeId)) {
+      nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId)));
     }
   }
 
   for (const nodeId of currentNodes) {
-    if (!newNodes.has(nodeId) && !groupNodes.has(nodeId)) {
+    if (!expectedNodes.has(nodeId)) {
       nodesToRemove.merge(cy.getElementById(nodeId));
     }
   }
 
-  const groupEdges = new Set<string>();
-
-  for (const conn of connections) {
-    const preNeuronGroup = getNeuronGroupId(conn.pre, workspace);
-    const postNeuronGroup = getNeuronGroupId(conn.post, workspace);
-
-    const pre = preNeuronGroup ? preNeuronGroup : conn.pre;
-    const post = postNeuronGroup ? postNeuronGroup : conn.post;
-
-    const edgeId = `${pre}-${post}-${conn.type}`;
-
-    if (preNeuronGroup && postNeuronGroup) {
-      // Connection from one group to another group
-      if (!groupEdges.has(edgeId)) {
-        groupEdges.add(edgeId);
-        edgesToAdd.push(createEdge({ pre, post, type: conn.type }));
-      }
-    } else if (preNeuronGroup || postNeuronGroup) {
-      // Connection between a neuron and a group
-      if (!groupEdges.has(edgeId)) {
-        groupEdges.add(edgeId);
-        edgesToAdd.push(createEdge({ pre, post, type: conn.type }));
-      }
-    } else {
-      // Connection between individual neurons
-      newEdges.add(edgeId);
-      if (!currentEdges.has(edgeId)) {
-        edgesToAdd.push(createEdge({ pre: conn.pre, post: conn.post, type: conn.type }));
-      }
+  // Determine edges to add and remove
+  for (const edgeId of expectedEdges) {
+    if (!currentEdges.has(edgeId)) {
+      const [pre, post, type] = edgeId.split('-');
+      edgesToAdd.push(createEdge({ pre, post, type }));
     }
   }
 
   for (const edgeId of currentEdges) {
-    if (!newEdges.has(edgeId) && !groupEdges.has(edgeId)) {
+    if (!expectedEdges.has(edgeId)) {
       edgesToRemove.merge(cy.getElementById(edgeId));
     }
   }
 
+  // Return the differences to be applied to the Cytoscape instance
   return { nodesToAdd, nodesToRemove, edgesToAdd, edgesToRemove };
 };
