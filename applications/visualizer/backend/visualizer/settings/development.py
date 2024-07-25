@@ -17,4 +17,4 @@ DATABASES = {
 }
 
 
-EM_DATA_FOLDER = BASE_DIR.parent.parent.parent / "SEM_adult"
+EM_DATA_FOLDER = BASE_DIR.parent.parent.parent / "SEM_adult_catmaid_tiles"
