@@ -1,10 +1,13 @@
+from collections import defaultdict
 from typing import Optional
 
 from django.http import HttpResponse
 from ninja import NinjaAPI, Router, Schema, Query
 from ninja.pagination import paginate, PageNumberPagination
 from django.shortcuts import aget_object_or_404
-from django.db.models import Q
+from django.db.models import Q, F, Value, CharField, Func, OuterRef
+from django.db.models.manager import BaseManager
+from django.db.models.functions import Coalesce, Concat
 
 from .schemas import Dataset, Neuron, Connection
 from .models import (
@@ -82,34 +85,94 @@ async def get_dataset(request, dataset: str):
     return await aget_object_or_404(DatasetModel, id=dataset)
 
 
+def annotate_neurons_w_dataset_ids(neurons: BaseManager[NeuronModel]) -> None:
+    """Queries the datasets ids for each neuron."""
+    neuron_names = neurons.values_list("name", flat=True).distinct()
+    pre = (
+        ConnectionModel.objects.filter(pre__in=neuron_names)
+        .values_list("pre", "dataset")
+        .distinct()
+    )
+    post = (
+        ConnectionModel.objects.filter(post__in=neuron_names)
+        .values_list("post", "dataset")
+        .distinct()
+    )
+
+    # Filter out repeated dataset ids
+    neurons_dataset_ids = defaultdict(set)
+    for neuron, dataset in pre.union(post):
+        neurons_dataset_ids[neuron].add(dataset)
+
+    for neuron in neurons:
+        neuron.dataset_ids = neurons_dataset_ids[neuron.name]  # type: ignore
+
+
+def neurons_from_datasets(
+    neurons: BaseManager[NeuronModel], dataset_ids: list[str]
+) -> BaseManager[NeuronModel]:
+    """Filters neurons belonging to specific datasets."""
+    return neurons.filter(
+        Q(
+            name__in=ConnectionModel.objects.filter(
+                dataset__id__in=dataset_ids
+            ).values_list("pre", flat=True)
+        )
+        | Q(
+            name__in=ConnectionModel.objects.filter(
+                dataset__id__in=dataset_ids
+            ).values_list("post", flat=True)
+        )
+    )
+
+
 @api.get(
     "/datasets/{dataset}/neurons",
     response={200: list[Neuron], 404: ErrorMessage},
     tags=["datasets"],
 )
-async def get_dataset_neurons(request, dataset: str):
+def get_dataset_neurons(request, dataset: str):
     """Returns all the neurons of a dedicated dataset"""
-    return await to_list(
-        NeuronModel.objects.filter(
-            Q(
-                name__in=ConnectionModel.objects.filter(
-                    dataset__id=dataset
-                ).values_list("pre", flat=True)
-            )
-            | Q(
-                name__in=ConnectionModel.objects.filter(
-                    dataset__id=dataset
-                ).values_list("post", flat=True)
-            )
-        )
-    )
+    neurons = neurons_from_datasets(NeuronModel.objects, [dataset])
+    annotate_neurons_w_dataset_ids(neurons)
+    return neurons
+
+
+@api.get("/cells/search", response=list[Neuron], tags=["neurons"])
+def search_cells(
+    request,
+    name: Optional[str] = Query(None),
+    dataset_ids: Optional[list[str]] = Query(None),
+):
+    neurons = NeuronModel.objects
+
+    if name:
+        neurons = neurons.filter(name__istartswith=name)
+
+    if dataset_ids:
+        neurons = neurons_from_datasets(neurons, dataset_ids)
+    else:
+        neurons = neurons.all()
+
+    annotate_neurons_w_dataset_ids(neurons)
+
+    return neurons
 
 
 @api.get("/cells", response=list[Neuron], tags=["neurons"])
-@paginate(PageNumberPagination, page_size=50)
-def get_all_cells(request):
+@paginate(PageNumberPagination, page_size=50)  # BUG: this is not being applied
+def get_all_cells(request, dataset_ids: Optional[list[str]] = Query(None)):
     """Returns all the cells (neurons) from the DB"""
-    return NeuronModel.objects.all()
+    neurons = NeuronModel.objects
+
+    if dataset_ids:
+        neurons = neurons_from_datasets(neurons, dataset_ids)
+    else:
+        neurons = neurons.all()
+
+    annotate_neurons_w_dataset_ids(neurons)
+
+    return neurons
 
 
 # # @api.post("/connections", response=list[Connection], tags=["connectivity"])

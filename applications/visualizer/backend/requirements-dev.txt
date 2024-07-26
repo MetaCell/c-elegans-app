@@ -4,5 +4,6 @@ ipdb
 pytest
 pytest-django
 pytest-asyncio
+pytest-unordered
 model-bakery
 black
