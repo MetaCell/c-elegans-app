@@ -1,7 +1,9 @@
 import { Box, Divider, Drawer, FormControlLabel, FormGroup, IconButton, Typography } from "@mui/material";
-import { CloseIcon, LinkIcon } from "../icons/index.tsx";
 import { vars } from "../theme/variables.ts";
 import CustomSwitch from "./ViewerContainer/CustomSwitch.tsx";
+import {useGlobalContext} from "../contexts/GlobalContext.tsx";
+import {produce} from "immer";
+import { CloseIcon, LinkIcon } from "../icons";
 
 const { gray900A, gray600, gray100, white, gray700 } = vars;
 
@@ -32,14 +34,27 @@ const SyncViewersData = [
   },
 ];
 
-const ViewersList = ["Connectivity graph", "3D viewer", "EM viewer"];
-
 const textStyles = { ...secondaryTypographyStyles, fontWeight: 500, flex: 1 };
 const buttonStyle = {
   p: "0.25rem",
 };
 
 const ViewerSettings = ({ open, toggleDrawer }) => {
+  const { workspaces, currentWorkspaceId, updateWorkspace } = useGlobalContext();
+  const currentWorkspace = workspaces[currentWorkspaceId];
+  const handleToggle = (e, viewer) => {
+    const updatedWorkspace = produce(currentWorkspace, (draft) => {
+      draft.viewers[viewer] = e.target.checked;
+    });
+    updateWorkspace(updatedWorkspace);
+  };
+  const handleChangeSynchronizations = (_, index) => {
+    const updatedWorkspace = produce(currentWorkspace, (draft) => {
+      draft.synchronizations[index] = !draft.synchronizations[index]
+    });
+    updateWorkspace(updatedWorkspace);
+  };
+
   return (
     <Drawer
       anchor="right"
@@ -91,7 +106,7 @@ const ViewerSettings = ({ open, toggleDrawer }) => {
           <CloseIcon fill={gray700} />
         </IconButton>
       </Box>
-
+      
       <Box px="1.5rem">
         <Box py="1.5rem">
           <Typography sx={{ ...secondaryTypographyStyles, marginBottom: "0.75rem" }}>Show/hide viewers</Typography>
@@ -107,38 +122,43 @@ const ViewerSettings = ({ open, toggleDrawer }) => {
               },
             }}
           >
-            {ViewersList?.map((viewer) => {
-              return (
-                <FormControlLabel
-                  control={<CustomSwitch width={28.8} height={16} thumbDimension={12.8} checkedPosition="translateX(0.8125rem)" />}
-                  key={`viewer-${viewer}`}
-                  label={
-                    <Typography color={gray600} variant="subtitle1">
-                      {viewer} graph
-                    </Typography>
-                  }
-                />
-              );
-            })}
+            {Object.keys(currentWorkspace?.viewers)?.map((viewer) => (
+              <FormControlLabel
+                control={
+                  <CustomSwitch
+                    width={28.8}
+                    height={16}
+                    thumbDimension={12.8}
+                    checkedPosition="translateX(0.8125rem)"
+                    checked={currentWorkspace?.viewers[viewer]}
+                    onChange={(e) => handleToggle(e, viewer)}
+                  />
+                }
+                key={`viewer-${viewer}`}
+                label={
+                  <Typography color={gray600} variant="subtitle1">
+                    {viewer}
+                  </Typography>
+                }
+              />
+            ))}
           </FormGroup>
         </Box>
         <Divider sx={{ borderColor: gray100 }} />
-
+        
         <Box py="1.5rem">
           <Typography sx={{ ...secondaryTypographyStyles, marginBottom: "0.75rem" }}>Sync viewers</Typography>
-
+          
           <Box display="flex" gap="0.25rem" flexDirection="column">
-            {SyncViewersData?.map((data, index) => {
-              return (
-                <Box display="flex" alignItems="center" gap="0.75rem" py="0.25rem" key={data.primaryText}>
-                  <Typography sx={textStyles}>{data.primaryText}</Typography>
-                  <IconButton className={index === 2 ? "active" : ""} sx={buttonStyle}>
-                    <LinkIcon />
-                  </IconButton>
-                  <Typography sx={textStyles}>{data.secondaryText}</Typography>
-                </Box>
-              );
-            })}
+            {SyncViewersData?.map((data, index) => (
+              <Box display="flex" alignItems="center" gap="0.75rem" py="0.25rem" key={data.primaryText}>
+                <Typography sx={textStyles}>{data.primaryText}</Typography>
+                <IconButton className={currentWorkspace?.synchronizations[index] ? "active" : ""} sx={buttonStyle} onClick={(e) => handleChangeSynchronizations(e, index)}>
+                  <LinkIcon />
+                </IconButton>
+                <Typography sx={textStyles}>{data.secondaryText}</Typography>
+              </Box>
+            ))}
           </Box>
         </Box>
       </Box>

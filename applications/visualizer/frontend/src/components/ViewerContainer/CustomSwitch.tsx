@@ -1,7 +1,6 @@
 import Switch from "@mui/material/Switch";
 import Tooltip from "@mui/material/Tooltip";
 import type React from "react";
-import { useState } from "react";
 import { vars } from "../../theme/variables.ts";
 
 const { white, brand600, gray100 } = vars;
@@ -17,19 +16,13 @@ interface CustomSwitchProps {
   disabled?: boolean;
 }
 
-const CustomSwitch: React.FC<CustomSwitchProps> = ({ width, height, thumbDimension, checkedPosition }) => {
-  const [checked, setChecked] = useState(false);
-
-  const handleChange = (event) => {
-    setChecked(event.target.checked);
-  };
-
+const CustomSwitch: React.FC<CustomSwitchProps> = ({ width, height, thumbDimension, checkedPosition, checked, onChange }) => {
   return (
     <Tooltip title={checked ? "Hide" : "Show"}>
       <Switch
         focusVisibleClassName=".Mui-focusVisible"
         checked={checked}
-        onChange={handleChange}
+        onChange={onChange}
         sx={(theme) => ({
           marginRight: ".5rem",
           width: width ?? 23,
