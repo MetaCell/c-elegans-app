@@ -1,10 +1,11 @@
-import { Box, Button, Dialog, FormLabel, IconButton, TextField, Typography } from "@mui/material";
+import { Box, Button, FormLabel, IconButton, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { CaretIcon, CheckIcon, CloseIcon } from "../../icons";
 import type { Dataset, Neuron } from "../../models";
 import { NeuronsService } from "../../rest";
 import { vars as colors } from "../../theme/variables.ts";
 import CustomAutocomplete from "../CustomAutocomplete.tsx";
+import CustomDialog from "../CustomDialog.tsx";
 
 interface CompareWorkspaceDialogProps {
   onClose: () => void;
@@ -29,23 +30,7 @@ const CompareWorkspaceDialog = ({ onClose, showModal, datasets }: CompareWorkspa
   }, []);
 
   return (
-    <Dialog
-      onClose={onClose}
-      open={showModal}
-      sx={{
-        "& .MuiBackdrop-root": {
-          background: "rgba(0,0,0,0.25)",
-        },
-      }}
-      fullWidth
-      maxWidth="lg"
-    >
-      <Box borderBottom={`0.0625rem solid ${colors.gray100}`} px="1rem" py="0.5rem" display="flex" alignItems="center" justifyContent="space-between">
-        <Typography component="h3">New workspace configuration</Typography>
-        <IconButton onClick={onClose}>
-          <CloseIcon />
-        </IconButton>
-      </Box>
+    <CustomDialog onClose={onClose} showModal={showModal} title={'New workspace configuration'}>
       <Box px="1rem" py="1.5rem" gap={2.5} display="flex" flexDirection="column">
         <Typography>
           To start comparing, create workspace by configuring datasets and neurons you would want in the new workspace or start with an empty workspace.
@@ -54,11 +39,12 @@ const CompareWorkspaceDialog = ({ onClose, showModal, datasets }: CompareWorkspa
           <FormLabel>Workspace name</FormLabel>
           <TextField fullWidth variant="outlined" placeholder="Start typing workspace name" />
         </Box>
-
+        
         <Box>
           <FormLabel>Datasets</FormLabel>
-          <CustomAutocomplete<Dataset>
+          <CustomAutocomplete
             options={datasets}
+            onChange={(v) => console.log(v)}
             getOptionLabel={(option) => option.name}
             renderOption={(props, option) => (
               <li {...props}>
@@ -78,10 +64,10 @@ const CompareWorkspaceDialog = ({ onClose, showModal, datasets }: CompareWorkspa
             }}
           />
         </Box>
-
+        
         <Box>
           <FormLabel>Neurons</FormLabel>
-          <CustomAutocomplete<Neuron>
+          <CustomAutocomplete
             options={neurons}
             getOptionLabel={(option) => option.name}
             renderOption={(props, option) => (
@@ -90,6 +76,7 @@ const CompareWorkspaceDialog = ({ onClose, showModal, datasets }: CompareWorkspa
                 <Typography>{option.name}</Typography>
               </li>
             )}
+            onChange={(v) => console.log(v)}
             placeholder="Start typing to search"
             className="secondary"
             id="tags-standard"
@@ -105,14 +92,15 @@ const CompareWorkspaceDialog = ({ onClose, showModal, datasets }: CompareWorkspa
           />
         </Box>
       </Box>
-
+      
       <Box borderTop={`0.0625rem solid ${colors.gray100}`} px="1rem" py="0.75rem" gap={0.5} display="flex" justifyContent="flex-end">
         <Button variant="text">Start with an empty workspace</Button>
         <Button variant="contained" color="info">
           Configure workspace
         </Button>
       </Box>
-    </Dialog>
+    </CustomDialog>
+   
   );
 };
 

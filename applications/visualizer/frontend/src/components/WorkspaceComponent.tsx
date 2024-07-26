@@ -13,6 +13,7 @@ import Layout from "./ViewerContainer/Layout.tsx";
 import { AddIcon, CheckIcon, DownIcon, DownloadIcon, LinkIcon, ViewerSettings as ViewerSettingsIcon } from "../icons/index.tsx";
 import { vars } from "../theme/variables.ts";
 import ViewerSettings from "./ViewerSettings.tsx";
+import CreateNewWorkspaceDialog from "./CreateNewWorkspaceDialog.tsx";
 
 const { gray100, white } = vars;
 
@@ -31,24 +32,24 @@ const LoadingComponent = () => (
 
 function WorkspaceComponent() {
   const dispatch = useDispatch();
-  const { workspaces } = useGlobalContext();
+  const { workspaces, setCurrentWorkspace } = useGlobalContext();
 
   const workspaceId = useSelector((state: RootState) => state.workspaceId);
   const [LayoutComponent, setLayoutComponent] = useState<React.ComponentType>(() => LoadingComponent);
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [open, setOpen] = React.useState(false);
-
+  const [showCreateWorkspaceDialog, setShowCreateWorkspaceDialog] = React.useState(false)
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
   };
 
-  const workspace = workspaces[workspaceId];
+  const currentWorkspace = workspaces[workspaceId];
 
   useEffect(() => {
-    if (workspace.layoutManager) {
-      setLayoutComponent(() => workspace.layoutManager.getComponent());
+    if (currentWorkspace.layoutManager) {
+      setLayoutComponent(() => currentWorkspace.layoutManager.getComponent());
     }
-  }, [workspace.layoutManager]);
+  }, [currentWorkspace.layoutManager]);
 
   useEffect(() => {
     dispatch(addWidget(threeDViewerWidget()));
@@ -63,6 +64,18 @@ function WorkspaceComponent() {
   const handleCloseWorkspace = () => {
     setAnchorElWorkspace(null);
   };
+  
+  const onCreateWorkspaceClick = () => {
+    setShowCreateWorkspaceDialog(true)
+  };
+  
+  const onCloseCreateWorkspace = () => {
+    setShowCreateWorkspaceDialog(false)
+  }
+  
+  const onClickWorkspace = (workspace) => {
+    setCurrentWorkspace(workspace.id)
+  }
 
   return (
     <>
@@ -96,7 +109,7 @@ function WorkspaceComponent() {
                       onClick={handleClickWorkspace}
                       endIcon={<DownIcon />}
                     >
-                      Workspace 1
+                      {currentWorkspace.name}
                     </Button>
                     <Menu
                       sx={{
@@ -116,28 +129,19 @@ function WorkspaceComponent() {
                         <MenuItem disabled>
                           <Typography variant="h4">{"Workspaces"}</Typography>
                         </MenuItem>
-                        <MenuItem sx={{ fontWeight: 600 }}>
+                        <MenuItem sx={{ fontWeight: 600 }} onClick={onCreateWorkspaceClick}>
                           <AddIcon />
                           New workspace
                         </MenuItem>
                       </Box>
                       <Box
-                        sx={{
-                          "& .MuiMenuItem-root": {
-                            "&:not(.Mui-selected) svg": {
-                              visibility: "hidden",
-                            },
-                          },
-                        }}
                       >
-                        <MenuItem>
-                          <CheckIcon />
-                          Workspace 1
-                        </MenuItem>
-                        <MenuItem selected>
-                          <CheckIcon />
-                          Workspace 2
-                        </MenuItem>
+                        {
+                          Object.keys(workspaces).map(workspace => <MenuItem key={workspaces[workspace].id} value={workspaces[workspace].id} onClick={() => onClickWorkspace(workspaces[workspace])}>
+                            {currentWorkspace.id === workspaces[workspace].id && <CheckIcon />}
+                            {workspaces[workspace].name}
+                          </MenuItem>)
+                        }
                       </Box>
                     </Menu>
                     <Divider sx={{ width: "0.0625rem", height: "1.9375rem", background: gray100 }} />
@@ -160,6 +164,9 @@ function WorkspaceComponent() {
                 </Box>
               </Box>
             </Box>
+            {
+              showCreateWorkspaceDialog && <CreateNewWorkspaceDialog onCloseCreateWorkspace={onCloseCreateWorkspace} showCreateWorkspaceDialog={showCreateWorkspaceDialog} />
+            }
           </Box>
         </Suspense>
       </ThemeProvider>

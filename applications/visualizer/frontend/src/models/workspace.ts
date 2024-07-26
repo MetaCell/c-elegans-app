@@ -34,7 +34,7 @@ export class Workspace {
     this.activeNeurons = activeNeurons;
     this.highlightedNeuron = undefined;
     this.viewers = {
-      [ViewerType.Graph]: true,
+      [ViewerType.Graph]: false,
       [ViewerType.ThreeD]: true,
       [ViewerType.EM]: false,
       [ViewerType.InstanceDetails]: false,

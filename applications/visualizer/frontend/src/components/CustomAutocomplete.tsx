@@ -15,10 +15,12 @@ interface CustomAutocompleteProps<T> {
   id: string;
   multiple?: boolean;
   popupIcon: React.ReactNode;
-  clearIcon?: React.ReactNode; // Change to React.ReactNode to be consistent with popupIcon
+  clearIcon?: React.ReactNode;
   ChipProps?: ChipProps;
   sx?: SxProps;
   componentsProps?: AutocompleteProps<T, boolean, boolean, boolean>["componentsProps"];
+  value?: any;
+  onChange: (v) => void;
 }
 
 const CommonAutocomplete = <T,>({
@@ -35,13 +37,21 @@ const CommonAutocomplete = <T,>({
   clearIcon,
   ChipProps,
   sx = {},
+  value,
   componentsProps = {},
+  onChange
 }: CustomAutocompleteProps<T>) => {
+  // @ts-ignore
   return (
     <Autocomplete
+      value={value}
       multiple={multiple}
       className={className}
       id={id}
+      onChange={(event: React.SyntheticEvent, value) => {
+        event.preventDefault()
+        onChange(value);
+      }}
       clearIcon={clearIcon}
       options={options}
       popupIcon={popupIcon}
