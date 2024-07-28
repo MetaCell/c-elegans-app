@@ -1,5 +1,5 @@
 import { Box, Button, FormLabel, IconButton, TextField, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import { CaretIcon, CheckIcon, CloseIcon } from "../icons";
@@ -11,7 +11,7 @@ import CustomDialog from "./CustomDialog.tsx";
 const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceDialog }) => {
   const [neurons, setNeurons] = useState<Neuron[]>([]);
   const { datasets, createWorkspace } = useGlobalContext();
-
+  const [searchedNeuron, setSearchedNeuron] = useState('')
   const [formValues, setFormValues] = useState<{
     workspaceName: string;
     selectedDatasets: Dataset[];
@@ -26,17 +26,17 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
 
   const fetchNeurons = async () => {
     try {
-      const response = await NeuronsService.getAllCells({ page: 1 });
-      setNeurons(response.items);
+      const datasetsIds = formValues.selectedDatasets.map(dataset => dataset.id)
+      const response = await NeuronsService.searchCells({ name: searchedNeuron, datasetIds: datasetsIds });
+      setNeurons(response);
     } catch (error) {
       console.error("Failed to fetch datasets", error);
     }
   };
-
-  useEffect(() => {
-    fetchNeurons();
-  }, []);
-
+  const onSearchNeurons = (value) => {
+    setSearchedNeuron(value)
+    fetchNeurons()
+  }
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setFormValues({ ...formValues, [name]: value });
@@ -47,6 +47,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
 
   const handleDatasetChange = (value) => {
     setFormValues({ ...formValues, selectedDatasets: value });
+    fetchNeurons();
   };
 
   const handleNeuronChange = (value) => {
@@ -62,7 +63,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
     const randomNumber = uuidv4().replace(/\D/g, "").substring(0, 13);
     const newWorkspaceId = `workspace-${randomNumber}`;
     const activeNeurons = new Set(formValues.selectedNeurons.map((neuron) => neuron.name));
-    const activeDatasets = new Set(formValues.selectedDatasets.map((dataset) => dataset.name));
+    const activeDatasets = new Set(formValues.selectedDatasets.map((dataset) => dataset.id));
     createWorkspace(newWorkspaceId, formValues.workspaceName, activeDatasets, activeNeurons);
     onCloseCreateWorkspace();
   };
@@ -111,7 +112,6 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
             onChange={handleDatasetChange}
           />
         </Box>
-
         <Box>
           <FormLabel>Neurons</FormLabel>
           <CustomAutocomplete
@@ -123,6 +123,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
                 <Typography>{option.name}</Typography>
               </li>
             )}
+            onInputChange={onSearchNeurons}
             placeholder="Start typing to search"
             className="secondary"
             id="tags-standard"

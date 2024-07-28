@@ -25,10 +25,18 @@ export interface NeuronGroup {
 
 export interface Dataset {
   name: string;
+  id: string;
   // Add other properties as needed
 }
 
 export interface Neuron {
   name: string;
-  // Add other properties as needed
+  id?: string;
+  datasetIds: string[];
+  embryonic?: boolean;
+  inhead?: boolean;
+  intail?: boolean;
+  nclass?: string;
+  neurotransmitter?: string;
+  type?: string;
 }

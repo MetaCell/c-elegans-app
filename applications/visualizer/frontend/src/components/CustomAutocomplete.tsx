@@ -22,6 +22,7 @@ interface CustomAutocompleteProps<T> {
   value?: any;
   onChange: (v) => void;
   disabled?: boolean;
+  onInputChange?: (v) => void;
 }
 
 const CommonAutocomplete = <T,>({
@@ -42,6 +43,7 @@ const CommonAutocomplete = <T,>({
   componentsProps = {},
   onChange,
   disabled = false,
+  onInputChange
 }: CustomAutocompleteProps<T>) => {
   // @ts-ignore
   return (
@@ -63,7 +65,7 @@ const CommonAutocomplete = <T,>({
       groupBy={groupBy}
       renderGroup={renderGroup}
       renderOption={renderOption}
-      renderInput={(params) => <TextField {...params} placeholder={placeholder} />}
+      renderInput={(params) => <TextField {...params} placeholder={placeholder} onChange={(e) => onInputChange(e.target.value)} />}
       sx={sx}
       componentsProps={componentsProps}
     />
