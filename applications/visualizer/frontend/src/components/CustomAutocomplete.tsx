@@ -43,7 +43,7 @@ const CommonAutocomplete = <T,>({
   componentsProps = {},
   onChange,
   disabled = false,
-  onInputChange
+  onInputChange,
 }: CustomAutocompleteProps<T>) => {
   // @ts-ignore
   return (
