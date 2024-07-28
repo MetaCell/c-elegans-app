@@ -11,7 +11,7 @@ import CustomDialog from "./CustomDialog.tsx";
 const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceDialog }) => {
   const [neurons, setNeurons] = useState<Neuron[]>([]);
   const { datasets, createWorkspace } = useGlobalContext();
-  const [searchedNeuron, setSearchedNeuron] = useState('')
+  const [searchedNeuron, setSearchedNeuron] = useState("");
   const [formValues, setFormValues] = useState<{
     workspaceName: string;
     selectedDatasets: Dataset[];
@@ -26,7 +26,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
 
   const fetchNeurons = async () => {
     try {
-      const datasetsIds = formValues.selectedDatasets.map(dataset => dataset.id)
+      const datasetsIds = formValues.selectedDatasets.map((dataset) => dataset.id);
       const response = await NeuronsService.searchCells({ name: searchedNeuron, datasetIds: datasetsIds });
       setNeurons(response);
     } catch (error) {
@@ -34,9 +34,9 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
     }
   };
   const onSearchNeurons = (value) => {
-    setSearchedNeuron(value)
-    fetchNeurons()
-  }
+    setSearchedNeuron(value);
+    fetchNeurons();
+  };
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setFormValues({ ...formValues, [name]: value });
