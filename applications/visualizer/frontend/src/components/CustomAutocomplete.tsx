@@ -21,6 +21,7 @@ interface CustomAutocompleteProps<T> {
   componentsProps?: AutocompleteProps<T, boolean, boolean, boolean>["componentsProps"];
   value?: any;
   onChange: (v) => void;
+  disabled?: boolean;
 }
 
 const CommonAutocomplete = <T,>({
@@ -39,7 +40,8 @@ const CommonAutocomplete = <T,>({
   sx = {},
   value,
   componentsProps = {},
-  onChange
+  onChange,
+  disabled = false
 }: CustomAutocompleteProps<T>) => {
   // @ts-ignore
   return (
@@ -48,6 +50,7 @@ const CommonAutocomplete = <T,>({
       multiple={multiple}
       className={className}
       id={id}
+      disabled={disabled}
       onChange={(event: React.SyntheticEvent, value) => {
         event.preventDefault()
         onChange(value);

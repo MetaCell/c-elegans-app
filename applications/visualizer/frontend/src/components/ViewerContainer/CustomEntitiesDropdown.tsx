@@ -90,30 +90,6 @@ export default function CustomEntitiesDropdown() {
             </InputAdornment>
           ),
         }}
-        sx={{
-          "& .MuiInputBase-root": {
-            borderRight: 0,
-            borderLeft: 0,
-            borderRadius: 0,
-            padding: "1rem 0.75rem",
-            height: "3.25rem",
-            borderColor: "#ECECE9",
-            "&.Mui-focused": {
-              background: "#ECECE9",
-              "& .MuiOutlinedInput-notchedOutline": {
-                borderWidth: 0,
-              },
-            },
-            "& .MuiInputBase-input": {
-              padding: "0",
-              height: "1.25rem",
-            },
-
-            "& .MuiSvgIcon-root": {
-              color: "#969692",
-            },
-          },
-        }}
       />
 
       <Popper

@@ -126,7 +126,9 @@ function WorkspaceComponent() {
                       }}
                     >
                       <Box>
-                        <MenuItem disabled>
+                        <MenuItem disabled sx={{
+                          backgroundColor: 'transparent !important',
+                        }}>
                           <Typography variant="h4">{"Workspaces"}</Typography>
                         </MenuItem>
                         <MenuItem sx={{ fontWeight: 600 }} onClick={onCreateWorkspaceClick}>
@@ -138,7 +140,11 @@ function WorkspaceComponent() {
                       >
                         {
                           Object.keys(workspaces).map(workspace => <MenuItem key={workspaces[workspace].id} value={workspaces[workspace].id} onClick={() => onClickWorkspace(workspaces[workspace])}>
-                            {currentWorkspace.id === workspaces[workspace].id && <CheckIcon />}
+                            <Box sx={{
+                              visibility: currentWorkspace.id === workspaces[workspace].id ? 'block' : 'hidden'
+                            }}>
+                              <CheckIcon />
+                            </Box>
                             {workspaces[workspace].name}
                           </MenuItem>)
                         }

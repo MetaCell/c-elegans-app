@@ -22,6 +22,8 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
     selectedNeurons: []
   });
   
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  
   const fetchNeurons = async () => {
     try {
       const response = await NeuronsService.getAllCells({ page: 1 });
@@ -38,6 +40,9 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setFormValues({ ...formValues, [name]: value });
+    if (name === "workspaceName" && errorMessage) {
+      setErrorMessage('');
+    }
   };
   
   const handleDatasetChange = (value) => {
@@ -49,6 +54,11 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
   };
   
   const handleSubmit = () => {
+    if (!formValues.workspaceName.trim()) {
+      setErrorMessage('Workspace name is required.');
+      return;
+    }
+    
     const randomNumber = uuidv4().replace(/\D/g, '').substring(0, 13);
     const newWorkspaceId = `workspace-${randomNumber}`;
     const activeNeurons = new Set(formValues.selectedNeurons.map(neuron => neuron.name));
@@ -61,7 +71,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
     <CustomDialog onClose={onCloseCreateWorkspace} showModal={showCreateWorkspaceDialog} title={'Create New workspace'}>
       <Box px="1rem" py="1.5rem" gap={2.5} display="flex" flexDirection="column">
         <Box>
-          <FormLabel>Workspace name</FormLabel>
+          <FormLabel>Workspace name <Typography variant='caption'>(REQUIRED)</Typography></FormLabel>
           <TextField
             fullWidth
             variant="outlined"
@@ -69,6 +79,8 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
             name="workspaceName"
             value={formValues.workspaceName}
             onChange={handleInputChange}
+            error={!!errorMessage}
+            helperText={errorMessage}
           />
         </Box>
         
@@ -113,6 +125,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
             className="secondary"
             id="tags-standard"
             popupIcon={<CaretIcon />}
+            disabled={formValues.selectedDatasets.length === 0}
             ChipProps={{
               deleteIcon: (
                 <IconButton sx={{ p: "0 !important", margin: "0 !important" }}>
@@ -127,7 +140,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
         </Box>
       </Box>
       <Box borderTop={`0.0625rem solid ${colors.gray100}`} px="1rem" py="0.75rem" gap={0.5} display="flex" justifyContent="flex-end">
-        <Button variant="contained" color="info" onClick={handleSubmit}>
+        <Button variant="contained" color="info" onClick={handleSubmit} disabled={!formValues.workspaceName}>
           Create workspace
         </Button>
       </Box>

@@ -304,6 +304,11 @@ const theme = createTheme({
           "&:focus": {
             outline: 0,
           },
+          "&.Mui-disabled": {
+            background: gray100,
+            color: gray400,
+            borderColor: gray200
+          },
         },
       },
     },
@@ -1005,6 +1010,43 @@ const theme = createTheme({
               },
             },
           },
+        },
+      },
+    },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          borderRight: 0,
+          borderLeft: 0,
+          borderRadius: 0,
+          padding: "0.5rem 0.875rem",
+          borderColor: gray100,
+          "&.Mui-focused": {
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderWidth: 0,
+              background: `transparent !important`,
+              boxShadow: 'none !important',
+              borderColor: `${gray100} !important`,
+            },
+          },
+     
+          "& .MuiInputBase-input": {
+            padding: "0",
+            height: "1.25rem",
+          },
+          
+          "& .MuiSvgIcon-root": {
+            color: `${gray400B}`,
+          },
+          
+          '&:has( .Mui-disabled)': {
+            backgroundColor: gray100,
+            
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: `${gray100} !important`,
+            }
+          },
+          
         },
       },
     },
