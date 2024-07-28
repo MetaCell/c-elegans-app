@@ -1,9 +1,9 @@
-import React from "react";
 import { Box, Dialog, IconButton, Typography } from "@mui/material";
-import {CloseIcon} from "../icons";
-import {vars} from "../theme/variables.ts";
+import type React from "react";
+import { CloseIcon } from "../icons";
+import { vars } from "../theme/variables.ts";
 
-const {gray100} = vars
+const { gray100 } = vars;
 interface CustomDialogProps {
   onClose: () => void;
   showModal: boolean;
@@ -12,7 +12,6 @@ interface CustomDialogProps {
 }
 
 const CustomDialog = ({ onClose, showModal, title, children }: CustomDialogProps) => {
-
   return (
     <Dialog
       onClose={onClose}

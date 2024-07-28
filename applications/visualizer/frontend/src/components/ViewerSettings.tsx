@@ -1,9 +1,9 @@
 import { Box, Divider, Drawer, FormControlLabel, FormGroup, IconButton, Typography } from "@mui/material";
+import { produce } from "immer";
+import { useGlobalContext } from "../contexts/GlobalContext.tsx";
+import { CloseIcon, LinkIcon } from "../icons";
 import { vars } from "../theme/variables.ts";
 import CustomSwitch from "./ViewerContainer/CustomSwitch.tsx";
-import {useGlobalContext} from "../contexts/GlobalContext.tsx";
-import {produce} from "immer";
-import { CloseIcon, LinkIcon } from "../icons";
 
 const { gray900A, gray600, gray100, white, gray700 } = vars;
 
@@ -50,7 +50,7 @@ const ViewerSettings = ({ open, toggleDrawer }) => {
   };
   const handleChangeSynchronizations = (_, index) => {
     const updatedWorkspace = produce(currentWorkspace, (draft) => {
-      draft.synchronizations[index] = !draft.synchronizations[index]
+      draft.synchronizations[index] = !draft.synchronizations[index];
     });
     updateWorkspace(updatedWorkspace);
   };
@@ -106,7 +106,7 @@ const ViewerSettings = ({ open, toggleDrawer }) => {
           <CloseIcon fill={gray700} />
         </IconButton>
       </Box>
-      
+
       <Box px="1.5rem">
         <Box py="1.5rem">
           <Typography sx={{ ...secondaryTypographyStyles, marginBottom: "0.75rem" }}>Show/hide viewers</Typography>
@@ -145,15 +145,19 @@ const ViewerSettings = ({ open, toggleDrawer }) => {
           </FormGroup>
         </Box>
         <Divider sx={{ borderColor: gray100 }} />
-        
+
         <Box py="1.5rem">
           <Typography sx={{ ...secondaryTypographyStyles, marginBottom: "0.75rem" }}>Sync viewers</Typography>
-          
+
           <Box display="flex" gap="0.25rem" flexDirection="column">
             {SyncViewersData?.map((data, index) => (
               <Box display="flex" alignItems="center" gap="0.75rem" py="0.25rem" key={data.primaryText}>
                 <Typography sx={textStyles}>{data.primaryText}</Typography>
-                <IconButton className={currentWorkspace?.synchronizations[index] ? "active" : ""} sx={buttonStyle} onClick={(e) => handleChangeSynchronizations(e, index)}>
+                <IconButton
+                  className={currentWorkspace?.synchronizations[index] ? "active" : ""}
+                  sx={buttonStyle}
+                  onClick={(e) => handleChangeSynchronizations(e, index)}
+                >
                   <LinkIcon />
                 </IconButton>
                 <Typography sx={textStyles}>{data.secondaryText}</Typography>

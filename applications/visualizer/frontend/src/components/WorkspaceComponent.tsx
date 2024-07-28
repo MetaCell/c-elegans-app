@@ -12,8 +12,8 @@ import Layout from "./ViewerContainer/Layout.tsx";
 
 import { AddIcon, CheckIcon, DownIcon, DownloadIcon, LinkIcon, ViewerSettings as ViewerSettingsIcon } from "../icons/index.tsx";
 import { vars } from "../theme/variables.ts";
-import ViewerSettings from "./ViewerSettings.tsx";
 import CreateNewWorkspaceDialog from "./CreateNewWorkspaceDialog.tsx";
+import ViewerSettings from "./ViewerSettings.tsx";
 
 const { gray100, white } = vars;
 
@@ -38,7 +38,7 @@ function WorkspaceComponent() {
   const [LayoutComponent, setLayoutComponent] = useState<React.ComponentType>(() => LoadingComponent);
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [open, setOpen] = React.useState(false);
-  const [showCreateWorkspaceDialog, setShowCreateWorkspaceDialog] = React.useState(false)
+  const [showCreateWorkspaceDialog, setShowCreateWorkspaceDialog] = React.useState(false);
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
   };
@@ -64,18 +64,18 @@ function WorkspaceComponent() {
   const handleCloseWorkspace = () => {
     setAnchorElWorkspace(null);
   };
-  
+
   const onCreateWorkspaceClick = () => {
-    setShowCreateWorkspaceDialog(true)
+    setShowCreateWorkspaceDialog(true);
   };
-  
+
   const onCloseCreateWorkspace = () => {
-    setShowCreateWorkspaceDialog(false)
-  }
-  
+    setShowCreateWorkspaceDialog(false);
+  };
+
   const onClickWorkspace = (workspace) => {
-    setCurrentWorkspace(workspace.id)
-  }
+    setCurrentWorkspace(workspace.id);
+  };
 
   return (
     <>
@@ -126,9 +126,12 @@ function WorkspaceComponent() {
                       }}
                     >
                       <Box>
-                        <MenuItem disabled sx={{
-                          backgroundColor: 'transparent !important',
-                        }}>
+                        <MenuItem
+                          disabled
+                          sx={{
+                            backgroundColor: "transparent !important",
+                          }}
+                        >
                           <Typography variant="h4">{"Workspaces"}</Typography>
                         </MenuItem>
                         <MenuItem sx={{ fontWeight: 600 }} onClick={onCreateWorkspaceClick}>
@@ -136,18 +139,19 @@ function WorkspaceComponent() {
                           New workspace
                         </MenuItem>
                       </Box>
-                      <Box
-                      >
-                        {
-                          Object.keys(workspaces).map(workspace => <MenuItem key={workspaces[workspace].id} value={workspaces[workspace].id} onClick={() => onClickWorkspace(workspaces[workspace])}>
-                            <Box sx={{
-                              visibility: currentWorkspace.id === workspaces[workspace].id ? 'block' : 'hidden'
-                            }}>
+                      <Box>
+                        {Object.keys(workspaces).map((workspace) => (
+                          <MenuItem key={workspaces[workspace].id} value={workspaces[workspace].id} onClick={() => onClickWorkspace(workspaces[workspace])}>
+                            <Box
+                              sx={{
+                                visibility: currentWorkspace.id === workspaces[workspace].id ? "block" : "hidden",
+                              }}
+                            >
                               <CheckIcon />
                             </Box>
                             {workspaces[workspace].name}
-                          </MenuItem>)
-                        }
+                          </MenuItem>
+                        ))}
                       </Box>
                     </Menu>
                     <Divider sx={{ width: "0.0625rem", height: "1.9375rem", background: gray100 }} />
@@ -170,9 +174,9 @@ function WorkspaceComponent() {
                 </Box>
               </Box>
             </Box>
-            {
-              showCreateWorkspaceDialog && <CreateNewWorkspaceDialog onCloseCreateWorkspace={onCloseCreateWorkspace} showCreateWorkspaceDialog={showCreateWorkspaceDialog} />
-            }
+            {showCreateWorkspaceDialog && (
+              <CreateNewWorkspaceDialog onCloseCreateWorkspace={onCloseCreateWorkspace} showCreateWorkspaceDialog={showCreateWorkspaceDialog} />
+            )}
           </Box>
         </Suspense>
       </ThemeProvider>

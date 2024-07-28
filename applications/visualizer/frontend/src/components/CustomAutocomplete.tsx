@@ -41,7 +41,7 @@ const CommonAutocomplete = <T,>({
   value,
   componentsProps = {},
   onChange,
-  disabled = false
+  disabled = false,
 }: CustomAutocompleteProps<T>) => {
   // @ts-ignore
   return (
@@ -52,7 +52,7 @@ const CommonAutocomplete = <T,>({
       id={id}
       disabled={disabled}
       onChange={(event: React.SyntheticEvent, value) => {
-        event.preventDefault()
+        event.preventDefault();
         onChange(value);
       }}
       clearIcon={clearIcon}

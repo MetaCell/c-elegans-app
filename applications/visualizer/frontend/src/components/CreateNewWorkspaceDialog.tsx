@@ -1,29 +1,29 @@
-import CustomDialog from "./CustomDialog.tsx";
-import { useEffect, useState } from "react";
 import { Box, Button, FormLabel, IconButton, TextField, Typography } from "@mui/material";
-import CustomAutocomplete from "./CustomAutocomplete.tsx";
-import { Neuron, Dataset } from "../models";
-import { CaretIcon, CheckIcon, CloseIcon } from "../icons";
-import { NeuronsService } from "../rest";
+import { useEffect, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
+import { CaretIcon, CheckIcon, CloseIcon } from "../icons";
+import type { Dataset, Neuron } from "../models";
+import { NeuronsService } from "../rest";
 import { vars as colors } from "../theme/variables.ts";
-import { v4 as uuidv4 } from 'uuid';
+import CustomAutocomplete from "./CustomAutocomplete.tsx";
+import CustomDialog from "./CustomDialog.tsx";
 const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceDialog }) => {
   const [neurons, setNeurons] = useState<Neuron[]>([]);
   const { datasets, createWorkspace } = useGlobalContext();
-  
+
   const [formValues, setFormValues] = useState<{
     workspaceName: string;
     selectedDatasets: Dataset[];
     selectedNeurons: Neuron[];
   }>({
-    workspaceName: '',
+    workspaceName: "",
     selectedDatasets: [],
-    selectedNeurons: []
+    selectedNeurons: [],
   });
-  
-  const [errorMessage, setErrorMessage] = useState<string>('');
-  
+
+  const [errorMessage, setErrorMessage] = useState<string>("");
+
   const fetchNeurons = async () => {
     try {
       const response = await NeuronsService.getAllCells({ page: 1 });
@@ -32,46 +32,48 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
       console.error("Failed to fetch datasets", error);
     }
   };
-  
+
   useEffect(() => {
     fetchNeurons();
   }, []);
-  
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setFormValues({ ...formValues, [name]: value });
     if (name === "workspaceName" && errorMessage) {
-      setErrorMessage('');
+      setErrorMessage("");
     }
   };
-  
+
   const handleDatasetChange = (value) => {
     setFormValues({ ...formValues, selectedDatasets: value });
   };
-  
+
   const handleNeuronChange = (value) => {
     setFormValues({ ...formValues, selectedNeurons: value });
   };
-  
+
   const handleSubmit = () => {
     if (!formValues.workspaceName.trim()) {
-      setErrorMessage('Workspace name is required.');
+      setErrorMessage("Workspace name is required.");
       return;
     }
-    
-    const randomNumber = uuidv4().replace(/\D/g, '').substring(0, 13);
+
+    const randomNumber = uuidv4().replace(/\D/g, "").substring(0, 13);
     const newWorkspaceId = `workspace-${randomNumber}`;
-    const activeNeurons = new Set(formValues.selectedNeurons.map(neuron => neuron.name));
-    const activeDatasets = new Set(formValues.selectedDatasets.map(dataset => dataset.name));
+    const activeNeurons = new Set(formValues.selectedNeurons.map((neuron) => neuron.name));
+    const activeDatasets = new Set(formValues.selectedDatasets.map((dataset) => dataset.name));
     createWorkspace(newWorkspaceId, formValues.workspaceName, activeDatasets, activeNeurons);
     onCloseCreateWorkspace();
   };
-  
+
   return (
-    <CustomDialog onClose={onCloseCreateWorkspace} showModal={showCreateWorkspaceDialog} title={'Create New workspace'}>
+    <CustomDialog onClose={onCloseCreateWorkspace} showModal={showCreateWorkspaceDialog} title={"Create New workspace"}>
       <Box px="1rem" py="1.5rem" gap={2.5} display="flex" flexDirection="column">
         <Box>
-          <FormLabel>Workspace name <Typography variant='caption'>(REQUIRED)</Typography></FormLabel>
+          <FormLabel>
+            Workspace name <Typography variant="caption">(REQUIRED)</Typography>
+          </FormLabel>
           <TextField
             fullWidth
             variant="outlined"
@@ -83,7 +85,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
             helperText={errorMessage}
           />
         </Box>
-        
+
         <Box>
           <FormLabel>Datasets</FormLabel>
           <CustomAutocomplete
@@ -109,7 +111,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
             onChange={handleDatasetChange}
           />
         </Box>
-        
+
         <Box>
           <FormLabel>Neurons</FormLabel>
           <CustomAutocomplete
@@ -146,6 +148,6 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
       </Box>
     </CustomDialog>
   );
-}
+};
 
 export default CreateNewWorkspaceDialog;

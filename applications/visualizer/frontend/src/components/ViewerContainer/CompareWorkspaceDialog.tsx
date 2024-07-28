@@ -30,7 +30,7 @@ const CompareWorkspaceDialog = ({ onClose, showModal, datasets }: CompareWorkspa
   }, []);
 
   return (
-    <CustomDialog onClose={onClose} showModal={showModal} title={'New workspace configuration'}>
+    <CustomDialog onClose={onClose} showModal={showModal} title={"New workspace configuration"}>
       <Box px="1rem" py="1.5rem" gap={2.5} display="flex" flexDirection="column">
         <Typography>
           To start comparing, create workspace by configuring datasets and neurons you would want in the new workspace or start with an empty workspace.
@@ -39,7 +39,7 @@ const CompareWorkspaceDialog = ({ onClose, showModal, datasets }: CompareWorkspa
           <FormLabel>Workspace name</FormLabel>
           <TextField fullWidth variant="outlined" placeholder="Start typing workspace name" />
         </Box>
-        
+
         <Box>
           <FormLabel>Datasets</FormLabel>
           <CustomAutocomplete
@@ -64,7 +64,7 @@ const CompareWorkspaceDialog = ({ onClose, showModal, datasets }: CompareWorkspa
             }}
           />
         </Box>
-        
+
         <Box>
           <FormLabel>Neurons</FormLabel>
           <CustomAutocomplete
@@ -92,7 +92,7 @@ const CompareWorkspaceDialog = ({ onClose, showModal, datasets }: CompareWorkspa
           />
         </Box>
       </Box>
-      
+
       <Box borderTop={`0.0625rem solid ${colors.gray100}`} px="1rem" py="0.75rem" gap={0.5} display="flex" justifyContent="flex-end">
         <Button variant="text">Start with an empty workspace</Button>
         <Button variant="contained" color="info">
@@ -100,7 +100,6 @@ const CompareWorkspaceDialog = ({ onClose, showModal, datasets }: CompareWorkspa
         </Button>
       </Box>
     </CustomDialog>
-   
   );
 };
 

@@ -307,7 +307,7 @@ const theme = createTheme({
           "&.Mui-disabled": {
             background: gray100,
             color: gray400,
-            borderColor: gray200
+            borderColor: gray200,
           },
         },
       },
@@ -1025,28 +1025,27 @@ const theme = createTheme({
             "& .MuiOutlinedInput-notchedOutline": {
               borderWidth: 0,
               background: `transparent !important`,
-              boxShadow: 'none !important',
+              boxShadow: "none !important",
               borderColor: `${gray100} !important`,
             },
           },
-     
+
           "& .MuiInputBase-input": {
             padding: "0",
             height: "1.25rem",
           },
-          
+
           "& .MuiSvgIcon-root": {
             color: `${gray400B}`,
           },
-          
-          '&:has( .Mui-disabled)': {
+
+          "&:has( .Mui-disabled)": {
             backgroundColor: gray100,
-            
-            '& .MuiOutlinedInput-notchedOutline': {
+
+            "& .MuiOutlinedInput-notchedOutline": {
               borderColor: `${gray100} !important`,
-            }
+            },
           },
-          
         },
       },
     },
