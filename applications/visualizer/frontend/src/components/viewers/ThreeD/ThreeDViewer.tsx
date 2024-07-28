@@ -16,7 +16,7 @@ import { CameraControls, PerspectiveCamera } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { CheckIcon, CloseIcon } from "../../../icons";
-import type { Dataset } from "../../../models/models.ts";
+import type { Dataset } from "../../../models";
 import { vars } from "../../../theme/variables.ts";
 import CustomAutocomplete from "../../CustomAutocomplete.tsx";
 import Gizmo from "./Gizmo.tsx";
@@ -69,6 +69,7 @@ function ThreeDViewer() {
       <CustomAutocomplete
         multiple={false}
         options={activeDatasets}
+        onChange={(e) => console.log(e)}
         getOptionLabel={(option: Dataset) => option.name}
         renderOption={(props, option) => (
           <li {...props}>
