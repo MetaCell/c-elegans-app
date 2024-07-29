@@ -21,7 +21,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from api.api import api
-from .views import index, get_tile, get_seg
+from .views import index, get_tile, get_seg, get_seg_pbf
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -31,5 +31,6 @@ urlpatterns = [
         r"^emdata/(?P<slice>\d+)/(?P<x>\d+)_(?P<y>\d+)_(?P<zoom>\d+).jpg", get_tile
     ),
     re_path(r"^segdata/(?P<slice>\d+)", get_seg),
+    re_path(r"^segdatapbf/(?P<slice>\d+)", get_seg_pbf),
     re_path(r"(?P<path>.*)", index, name="index"),
 ]

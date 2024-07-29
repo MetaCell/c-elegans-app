@@ -63,3 +63,19 @@ def get_seg(request, slice):
     content_type = content_type or "application/octet-stream"
     content = full_path.open("rb")
     return FileResponse(content, content_type=content_type)
+
+def get_seg_pbf(request, slice):
+    path = Path(
+        f"Dataset8_segmentation_withsoma_Mona_updated_20230127.vsseg_export_s{slice}.pbf"
+    )
+
+    full_path = Path(
+        safe_join(EM_DATA_FOLDER.parent / "SEM_adult_segmentation_mip0/", path)
+    )
+
+    if not full_path.exists():
+        raise Http404()
+
+    content_type = "text/plain"
+    content = full_path.open("rb")
+    return FileResponse(content, content_type=content_type)

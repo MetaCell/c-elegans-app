@@ -46,6 +46,11 @@ export default defineConfig(({ command, mode }) => {
 					changeOrigin: isDev,
 					secure: !isDev,
 				},
+				"/segdatapbf": {
+					target: replaceHost(theDomain, "visualizer"),
+					changeOrigin: isDev,
+					secure: !isDev,
+				},
 			},
 		},
 	};

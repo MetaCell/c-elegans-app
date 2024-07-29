@@ -15,6 +15,12 @@ import Style from "ol/style/Style";
 import Text from "ol/style/Text";
 import { TileGrid } from "ol/tilegrid";
 import { useEffect, useRef } from "react";
+import VectorTileLayer from "ol/layer/VectorTile";
+import VectorTileSource from 'ol/source/VectorTile';
+import MVT from 'ol/format/MVT';
+
+import geobuf from 'geobuf';
+import Pbf from 'pbf';
 
 // const width = 42496 / 2;
 // const height = 22528 / 2;
@@ -92,13 +98,13 @@ const EMStackViewer = () => {
 		}),
 	});
 
-	const segLayer = new VectorLayer({
-		source: new VectorSource({
-			url: `segdata/${slice}`,
-			format: new GeoJSON(),
-		}),
-		style: getFeatureStyle,
-	});
+	// const segLayer = new VectorLayer({
+	// 	source: new VectorSource({
+	// 		url: `segdata/${slice}`,
+	// 		format: new GeoJSON(),
+	// 	}),
+	// 	style: getFeatureStyle,
+	// });
 
 	// const debugLayer = new TileLayer({
 	// 	source: new TileDebug({
@@ -118,7 +124,10 @@ const EMStackViewer = () => {
 
 		const map = new Map({
 			target: "emviewer",
-			layers: [emLayer, segLayer],
+			layers: [
+				emLayer,
+				// segLayer
+			],
 			view: new View({
 				projection: projection,
 				center: getCenter(extent),
@@ -129,6 +138,22 @@ const EMStackViewer = () => {
 			}),
 			controls: [scale],
 		});
+
+		fetch(`/segdatapbf/${slice}/`)
+			.then((resp) => resp.arrayBuffer())
+			.then((data) => {
+				var geojson = geobuf.decode(new Pbf(data))
+				var vectorSource = new VectorSource({
+				features: (new GeoJSON()).readFeatures(geojson, {
+					featureProjection: projection
+				})
+				})
+				var vectorLayer = new VectorLayer({
+					source: vectorSource,
+					style: getFeatureStyle
+				})
+				map.addLayer(vectorLayer)
+			})
 
 		map.on("click", (evt) => {
 			const feature = map.forEachFeatureAtPixel(evt.pixel, (feat) => feat);
