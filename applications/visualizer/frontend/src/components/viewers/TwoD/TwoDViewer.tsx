@@ -9,7 +9,7 @@ import {applyLayout, updateHighlighted} from "../../../helpers/twoD/twoDHelpers"
 import {
     CHEMICAL_THRESHOLD,
     ELECTRICAL_THRESHOLD,
-    GRAPH_LAYOUTS,
+    GRAPH_LAYOUTS, GraphType,
     INCLUDE_ANNOTATIONS,
     INCLUDE_NEIGHBORING_CELLS
 } from "../../../settings/twoDSettings";
@@ -40,6 +40,7 @@ const TwoDViewer = () => {
     });
     const [includeAnnotations, setIncludeAnnotations] = useState<boolean>(INCLUDE_ANNOTATIONS);
     const [mousePosition, setMousePosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
+    const [legendHighlights, setLegendHighlights] = useState<Map<GraphType, string>>(new Map());
 
     const handleContextMenuClose = () => {
         setMousePosition(null);
@@ -119,6 +120,13 @@ const TwoDViewer = () => {
             updateNodeColors();
         }
     }, [coloringOption]);
+
+    useEffect(() => {
+        if (cyRef.current) {
+            updateHighlighted(cyRef.current, Array.from(workspace.activeNeurons),
+                Array.from(workspace.selectedNeurons), legendHighlights);
+        }
+    }, [legendHighlights]);
 
     // Update layout when layout setting changes
     useEffect(() => {
@@ -223,7 +231,7 @@ const TwoDViewer = () => {
 
         updateLayout();
         updateNodeColors();
-        updateHighlighted(cy, Array.from(workspace.activeNeurons), Array.from(workspace.selectedNeurons), []);
+        updateHighlighted(cy, Array.from(workspace.activeNeurons), Array.from(workspace.selectedNeurons), legendHighlights);
     };
 
     const updateLayout = () => {
@@ -273,7 +281,8 @@ const TwoDViewer = () => {
             />
             <Box sx={{position: "absolute", top: 0, right: 0, zIndex: 1000}}>
                 <TwoDLegend coloringOption={coloringOption}
-                            onClick={(type, name) => console.log(`${type} clicked: ${name}`)}/>
+                            legendHighlights={legendHighlights}
+                            setLegendHighlights={setLegendHighlights}/>
             </Box>
             <div ref={cyContainer} style={{width: "100%", height: "100%"}}/>
             <ContextMenu

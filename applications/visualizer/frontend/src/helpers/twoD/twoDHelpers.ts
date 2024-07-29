@@ -1,6 +1,7 @@
 import type { Core, ElementDefinition } from "cytoscape";
 import type { Connection } from "../../rest";
 import type { Workspace } from "../../models/workspace.ts";
+import {GraphType} from "../../settings/twoDSettings.tsx";
 
 export const CONNECTION_SEPARATOR = '-'
 
@@ -12,6 +13,7 @@ export const createEdge = (conn: Connection): ElementDefinition => {
       source: conn.pre,
       target: conn.post,
       label: conn.type,
+      type: conn.type,
     },
     classes: conn.type,
   };
@@ -58,28 +60,18 @@ export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights) =
 
   // Filter network by edges, as set by legend.
   let edgeSel = "edge";
-  legendHighlights.forEach((highlight) => {
-    const list = highlight.split("-")[0];
-    const type = highlight.substr(highlight.indexOf("-") + 1);
-
-    if (list == "edge") {
-      if (type.includes("typ")) {
-        edgeSel += "[type=" + type.slice(-1) + "]";
-      } else {
-        edgeSel += "." + type;
-      }
+  legendHighlights.forEach((highlight, type) => {
+    if (type === GraphType.Connection) {
+      edgeSel += `[type="${highlight}"]`;
     }
   });
 
   let connectedNodes = sourceNodes.neighborhood(edgeSel).connectedNodes();
 
   // Filter network by nodes, as set by legend.
-  legendHighlights.forEach((highlight) => {
-    const list = highlight.split("-")[0];
-    const type = highlight.split("-")[1];
-
-    if (["type", "nt"].includes(list)) {
-      connectedNodes = connectedNodes.filter("[?" + type + "]");
+  legendHighlights.forEach((highlight, type) => {
+    if (type === GraphType.Node) {
+      connectedNodes = connectedNodes.filter("[?" + highlight + "]");
     }
   });
 
