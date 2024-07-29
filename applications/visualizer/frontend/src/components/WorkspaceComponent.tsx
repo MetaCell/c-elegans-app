@@ -14,8 +14,9 @@ import { AddIcon, CheckIcon, DownIcon, DownloadIcon, LinkIcon, ViewerSettings as
 import { vars } from "../theme/variables.ts";
 import CreateNewWorkspaceDialog from "./CreateNewWorkspaceDialog.tsx";
 import ViewerSettings from "./ViewerSettings.tsx";
+import {DeleteOutlined} from "@mui/icons-material";
 
-const { gray100, white } = vars;
+const { gray100, white, orange700 } = vars;
 
 const LoadingComponent = () => (
   <Box
@@ -32,13 +33,14 @@ const LoadingComponent = () => (
 
 function WorkspaceComponent() {
   const dispatch = useDispatch();
-  const { workspaces, setCurrentWorkspace } = useGlobalContext();
+  const { workspaces, setCurrentWorkspace, removeWorkspace } = useGlobalContext();
 
   const workspaceId = useSelector((state: RootState) => state.workspaceId);
   const [LayoutComponent, setLayoutComponent] = useState<React.ComponentType>(() => LoadingComponent);
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [open, setOpen] = React.useState(false);
   const [showCreateWorkspaceDialog, setShowCreateWorkspaceDialog] = React.useState(false);
+  const [hoveredWorkspaceId, setHoveredWorkspaceId] = useState(null);
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
   };
@@ -76,7 +78,38 @@ function WorkspaceComponent() {
   const onClickWorkspace = (workspace) => {
     setCurrentWorkspace(workspace.id);
   };
+  
+  const handleMouseEnter = (workspaceId) => {
+    setHoveredWorkspaceId(workspaceId);
+  };
+  
+  const handleMouseLeave = () => {
+    setHoveredWorkspaceId(null);
+  };
+  
+  const onDeleteWorkspace = (e, workspaceId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const workspaceKeys = Object.keys(workspaces);
+    const firstWorkspaceId = workspaces[workspaceKeys[0]].id;
+    const secondWorkspaceId = workspaces[workspaceKeys[1]].id;
+    
+    // Determine the workspace to switch to after deletion
+    const workspaceIdToView = workspaceId === firstWorkspaceId
+      ? secondWorkspaceId
+      : firstWorkspaceId;
+    
+    // If the current workspace is the one being deleted, switch to the determined workspace
+    if (currentWorkspace.id === workspaceId) {
+      setCurrentWorkspace(workspaceIdToView);
+    }
+    
+    removeWorkspace(workspaceId);
+  };
 
+  const workspacesLength = Object.keys(workspaces).length;
+  
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -141,15 +174,33 @@ function WorkspaceComponent() {
                       </Box>
                       <Box>
                         {Object.keys(workspaces).map((workspace) => (
-                          <MenuItem key={workspaces[workspace].id} value={workspaces[workspace].id} onClick={() => onClickWorkspace(workspaces[workspace])}>
-                            <Box
-                              sx={{
-                                visibility: currentWorkspace.id === workspaces[workspace].id ? "block" : "hidden",
-                              }}
-                            >
-                              <CheckIcon />
+                          <MenuItem
+                            key={workspaces[workspace].id}
+                            value={workspaces[workspace].id}
+                            onClick={() => onClickWorkspace(workspaces[workspace])}
+                            onMouseEnter={() => handleMouseEnter(workspaces[workspace].id)}
+                            onMouseLeave={handleMouseLeave}
+                            sx={{
+                              justifyContent: 'space-between'
+                            }}
+                          >
+                            <Box display='flex' alignItems='center' gap='.5rem'>
+                              <Box
+                                sx={{
+                                  visibility: currentWorkspace.id === workspaces[workspace].id ? "initial" : "hidden",
+                                  display: "flex",
+                                  alignItems: 'center'
+                                }}
+                              >
+                                <CheckIcon />
+                              </Box>
+                              {workspaces[workspace].name}
                             </Box>
-                            {workspaces[workspace].name}
+                            {hoveredWorkspaceId === workspaces[workspace].id && workspacesLength > 1 && (
+                              <IconButton sx={{p: 0}} onClick={(e) => onDeleteWorkspace(e, workspaces[workspace].id)}>
+                                <DeleteOutlined sx={{ color: orange700 }} />
+                              </IconButton>
+                            )}
                           </MenuItem>
                         ))}
                       </Box>
