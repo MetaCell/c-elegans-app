@@ -5,7 +5,17 @@ const PORT = 9000;
 
 // https://vitejs.dev/config/
 const defaultConfig = {
-  plugins: [react()],
+  plugins: [
+    react({
+      jsxImportSource: "@emotion/react",
+      babel: {
+        plugins: ["@emotion/babel-plugin"],
+      },
+    }),
+  ],
+  optimizeDeps: {
+    include: ["@emotion/react", "@emotion/styled", "@mui/material/Tooltip"],
+  },
   build: {
     sourcemap: !process.env.NO_SOURCEMAP,
   },
