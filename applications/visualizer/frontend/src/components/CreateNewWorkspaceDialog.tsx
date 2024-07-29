@@ -10,6 +10,7 @@ import CustomAutocomplete from "./CustomAutocomplete.tsx";
 import CustomDialog from "./CustomDialog.tsx";
 const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceDialog }) => {
   const [neurons, setNeurons] = useState<Neuron[]>([]);
+  const { workspaces } = useGlobalContext();
   const { datasets, createWorkspace } = useGlobalContext();
   const [searchedNeuron, setSearchedNeuron] = useState("");
   const [formValues, setFormValues] = useState<{
@@ -53,10 +54,19 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
   const handleNeuronChange = (value) => {
     setFormValues({ ...formValues, selectedNeurons: value });
   };
-
+  
+  const isWorkspaceNameDuplicate = (name) => {
+    return Object.values(workspaces).some((workspace) => workspace.name === name);
+  };
+  
   const handleSubmit = () => {
     if (!formValues.workspaceName.trim()) {
-      setErrorMessage("Workspace name is required.");
+      setErrorMessage("Workspace name is required!");
+      return;
+    }
+    
+    if (isWorkspaceNameDuplicate(formValues.workspaceName.trim())) {
+      setErrorMessage("Workspace name already exists!");
       return;
     }
 
