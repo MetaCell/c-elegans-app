@@ -1,7 +1,7 @@
 import { Box, Button, FormLabel, IconButton, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { CaretIcon, CheckIcon, CloseIcon } from "../../icons";
-import type { Dataset, Neuron } from "../../models";
+import type { Neuron } from "../../models";
 import { NeuronsService } from "../../rest";
 import { vars as colors } from "../../theme/variables.ts";
 import CustomAutocomplete from "../CustomAutocomplete.tsx";
@@ -10,10 +10,9 @@ import CustomDialog from "../CustomDialog.tsx";
 interface CompareWorkspaceDialogProps {
   onClose: () => void;
   showModal: boolean;
-  datasets: Dataset[];
 }
 
-const CompareWorkspaceDialog = ({ onClose, showModal, datasets }: CompareWorkspaceDialogProps) => {
+const CompareWorkspaceDialog = ({ onClose, showModal }: CompareWorkspaceDialogProps) => {
   const [neurons, setNeurons] = useState<Neuron[]>([]);
 
   const fetchNeurons = async () => {
@@ -43,7 +42,7 @@ const CompareWorkspaceDialog = ({ onClose, showModal, datasets }: CompareWorkspa
         <Box>
           <FormLabel>Datasets</FormLabel>
           <CustomAutocomplete
-            options={datasets}
+            options={[]}
             onChange={(v) => console.log(v)}
             getOptionLabel={(option) => option.name}
             renderOption={(props, option) => (

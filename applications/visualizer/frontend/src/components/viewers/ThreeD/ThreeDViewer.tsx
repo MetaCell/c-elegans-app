@@ -41,8 +41,8 @@ function ThreeDViewer() {
   const [showSynapses, setShowSynapses] = useState<boolean>(true);
   const [instances, setInstances] = useState<Instance[]>([]);
   const [isWireframe, setIsWireframe] = useState<boolean>(false);
-  const activeDatasets = Object.values(useGlobalContext().getCurrentWorkspace().activateDataset);
-
+  const { workspaces, currentWorkspaceId } = useGlobalContext();
+  const currentWorkspace = workspaces[currentWorkspaceId];
   const cameraControlRef = useRef<CameraControls | null>(null);
 
   useEffect(() => {
@@ -64,11 +64,13 @@ function ThreeDViewer() {
     }
   }, [showNeurons, showSynapses]);
 
+  const dataSets = Object.values(currentWorkspace.activeDatasets);
+
   return (
     <>
       <CustomAutocomplete
         multiple={false}
-        options={activeDatasets}
+        options={dataSets}
         onChange={(e) => console.log(e)}
         getOptionLabel={(option: Dataset) => option.name}
         renderOption={(props, option) => (

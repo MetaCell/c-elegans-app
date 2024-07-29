@@ -1,9 +1,10 @@
 import type { LayoutManager } from "@metacell/geppetto-meta-client/common/layout/LayoutManager";
 import type { configureStore } from "@reduxjs/toolkit";
 import { immerable, produce } from "immer";
-import { fetchDatasets } from "../helpers/workspaceHelper.ts";
+import type { GlobalContextType } from "../contexts/GlobalContext.tsx";
+import { getWorkspaceActiveDatasets } from "../helpers/workspaceHelper.ts";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory.ts";
-import { type Dataset, DatasetsService, type Neuron } from "../rest";
+import { type Dataset, type Neuron, NeuronsService } from "../rest";
 import { type NeuronGroup, ViewerSynchronizationPair, ViewerType } from "./models.ts";
 
 export class Workspace {
@@ -25,8 +26,15 @@ export class Workspace {
   store: ReturnType<typeof configureStore>;
   layoutManager: LayoutManager;
   updateContext: (workspace: Workspace) => void;
-
-  constructor(id: string, name: string, datasetIds: Set<string>, activeNeurons: Set<string>, updateContext: (workspace: Workspace) => void) {
+  globalContext: GlobalContextType;
+  constructor(
+    id: string,
+    name: string,
+    datasetIds: Set<string>,
+    activeNeurons: Set<string>,
+    updateContext: (workspace: Workspace) => void,
+    globalContext: GlobalContextType,
+  ) {
     this.id = id;
     this.name = name;
     this.activeDatasets = {};
@@ -50,6 +58,7 @@ export class Workspace {
     this.layoutManager = layoutManager;
     this.store = store;
     this.updateContext = updateContext;
+    this.globalContext = globalContext;
 
     this._initializeActiveDatasets(datasetIds);
   }
@@ -131,19 +140,19 @@ export class Workspace {
   }
 
   async _initializeActiveDatasets(datasetIds: Set<string>) {
-    const datasets = await fetchDatasets(datasetIds);
+    const datasets = getWorkspaceActiveDatasets(this.globalContext.datasets, datasetIds);
     const updated: Workspace = produce(this, (draft: Workspace) => {
       draft.activeDatasets = datasets;
     });
+
     const updatedWithNeurons = await this._getAvailableNeurons(updated);
     this.updateContext(updatedWithNeurons);
   }
-
   async _getAvailableNeurons(updatedWorkspace: Workspace): Promise<Workspace> {
     try {
-      const neuronPromises = Object.keys(updatedWorkspace.activeDatasets).map((datasetId) => DatasetsService.getDatasetNeurons({ dataset: datasetId }));
+      const datasetIds = Object.keys(updatedWorkspace.activeDatasets);
+      const neuronArrays = await NeuronsService.searchCells({ datasetIds });
 
-      const neuronArrays = await Promise.all(neuronPromises);
       const uniqueNeurons = new Set<Neuron>();
 
       // Flatten and deduplicate neurons

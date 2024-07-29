@@ -1,7 +1,6 @@
 import { AppBar, Box, Button, ButtonGroup, IconButton, Menu, MenuItem, Toolbar, Tooltip, Typography } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 import React, { useState } from "react";
-import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 import { CiteIcon, ConnectionsIcon, ContactIcon, ContributeIcon, DataSourceIcon, DownloadIcon, MoreOptionsIcon, TourIcon } from "../../icons";
 import { vars } from "../../theme/variables.ts";
 import CompareWorkspaceDialog from "./CompareWorkspaceDialog.tsx";
@@ -88,7 +87,6 @@ const Header = ({
   const [showModal, setShowModal] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const { datasets } = useGlobalContext();
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -202,8 +200,7 @@ const Header = ({
           </Box>
         </Toolbar>
       </AppBar>
-
-      <CompareWorkspaceDialog showModal={showModal} onClose={onClose} datasets={datasets} />
+      {showModal && <CompareWorkspaceDialog showModal={showModal} onClose={onClose} />}
     </>
   );
 };

@@ -475,7 +475,7 @@ const theme = createTheme({
           borderRadius: "0.375rem",
           gap: "0.5rem",
 
-          "&:not(:first-child)": {
+          "&:not(:first-of-type)": {
             marginTop: "0.25rem",
           },
 

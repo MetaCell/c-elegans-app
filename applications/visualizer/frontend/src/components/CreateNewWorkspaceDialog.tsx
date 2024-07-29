@@ -81,6 +81,8 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
     onCloseCreateWorkspace();
   };
 
+  const datasetsArray = Object.values(datasets);
+
   return (
     <CustomDialog onClose={onCloseCreateWorkspace} showModal={showCreateWorkspaceDialog} title={"Create New workspace"}>
       <Box px="1rem" py="1.5rem" gap={2.5} display="flex" flexDirection="column">
@@ -103,7 +105,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
         <Box>
           <FormLabel>Datasets</FormLabel>
           <CustomAutocomplete
-            options={datasets}
+            options={datasetsArray}
             getOptionLabel={(option) => option.name}
             renderOption={(props, option) => (
               <li {...props}>

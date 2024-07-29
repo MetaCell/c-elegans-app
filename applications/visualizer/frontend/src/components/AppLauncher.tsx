@@ -2,6 +2,7 @@ import { AppBar, Box, Button, Card, CardActionArea, CardContent, Container, Grid
 import footerImage from "../assets/summary-neurons.png";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import { parseURLParams } from "../helpers/parseURLHelper.ts";
+import { TEMPLATE_ACTIVE_DATASETS, TEMPLATE_ACTIVE_NEURONS } from "../settings/templateWorkspaceSettings.ts";
 function AppLauncher() {
   const { workspaces, createWorkspace, setCurrentWorkspace } = useGlobalContext();
 
@@ -9,7 +10,7 @@ function AppLauncher() {
     const workspaceId = `workspace-${Date.now()}`;
     const workspaceName = `Template Workspace ${Object.keys(workspaces).length + 1}`;
 
-    createWorkspace(workspaceId, workspaceName);
+    createWorkspace(workspaceId, workspaceName, new Set(TEMPLATE_ACTIVE_DATASETS), new Set(TEMPLATE_ACTIVE_NEURONS));
     setCurrentWorkspace(workspaceId);
   };
 
@@ -27,7 +28,6 @@ function AppLauncher() {
     const parsedParams = parseURLParams(exampleURL);
     console.log(parsedParams);
   };
-
   return (
     <>
       <Box>
