@@ -1,5 +1,13 @@
 import type {Core, ElementDefinition, CollectionReturnValue} from 'cytoscape';
-import {CONNECTION_SEPARATOR, createEdge, createNode, getEdgeName, isCell, isClass} from './twoDHelpers';
+import {
+    CONNECTION_SEPARATOR,
+    createEdge,
+    createNode,
+    extractNeuronAttributes,
+    getEdgeName,
+    isCell,
+    isClass
+} from './twoDHelpers';
 import {NeuronGroup, Workspace} from "../../models";
 import {Connection} from "../../rest";
 
@@ -69,7 +77,9 @@ export const computeGraphDifferences = (
     // Determine nodes to add and remove
     for (const nodeId of expectedNodes) {
         if (!currentNodes.has(nodeId)) {
-            nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId)));
+            const neuron = workspace.availableNeurons[nodeId];
+            const attributes = extractNeuronAttributes(neuron);
+            nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), attributes));
         }
     }
 

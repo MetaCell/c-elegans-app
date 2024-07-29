@@ -2,6 +2,7 @@ import type { Core, ElementDefinition } from "cytoscape";
 import type { Connection } from "../../rest";
 import type { Workspace } from "../../models/workspace.ts";
 import {GraphType} from "../../settings/twoDSettings.tsx";
+import {cellConfig, neurotransmitterConfig} from "./coloringHelper.ts";
 
 export const CONNECTION_SEPARATOR = '-'
 
@@ -19,10 +20,21 @@ export const createEdge = (conn: Connection): ElementDefinition => {
   };
 };
 
-export const createNode = (nodeId: string, selected: boolean): ElementDefinition => {
+export const createNode = (
+  nodeId: string,
+  selected: boolean,
+  attributes: string[]
+): ElementDefinition => {
+  const data = { id: nodeId, label: nodeId };
+
+  // Set each attribute in the data object to true
+  attributes.forEach(attr => {
+    data[attr] = true;
+  });
+
   return {
     group: "nodes",
-    data: { id: nodeId, label: nodeId },
+    data,
     classes: selected ? "selected" : "",
   };
 };
@@ -116,3 +128,10 @@ export const isClass = (neuronId: string, workspace: Workspace): boolean => {
 export const getEdgeName = (pre: string, post: string, type: string): string => {
   return `${pre}${CONNECTION_SEPARATOR}${post}${CONNECTION_SEPARATOR}${type}`;
 }
+
+export const extractNeuronAttributes = (neuron) => {
+  const cellAttributes = neuron.type.split('').map(char => cellConfig[char]?.type).filter(Boolean);
+  const neurotransmitterAttributes = neuron.neurotransmitter.split('').map(char => neurotransmitterConfig[char]?.type).filter(Boolean);
+
+  return [...cellAttributes, ...neurotransmitterAttributes];
+};

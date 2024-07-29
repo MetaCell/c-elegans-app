@@ -156,6 +156,8 @@ const TwoDViewer = () => {
             if (event.target === cy) {
                 workspace.clearSelectedNeurons();
                 cy.nodes(".selected").removeClass("selected");
+
+                setLegendHighlights(new Map()); // Reset legend highlights
             }
         };
 
@@ -258,7 +260,6 @@ const TwoDViewer = () => {
                 node.style(`pie-${index + 1}-background-color`, color);
                 node.style(`pie-${index + 1}-background-size`, 100 / colors.length); // Equal size for each slice
             });
-            node.style("pie-background-opacity", 1);
         });
     };
 

@@ -19,7 +19,7 @@ interface CellDesign {
     color: string;
 }
 
-const cellConfig: { [key: string]: CellDesign } = {
+export const cellConfig: { [key: string]: CellDesign } = {
     b: {type: CellType.Muscle, color: "#A8F5A2"},
     u: {type: CellType.Others, color: "#D9D9D9"},
     s: {type: CellType.Sensory, color: "#F9CEF9"},
@@ -45,7 +45,7 @@ interface NeurotransmitterDesign {
     color: string;
 }
 
-const neurotransmitterConfig: { [key: string]: NeurotransmitterDesign } = {
+export const neurotransmitterConfig: { [key: string]: NeurotransmitterDesign } = {
     a: {type: NeurotransmitterType.Acetylcholine, color: "#FF887A"},
     d: {type: NeurotransmitterType.Dopamine, color: "#A8F5A2"},
     g: {type: NeurotransmitterType.GABA, color: "#99CCFF"},
