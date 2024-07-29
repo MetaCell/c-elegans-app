@@ -1,5 +1,4 @@
 import { Box, Divider, Drawer, FormControlLabel, FormGroup, IconButton, Typography } from "@mui/material";
-import { produce } from "immer";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import { CloseIcon, LinkIcon } from "../icons";
 import { vars } from "../theme/variables.ts";
@@ -40,19 +39,13 @@ const buttonStyle = {
 };
 
 const ViewerSettings = ({ open, toggleDrawer }) => {
-  const { workspaces, currentWorkspaceId, updateWorkspace } = useGlobalContext();
+  const { workspaces, currentWorkspaceId } = useGlobalContext();
   const currentWorkspace = workspaces[currentWorkspaceId];
   const handleToggle = (e, viewer) => {
-    const updatedWorkspace = produce(currentWorkspace, (draft) => {
-      draft.viewers[viewer] = e.target.checked;
-    });
-    updateWorkspace(updatedWorkspace);
+    currentWorkspace.changeViewerVisibility(viewer, e.target.checked);
   };
-  const handleChangeSynchronizations = (_, index) => {
-    const updatedWorkspace = produce(currentWorkspace, (draft) => {
-      draft.synchronizations[index] = !draft.synchronizations[index];
-    });
-    updateWorkspace(updatedWorkspace);
+  const handleChangeSynchronizations = (_, index, status) => {
+    currentWorkspace.updateViewerSynchronizationStatus(index, !status);
   };
 
   return (
@@ -156,7 +149,7 @@ const ViewerSettings = ({ open, toggleDrawer }) => {
                 <IconButton
                   className={currentWorkspace?.synchronizations[index] ? "active" : ""}
                   sx={buttonStyle}
-                  onClick={(e) => handleChangeSynchronizations(e, index)}
+                  onClick={(e) => handleChangeSynchronizations(e, index, currentWorkspace?.synchronizations[index])}
                 >
                   <LinkIcon />
                 </IconButton>
