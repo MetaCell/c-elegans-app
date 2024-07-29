@@ -54,17 +54,17 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
   const handleNeuronChange = (value) => {
     setFormValues({ ...formValues, selectedNeurons: value });
   };
-  
+
   const isWorkspaceNameDuplicate = (name) => {
     return Object.values(workspaces).some((workspace) => workspace.name === name);
   };
-  
+
   const handleSubmit = () => {
     if (!formValues.workspaceName.trim()) {
       setErrorMessage("Workspace name is required!");
       return;
     }
-    
+
     if (isWorkspaceNameDuplicate(formValues.workspaceName.trim())) {
       setErrorMessage("Workspace name already exists!");
       return;

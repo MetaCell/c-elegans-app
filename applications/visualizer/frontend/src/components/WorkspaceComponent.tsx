@@ -10,11 +10,11 @@ import { threeDViewerWidget, twoDViewerWidget } from "../layout-manager/widgets.
 import theme from "../theme";
 import Layout from "./ViewerContainer/Layout.tsx";
 
+import { DeleteOutlined } from "@mui/icons-material";
 import { AddIcon, CheckIcon, DownIcon, DownloadIcon, LinkIcon, ViewerSettings as ViewerSettingsIcon } from "../icons/index.tsx";
 import { vars } from "../theme/variables.ts";
 import CreateNewWorkspaceDialog from "./CreateNewWorkspaceDialog.tsx";
 import ViewerSettings from "./ViewerSettings.tsx";
-import {DeleteOutlined} from "@mui/icons-material";
 
 const { gray100, white, orange700 } = vars;
 
@@ -78,38 +78,36 @@ function WorkspaceComponent() {
   const onClickWorkspace = (workspace) => {
     setCurrentWorkspace(workspace.id);
   };
-  
+
   const handleMouseEnter = (workspaceId) => {
     setHoveredWorkspaceId(workspaceId);
   };
-  
+
   const handleMouseLeave = () => {
     setHoveredWorkspaceId(null);
   };
-  
+
   const onDeleteWorkspace = (e, workspaceId) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     const workspaceKeys = Object.keys(workspaces);
     const firstWorkspaceId = workspaces[workspaceKeys[0]].id;
     const secondWorkspaceId = workspaces[workspaceKeys[1]].id;
-    
+
     // Determine the workspace to switch to after deletion
-    const workspaceIdToView = workspaceId === firstWorkspaceId
-      ? secondWorkspaceId
-      : firstWorkspaceId;
-    
+    const workspaceIdToView = workspaceId === firstWorkspaceId ? secondWorkspaceId : firstWorkspaceId;
+
     // If the current workspace is the one being deleted, switch to the determined workspace
     if (currentWorkspace.id === workspaceId) {
       setCurrentWorkspace(workspaceIdToView);
     }
-    
+
     removeWorkspace(workspaceId);
   };
 
   const workspacesLength = Object.keys(workspaces).length;
-  
+
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -181,15 +179,15 @@ function WorkspaceComponent() {
                             onMouseEnter={() => handleMouseEnter(workspaces[workspace].id)}
                             onMouseLeave={handleMouseLeave}
                             sx={{
-                              justifyContent: 'space-between'
+                              justifyContent: "space-between",
                             }}
                           >
-                            <Box display='flex' alignItems='center' gap='.5rem'>
+                            <Box display="flex" alignItems="center" gap=".5rem">
                               <Box
                                 sx={{
                                   visibility: currentWorkspace.id === workspaces[workspace].id ? "initial" : "hidden",
                                   display: "flex",
-                                  alignItems: 'center'
+                                  alignItems: "center",
                                 }}
                               >
                                 <CheckIcon />
@@ -197,7 +195,7 @@ function WorkspaceComponent() {
                               {workspaces[workspace].name}
                             </Box>
                             {hoveredWorkspaceId === workspaces[workspace].id && workspacesLength > 1 && (
-                              <IconButton sx={{p: 0}} onClick={(e) => onDeleteWorkspace(e, workspaces[workspace].id)}>
+                              <IconButton sx={{ p: 0 }} onClick={(e) => onDeleteWorkspace(e, workspaces[workspace].id)}>
                                 <DeleteOutlined sx={{ color: orange700 }} />
                               </IconButton>
                             )}
