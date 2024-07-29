@@ -9,11 +9,27 @@ interface ContextMenuProps {
     workspace: Workspace;
     position: { mouseX: number; mouseY: number } | null;
     setSplitJoinState: React.Dispatch<React.SetStateAction<{ split: Set<string>; join: Set<string> }>>;
+    setHiddenNodes: React.Dispatch<React.SetStateAction<Set<string>>>;
+
 }
 
-const ContextMenu: React.FC<ContextMenuProps> = ({open, onClose, workspace, position, setSplitJoinState}) => {
-    const handleClearSelections = () => {
-        workspace.clearSelectedNeurons();
+const ContextMenu: React.FC<ContextMenuProps> = ({
+                                                     open,
+                                                     onClose,
+                                                     workspace,
+                                                     position,
+                                                     setSplitJoinState,
+                                                     setHiddenNodes
+}) => {
+    const handleHide = () => {
+        setHiddenNodes((prevHiddenNodes) => {
+        const newHiddenNodes = new Set([...prevHiddenNodes]);
+            workspace.selectedNeurons.forEach(neuronId => {
+                newHiddenNodes.add(neuronId);
+            });
+            return newHiddenNodes;
+        });
+        workspace.clearSelectedNeurons()
         onClose();
     };
 
@@ -172,7 +188,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({open, onClose, workspace, posi
             onClose={onClose}
             onContextMenu={handleContextMenu}
         >
-            <MenuItem onClick={handleClearSelections}>Clear Selections</MenuItem>
+            <MenuItem onClick={handleHide}>Hide</MenuItem>
             <MenuItem onClick={handleGroup} disabled={!groupEnabled}>
                 Group
             </MenuItem>

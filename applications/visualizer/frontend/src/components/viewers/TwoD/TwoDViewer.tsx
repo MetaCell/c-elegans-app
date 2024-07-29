@@ -41,6 +41,7 @@ const TwoDViewer = () => {
     const [includeAnnotations, setIncludeAnnotations] = useState<boolean>(INCLUDE_ANNOTATIONS);
     const [mousePosition, setMousePosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
     const [legendHighlights, setLegendHighlights] = useState<Map<GraphType, string>>(new Map());
+    const [hiddenNodes, setHiddenNodes] = useState<Set<string>>(new Set());
 
     const handleContextMenuClose = () => {
         setMousePosition(null);
@@ -113,7 +114,7 @@ const TwoDViewer = () => {
         if (cyRef.current) {
             updateGraphElements(cyRef.current, connections);
         }
-    }, [connections]);
+    }, [connections, hiddenNodes]);
 
     useEffect(() => {
         if (cyRef.current) {
@@ -220,7 +221,8 @@ const TwoDViewer = () => {
             nodesToRemove,
             edgesToAdd,
             edgesToRemove
-        } = computeGraphDifferences(cy, connections, workspace, splitJoinState, includeNeighboringCellsAsIndividualCells);
+        } = computeGraphDifferences(cy, connections, workspace, splitJoinState, includeNeighboringCellsAsIndividualCells, hiddenNodes);
+
 
         cy.batch(() => {
             cy.remove(nodesToRemove);
@@ -291,6 +293,7 @@ const TwoDViewer = () => {
                 workspace={workspace}
                 position={mousePosition}
                 setSplitJoinState={setSplitJoinState}
+                setHiddenNodes={setHiddenNodes}
             />
         </Box>
     );

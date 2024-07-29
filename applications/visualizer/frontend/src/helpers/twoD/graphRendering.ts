@@ -9,7 +9,8 @@ export const computeGraphDifferences = (
     connections: Connection[],
     workspace: Workspace,
     splitJoinState: { split: Set<string>; join: Set<string> },
-    includeNeighboringCellsAsIndividualCells: boolean
+    includeNeighboringCellsAsIndividualCells: boolean,
+    hiddenNodes: Set<string>
 ) => {
     // Current nodes and edges in the Cytoscape instance
     const currentNodes = new Set(cy.nodes().map((node) => node.id()));
@@ -27,7 +28,7 @@ export const computeGraphDifferences = (
     // Compute expected nodes based on workspace.activeNeurons and connections
     const filteredActiveNeurons = Array.from(workspace.activeNeurons).filter((neuronId: string) => {
         const neuron = workspace.availableNeurons[neuronId];
-        if (!neuron) {
+        if (!neuron || hiddenNodes.has(neuronId)) {
             return false;
         }
         const nclass = neuron.nclass;
@@ -44,11 +45,17 @@ export const computeGraphDifferences = (
 
     // Add nodes from connections to expected nodes
     for (const conn of connections) {
-        expectedNodes.add(conn.pre);
-        expectedNodes.add(conn.post);
+        if (!hiddenNodes.has(conn.pre)) {
+            expectedNodes.add(conn.pre);
+        }
+        if (!hiddenNodes.has(conn.post)) {
+            expectedNodes.add(conn.post);
+        }
 
-        const edgeId = getEdgeName(conn.pre, conn.post, conn.type);
-        expectedEdges.add(edgeId);
+        if (!hiddenNodes.has(conn.pre) && !hiddenNodes.has(conn.post)) {
+            const edgeId = getEdgeName(conn.pre, conn.post, conn.type);
+            expectedEdges.add(edgeId);
+        }
     }
 
     // Apply split and join rules to expected nodes and edges
@@ -76,7 +83,7 @@ export const computeGraphDifferences = (
     for (const edgeId of expectedEdges) {
         if (!currentEdges.has(edgeId)) {
             const [pre, post, type] = edgeId.split(CONNECTION_SEPARATOR);
-            edgesToAdd.push(createEdge({pre, post, type}));
+            edgesToAdd.push(createEdge({ pre, post, type }));
         }
     }
 
@@ -87,8 +94,9 @@ export const computeGraphDifferences = (
     }
 
     // Return the differences to be applied to the Cytoscape instance
-    return {nodesToAdd, nodesToRemove, edgesToAdd, edgesToRemove};
+    return { nodesToAdd, nodesToRemove, edgesToAdd, edgesToRemove };
 };
+
 
 
 // Replace individual neurons with group nodes
