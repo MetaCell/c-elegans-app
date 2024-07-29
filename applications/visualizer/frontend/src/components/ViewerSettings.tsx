@@ -1,6 +1,10 @@
+import { updateWidget } from "@metacell/geppetto-meta-client/common/layout/actions";
+import { WidgetStatus } from "@metacell/geppetto-meta-client/common/layout/model";
 import { Box, Divider, Drawer, FormControlLabel, FormGroup, IconButton, Typography } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import { CloseIcon, LinkIcon } from "../icons";
+import type { RootState } from "../layout-manager/layoutManagerFactory.ts";
 import { vars } from "../theme/variables.ts";
 import CustomSwitch from "./ViewerContainer/CustomSwitch.tsx";
 
@@ -33,16 +37,36 @@ const SyncViewersData = [
   },
 ];
 
+const viewers = {
+  Graph: "twoDViewer",
+  "3D": "threeDViewer",
+};
+
 const textStyles = { ...secondaryTypographyStyles, fontWeight: 500, flex: 1 };
 const buttonStyle = {
   p: "0.25rem",
 };
 
 const ViewerSettings = ({ open, toggleDrawer }) => {
+  const dispatch = useDispatch();
   const { workspaces, currentWorkspaceId } = useGlobalContext();
+  const widgets = useSelector((state: RootState) => state.widgets);
   const currentWorkspace = workspaces[currentWorkspaceId];
   const handleToggle = (e, viewer) => {
-    currentWorkspace.changeViewerVisibility(viewer, e.target.checked);
+    const selectedViewer = viewers[viewer];
+    if (selectedViewer) {
+      let viewerConfig = { ...widgets[selectedViewer] };
+      if (e.target.checked) {
+        viewerConfig = { ...viewerConfig, status: WidgetStatus.ACTIVE };
+      } else {
+        viewerConfig = { ...viewerConfig, status: WidgetStatus.MINIMIZED };
+      }
+
+      dispatch(updateWidget(viewerConfig));
+      currentWorkspace.changeViewerVisibility(viewer, e.target.checked);
+    } else {
+      return;
+    }
   };
   const handleChangeSynchronizations = (_, index, status) => {
     currentWorkspace.updateViewerSynchronizationStatus(index, !status);

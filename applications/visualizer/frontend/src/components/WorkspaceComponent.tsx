@@ -1,4 +1,4 @@
-import { addWidget } from "@metacell/geppetto-meta-client/common/layout/actions";
+import { addWidget, updateWidget } from "@metacell/geppetto-meta-client/common/layout/actions";
 import { Box, Button, CircularProgress, CssBaseline, Divider, IconButton, Menu, MenuItem, Typography } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import React, { Suspense, useEffect, useState } from "react";
@@ -10,6 +10,7 @@ import { threeDViewerWidget, twoDViewerWidget } from "../layout-manager/widgets.
 import theme from "../theme";
 import Layout from "./ViewerContainer/Layout.tsx";
 
+import { WidgetStatus } from "@metacell/geppetto-meta-client/common/layout/model";
 import { DeleteOutlined } from "@mui/icons-material";
 import { AddIcon, CheckIcon, DownIcon, DownloadIcon, LinkIcon, ViewerSettings as ViewerSettingsIcon } from "../icons/index.tsx";
 import { vars } from "../theme/variables.ts";
@@ -46,17 +47,6 @@ function WorkspaceComponent() {
   };
 
   const currentWorkspace = workspaces[workspaceId];
-
-  useEffect(() => {
-    if (currentWorkspace.layoutManager) {
-      setLayoutComponent(() => currentWorkspace.layoutManager.getComponent());
-    }
-  }, [currentWorkspace.layoutManager]);
-
-  useEffect(() => {
-    dispatch(addWidget(threeDViewerWidget()));
-    dispatch(addWidget(twoDViewerWidget()));
-  }, [LayoutComponent, dispatch]);
 
   const [anchorElWorkspace, setAnchorElWorkspace] = React.useState<null | HTMLElement>(null);
   const openWorkspace = Boolean(anchorElWorkspace);
@@ -107,6 +97,27 @@ function WorkspaceComponent() {
   };
 
   const workspacesLength = Object.keys(workspaces).length;
+
+  useEffect(() => {
+    if (currentWorkspace.layoutManager) {
+      setLayoutComponent(() => currentWorkspace.layoutManager.getComponent());
+    }
+  }, [currentWorkspace.layoutManager]);
+
+  useEffect(() => {
+    dispatch(addWidget(threeDViewerWidget()));
+    dispatch(addWidget(twoDViewerWidget()));
+
+    const updateWidgetStatus = (widget, viewerStatus) => {
+      const status = viewerStatus ? WidgetStatus.ACTIVE : WidgetStatus.MINIMIZED;
+      if (widget.status !== status) {
+        dispatch(updateWidget({ ...widget, status }));
+      }
+    };
+
+    updateWidgetStatus(threeDViewerWidget(), currentWorkspace.viewers["3D"]);
+    updateWidgetStatus(twoDViewerWidget(), currentWorkspace.viewers["Graph"]);
+  }, [LayoutComponent, dispatch, currentWorkspace.viewers]);
 
   return (
     <>
