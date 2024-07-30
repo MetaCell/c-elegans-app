@@ -4,21 +4,40 @@ import type { Workspace } from "../../models/workspace.ts";
 import {GraphType} from "../../settings/twoDSettings.tsx";
 import {cellConfig, neurotransmitterConfig} from "./coloringHelper.ts";
 
-export const CONNECTION_SEPARATOR = '-'
+export const createEdge = (id: string, conn: Connection, workspace: Workspace): ElementDefinition => {
+  const synapses = conn.synapses || {};
+  const annotations = conn.annotations || [];
 
-export const createEdge = (conn: Connection): ElementDefinition => {
+  const label = createEdgeLabel(workspace, synapses);
+  const longLabel = createEdgeLongLabel(workspace, synapses);
+
   return {
     group: "edges",
     data: {
-      id: getEdgeId(conn.pre, conn.post, conn.type),
+      id: id,
       source: conn.pre,
       target: conn.post,
-      label: conn.type,
-      longLabel: 'test',
+      label: label,
+      longLabel: longLabel,
       type: conn.type,
+      annotations: annotations.join(", ")
     },
     classes: conn.type,
   };
+};
+
+// Helper functions to create edge labels
+const createEdgeLabel = (workspace: Workspace, synapses: Record<string, number>) => {
+  const datasets = Object.values(workspace.activeDatasets).map(dataset => dataset.id);
+  return datasets.map(datasetId => synapses[datasetId] || 0).join(',');
+};
+
+const createEdgeLongLabel = (workspace: Workspace, synapses: Record<string, number>) => {
+  const datasets = Object.values(workspace.activeDatasets)
+  return datasets.map(dataset => {
+    const datasetLabel = synapses[dataset.id] || 0;
+    return `${dataset.name}: ${datasetLabel}`;
+  }).join('\n');
 };
 
 export const createNode = (
@@ -126,9 +145,12 @@ export const isNeuronClass = (neuronId: string, workspace: Workspace): boolean =
   return neuron ? neuron.name === neuron.nclass : false;
 };
 
-export const getEdgeId = (pre: string, post: string, type: string): string => {
-  return `${pre}${CONNECTION_SEPARATOR}${post}${CONNECTION_SEPARATOR}${type}`;
-}
+export const getEdgeId = (conn: Connection): string => {
+    const synapsesString = JSON.stringify(conn.synapses);
+    const annotationsString = conn.annotations.join(",");
+    return `${conn.pre}-${conn.post}-${conn.type}-${synapsesString}-${annotationsString}`;
+};
+
 
 export const extractNeuronAttributes = (neuron) => {
   const cellAttributes = neuron.type.split('').map(char => cellConfig[char]?.type).filter(Boolean);

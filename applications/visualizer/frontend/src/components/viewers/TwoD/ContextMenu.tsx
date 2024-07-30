@@ -36,6 +36,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
     const handleGroup = () => {
         const newGroupId = `group_${Date.now()}`;
         const newGroupNeurons = new Set<string>();
+        const groupsToDelete = new Set<string>();
 
         for (const neuronId of workspace.selectedNeurons) {
             const group = workspace.neuronGroups[neuronId];
@@ -43,6 +44,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                 for (const groupedNeuronId of group.neurons) {
                     newGroupNeurons.add(groupedNeuronId);
                 }
+                groupsToDelete.add(neuronId);
             } else {
                 newGroupNeurons.add(neuronId);
             }
@@ -57,6 +59,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
         workspace.customUpdate(draft => {
             draft.neuronGroups[newGroupId] = newGroup;
+            groupsToDelete.forEach(groupId => delete draft.neuronGroups[groupId]);
             draft.selectedNeurons.clear();
             draft.selectedNeurons.add(newGroupId);
         });
