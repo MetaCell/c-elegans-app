@@ -5,6 +5,7 @@ export const ELECTRICAL_THRESHOLD = 2;
 
 export const INCLUDE_NEIGHBORING_CELLS = true;
 export const INCLUDE_ANNOTATIONS = true;
+export const SHOW_LABELS = false;
 
 export const ZOOM_DELTA = 0.1;
 

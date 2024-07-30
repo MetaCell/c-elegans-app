@@ -11,7 +11,7 @@ import {
     ELECTRICAL_THRESHOLD,
     GRAPH_LAYOUTS, GraphType,
     INCLUDE_ANNOTATIONS,
-    INCLUDE_NEIGHBORING_CELLS
+    INCLUDE_NEIGHBORING_CELLS, SHOW_LABELS
 } from "../../../settings/twoDSettings";
 import TwoDMenu from "./TwoDMenu";
 import TwoDLegend from "./TwoDLegend";
@@ -39,6 +39,7 @@ const TwoDViewer = () => {
         join: new Set()
     });
     const [includeAnnotations, setIncludeAnnotations] = useState<boolean>(INCLUDE_ANNOTATIONS);
+    const [showLabels, setShowLabels] = useState<boolean>(SHOW_LABELS);
     const [mousePosition, setMousePosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
     const [legendHighlights, setLegendHighlights] = useState<Map<GraphType, string>>(new Map());
     const [hiddenNodes, setHiddenNodes] = useState<Set<string>>(new Set());
@@ -176,14 +177,34 @@ const TwoDViewer = () => {
             }
         };
 
+        const handleEdgeMouseOver = (event) => {
+            event.target.addClass('hover');
+        };
+
+        const handleEdgeMouseOut = (event) => {
+            event.target.removeClass('hover');
+            event.target.removeClass('focus');
+
+        };
+
+        const handleEdgeFocus = (event) => {
+            event.target.addClass('focus');
+        };
+
         cy.on("tap", "node", handleNodeClick);
         cy.on("tap", handleBackgroundClick);
         cy.on("cxttap", handleContextMenu);
+        cy.on('mouseover', 'edge', handleEdgeMouseOver);
+        cy.on('mouseout', 'edge', handleEdgeMouseOut);
+        cy.on('tapstart', 'edge', handleEdgeFocus);
 
         return () => {
             cy.off("tap", "node", handleNodeClick);
             cy.off("tap", handleBackgroundClick);
             cy.off("cxttap", handleContextMenu);
+            cy.off('mouseover', 'edge', handleEdgeMouseOver);
+            cy.off('mouseout', 'edge', handleEdgeMouseOut);
+            cy.off('tapstart', 'edge', handleEdgeFocus);
         };
     }, [workspace, connections]);
 
@@ -218,6 +239,21 @@ const TwoDViewer = () => {
 
         workspace.setActiveNeurons(activeNeurons);
     }, [splitJoinState, workspace.id]);
+
+    // Effect to handle showLabels state
+    useEffect(() => {
+        if (!cyRef.current) return;
+
+        cyRef.current.batch(() => {
+            cyRef.current.edges().forEach((edge) => {
+                if (showLabels) {
+                    edge.addClass('showEdgeLabel');
+                } else {
+                    edge.removeClass('showEdgeLabel');
+                }
+            });
+        });
+    }, [showLabels]);
 
     const updateGraphElements = (cy: Core, connections: any[]) => {
         const {
@@ -303,6 +339,8 @@ const TwoDViewer = () => {
                 setThresholdChemical={setThresholdChemical}
                 thresholdElectrical={thresholdElectrical}
                 setThresholdElectrical={setThresholdElectrical}
+                showLabels={showLabels}
+                setShowLabels={setShowLabels}
             />
             <Box sx={{position: "absolute", top: 0, right: 0, zIndex: 1000}}>
                 <TwoDLegend coloringOption={coloringOption}

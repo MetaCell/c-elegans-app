@@ -14,6 +14,7 @@ export const createEdge = (conn: Connection): ElementDefinition => {
       source: conn.pre,
       target: conn.post,
       label: conn.type,
+      longLabel: 'test',
       type: conn.type,
     },
     classes: conn.type,

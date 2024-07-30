@@ -28,6 +28,8 @@ const TwoDMenu = ({
   setThresholdChemical,
   thresholdElectrical,
   setThresholdElectrical,
+  showLabels,
+  setShowLabels
 }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
@@ -242,7 +244,7 @@ const TwoDMenu = ({
           >
             <FormControlLabel
               control={<CustomSwitch checked={includeNeighboringCells} onChange={(e) => setIncludeNeighboringCells(e.target.checked)} showTooltip={false} />}
-              label="Connected Cells"
+              label="Connected cells"
             />
             <Tooltip title={!includeNeighboringCells ? "Enable 'Connected Cells' to use this switch" : ""}>
               <FormControlLabel
@@ -258,8 +260,12 @@ const TwoDMenu = ({
               />
             </Tooltip>
             <FormControlLabel
+              control={<CustomSwitch checked={showLabels} onChange={(e) => setShowLabels(e.target.checked)} showTooltip={false} />}
+              label="Show connection labels"
+            />
+            <FormControlLabel
               control={<CustomSwitch checked={includeAnnotations} onChange={(e) => setIncludeAnnotations(e.target.checked)} showTooltip={false} />}
-              label="Types of Connections"
+              label="Types of connections"
             />
           </FormGroup>
         </Box>
