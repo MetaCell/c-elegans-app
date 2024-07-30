@@ -148,7 +148,7 @@ export class Workspace {
         this.updateContext(updated);
     }
 
-    batchUpdate(updateFunction: (draft: Workspace) => void): void {
+    customUpdate(updateFunction: (draft: Workspace) => void): void {
         const updated = produce(this, updateFunction);
         this.updateContext(updated);
     }

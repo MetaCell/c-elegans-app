@@ -20,10 +20,10 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                                                      position,
                                                      setSplitJoinState,
                                                      setHiddenNodes
-}) => {
+                                                 }) => {
     const handleHide = () => {
         setHiddenNodes((prevHiddenNodes) => {
-        const newHiddenNodes = new Set([...prevHiddenNodes]);
+            const newHiddenNodes = new Set([...prevHiddenNodes]);
             workspace.selectedNeurons.forEach(neuronId => {
                 newHiddenNodes.add(neuronId);
             });
@@ -55,7 +55,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             neurons: newGroupNeurons,
         };
 
-        workspace.batchUpdate(draft => {
+        workspace.customUpdate(draft => {
             draft.neuronGroups[newGroupId] = newGroup;
             draft.selectedNeurons.clear();
             draft.selectedNeurons.add(newGroupId);
@@ -64,7 +64,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
     };
 
     const handleUngroup = () => {
-        workspace.batchUpdate(draft => {
+        workspace.customUpdate(draft => {
             for (const elementId of draft.selectedNeurons) {
                 if (draft.neuronGroups[elementId]) {
                     const group = draft.neuronGroups[elementId];
@@ -107,7 +107,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             });
 
             // Update the selected neurons in the workspace
-            workspace.batchUpdate(draft => {
+            workspace.customUpdate(draft => {
                 draft.selectedNeurons = newSelectedNeurons;
             });
 
@@ -144,7 +144,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             });
 
             // Update the selected neurons in the workspace
-            workspace.batchUpdate(draft => {
+            workspace.customUpdate(draft => {
                 draft.selectedNeurons = newSelectedNeurons;
             });
 
@@ -152,6 +152,23 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
         });
         onClose();
     };
+
+    const handleAddToWorkspace = () => {
+        workspace.customUpdate((draft) => {
+            workspace.selectedNeurons.forEach((neuronId) => {
+                const group = workspace.neuronGroups[neuronId];
+                if (group) {
+                    group.neurons.forEach((groupedNeuronId) => {
+                        draft.activeNeurons.add(groupedNeuronId);
+                    });
+                } else {
+                    draft.activeNeurons.add(neuronId);
+                }
+            });
+        });
+        onClose();
+    };
+
 
     const groupEnabled = useMemo(() => {
         return Array.from(workspace.selectedNeurons).some((neuronId) => !workspace.neuronGroups[neuronId]);
@@ -201,6 +218,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             <MenuItem onClick={handleSplit} disabled={!splitEnabled}>
                 Split Left-Right
             </MenuItem>
+            <MenuItem onClick={handleAddToWorkspace}>Add to Workspace</MenuItem>
+
         </Menu>
     );
 };
