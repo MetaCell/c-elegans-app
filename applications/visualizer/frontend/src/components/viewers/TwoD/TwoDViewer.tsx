@@ -116,7 +116,7 @@ const TwoDViewer = () => {
         if (cyRef.current) {
             updateGraphElements(cyRef.current, connections);
         }
-    }, [connections, hiddenNodes]);
+    }, [connections, hiddenNodes, workspace.neuronGroups]);
 
     useEffect(() => {
         if (cyRef.current) {
@@ -251,19 +251,39 @@ const TwoDViewer = () => {
             return;
         }
         cyRef.current.nodes().forEach((node) => {
-            const neuronId = node.id();
-            const neuron = workspace.availableNeurons[neuronId];
-            if (neuron == null) {
-                console.error(`neuron ${neuronId} not found in the active datasets`);
-                return;
+            const nodeId = node.id();
+            const group = workspace.neuronGroups[nodeId];
+            let colors = [];
+
+            if (group) {
+                // If the node is a group, collect colors from all neurons in the group
+                group.neurons.forEach((neuronId) => {
+                    const neuron = workspace.availableNeurons[neuronId];
+                    if (neuron) {
+                        colors = colors.concat(getColor(neuron, coloringOption));
+                    }
+                });
+
+                // Ensure unique colors are used
+                const uniqueColors = [...new Set(colors)];
+                colors = uniqueColors;
+            } else {
+                const neuron = workspace.availableNeurons[nodeId];
+                if (neuron == null) {
+                    console.error(`Neuron ${nodeId} not found in the active datasets`);
+                    return;
+                }
+                colors = getColor(neuron, coloringOption);
             }
-            const colors = getColor(neuron, coloringOption);
+
             colors.forEach((color, index) => {
                 node.style(`pie-${index + 1}-background-color`, color);
                 node.style(`pie-${index + 1}-background-size`, 100 / colors.length); // Equal size for each slice
             });
+            node.style("pie-background-opacity", 1);
         });
     };
+
 
     return (
         <Box sx={{position: "relative", display: "flex", width: "100%", height: "100%"}}>

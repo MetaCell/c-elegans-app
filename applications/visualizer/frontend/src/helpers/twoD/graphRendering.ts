@@ -75,13 +75,26 @@ export const computeGraphDifferences = (
     replaceEdgesWithGroups(expectedEdges, workspace.neuronGroups);
 
     // Determine nodes to add and remove
+ // Determine nodes to add and remove
     for (const nodeId of expectedNodes) {
         if (!currentNodes.has(nodeId)) {
-            const neuron = workspace.availableNeurons[nodeId];
-            const attributes = extractNeuronAttributes(neuron);
-            nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), attributes));
+            const group = workspace.neuronGroups[nodeId];
+            if (group) {
+                // If the node is a group, extract attributes from all neurons in the group
+                const attributes = new Set<string>();
+                group.neurons.forEach((neuronId) => {
+                    const neuron = workspace.availableNeurons[neuronId];
+                    extractNeuronAttributes(neuron).forEach(attr => attributes.add(attr));
+                });
+                nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), Array.from(attributes)));
+            } else {
+                const neuron = workspace.availableNeurons[nodeId];
+                const attributes = extractNeuronAttributes(neuron);
+                nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), attributes));
+            }
         }
     }
+
 
     for (const nodeId of currentNodes) {
         if (!expectedNodes.has(nodeId)) {
