@@ -50,12 +50,16 @@ const EDGE_LABEL_STYLES = [
         selector: 'edge.hover, edge.showEdgeLabel',
         style: {
             'label': 'data(label)',
+            'font-size': '8px',
         },
     },
     {
         selector: 'edge.focus',
         style: {
             'label': 'data(longLabel)',
+            'font-size': '8px',
+            'text-wrap': 'wrap'
+
         },
     }
 ];
