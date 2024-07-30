@@ -129,7 +129,7 @@ const TwoDViewer = () => {
             updateHighlighted(cyRef.current, Array.from(workspace.activeNeurons),
                 Array.from(workspace.selectedNeurons), legendHighlights);
         }
-    }, [legendHighlights]);
+    }, [legendHighlights, workspace.selectedNeurons]);
 
     // Update layout when layout setting changes
     useEffect(() => {
