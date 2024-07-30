@@ -10,7 +10,7 @@ export const createEdge = (conn: Connection): ElementDefinition => {
   return {
     group: "edges",
     data: {
-      id: `${conn.pre}-${conn.post}`,
+      id: getEdgeId(conn.pre, conn.post, conn.type),
       source: conn.pre,
       target: conn.post,
       label: conn.type,
@@ -115,17 +115,17 @@ export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights) =
 };
 
 // Helper functions
-export const isCell = (neuronId: string, workspace: Workspace): boolean => {
+export const isNeuronCell = (neuronId: string, workspace: Workspace): boolean => {
   const neuron = workspace.availableNeurons[neuronId];
   return neuron ? neuron.name !== neuron.nclass : false;
 };
 
-export const isClass = (neuronId: string, workspace: Workspace): boolean => {
+export const isNeuronClass = (neuronId: string, workspace: Workspace): boolean => {
   const neuron = workspace.availableNeurons[neuronId];
   return neuron ? neuron.name === neuron.nclass : false;
 };
 
-export const getEdgeName = (pre: string, post: string, type: string): string => {
+export const getEdgeId = (pre: string, post: string, type: string): string => {
   return `${pre}${CONNECTION_SEPARATOR}${post}${CONNECTION_SEPARATOR}${type}`;
 }
 
@@ -134,4 +134,15 @@ export const extractNeuronAttributes = (neuron) => {
   const neurotransmitterAttributes = neuron.neurotransmitter.split('').map(char => neurotransmitterConfig[char]?.type).filter(Boolean);
 
   return [...cellAttributes, ...neurotransmitterAttributes];
+};
+
+export const getNclassSet = (neuronIds: Set<string>, workspace: Workspace): Set<string> => {
+  const nclassSet = new Set<string>();
+  neuronIds.forEach(neuronId => {
+    const neuron = workspace.availableNeurons[neuronId];
+    if (neuron && neuron.nclass) {
+      nclassSet.add(neuron.nclass);
+    }
+  });
+  return nclassSet;
 };

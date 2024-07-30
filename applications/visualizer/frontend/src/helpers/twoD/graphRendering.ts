@@ -4,9 +4,9 @@ import {
     createEdge,
     createNode,
     extractNeuronAttributes,
-    getEdgeName,
-    isCell,
-    isClass
+    getEdgeId, getNclassSet,
+    isNeuronCell,
+    isNeuronClass
 } from './twoDHelpers';
 import {NeuronGroup, Workspace} from "../../models";
 import {Connection} from "../../rest";
@@ -25,8 +25,8 @@ export const computeGraphDifferences = (
     const currentEdges = new Set(cy.edges().map((edge) => edge.id()));
 
     // Expected nodes and edges
-    const expectedNodes = new Set<string>();
-    const expectedEdges = new Set<string>();
+    let expectedNodes = new Set<string>();
+    let expectedEdges = new Set<string>();
 
     const nodesToAdd: ElementDefinition[] = [];
     const nodesToRemove: CollectionReturnValue = cy.collection();
@@ -61,14 +61,14 @@ export const computeGraphDifferences = (
         }
 
         if (!hiddenNodes.has(conn.pre) && !hiddenNodes.has(conn.post)) {
-            const edgeId = getEdgeName(conn.pre, conn.post, conn.type);
+            const edgeId = getEdgeId(conn.pre, conn.post, conn.type);
             expectedEdges.add(edgeId);
         }
     }
 
     // Apply split and join rules to expected nodes and edges
-    applySplitJoinRulesToNodes(expectedNodes, splitJoinState.split, splitJoinState.join, includeNeighboringCellsAsIndividualCells, workspace);
-    applySplitJoinRulesToEdges(expectedEdges, splitJoinState.split, splitJoinState.join, includeNeighboringCellsAsIndividualCells, workspace, expectedNodes);
+    expectedNodes = applySplitJoinRulesToNodes(expectedNodes, splitJoinState.split, splitJoinState.join, includeNeighboringCellsAsIndividualCells, workspace);
+    expectedEdges = applySplitJoinRulesToEdges(expectedEdges, splitJoinState.split, splitJoinState.join, includeNeighboringCellsAsIndividualCells, workspace, expectedNodes);
 
     // Replace individual neurons and edges with groups if necessary
     replaceNodesWithGroups(expectedNodes, workspace.neuronGroups);
@@ -149,7 +149,7 @@ const replaceEdgesWithGroups = (expectedEdges: Set<string>, neuronGroups: Record
             }
         }
 
-        const newEdgeId = getEdgeName(newPre, newPost, type);
+        const newEdgeId = getEdgeId(newPre, newPost, type);
         if (newEdgeId !== edgeId) {
             edgesToAdd.add(newEdgeId);
             edgesToRemove.add(edgeId);
@@ -161,59 +161,92 @@ const replaceEdgesWithGroups = (expectedEdges: Set<string>, neuronGroups: Record
 };
 
 // Apply split/join rules to nodes
-const applySplitJoinRulesToNodes = (expectedNodes: Set<string>, toSplit: Set<string>, toJoin: Set<string>, includeNeighboringCellsAsIndividualCells: boolean, workspace: Workspace) => {
-    const nodesToRemove = new Set<string>();
+const applySplitJoinRulesToNodes = (
+  expectedNodes: Set<string>,
+  toSplit: Set<string>,
+  toJoin: Set<string>,
+  includeNeighboringCellsAsIndividualCells: boolean,
+  workspace: Workspace
+) => {
+  const nodesToRemove = new Set<string>();
 
-    expectedNodes.forEach(nodeId => {
-        if (!workspace.activeNeurons.has(nodeId)) {
-            if (toSplit.has(nodeId)) {
-                nodesToRemove.add(nodeId);
-            } else if (toJoin.has(nodeId)) {
-                nodesToRemove.add(nodeId);
-            } else if (includeNeighboringCellsAsIndividualCells && isClass(nodeId, workspace)) {
-                nodesToRemove.add(nodeId);
-            } else if (!includeNeighboringCellsAsIndividualCells && isCell(nodeId, workspace)) {
-                nodesToRemove.add(nodeId);
-            }
-        }
-    });
+  expectedNodes.forEach(nodeId => {
+    if (!workspace.activeNeurons.has(nodeId) && shouldRemoveNode(nodeId, toSplit, toJoin, includeNeighboringCellsAsIndividualCells, workspace)) {
+      nodesToRemove.add(nodeId);
+    }
+  });
 
-    nodesToRemove.forEach(nodeId => expectedNodes.delete(nodeId));
+  nodesToRemove.forEach(nodeId => expectedNodes.delete(nodeId));
+
+  return expectedNodes
 };
+
 
 // Apply split/join rules to edges
-const applySplitJoinRulesToEdges = (expectedEdges: Set<string>, toSplit: Set<string>, toJoin: Set<string>, includeNeighboringCellsAsIndividualCells: boolean, workspace: Workspace, expectedNodes: Set<string>) => {
-    const edgesToRemove = new Set<string>();
+const applySplitJoinRulesToEdges = (
+  expectedEdges: Set<string>,
+  toSplit: Set<string>,
+  toJoin: Set<string>,
+  includeNeighboringCellsAsIndividualCells: boolean,
+  workspace: Workspace,
+  expectedNodes: Set<string>
+) => {
+  const edgesToRemove = new Set<string>();
 
-    expectedEdges.forEach(edgeId => {
-        const [pre, post, type] = edgeId.split(CONNECTION_SEPARATOR);
+  expectedEdges.forEach(edgeId => {
+    const [pre, post, type] = edgeId.split(CONNECTION_SEPARATOR);
 
-        if (
-            (!workspace.activeNeurons.has(pre) && !expectedNodes.has(pre)) ||
-            (!workspace.activeNeurons.has(post) && !expectedNodes.has(post))
-        ) {
-            edgesToRemove.add(edgeId);
-        } else if (toSplit.has(pre) || toSplit.has(post)) {
-            edgesToRemove.add(edgeId);
-        } else if (toJoin.has(pre) || toJoin.has(post)) {
-            edgesToRemove.add(edgeId);
-        } else if (includeNeighboringCellsAsIndividualCells) {
-            if (isClass(pre, workspace) && !workspace.activeNeurons.has(pre)) {
-                edgesToRemove.add(edgeId);
-            }
-            if (isClass(post, workspace) && !workspace.activeNeurons.has(post)) {
-                edgesToRemove.add(edgeId);
-            }
-        } else {
-            if (isCell(pre, workspace) && !workspace.activeNeurons.has(pre)) {
-                edgesToRemove.add(edgeId);
-            }
-            if (isCell(post, workspace) && !workspace.activeNeurons.has(post)) {
-                edgesToRemove.add(edgeId);
-            }
-        }
-    });
+    if (shouldRemoveEdge(pre, post, expectedNodes)) {
+      edgesToRemove.add(edgeId);
+    }
+  });
 
-    edgesToRemove.forEach(edgeId => expectedEdges.delete(edgeId));
+  edgesToRemove.forEach(edgeId => expectedEdges.delete(edgeId));
+
+  return expectedEdges
 };
 
+
+const shouldRemoveNode = (
+  nodeId: string,
+  toSplit: Set<string>,
+  toJoin: Set<string>,
+  includeNeighboringCellsAsIndividualCells: boolean,
+  workspace: Workspace
+): boolean => {
+  const isActive = workspace.activeNeurons.has(nodeId);
+  const isClass = isNeuronClass(nodeId, workspace);
+  const isCell = isNeuronCell(nodeId, workspace);
+  const neuron = workspace.availableNeurons[nodeId];
+
+  const joinNclassSet = getNclassSet(toJoin, workspace);
+
+
+  // 1. Remove nodes explicitly marked for removal
+  if (toSplit.has(nodeId) || toJoin.has(nodeId)) {
+    return true;
+  }
+
+  // 2. Remove class nodes if showing individual cells and the node is not active and it's not a join exception
+  if (includeNeighboringCellsAsIndividualCells && isClass && !isActive && !joinNclassSet.has(nodeId)) {
+    return true;
+  }
+
+  // 3. Remove individual cells if showing class nodes and the node is not active and it's not a split exception
+  if (!includeNeighboringCellsAsIndividualCells && isCell && !isActive && !toSplit.has(neuron.nclass)) {
+    return true;
+  }
+
+  return false;
+};
+
+
+const shouldRemoveEdge = (
+  pre: string,
+  post: string,
+  expectedNodes: Set<string>
+): boolean => {
+  // This approach assumes that expectedNodes has already been processed to reflect all the necessary rules
+    // (splitting, joining, and active neuron considerations).
+  return !expectedNodes.has(pre) || !expectedNodes.has(post);
+};

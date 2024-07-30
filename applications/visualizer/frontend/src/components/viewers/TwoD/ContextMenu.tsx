@@ -1,7 +1,7 @@
 import React, {useMemo} from "react";
 import {Menu, MenuItem} from "@mui/material";
 import {NeuronGroup, Workspace} from "../../../models";
-import {isClass} from "../../../helpers/twoD/twoDHelpers.ts";
+import {isNeuronClass} from "../../../helpers/twoD/twoDHelpers.ts";
 
 interface ContextMenuProps {
     open: boolean;
@@ -86,7 +86,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             const newSelectedNeurons = new Set(workspace.selectedNeurons);
 
             workspace.selectedNeurons.forEach(neuronId => {
-                if (isClass(neuronId, workspace)) {
+                if (isNeuronClass(neuronId, workspace)) {
                     newSplit.add(neuronId);
                     newSelectedNeurons.delete(neuronId);
 
