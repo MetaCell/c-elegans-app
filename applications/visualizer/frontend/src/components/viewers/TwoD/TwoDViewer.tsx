@@ -107,7 +107,8 @@ const TwoDViewer = () => {
             .catch((error) => {
                 console.error("Failed to fetch connections:", error);
             });
-    }, [workspace, includeNeighboringCells, includeNeighboringCellsAsIndividualCells, includeAnnotations, thresholdElectrical, thresholdChemical]);
+    }, [workspace.activeDatasets, includeNeighboringCells, includeNeighboringCellsAsIndividualCells, includeAnnotations,
+        thresholdElectrical, thresholdChemical]);
 
     // Update graph when connections change
     useEffect(() => {
