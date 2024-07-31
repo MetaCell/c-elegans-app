@@ -40,8 +40,10 @@ const TwoDMenu = ({
                       setThresholdChemical,
                       thresholdElectrical,
                       setThresholdElectrical,
-                      showLabels,
-                      setShowLabels
+                      includeLabels,
+                      setIncludeLabels,
+                      includePostEmbryonic,
+                      setIncludePostEmbryonic
                   }) => {
     const workspace = useSelectedWorkspace();
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -296,8 +298,8 @@ const TwoDMenu = ({
                             />
                         </Tooltip>
                         <FormControlLabel
-                            control={<CustomSwitch checked={showLabels}
-                                                   onChange={(e) => setShowLabels(e.target.checked)}
+                            control={<CustomSwitch checked={includeLabels}
+                                                   onChange={(e) => setIncludeLabels(e.target.checked)}
                                                    showTooltip={false}/>}
                             label="Show connection labels"
                         />
@@ -306,6 +308,12 @@ const TwoDMenu = ({
                                                    onChange={(e) => setIncludeAnnotations(e.target.checked)}
                                                    showTooltip={false}/>}
                             label="Types of connections"
+                        />
+                        <FormControlLabel
+                            control={<CustomSwitch checked={includePostEmbryonic}
+                                                   onChange={(e) => setIncludePostEmbryonic(e.target.checked)}
+                                                   showTooltip={false}/>}
+                            label="Post-embryonic cells"
                         />
                     </FormGroup>
                 </Box>

@@ -16,9 +16,10 @@ export const computeGraphDifferences = (
     connections: Connection[],
     workspace: Workspace,
     splitJoinState: { split: Set<string>; join: Set<string> },
+    hiddenNodes: Set<string>,
     includeNeighboringCellsAsIndividualCells: boolean,
     includeAnnotations: boolean,
-    hiddenNodes: Set<string>
+    includePostEmbryonic: boolean
 ) => {
     // Current nodes and edges in the Cytoscape instance
     const currentNodes = new Set(cy.nodes().map((node) => node.id()));
@@ -47,6 +48,9 @@ export const computeGraphDifferences = (
         if (!neuron || hiddenNodes.has(neuronId)) {
             return false;
         }
+        if (!includePostEmbryonic && !neuron.embryonic) {
+            return false;
+        }
         const nclass = neuron.nclass;
         if (neuronId === nclass) {
             return true;
@@ -61,14 +65,15 @@ export const computeGraphDifferences = (
 
     // Add nodes from connections to expected nodes
     for (const conn of connections) {
-        if (!hiddenNodes.has(conn.pre)) {
-            expectedNodes.add(conn.pre);
-        }
-        if (!hiddenNodes.has(conn.post)) {
-            expectedNodes.add(conn.post);
-        }
+        const preNeuron = workspace.availableNeurons[conn.pre];
+        const postNeuron = workspace.availableNeurons[conn.post];
 
-        if (!hiddenNodes.has(conn.pre) && !hiddenNodes.has(conn.post)) {
+
+        if (!hiddenNodes.has(conn.pre) && !hiddenNodes.has(conn.post) &&
+            (includePostEmbryonic || (preNeuron?.embryonic && postNeuron?.embryonic))) {
+            expectedNodes.add(conn.post);
+            expectedNodes.add(conn.pre);
+
             const edgeId = getEdgeId(conn, includeAnnotations);
             expectedEdges.add(edgeId);
         }

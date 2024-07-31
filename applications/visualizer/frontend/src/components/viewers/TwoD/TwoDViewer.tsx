@@ -11,7 +11,7 @@ import {
     ELECTRICAL_THRESHOLD,
     GRAPH_LAYOUTS, LegendType,
     INCLUDE_ANNOTATIONS,
-    INCLUDE_NEIGHBORING_CELLS, SHOW_LABELS
+    INCLUDE_NEIGHBORING_CELLS, INCLUDE_LABELS, INCLUDE_POST_EMBRYONIC
 } from "../../../settings/twoDSettings";
 import TwoDMenu from "./TwoDMenu";
 import TwoDLegend from "./TwoDLegend";
@@ -39,7 +39,8 @@ const TwoDViewer = () => {
         join: new Set()
     });
     const [includeAnnotations, setIncludeAnnotations] = useState<boolean>(INCLUDE_ANNOTATIONS);
-    const [showLabels, setShowLabels] = useState<boolean>(SHOW_LABELS);
+    const [includeLabels, setIncludeLabels] = useState<boolean>(INCLUDE_LABELS);
+    const [includePostEmbryonic, setIncludePostEmbryonic] = useState<boolean>(INCLUDE_POST_EMBRYONIC);
     const [mousePosition, setMousePosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
     const [legendHighlights, setLegendHighlights] = useState<Map<LegendType, string>>(new Map());
     const [hiddenNodes, setHiddenNodes] = useState<Set<string>>(new Set());
@@ -117,7 +118,7 @@ const TwoDViewer = () => {
         if (cyRef.current) {
             updateGraphElements(cyRef.current, connections);
         }
-    }, [connections, hiddenNodes, workspace.neuronGroups]);
+    }, [connections, hiddenNodes, workspace.neuronGroups, includePostEmbryonic]);
 
     useEffect(() => {
         if (cyRef.current) {
@@ -240,30 +241,30 @@ const TwoDViewer = () => {
         workspace.setActiveNeurons(activeNeurons);
     }, [splitJoinState, workspace.id]);
 
-    // Effect to handle showLabels state
+    // Effect to handle includeLabels state
     useEffect(() => {
         if (!cyRef.current) return;
 
         cyRef.current.batch(() => {
             cyRef.current.edges().forEach((edge) => {
-                if (showLabels) {
+                if (includeLabels) {
                     edge.addClass('showEdgeLabel');
                 } else {
                     edge.removeClass('showEdgeLabel');
                 }
             });
         });
-    }, [showLabels]);
+    }, [includeLabels]);
 
-    const updateGraphElements = (cy: Core, connections: any[]) => {
+    const updateGraphElements = (cy: Core, connections: Connection[]) => {
         const {
             nodesToAdd,
             nodesToRemove,
             edgesToAdd,
             edgesToRemove
         } = computeGraphDifferences(cy, connections, workspace,
-            splitJoinState, includeNeighboringCellsAsIndividualCells,
-            includeAnnotations, hiddenNodes);
+            splitJoinState, hiddenNodes, includeNeighboringCellsAsIndividualCells,
+            includeAnnotations, includePostEmbryonic);
 
 
         cy.batch(() => {
@@ -341,8 +342,10 @@ const TwoDViewer = () => {
                 setThresholdChemical={setThresholdChemical}
                 thresholdElectrical={thresholdElectrical}
                 setThresholdElectrical={setThresholdElectrical}
-                showLabels={showLabels}
-                setShowLabels={setShowLabels}
+                includeLabels={includeLabels}
+                setIncludeLabels={setIncludeLabels}
+                includePostEmbryonic={includePostEmbryonic}
+                setIncludePostEmbryonic={setIncludePostEmbryonic}
             />
             <Box sx={{position: "absolute", top: 0, right: 0, zIndex: 1000}}>
                 <TwoDLegend coloringOption={coloringOption}
