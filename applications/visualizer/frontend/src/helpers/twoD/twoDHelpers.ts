@@ -160,10 +160,10 @@ export const isNeuronClass = (neuronId: string, workspace: Workspace): boolean =
   return neuron ? neuron.name === neuron.nclass : false;
 };
 
-export const getEdgeId = (conn: Connection): string => {
+export const getEdgeId = (conn: Connection, includeAnnotations: boolean): string => {
     const synapsesString = JSON.stringify(conn.synapses);
     const annotationsString = conn.annotations.join(",");
-    return `${conn.pre}-${conn.post}-${conn.type}-${synapsesString}-${annotationsString}`;
+    return `${conn.pre}-${conn.post}-${conn.type}-${synapsesString}-${annotationsString}-${includeAnnotations}`;
 };
 
 

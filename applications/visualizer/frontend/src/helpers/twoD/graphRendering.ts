@@ -37,7 +37,7 @@ export const computeGraphDifferences = (
     // Create a map of connections by edgeId
     const connectionMap = new Map<string, Connection>();
     connections.forEach(conn => {
-        const edgeId = getEdgeId(conn);
+        const edgeId = getEdgeId(conn, includeAnnotations);
         connectionMap.set(edgeId, conn);
     });
 
@@ -69,7 +69,7 @@ export const computeGraphDifferences = (
         }
 
         if (!hiddenNodes.has(conn.pre) && !hiddenNodes.has(conn.post)) {
-            const edgeId = getEdgeId(conn);
+            const edgeId = getEdgeId(conn, includeAnnotations);
             expectedEdges.add(edgeId);
         }
     }
@@ -80,7 +80,7 @@ export const computeGraphDifferences = (
 
     // Replace individual neurons and edges with groups if necessary
     replaceNodesWithGroups(expectedNodes, workspace.neuronGroups);
-    replaceEdgesWithGroups(expectedEdges, workspace.neuronGroups, connectionMap);
+    replaceEdgesWithGroups(expectedEdges, workspace.neuronGroups, connectionMap, includeAnnotations);
 
 
     // Determine nodes to add and remove
@@ -154,7 +154,8 @@ const replaceNodesWithGroups = (expectedNodes: Set<string>, neuronGroups: Record
 const replaceEdgesWithGroups = (
     expectedEdges: Set<string>,
     neuronGroups: Record<string, NeuronGroup>,
-    connectionMap: Map<string, Connection>
+    connectionMap: Map<string, Connection>,
+    includeAnnotations: boolean
 ) => {
     const edgesToAdd = new Set<string>();
     const edgesToRemove = new Set<string>();
@@ -193,14 +194,14 @@ const replaceEdgesWithGroups = (
         // Append annotations
         newConn.annotations = Array.from(new Set([...(newConn.annotations || []), ...(conn.annotations || [])]));
 
-        const fullNewEdgeId = getEdgeId(newConn);
+        const fullNewEdgeId = getEdgeId(newConn, includeAnnotations);
         if (fullNewEdgeId !== edgeId) {
             edgesToRemove.add(edgeId);
         }
     });
 
     groupedConnections.forEach((conn, newEdgeId) => {
-        const fullNewEdgeId = getEdgeId(conn);
+        const fullNewEdgeId = getEdgeId(conn, includeAnnotations);
         edgesToAdd.add(fullNewEdgeId);
         connectionMap.set(fullNewEdgeId, conn);
     });
