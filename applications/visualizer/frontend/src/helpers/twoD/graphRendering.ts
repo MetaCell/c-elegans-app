@@ -17,6 +17,7 @@ export const computeGraphDifferences = (
     workspace: Workspace,
     splitJoinState: { split: Set<string>; join: Set<string> },
     includeNeighboringCellsAsIndividualCells: boolean,
+    includeAnnotations: boolean,
     hiddenNodes: Set<string>
 ) => {
     // Current nodes and edges in the Cytoscape instance
@@ -114,7 +115,7 @@ export const computeGraphDifferences = (
         if (!currentEdges.has(edgeId)) {
             const conn = connectionMap.get(edgeId);
             if (conn) {
-                edgesToAdd.push(createEdge(edgeId, conn, workspace));
+                edgesToAdd.push(createEdge(edgeId, conn, workspace, includeAnnotations));
             }
         }
     }

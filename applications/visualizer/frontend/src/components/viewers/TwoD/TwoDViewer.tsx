@@ -9,7 +9,7 @@ import {applyLayout, updateHighlighted} from "../../../helpers/twoD/twoDHelpers"
 import {
     CHEMICAL_THRESHOLD,
     ELECTRICAL_THRESHOLD,
-    GRAPH_LAYOUTS, GraphType,
+    GRAPH_LAYOUTS, LegendType,
     INCLUDE_ANNOTATIONS,
     INCLUDE_NEIGHBORING_CELLS, SHOW_LABELS
 } from "../../../settings/twoDSettings";
@@ -41,7 +41,7 @@ const TwoDViewer = () => {
     const [includeAnnotations, setIncludeAnnotations] = useState<boolean>(INCLUDE_ANNOTATIONS);
     const [showLabels, setShowLabels] = useState<boolean>(SHOW_LABELS);
     const [mousePosition, setMousePosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
-    const [legendHighlights, setLegendHighlights] = useState<Map<GraphType, string>>(new Map());
+    const [legendHighlights, setLegendHighlights] = useState<Map<LegendType, string>>(new Map());
     const [hiddenNodes, setHiddenNodes] = useState<Set<string>>(new Set());
 
     const handleContextMenuClose = () => {
@@ -261,7 +261,9 @@ const TwoDViewer = () => {
             nodesToRemove,
             edgesToAdd,
             edgesToRemove
-        } = computeGraphDifferences(cy, connections, workspace, splitJoinState, includeNeighboringCellsAsIndividualCells, hiddenNodes);
+        } = computeGraphDifferences(cy, connections, workspace,
+            splitJoinState, includeNeighboringCellsAsIndividualCells,
+            includeAnnotations, hiddenNodes);
 
 
         cy.batch(() => {
@@ -345,7 +347,9 @@ const TwoDViewer = () => {
             <Box sx={{position: "absolute", top: 0, right: 0, zIndex: 1000}}>
                 <TwoDLegend coloringOption={coloringOption}
                             legendHighlights={legendHighlights}
-                            setLegendHighlights={setLegendHighlights}/>
+                            setLegendHighlights={setLegendHighlights}
+                            includeAnnotations={includeAnnotations}
+                />
             </Box>
             <div ref={cyContainer} style={{width: "100%", height: "100%"}}/>
             <ContextMenu

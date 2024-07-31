@@ -1,7 +1,7 @@
 import {Box, Divider, IconButton, Typography} from "@mui/material";
 import React from "react";
 import {ColoringOptions, getColorMap, legendNodeNameMapping} from "../../../helpers/twoD/coloringHelper";
-import {GraphType, connectionsLegend} from "../../../settings/twoDSettings";
+import {LegendType, connectionsLegend, annotationLegend} from "../../../settings/twoDSettings";
 import {vars} from "../../../theme/variables";
 
 const {gray100} = vars;
@@ -62,13 +62,14 @@ const LegendConnection: React.FC<LegendConnectionProps> = ({ name, icon, onClick
 
 interface LegendProps {
     coloringOption: ColoringOptions;
-    setLegendHighlights: React.Dispatch<React.SetStateAction<Map<GraphType, string>>>;
-    legendHighlights: Map<GraphType, string>;
+    setLegendHighlights: React.Dispatch<React.SetStateAction<Map<LegendType, string>>>;
+    legendHighlights: Map<LegendType, string>;
+    includeAnnotations: boolean
 }
 
-const TwoDLegend: React.FC<LegendProps> = ({ coloringOption, setLegendHighlights, legendHighlights }) => {
+const TwoDLegend: React.FC<LegendProps> = ({ coloringOption, setLegendHighlights, legendHighlights, includeAnnotations }) => {
 
-    const handleLegendClick = (type: GraphType, value: string) => {
+    const handleLegendClick = (type: LegendType, value: string) => {
         setLegendHighlights(prevState => {
             const newMap = new Map([...prevState.entries()]);
             if (newMap.get(type) === value) {
@@ -81,8 +82,9 @@ const TwoDLegend: React.FC<LegendProps> = ({ coloringOption, setLegendHighlights
     };
 
     const colorMap = getColorMap(coloringOption);
-    const nodeHighlight = legendHighlights.has(GraphType.Node);
-    const connectionHighlight = legendHighlights.has(GraphType.Connection);
+    const nodeHighlight = legendHighlights.has(LegendType.Node);
+    const connectionHighlight = legendHighlights.has(LegendType.Connection);
+    const annotationHighlight = legendHighlights.has(LegendType.Annotation);
 
     return (
         <Box
@@ -98,8 +100,8 @@ const TwoDLegend: React.FC<LegendProps> = ({ coloringOption, setLegendHighlights
                     key={name}
                     name={legendNodeNameMapping[name]}
                     color={color}
-                    onClick={() => handleLegendClick(GraphType.Node, name)}
-                    highlighted={!nodeHighlight || legendHighlights.get(GraphType.Node) === name}
+                    onClick={() => handleLegendClick(LegendType.Node, name)}
+                    highlighted={!nodeHighlight || legendHighlights.get(LegendType.Node) === name}
                 />
             ))}
             <Divider sx={{ my: 1, borderColor: gray100 }} />
@@ -108,10 +110,24 @@ const TwoDLegend: React.FC<LegendProps> = ({ coloringOption, setLegendHighlights
                     key={key}
                     name={name}
                     icon={icon}
-                    onClick={() => handleLegendClick(GraphType.Connection, key)}
-                    highlighted={!connectionHighlight || legendHighlights.get(GraphType.Connection) === key}
+                    onClick={() => handleLegendClick(LegendType.Connection, key)}
+                    highlighted={!connectionHighlight || legendHighlights.get(LegendType.Connection) === key}
                 />
             ))}
+            {includeAnnotations && (
+                <>
+                    <Divider sx={{ my: 1, borderColor: gray100 }} />
+                    {Object.entries(annotationLegend).map(([key, { id, name, icon }]) => (
+                        <LegendConnection
+                            key={key}
+                            name={name}
+                            icon={icon}
+                            onClick={() => handleLegendClick(LegendType.Annotation, id)}
+                            highlighted={!annotationHighlight || legendHighlights.get(LegendType.Annotation) === id}
+                        />
+                    ))}
+                </>
+            )}
         </Box>
     );
 };

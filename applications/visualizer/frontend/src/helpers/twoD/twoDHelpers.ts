@@ -1,15 +1,28 @@
 import type { Core, ElementDefinition } from "cytoscape";
 import type { Connection } from "../../rest";
 import type { Workspace } from "../../models/workspace.ts";
-import {GraphType} from "../../settings/twoDSettings.tsx";
+import {annotationLegend, LegendType} from "../../settings/twoDSettings.tsx";
 import {cellConfig, neurotransmitterConfig} from "./coloringHelper.ts";
 
-export const createEdge = (id: string, conn: Connection, workspace: Workspace): ElementDefinition => {
+export const createEdge = (id: string, conn: Connection, workspace: Workspace, includeAnnotations: boolean): ElementDefinition => {
   const synapses = conn.synapses || {};
   const annotations = conn.annotations || [];
 
   const label = createEdgeLabel(workspace, synapses);
   const longLabel = createEdgeLongLabel(workspace, synapses);
+
+  let annotationClasses: string[] = [];
+
+  if (includeAnnotations) {
+    annotationClasses = annotations.map(annotation => annotationLegend[annotation]?.id).filter(Boolean);
+    if (annotationClasses.length === 0) {
+      annotationClasses.push(annotationLegend.notClassified.id);
+    }
+  } else {
+    annotationClasses.push(conn.type);
+  }
+
+  const classes = annotationClasses.join(" ");
 
   return {
     group: "edges",
@@ -20,11 +33,11 @@ export const createEdge = (id: string, conn: Connection, workspace: Workspace): 
       label: label,
       longLabel: longLabel,
       type: conn.type,
-      annotations: annotations.join(", ")
     },
-    classes: conn.type,
+    classes: classes,
   };
 };
+
 
 // Helper functions to create edge labels
 const createEdgeLabel = (workspace: Workspace, synapses: Record<string, number>) => {
@@ -93,8 +106,10 @@ export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights) =
   // Filter network by edges, as set by legend.
   let edgeSel = "edge";
   legendHighlights.forEach((highlight, type) => {
-    if (type === GraphType.Connection) {
+    if (type === LegendType.Connection) {
       edgeSel += `[type="${highlight}"]`;
+    }else if(type == LegendType.Annotation) {
+      edgeSel += '.' + highlight;
     }
   });
 
@@ -102,7 +117,7 @@ export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights) =
 
   // Filter network by nodes, as set by legend.
   legendHighlights.forEach((highlight, type) => {
-    if (type === GraphType.Node) {
+    if (type === LegendType.Node) {
       connectedNodes = connectedNodes.filter("[?" + highlight + "]");
     }
   });

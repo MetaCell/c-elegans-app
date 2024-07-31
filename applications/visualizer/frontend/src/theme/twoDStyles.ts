@@ -1,4 +1,5 @@
 import type {Stylesheet} from "cytoscape";
+import {annotationLegend} from "../settings/twoDSettings.tsx";
 
 const NODE_STYLE = {
     "background-color": "#666",
@@ -64,6 +65,15 @@ const EDGE_LABEL_STYLES = [
     }
 ];
 
+const ANNOTATION_STYLES = Object.entries(annotationLegend).map(([key, { id, color }]) => ({
+  selector: `.${id}`,
+  style: {
+    "line-color": color,
+    "target-arrow-color": color,
+  },
+}));
+
+
 export const GRAPH_STYLES = [
     {
         selector: "node",
@@ -87,6 +97,7 @@ export const GRAPH_STYLES = [
     },
     ...EDGE_LABEL_STYLES,
     ...FADED_STYLE,
+    ...ANNOTATION_STYLES,
 ] as Stylesheet[];
 
 
