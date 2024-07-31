@@ -79,6 +79,7 @@ const TwoDMenu = ({
         }
         cy.reset(); // Reset the zoom and pan positions
         applyLayout(cy, layout);
+        cy.fit();
     };
 
     const handleOpenSettings = (event) => {
@@ -318,8 +319,8 @@ const TwoDMenu = ({
                     </FormGroup>
                 </Box>
             </Popover>
-            <Tooltip title="Show/Hide neurons" placement="right-start">
-                <IconButton>
+            <Tooltip title="Show/Hide neurons (Coming Soon)" placement="right-start">
+                <IconButton disabled={true}>
                     <VisibilityOutlined/>
                 </IconButton>
             </Tooltip>
