@@ -70,15 +70,18 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
     const handleUngroup = () => {
         workspace.customUpdate(draft => {
+            const nextSelected = new Set<string>();
             for (const elementId of draft.selectedNeurons) {
                 if (draft.neuronGroups[elementId]) {
                     const group = draft.neuronGroups[elementId];
                     for (const groupedNeuronId of group.neurons) {
-                        draft.selectedNeurons.add(groupedNeuronId);
+                        nextSelected.add(groupedNeuronId);
                     }
                     delete draft.neuronGroups[elementId];
                 }
             }
+            draft.selectedNeurons = nextSelected
+
         });
         onClose();
     };

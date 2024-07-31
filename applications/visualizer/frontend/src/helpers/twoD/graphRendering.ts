@@ -84,7 +84,7 @@ export const computeGraphDifferences = (
     expectedEdges = applySplitJoinRulesToEdges(expectedEdges, splitJoinState.split, splitJoinState.join, includeNeighboringCellsAsIndividualCells, workspace, expectedNodes, connectionMap);
 
     // Replace individual neurons and edges with groups if necessary
-    replaceNodesWithGroups(expectedNodes, workspace.neuronGroups);
+    expectedNodes = replaceNodesWithGroups(expectedNodes, workspace.neuronGroups, hiddenNodes);
     replaceEdgesWithGroups(expectedEdges, workspace.neuronGroups, connectionMap, includeAnnotations);
 
 
@@ -137,7 +137,7 @@ export const computeGraphDifferences = (
 
 
 // Replace individual neurons with group nodes
-const replaceNodesWithGroups = (expectedNodes: Set<string>, neuronGroups: Record<string, NeuronGroup>) => {
+const replaceNodesWithGroups = (expectedNodes: Set<string>, neuronGroups: Record<string, NeuronGroup>, hiddenNodes: Set<string>) => {
     const nodesToAdd = new Set<string>();
     const nodesToRemove = new Set<string>();
 
@@ -145,7 +145,9 @@ const replaceNodesWithGroups = (expectedNodes: Set<string>, neuronGroups: Record
         for (const groupId in neuronGroups) {
             const group = neuronGroups[groupId];
             if (group.neurons.has(nodeId)) {
-                nodesToAdd.add(groupId);
+                if (!hiddenNodes.has(groupId)) {
+                    nodesToAdd.add(groupId);
+                }
                 nodesToRemove.add(nodeId);
             }
         }
@@ -153,6 +155,7 @@ const replaceNodesWithGroups = (expectedNodes: Set<string>, neuronGroups: Record
 
     nodesToRemove.forEach(nodeId => expectedNodes.delete(nodeId));
     nodesToAdd.forEach(nodeId => expectedNodes.add(nodeId));
+    return expectedNodes
 };
 
 // Replace edges involving individual neurons with edges involving group nodes
