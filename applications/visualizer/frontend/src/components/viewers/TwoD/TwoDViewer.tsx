@@ -351,7 +351,6 @@ const TwoDViewer = () => {
             <ContextMenu
                 open={Boolean(mousePosition)}
                 onClose={handleContextMenuClose}
-                workspace={workspace}
                 position={mousePosition}
                 setSplitJoinState={setSplitJoinState}
                 setHiddenNodes={setHiddenNodes}

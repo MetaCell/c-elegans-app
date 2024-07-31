@@ -2,11 +2,11 @@ import React, {useMemo} from "react";
 import {Menu, MenuItem} from "@mui/material";
 import {NeuronGroup, Workspace} from "../../../models";
 import {isNeuronClass} from "../../../helpers/twoD/twoDHelpers.ts";
+import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace.ts";
 
 interface ContextMenuProps {
     open: boolean;
     onClose: () => void;
-    workspace: Workspace;
     position: { mouseX: number; mouseY: number } | null;
     setSplitJoinState: React.Dispatch<React.SetStateAction<{ split: Set<string>; join: Set<string> }>>;
     setHiddenNodes: React.Dispatch<React.SetStateAction<Set<string>>>;
@@ -16,11 +16,13 @@ interface ContextMenuProps {
 const ContextMenu: React.FC<ContextMenuProps> = ({
                                                      open,
                                                      onClose,
-                                                     workspace,
                                                      position,
                                                      setSplitJoinState,
                                                      setHiddenNodes
                                                  }) => {
+
+    const workspace = useSelectedWorkspace();
+
     const handleHide = () => {
         setHiddenNodes((prevHiddenNodes) => {
             const newHiddenNodes = new Set([...prevHiddenNodes]);
