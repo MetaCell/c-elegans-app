@@ -7,6 +7,7 @@ import type { Dataset } from "../../rest";
 import { vars } from "../../theme/variables.ts";
 import CustomListItem from "./CustomListItem.tsx";
 import {LayersOutlined} from "@mui/icons-material";
+import {CheckIcon} from "../../icons";
 
 const { gray900, gray500, gray400, gray100, gray600 } = vars;
 
@@ -57,6 +58,8 @@ const DataSets = () => {
   const activeDatasetsList = useMemo(() => Object.values(datasets).filter((dataset) => activeDatasets[dataset.id]), [datasets, activeDatasets]);
 
   const [filterActiveDatasets, setFilterActiveDatasets] = useState(activeDatasetsList);
+  
+  let [selectedType, setSelectedType] = useState<string | null>(null);
   
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -120,7 +123,7 @@ const DataSets = () => {
     }
   };
   
-  const getDatasetsypes = (datasets: { [key: string]: Dataset }) => {
+  const getDataseTsypes = (datasets: { [key: string]: Dataset }) => {
     const types = new Set<string>();
     Object.values(datasets).forEach((dataset) => {
       if (dataset.type) {
@@ -128,6 +131,26 @@ const DataSets = () => {
       }
     });
     return Array.from(types);
+  };
+  
+  const handleTypeSelect = (type: string) => {
+    setSelectedType(type);
+    
+    const filteredCategories = {
+      L1: [],
+      L2: [],
+      L3: [],
+      Adult: [],
+    };
+    
+    for (const [category, datasets] of Object.entries(categorizedDatasets)) {
+      filteredCategories[category] = datasets.filter((dataset) => dataset.type === type);
+    }
+    
+    const filteredActiveList = activeDatasetsList.filter((dataset) => dataset.type === type);
+    
+    setFilteredDatasets(filteredCategories);
+    setFilterActiveDatasets(filteredActiveList);
   };
 
   useEffect(() => {
@@ -140,7 +163,7 @@ const DataSets = () => {
     }
   }, [activeDatasetsList, filterGroupsValue]);
   
-  const datasetsTypes = getDatasetsypes(datasets);
+  const datasetsTypes = getDataseTsypes(datasets);
   return (
     <Box>
       <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb="0">
@@ -239,7 +262,7 @@ const DataSets = () => {
           }}
           sx={{
             '& .MuiPaper-root': {
-              maxWidth: '7rem',
+              maxWidth: '10rem',
               
               '& .MuiMenuItem-root': {
                 textTransform: 'capitalize',
@@ -248,8 +271,19 @@ const DataSets = () => {
           }}
         >
           {datasetsTypes.map((type, i) => (
-            <MenuItem key={i} value={type}>
+            <MenuItem key={i} value={type} onClick={() => handleTypeSelect(type)}>
+              <Box display="flex" alignItems="center" gap=".5rem">
+              <Box
+                sx={{
+                  visibility: selectedType === type ? "initial" : "hidden",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <CheckIcon />
+              </Box>
               {type}
+            </Box>
             </MenuItem>
           ))}
         </Menu>
