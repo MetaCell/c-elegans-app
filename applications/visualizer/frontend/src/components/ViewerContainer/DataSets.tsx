@@ -1,12 +1,12 @@
-import FilterListIcon from "@mui/icons-material/FilterList";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { Box, FormControl, IconButton, MenuItem, Stack, TextField, Typography } from "@mui/material";
+import {Box, FormControl, IconButton, Menu, MenuItem, Stack, TextField, Typography} from "@mui/material";
 import Select from "@mui/material/Select";
 import { useEffect, useMemo, useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 import type { Dataset } from "../../rest";
 import { vars } from "../../theme/variables.ts";
 import CustomListItem from "./CustomListItem.tsx";
+import {LayersOutlined} from "@mui/icons-material";
 
 const { gray900, gray500, gray400, gray100, gray600 } = vars;
 
@@ -57,7 +57,16 @@ const DataSets = () => {
   const activeDatasetsList = useMemo(() => Object.values(datasets).filter((dataset) => activeDatasets[dataset.id]), [datasets, activeDatasets]);
 
   const [filterActiveDatasets, setFilterActiveDatasets] = useState(activeDatasetsList);
-
+  
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
   const handleSwitchChange = async (datasetId: string, checked: boolean) => {
     const dataset = Object.values(datasets).find((ds) => ds.id === datasetId);
     if (!dataset) return;
@@ -111,6 +120,16 @@ const DataSets = () => {
     }
   };
   
+  const getDatasetsypes = (datasets: { [key: string]: Dataset }) => {
+    const types = new Set<string>();
+    Object.values(datasets).forEach((dataset) => {
+      if (dataset.type) {
+        types.add(dataset.type);
+      }
+    });
+    return Array.from(types);
+  };
+
   useEffect(() => {
     if (filterGroupsValue === "All") {
       setFilterActiveDatasets(activeDatasetsList);
@@ -121,6 +140,7 @@ const DataSets = () => {
     }
   }, [activeDatasetsList, filterGroupsValue]);
   
+  const datasetsTypes = getDatasetsypes(datasets);
   return (
     <Box>
       <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb="0">
@@ -174,11 +194,6 @@ const DataSets = () => {
               fontWeight: 500,
               fontSize: ".875rem",
 
-              "&.Mui-focused": {
-                "& .MuiOutlinedInput-notchedOutline": {
-                  // border: 0,
-                },
-              },
               "& .MuiSelect-select": {
                 padding: 0,
                 paddingRight: "0 !important",
@@ -193,9 +208,9 @@ const DataSets = () => {
             }}
           >
             <MenuItem value="All">All</MenuItem>
-            {Object.keys(categorizedDatasets).map((key) => (
-              <MenuItem key={key} value={key}>
-                {key}
+            {Object.keys(categorizedDatasets).map((category) => (
+              <MenuItem key={category} value={category}>
+                {category}
               </MenuItem>
             ))}
           </Select>
@@ -205,8 +220,9 @@ const DataSets = () => {
             padding: ".25rem",
             borderRadius: ".25rem",
           }}
+          onClick={handleMenuOpen}
         >
-          <FilterListIcon
+          <LayersOutlined
             sx={{
               color: gray400,
               fontWeight: 500,
@@ -214,6 +230,29 @@ const DataSets = () => {
             }}
           />
         </IconButton>
+        <Menu
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleMenuClose}
+          MenuListProps={{
+            "aria-labelledby": "layers-button",
+          }}
+          sx={{
+            '& .MuiPaper-root': {
+              maxWidth: '7rem',
+              
+              '& .MuiMenuItem-root': {
+                textTransform: 'capitalize',
+              }
+            }
+          }}
+        >
+          {datasetsTypes.map((type, i) => (
+            <MenuItem key={i} value={type}>
+              {type}
+            </MenuItem>
+          ))}
+        </Menu>
       </Box>
       <Box
         sx={{
