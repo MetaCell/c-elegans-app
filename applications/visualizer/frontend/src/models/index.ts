@@ -1,3 +1,3 @@
 export { Workspace } from "./workspace.ts";
-export type { NeuronGroup, Neuron, Dataset } from "./models.ts";
+export type { NeuronGroup } from "./models.ts";
 export { ViewMode } from "./models.ts";

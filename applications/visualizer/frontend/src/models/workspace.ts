@@ -1,6 +1,6 @@
 import {produce, immerable} from "immer";
 import type {configureStore} from "@reduxjs/toolkit";
-import {type NeuronGroup, ViewerSynchronizationPair, ViewerType} from "./models";
+import {EnhancedNeuron, type NeuronGroup, ViewerSynchronizationPair, ViewerType} from "./models";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
 import {type Dataset, DatasetsService, type Neuron} from "../rest";
 import {fetchDatasets} from "../helpers/workspaceHelper";
@@ -14,7 +14,7 @@ export class Workspace {
     // datasetID -> Dataset
     activeDatasets: Record<string, Dataset>;
     // neuronID -> Neurons
-    availableNeurons: Record<string, Neuron>;
+    availableNeurons: Record<string, EnhancedNeuron>;
     // neuronId
     activeNeurons: Set<string>;
     selectedNeurons: Set<string>;
@@ -182,7 +182,19 @@ export class Workspace {
             return produce(updatedWorkspace, (draft: Workspace) => {
                 draft.availableNeurons = {};
                 for (const neuron of uniqueNeurons) {
-                    draft.availableNeurons[neuron.name] = neuron;
+                    const enhancedNeuron: EnhancedNeuron = {
+                        ...neuron,
+                        viewerData: {
+                            [ViewerType.Graph]: {
+                                position: null,
+                                visibility: false,
+                            },
+                            [ViewerType.ThreeD]: {},
+                            [ViewerType.EM]: {},
+                            [ViewerType.InstanceDetails]: {},
+                        },
+                    };
+                    draft.availableNeurons[neuron.name] = enhancedNeuron;
                 }
             });
         } catch (error) {

@@ -20,7 +20,7 @@ import {vars} from "../../../theme/variables.ts";
 import CustomSwitch from "../../ViewerContainer/CustomSwitch.tsx";
 import QuantityInput from "./NumberInput.tsx";
 import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace.ts";
-import {applyLayout, refreshLayout} from "../../../helpers/twoD/twoDHelpers.ts";
+import {applyLayout} from "../../../helpers/twoD/twoDHelpers.ts";
 
 const {gray500} = vars;
 

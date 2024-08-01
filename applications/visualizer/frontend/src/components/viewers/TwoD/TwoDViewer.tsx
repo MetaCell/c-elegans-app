@@ -5,7 +5,7 @@ import dagre from "cytoscape-dagre";
 import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace";
 import {type Connection, ConnectivityService} from "../../../rest";
 import {GRAPH_STYLES} from "../../../theme/twoDStyles";
-import {applyLayout, refreshLayout} from "../../../helpers/twoD/twoDHelpers";
+import {applyLayout, refreshLayout, updateWorkspaceNeurons2DViewerData} from "../../../helpers/twoD/twoDHelpers";
 import {
     CHEMICAL_THRESHOLD,
     ELECTRICAL_THRESHOLD,
@@ -44,6 +44,10 @@ const TwoDViewer = () => {
     const [mousePosition, setMousePosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
     const [legendHighlights, setLegendHighlights] = useState<Map<LegendType, string>>(new Map());
     const [hiddenNodes, setHiddenNodes] = useState<Set<string>>(new Set());
+
+    useEffect(() => {
+        console.log(workspace.availableNeurons)
+    }, [workspace.availableNeurons]);
 
     const handleContextMenuClose = () => {
         setMousePosition(null);
@@ -136,7 +140,7 @@ const TwoDViewer = () => {
     // Update layout when layout setting changes
     useEffect(() => {
         updateLayout();
-    }, [layout]);
+    }, [layout, connections]);
 
     // Add event listener for node clicks to toggle neuron selection and right-click context menu
     useEffect(() => {
@@ -277,7 +281,6 @@ const TwoDViewer = () => {
             cy.add(edgesToAdd);
         });
 
-        updateLayout();
         updateNodeColors();
         updateHighlighted(cy, Array.from(workspace.activeNeurons), Array.from(workspace.selectedNeurons),
             legendHighlights, workspace.neuronGroups);
@@ -285,7 +288,9 @@ const TwoDViewer = () => {
 
     const updateLayout = () => {
         if (cyRef.current) {
-            applyLayout(cyRef.current, layout);
+            const cy = cyRef.current;
+            applyLayout(cy, layout);
+            updateWorkspaceNeurons2DViewerData(workspace, cy)
         }
     };
 
