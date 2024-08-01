@@ -137,6 +137,7 @@ const DataSets = () => {
         onChange={handleSearchChange}
         placeholder="Search"
         variant="outlined"
+        fullWidth
         sx={{
           mb: "1rem",
           "& .MuiOutlinedInput-root": {
