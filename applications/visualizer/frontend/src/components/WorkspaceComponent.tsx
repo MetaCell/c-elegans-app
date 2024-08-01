@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import "@metacell/geppetto-meta-ui/flex-layout/style/light.scss";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import type { RootState } from "../layout-manager/layoutManagerFactory.ts";
-import { threeDViewerWidget, twoDViewerWidget } from "../layout-manager/widgets.ts";
+import {emDataViewerWidget, threeDViewerWidget, twoDViewerWidget} from "../layout-manager/widgets.ts";
 import theme from "../theme";
 import Layout from "./ViewerContainer/Layout.tsx";
 
@@ -53,6 +53,7 @@ function WorkspaceComponent() {
   useEffect(() => {
     dispatch(addWidget(threeDViewerWidget()));
     dispatch(addWidget(twoDViewerWidget()));
+    dispatch(addWidget(emDataViewerWidget()));
   }, [LayoutComponent, dispatch]);
 
   const [anchorElWorkspace, setAnchorElWorkspace] = React.useState<null | HTMLElement>(null);
