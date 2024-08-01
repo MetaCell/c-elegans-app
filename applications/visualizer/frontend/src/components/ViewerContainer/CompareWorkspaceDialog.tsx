@@ -1,7 +1,7 @@
 import { Box, Button, Dialog, FormLabel, IconButton, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { CaretIcon, CheckIcon, CloseIcon } from "../../icons";
-import {Dataset, Neuron, NeuronsService} from "../../rest";
+import { type Dataset, type Neuron, NeuronsService } from "../../rest";
 import { vars as colors } from "../../theme/variables.ts";
 import CustomAutocomplete from "../CustomAutocomplete.tsx";
 

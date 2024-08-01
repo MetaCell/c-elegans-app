@@ -1,5 +1,5 @@
-import {Neuron} from "../rest";
-import {Position} from "cytoscape";
+import type { Neuron } from "../rest";
+import type { Position } from "cytoscape";
 
 export enum ViewMode {
   Default = "Default",
