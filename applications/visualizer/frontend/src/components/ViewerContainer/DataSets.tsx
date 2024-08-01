@@ -61,7 +61,7 @@ const DataSets = () => {
   const handleSwitchChange = async (datasetId: string, checked: boolean) => {
     const dataset = Object.values(datasets).find((ds) => ds.id === datasetId);
     if (!dataset) return;
-
+    
     if (checked) {
       await currentWorkspace.activateDataset(dataset);
     } else {
@@ -98,23 +98,29 @@ const DataSets = () => {
       setFilteredDatasets(categorizedDatasets);
       setFilterActiveDatasets(activeDatasetsList);
     } else {
+      const activeGroup = categorizedDatasets[selectedGroup]
       // @ts-ignore
       setFilteredDatasets({
-        [`${selectedGroup}`]: categorizedDatasets[selectedGroup],
+        [`${selectedGroup}`]: activeGroup,
       });
 
       const filteredActive = activeDatasetsList.filter((dataset) => {
-        return categorizedDatasets[selectedGroup].some((catDataset) => catDataset.id === dataset.id);
+        return activeGroup.some((catDataset) => catDataset.id === dataset.id);
       });
-
       setFilterActiveDatasets(filteredActive);
     }
   };
-
+  
   useEffect(() => {
-    setFilterActiveDatasets(activeDatasetsList);
-  }, [activeDatasetsList]);
-
+    if (filterGroupsValue === "All") {
+      setFilterActiveDatasets(activeDatasetsList);
+    } else {
+      const activeGroup = categorizedDatasets[filterGroupsValue];
+      const filteredActive = activeGroup.filter((dataset) => activeDatasets[dataset.id]);
+      setFilterActiveDatasets(filteredActive);
+    }
+  }, [activeDatasetsList, filterGroupsValue]);
+  
   return (
     <Box>
       <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb="0">
