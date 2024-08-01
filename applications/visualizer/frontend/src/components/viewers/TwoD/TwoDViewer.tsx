@@ -19,6 +19,7 @@ import {Box} from "@mui/material";
 import {ColoringOptions, getColor} from "../../../helpers/twoD/coloringHelper";
 import ContextMenu from "./ContextMenu";
 import {computeGraphDifferences, updateHighlighted} from "../../../helpers/twoD/graphRendering.ts";
+import {areSetsEqual} from "../../../helpers/utils.ts";
 
 cytoscape.use(fcose);
 cytoscape.use(dagre);
@@ -118,7 +119,7 @@ const TwoDViewer = () => {
         if (cyRef.current) {
             updateGraphElements(cyRef.current, connections);
         }
-    }, [connections, hiddenNodes, workspace.neuronGroups, includePostEmbryonic]);
+    }, [connections, hiddenNodes, workspace.neuronGroups, includePostEmbryonic, splitJoinState]);
 
     useEffect(() => {
         if (cyRef.current) {
@@ -241,7 +242,9 @@ const TwoDViewer = () => {
             }
         });
 
-        workspace.setActiveNeurons(activeNeurons);
+        if(!areSetsEqual(activeNeurons, workspace.activeNeurons)){
+            workspace.setActiveNeurons(activeNeurons);
+        }
     }, [splitJoinState, workspace.id]);
 
     // Effect to handle includeLabels state
