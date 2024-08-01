@@ -1,5 +1,5 @@
-import React, {useState, useEffect, useRef} from "react";
-import cytoscape, {type Core} from "cytoscape";
+import {useState, useEffect, useRef} from "react";
+import cytoscape, {type Core, type EventHandler} from "cytoscape";
 import fcose from "cytoscape-fcose";
 import dagre from "cytoscape-dagre";
 import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace";
@@ -9,7 +9,7 @@ import {applyLayout} from "../../../helpers/twoD/twoDHelpers";
 import {
     CHEMICAL_THRESHOLD,
     ELECTRICAL_THRESHOLD,
-    GRAPH_LAYOUTS, LegendType,
+    GRAPH_LAYOUTS, type LegendType,
     INCLUDE_ANNOTATIONS,
     INCLUDE_NEIGHBORING_CELLS, INCLUDE_LABELS, INCLUDE_POST_EMBRYONIC
 } from "../../../settings/twoDSettings";
@@ -165,13 +165,16 @@ const TwoDViewer = () => {
             }
         };
 
-        const handleContextMenu = (event: MouseEvent) => {
+        const handleContextMenu: EventHandler = (event) => {
             event.preventDefault();
+
+            const cyEvent = event as any; // Cast to any to access originalEvent
+            const originalEvent = cyEvent.originalEvent as MouseEvent;
 
             if (workspace.selectedNeurons.size > 0) {
                 setMousePosition({
-                    mouseX: event.originalEvent.clientX,
-                    mouseY: event.originalEvent.clientY,
+                    mouseX: originalEvent.clientX,
+                    mouseY: originalEvent.clientY,
                 });
             } else {
                 setMousePosition(null);

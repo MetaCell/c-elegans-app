@@ -65,14 +65,13 @@ const EDGE_LABEL_STYLES = [
     }
 ];
 
-const ANNOTATION_STYLES = Object.entries(annotationLegend).map(([key, { id, color }]) => ({
+const ANNOTATION_STYLES = Object.entries(annotationLegend).map(([, { id, color }]) => ({
   selector: `.${id}`,
   style: {
-    "line-color": color,
-    "target-arrow-color": color,
+    'line-color': color,
+    'target-arrow-color': color,
   },
 }));
-
 
 export const GRAPH_STYLES = [
     {

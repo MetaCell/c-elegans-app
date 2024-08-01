@@ -1,6 +1,6 @@
 import {Box, Divider, IconButton, Typography} from "@mui/material";
-import React from "react";
-import {ColoringOptions, getColorMap, legendNodeNameMapping} from "../../../helpers/twoD/coloringHelper";
+import type React from "react";
+import {type ColoringOptions, getColorMap, legendNodeNameMapping} from "../../../helpers/twoD/coloringHelper";
 import {LegendType, connectionsLegend, annotationLegend} from "../../../settings/twoDSettings";
 import {vars} from "../../../theme/variables";
 
@@ -10,12 +10,14 @@ interface LegendNodeProps {
     name: string;
     color: string;
     onClick: () => void;
+    highlighted: boolean
 }
 
 interface LegendConnectionProps {
     name: string;
     icon: JSX.Element;
     onClick: () => void;
+    highlighted: boolean;
 }
 
 const LegendNode: React.FC<LegendNodeProps> = ({ name, color, onClick, highlighted }) => (

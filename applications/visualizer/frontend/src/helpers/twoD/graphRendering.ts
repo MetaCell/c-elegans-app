@@ -7,8 +7,8 @@ import {
     isNeuronCell,
     isNeuronClass
 } from './twoDHelpers';
-import {NeuronGroup, Workspace} from "../../models";
-import {Connection} from "../../rest";
+import type {NeuronGroup, Workspace} from "../../models";
+import type {Connection} from "../../rest";
 import {LegendType} from "../../settings/twoDSettings.tsx";
 
 
@@ -82,7 +82,7 @@ export const computeGraphDifferences = (
 
     // Apply split and join rules to expected nodes and edges
     expectedNodes = applySplitJoinRulesToNodes(expectedNodes, splitJoinState.split, splitJoinState.join, includeNeighboringCellsAsIndividualCells, workspace);
-    expectedEdges = applySplitJoinRulesToEdges(expectedEdges, splitJoinState.split, splitJoinState.join, includeNeighboringCellsAsIndividualCells, workspace, expectedNodes, connectionMap);
+    expectedEdges = applySplitJoinRulesToEdges(expectedEdges, expectedNodes, connectionMap);
 
     // Replace individual neurons and edges with groups if necessary
     expectedNodes = replaceNodesWithGroups(expectedNodes, workspace.neuronGroups, hiddenNodes);
@@ -209,7 +209,7 @@ const replaceEdgesWithGroups = (
         }
     });
 
-    groupedConnections.forEach((conn, newEdgeId) => {
+    groupedConnections.forEach((conn) => {
         const fullNewEdgeId = getEdgeId(conn, includeAnnotations);
         edgesToAdd.add(fullNewEdgeId);
         connectionMap.set(fullNewEdgeId, conn);
@@ -249,10 +249,6 @@ const applySplitJoinRulesToNodes = (
 // Apply split/join rules to edges
 const applySplitJoinRulesToEdges = (
     expectedEdges: Set<string>,
-    toSplit: Set<string>,
-    toJoin: Set<string>,
-    includeNeighboringCellsAsIndividualCells: boolean,
-    workspace: Workspace,
     expectedNodes: Set<string>,
     connectionMap: Map<string, Connection>
 ) => {

@@ -14,7 +14,7 @@ const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions =
 
   const isNeurons = listType === "neurons";
 
-  const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+  const handleSwitchChange = (_: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
     if (onSwitchChange) {
       onSwitchChange(data.id, checked);
     }

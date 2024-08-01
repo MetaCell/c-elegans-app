@@ -40,7 +40,7 @@ const CustomEntitiesDropdown: React.FC<CustomEntitiesDropdownProps> = ({ options
     setAutocompleteOptions(filteredOptions);
   };
 
-  const handleOptionClick = (event: React.MouseEvent, option: Option) => {
+  const handleOptionClick = (_: React.MouseEvent, option: Option) => {
     onSelect(option);
   };
 

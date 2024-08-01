@@ -1,7 +1,7 @@
 import type { Core, ElementDefinition } from "cytoscape";
 import type { Connection } from "../../rest";
 import type { Workspace } from "../../models/workspace.ts";
-import {annotationLegend, LegendType} from "../../settings/twoDSettings.tsx";
+import {annotationLegend} from "../../settings/twoDSettings.tsx";
 import {cellConfig, neurotransmitterConfig} from "./coloringHelper.ts";
 
 export const createEdge = (id: string, conn: Connection, workspace: Workspace, includeAnnotations: boolean): ElementDefinition => {

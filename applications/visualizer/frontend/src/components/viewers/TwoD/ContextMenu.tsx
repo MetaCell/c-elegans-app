@@ -1,6 +1,7 @@
-import React, {useMemo} from "react";
+import type React from "react";
+import {useMemo} from "react";
 import {Menu, MenuItem} from "@mui/material";
-import {NeuronGroup, Workspace} from "../../../models";
+import {type NeuronGroup} from "../../../models";
 import {isNeuronClass} from "../../../helpers/twoD/twoDHelpers.ts";
 import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace.ts";
 
