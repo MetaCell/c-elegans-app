@@ -186,7 +186,7 @@ export class Workspace {
                         ...neuron,
                         viewerData: {
                             [ViewerType.Graph]: {
-                                position: null,
+                                defaultPosition: null,
                                 visibility: false,
                             },
                             [ViewerType.ThreeD]: {},

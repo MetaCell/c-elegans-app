@@ -31,7 +31,7 @@ export interface EnhancedNeuron extends Neuron {
 }
 
 export interface GraphViewerData {
-  position: Position | null;
+  defaultPosition: Position | null;
   visibility: boolean;
 }
 

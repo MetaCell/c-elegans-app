@@ -125,7 +125,7 @@ export const calculateMeanPosition = (nodeIds: string[], workspace: Workspace): 
 
     nodeIds.forEach(nodeId => {
         const neuron = workspace.availableNeurons[nodeId];
-        const position = neuron?.viewerData[ViewerType.Graph]?.position;
+        const position = neuron?.viewerData[ViewerType.Graph]?.defaultPosition;
         if (position) {
             totalX += position.x;
             totalY += position.y;
@@ -193,7 +193,7 @@ export const updateWorkspaceNeurons2DViewerData = (workspace: Workspace, cy: Cor
         cy.nodes().forEach(node => {
             const neuronId = node.id();
             if (draft.availableNeurons[neuronId]) {
-                draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].position = { ...node.position() };
+                draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].defaultPosition = { ...node.position() };
                 draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].visibility = true;
             }
         });

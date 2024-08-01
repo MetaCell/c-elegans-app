@@ -109,7 +109,7 @@ export const computeGraphDifferences = (
             } else {
                 const neuron = workspace.availableNeurons[nodeId];
                 const attributes = extractNeuronAttributes(neuron);
-                const position = neuron.viewerData[ViewerType.Graph]?.position ?? null;
+                const position = neuron.viewerData[ViewerType.Graph]?.defaultPosition ?? null;
                 nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), attributes, position));
             }
         }
