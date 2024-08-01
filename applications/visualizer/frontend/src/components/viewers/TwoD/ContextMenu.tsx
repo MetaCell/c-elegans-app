@@ -1,9 +1,11 @@
 import type React from "react";
 import {useMemo} from "react";
 import {Menu, MenuItem} from "@mui/material";
-import {type NeuronGroup} from "../../../models";
-import {isNeuronClass} from "../../../helpers/twoD/twoDHelpers.ts";
+import {type NeuronGroup, ViewerType} from "../../../models";
+import {calculateSplitPositions, isNeuronClass} from "../../../helpers/twoD/twoDHelpers.ts";
 import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace.ts";
+import {Position} from "cytoscape";
+
 
 interface ContextMenuProps {
     open: boolean;
@@ -93,17 +95,29 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             const newJoin = new Set(prevState.join);
 
             const newSelectedNeurons = new Set(workspace.selectedNeurons);
+            const positionUpdates: Record<string, { position?: Position | null, visibility: boolean }> = {};
+
 
             workspace.selectedNeurons.forEach(neuronId => {
                 if (isNeuronClass(neuronId, workspace)) {
                     newSplit.add(neuronId);
                     newSelectedNeurons.delete(neuronId);
 
-                    // Add the individual neurons to the selected neurons
-                    Object.values(workspace.availableNeurons).forEach(neuron => {
-                        if (neuron.nclass === neuronId && neuron.nclass !== neuron.name) {
-                            newSelectedNeurons.add(neuron.name);
-                        }
+                    const individualNeurons = Object.values(workspace.availableNeurons).filter(neuron => {
+                        return neuron.nclass === neuronId && neuron.nclass !== neuron.name;
+                    }).map(neuron => neuron.name);
+
+                    // Calculate the positions for the individual neurons
+                    const basePosition = workspace.availableNeurons[neuronId].viewerData[ViewerType.Graph]?.position || {
+                        x: 0,
+                        y: 0
+                    };
+                    const positions = calculateSplitPositions(individualNeurons, basePosition);
+
+                    // Update the selected neurons with individual neurons
+                    individualNeurons.forEach(neuronName => {
+                        newSelectedNeurons.add(neuronName);
+                        positionUpdates[neuronName] = {position: positions[neuronName], visibility: true};
                     });
 
                     // Remove the corresponding class from the toJoin set
@@ -112,12 +126,24 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                             newJoin.delete(joinNeuronId);
                         }
                     });
+
+                    positionUpdates[neuronId] = {visibility: false};
                 }
             });
 
-            // Update the selected neurons in the workspace
             workspace.customUpdate(draft => {
+                // Update the selected neurons
                 draft.selectedNeurons = newSelectedNeurons;
+
+                // Update the positions and visibility for the individual neurons and class neuron
+                Object.entries(positionUpdates).forEach(([neuronName, update]) => {
+                    if (draft.availableNeurons[neuronName]) {
+                        if (update.position !== undefined) {
+                            draft.availableNeurons[neuronName].viewerData[ViewerType.Graph].position = update.position;
+                        }
+                        draft.availableNeurons[neuronName].viewerData[ViewerType.Graph].visibility = update.visibility;
+                    }
+                });
             });
 
             return {split: newSplit, join: newJoin};
