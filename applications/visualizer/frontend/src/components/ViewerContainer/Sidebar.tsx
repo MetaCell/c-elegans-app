@@ -117,7 +117,7 @@ const Sidebar = ({
       <Box
         sx={{
           display: "flex",
-          height: "calc(100vh - 3.5rem)",
+          height: "calc(100vh - 4rem)",
           overflow: "hidden",
         }}
       >

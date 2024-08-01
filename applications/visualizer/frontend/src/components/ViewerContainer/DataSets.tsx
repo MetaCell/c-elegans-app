@@ -1,142 +1,120 @@
 import FilterListIcon from "@mui/icons-material/FilterList";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { Box, FormControl, IconButton, MenuItem, Stack, Typography } from "@mui/material";
+import { Box, FormControl, IconButton, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import Select from "@mui/material/Select";
+import { useEffect, useMemo, useState } from "react";
+import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
+import type { Dataset } from "../../rest";
 import { vars } from "../../theme/variables.ts";
-import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 import CustomListItem from "./CustomListItem.tsx";
-const { gray900, gray500, gray400 } = vars;
 
-const data = [
-  {
-    title: "Development stage 1",
-    dataSets: [
-      {
-        id: "id1",
-        label:
-          "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
-        checked: true,
-        description: "23 hours after birth",
-        helpText: "helpText",
-      },
-      {
-        id: "id2",
-        label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
-        checked: true,
-        description: "27 hours after birth",
-        helpText: "helpText",
-      },
-      {
-        id: "id3",
-        label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
-        checked: true,
-        description: "L4 legacy dataset",
-        helpText: "helpText",
-      },
-      {
-        id: "id4",
-        label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
-        checked: true,
-        description: "L4 legacy dataset",
-        helpText: "helpText",
-      },
-      {
-        id: "id5",
-        label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
-        checked: true,
-        description: "L4 legacy dataset",
-        helpText: "helpText",
-      },
-      {
-        id: "id6",
-        label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
-        checked: true,
-        description: "L4 legacy dataset",
-        helpText: "helpText",
-      },
-      {
-        id: "id7",
-        label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
-        checked: true,
-        description: "L4 legacy dataset",
-        helpText: "helpText",
-      },
-      {
-        id: "id8",
-        label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
-        checked: true,
-        description: "L4 legacy dataset",
-        helpText: "helpText",
-      },
-      {
-        id: "id9",
-        label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
-        checked: true,
-        description: "L4 legacy dataset",
-        helpText: "helpText",
-      },
-    ],
-  },
-  {
-    title: "Development stage 2",
-    dataSets: [
-      {
-        id: "id10",
-        label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
-        checked: true,
-        description: "L4 legacy dataset",
-        helpText: "helpText",
-      },
-      {
-        id: "id11",
-        label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
-        checked: true,
-        description: "L4 legacy dataset",
-        helpText: "helpText",
-      },
-      {
-        id: "id12",
-        label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
-        checked: true,
-        description: "L4 legacy dataset",
-        helpText: "helpText",
-      },
-    ],
-  },
-  {
-    title: "Development stage 3",
-    dataSets: [
-      {
-        id: "id13",
-        label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
-        checked: true,
-        description: "L4 legacy dataset",
-        helpText: "helpText",
-      },
-      {
-        id: "id14",
-        label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
-        checked: true,
-        description: "L4 legacy dataset",
-        helpText: "helpText",
-      },
-    ],
-  },
-  {
-    title: "Adult",
-    dataSets: [
-      {
-        id: "id15",
-        label: "Witvliet et al., 2020, Dataset 1 (L1) 0, Dataset 1 (L1)",
-        checked: true,
-        description: "50 hours after birth",
-        helpText: "helpText",
-      },
-    ],
-  },
-];
+const { gray900, gray500, gray400, gray100, gray600 } = vars;
+
+// Categorize datasets based on their visualTime
+const categorizeDatasets = (datasets: Dataset[]) => {
+  const categories = {
+    L1: [],
+    L2: [],
+    L3: [],
+    Adult: [],
+  };
+
+  datasets.forEach((dataset) => {
+    if (dataset.visualTime >= 0 && dataset.visualTime < 10) {
+      categories["L1"].push(dataset);
+    } else if (dataset.visualTime >= 10 && dataset.visualTime < 20) {
+      categories["L2"].push(dataset);
+    } else if (dataset.visualTime >= 20 && dataset.visualTime < 30) {
+      categories["L3"].push(dataset);
+    } else if (dataset.visualTime >= 30) {
+      categories["Adult"].push(dataset);
+    }
+  });
+
+  return categories;
+};
+
+// Map Dataset to ListItem format
+const mapDatasetToListItem = (dataset: Dataset, isActive: boolean) => ({
+  id: dataset.id, // This is mandatory so that we can get the real Dataset back
+  label: dataset.name,
+  checked: isActive,
+  description: dataset.description,
+  helpText: dataset.collection,
+});
 
 const DataSets = () => {
+  const { datasets, workspaces, currentWorkspaceId } = useGlobalContext();
+  const currentWorkspace = workspaces[currentWorkspaceId];
+  const activeDatasets = currentWorkspace.activeDatasets;
+
+  const categorizedDatasets = categorizeDatasets(Object.values(datasets));
+
+  const [searchInput, setSearchInput] = useState("");
+  const [filteredDatasets, setFilteredDatasets] = useState(categorizedDatasets);
+  const [filterGroupsValue, setFilterGroupsValue] = useState("All");
+
+  const activeDatasetsList = useMemo(() => Object.values(datasets).filter((dataset) => activeDatasets[dataset.id]), [datasets, activeDatasets]);
+
+  const [filterActiveDatasets, setFilterActiveDatasets] = useState(activeDatasetsList);
+
+  const handleSwitchChange = async (datasetId: string, checked: boolean) => {
+    const dataset = Object.values(datasets).find((ds) => ds.id === datasetId);
+    if (!dataset) return;
+
+    if (checked) {
+      await currentWorkspace.activateDataset(dataset);
+    } else {
+      await currentWorkspace.deactivateDataset(dataset.id);
+    }
+  };
+
+  const handleSearchChange = (event) => {
+    const inputValue = event.target.value.toLowerCase();
+    setSearchInput(inputValue);
+
+    const filteredCategories = {
+      L1: [],
+      L2: [],
+      L3: [],
+      Adult: [],
+    };
+
+    for (const [category, datasets] of Object.entries(categorizedDatasets)) {
+      filteredCategories[category] = datasets.filter((dataset) => dataset.name.toLowerCase().includes(inputValue));
+    }
+
+    const filteredActiveList = inputValue ? activeDatasetsList.filter((dataset) => dataset.name.toLowerCase().includes(inputValue)) : activeDatasetsList;
+
+    setFilteredDatasets(filteredCategories);
+    setFilterActiveDatasets(filteredActiveList);
+  };
+
+  const onSelectGroupChange = (e) => {
+    const selectedGroup = e.target.value;
+    setFilterGroupsValue(selectedGroup);
+
+    if (selectedGroup === "All") {
+      setFilteredDatasets(categorizedDatasets);
+      setFilterActiveDatasets(activeDatasetsList);
+    } else {
+      // @ts-ignore
+      setFilteredDatasets({
+        [`${selectedGroup}`]: categorizedDatasets[selectedGroup],
+      });
+
+      const filteredActive = activeDatasetsList.filter((dataset) => {
+        return categorizedDatasets[selectedGroup].some((catDataset) => catDataset.id === dataset.id);
+      });
+
+      setFilterActiveDatasets(filteredActive);
+    }
+  };
+
+  useEffect(() => {
+    setFilterActiveDatasets(activeDatasetsList);
+  }, [activeDatasetsList]);
+
   return (
     <Box>
       <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb="0">
@@ -148,16 +126,42 @@ const DataSets = () => {
           Toggle on and off to view datasets on the workspace. This will affect all viewers.
         </Typography>
       </Stack>
-      <CustomEntitiesDropdown />
+      <TextField
+        value={searchInput}
+        onChange={handleSearchChange}
+        placeholder="Search"
+        variant="outlined"
+        sx={{
+          mb: "1rem",
+          "& .MuiOutlinedInput-root": {
+            padding: "0.5rem 2rem 0.5rem 0.75rem",
+            borderRadius: 0,
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: gray100,
+              boxShadow: "none",
+            },
+            "& .MuiInputBase-input": {
+              color: gray600,
+              fontWeight: 500,
+            },
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderLeft: "none",
+              borderRight: "none",
+            },
+          },
+        }}
+      />
+
       <Box p={".75rem"} display="flex" justifyContent="space-between" alignItems="center">
         <FormControl>
           <Select
             labelId="demo-simple-select-label"
             id="demo-simple-select"
-            value={"all"}
-            IconComponent={() => <KeyboardArrowDownIcon />}
+            value={filterGroupsValue}
+            IconComponent={KeyboardArrowDownIcon}
+            onChange={onSelectGroupChange}
             sx={{
-              minWidth: "2.5rem",
+              minWidth: "5rem",
               border: 0,
               color: gray400,
               fontWeight: 500,
@@ -165,7 +169,7 @@ const DataSets = () => {
 
               "&.Mui-focused": {
                 "& .MuiOutlinedInput-notchedOutline": {
-                  border: 0,
+                  // border: 0,
                 },
               },
               "& .MuiSelect-select": {
@@ -181,7 +185,12 @@ const DataSets = () => {
               },
             }}
           >
-            <MenuItem value={"all"}>All</MenuItem>
+            <MenuItem value="All">All</MenuItem>
+            {Object.keys(categorizedDatasets).map((key) => (
+              <MenuItem key={key} value={key}>
+                {key}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
         <IconButton
@@ -206,18 +215,43 @@ const DataSets = () => {
           overflow: "auto",
         }}
       >
-        {data.map((section, index) => (
-          <Box p="0 .25rem" mt={index === 0 ? 0 : "1rem"} key={`section-${section.title}`}>
-            <Typography color={gray500} variant="subtitle1" padding=".25rem .5rem" mb=".5rem">
-              {section.title}
-            </Typography>
-            <Stack spacing=".5rem">
-              {section.dataSets.map((item) => (
-                <CustomListItem key={item.id} data={item} listType="dataSets" />
+        <Box p="0 .25rem" mt={"1rem"} mb="1rem">
+          <Stack spacing=".5rem">
+            {filterActiveDatasets.length > 0 && (
+              <Box p="0 .25rem" mt="1rem">
+                <Typography color={gray500} variant="subtitle1" padding=".25rem .5rem" mb=".5rem">
+                  Active Datasets
+                </Typography>
+                <Stack spacing=".5rem">
+                  {filterActiveDatasets.map((dataset) => (
+                    <CustomListItem key={dataset.id} data={mapDatasetToListItem(dataset, true)} listType="activeDataSets" onSwitchChange={handleSwitchChange} />
+                  ))}
+                </Stack>
+              </Box>
+            )}
+
+            {/* Filtered Datasets Group */}
+            {Object.entries(filteredDatasets)
+              .filter(([_, datasets]) => datasets.length > 0) // Filter out empty categories
+              .map(([category, datasets], index) => (
+                <Box key={category} p="0 .25rem" mt={index === 0 ? 0 : "1rem"}>
+                  <Typography color={gray500} variant="subtitle1" padding=".25rem .5rem" mb=".5rem">
+                    {category}
+                  </Typography>
+                  <Stack spacing=".5rem">
+                    {datasets.map((dataset) => (
+                      <CustomListItem
+                        key={dataset.id}
+                        data={mapDatasetToListItem(dataset, Boolean(activeDatasets[dataset.id]))}
+                        listType="dataSets"
+                        onSwitchChange={handleSwitchChange}
+                      />
+                    ))}
+                  </Stack>
+                </Box>
               ))}
-            </Stack>
-          </Box>
-        ))}
+          </Stack>
+        </Box>
       </Box>
     </Box>
   );

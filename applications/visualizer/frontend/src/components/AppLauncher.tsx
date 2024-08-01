@@ -18,7 +18,7 @@ function AppLauncher() {
     const workspaceId = `workspace-${Date.now()}`;
     const workspaceName = `Workspace ${Object.keys(workspaces).length + 1}`;
 
-    createWorkspace(workspaceId, workspaceName);
+    createWorkspace(workspaceId, workspaceName, new Set(TEMPLATE_ACTIVE_DATASETS));
     setCurrentWorkspace(workspaceId);
   };
 
