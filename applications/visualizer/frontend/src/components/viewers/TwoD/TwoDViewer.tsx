@@ -45,10 +45,6 @@ const TwoDViewer = () => {
     const [legendHighlights, setLegendHighlights] = useState<Map<LegendType, string>>(new Map());
     const [hiddenNodes, setHiddenNodes] = useState<Set<string>>(new Set());
 
-    useEffect(() => {
-        console.log(workspace.availableNeurons)
-    }, [workspace.availableNeurons]);
-
     const handleContextMenuClose = () => {
         setMousePosition(null);
     };

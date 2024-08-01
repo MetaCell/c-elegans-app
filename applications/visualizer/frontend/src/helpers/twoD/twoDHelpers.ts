@@ -1,7 +1,8 @@
 import type {Core, ElementDefinition, Position} from "cytoscape";
 import type {Connection} from "../../rest";
-import type {Workspace} from "../../models/workspace.ts";
-import {ViewerType} from "../../models/models.ts";
+import type {Workspace} from "../../models";
+import {ViewerType} from "../../models";
+
 import {annotationLegend} from "../../settings/twoDSettings.tsx";
 import {cellConfig, neurotransmitterConfig} from "./coloringHelper.ts";
 
@@ -61,7 +62,7 @@ export const createNode = (nodeId: string, selected: boolean, attributes: string
         classes: selected ? "selected" : ""
     };
     if (position) {
-        node.position = position;
+        node.position = { x: position.x, y: position.y };
     }
     return node;
 };
@@ -139,27 +140,22 @@ export const calculateMeanPosition = (nodeIds: string[], cy: Core): Position => 
 };
 
 export const updateWorkspaceNeurons2DViewerData = (workspace: Workspace, cy: Core) => {
+    // Update the workspace availableNeurons with the positions and visibility
     workspace.customUpdate(draft => {
         // Set visibility and position for nodes in the cytoscape graph
         cy.nodes().forEach(node => {
             const neuronId = node.id();
             if (draft.availableNeurons[neuronId]) {
-                draft.availableNeurons[neuronId].viewerData[ViewerType.Graph] = {
-                    ...draft.availableNeurons[neuronId].viewerData[ViewerType.Graph],
-                    position: node.position(),
-                    visibility: true,
-                };
+                draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].position = { ...node.position() };
+                draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].visibility = true;
             }
         });
 
         // Set visibility to false and position to null for nodes not in the cytoscape graph
         Object.keys(draft.availableNeurons).forEach(neuronId => {
             if (!cy.getElementById(neuronId).isNode()) {
-                draft.availableNeurons[neuronId].viewerData[ViewerType.Graph] = {
-                    ...draft.availableNeurons[neuronId].viewerData[ViewerType.Graph],
-                    position: null,
-                    visibility: false,
-                };
+                draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].position = null;
+                draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].visibility = false;
             }
         });
     });

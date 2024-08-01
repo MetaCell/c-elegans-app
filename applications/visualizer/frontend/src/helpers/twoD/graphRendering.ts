@@ -9,6 +9,7 @@ import {
     isNeuronClass
 } from './twoDHelpers';
 import type {NeuronGroup, Workspace} from "../../models";
+import {ViewerType} from "../../models";
 import type {Connection} from "../../rest";
 import {LegendType} from "../../settings/twoDSettings.tsx";
 
@@ -108,7 +109,8 @@ export const computeGraphDifferences = (
             } else {
                 const neuron = workspace.availableNeurons[nodeId];
                 const attributes = extractNeuronAttributes(neuron);
-                nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), attributes));
+                const position = neuron.viewerData[ViewerType.Graph]?.position ?? null;
+                nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), attributes, position));
             }
         }
     }
