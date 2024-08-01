@@ -104,7 +104,7 @@ export const computeGraphDifferences = (
                     const neuron = workspace.availableNeurons[neuronId];
                     extractNeuronAttributes(neuron).forEach(attr => attributes.add(attr));
                 });
-                const groupPosition = calculateMeanPosition(groupNeurons, cy);
+                const groupPosition = calculateMeanPosition(groupNeurons, workspace);
                 nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), Array.from(attributes), groupPosition));
             } else {
                 const neuron = workspace.availableNeurons[nodeId];

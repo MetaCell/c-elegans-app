@@ -118,15 +118,15 @@ export const getNclassSet = (neuronIds: Set<string>, workspace: Workspace): Set<
 };
 
 
-export const calculateMeanPosition = (nodeIds: string[], cy: Core): Position => {
+export const calculateMeanPosition = (nodeIds: string[], workspace: Workspace): Position => {
     let totalX = 0;
     let totalY = 0;
     let count = 0;
 
     nodeIds.forEach(nodeId => {
-        const node = cy.getElementById(nodeId);
-        if (node && node.position) {
-            const position = node.position();
+        const neuron = workspace.availableNeurons[nodeId];
+        const position = neuron?.viewerData[ViewerType.Graph]?.position;
+        if (position) {
             totalX += position.x;
             totalY += position.y;
             count++;
@@ -139,6 +139,7 @@ export const calculateMeanPosition = (nodeIds: string[], cy: Core): Position => 
     };
 };
 
+
 export const updateWorkspaceNeurons2DViewerData = (workspace: Workspace, cy: Core) => {
     // Update the workspace availableNeurons with the positions and visibility
     workspace.customUpdate(draft => {
@@ -148,14 +149,6 @@ export const updateWorkspaceNeurons2DViewerData = (workspace: Workspace, cy: Cor
             if (draft.availableNeurons[neuronId]) {
                 draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].position = { ...node.position() };
                 draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].visibility = true;
-            }
-        });
-
-        // Set visibility to false and position to null for nodes not in the cytoscape graph
-        Object.keys(draft.availableNeurons).forEach(neuronId => {
-            if (!cy.getElementById(neuronId).isNode()) {
-                draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].position = null;
-                draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].visibility = false;
             }
         });
     });
