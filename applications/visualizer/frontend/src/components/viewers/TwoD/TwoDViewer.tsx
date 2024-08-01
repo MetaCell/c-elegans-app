@@ -129,9 +129,9 @@ const TwoDViewer = () => {
     useEffect(() => {
         if (cyRef.current) {
             updateHighlighted(cyRef.current, Array.from(workspace.activeNeurons),
-                Array.from(workspace.selectedNeurons), legendHighlights);
+                Array.from(workspace.selectedNeurons), legendHighlights, workspace.neuronGroups);
         }
-    }, [legendHighlights, workspace.selectedNeurons]);
+    }, [legendHighlights, workspace.selectedNeurons, workspace.neuronGroups]);
 
     // Update layout when layout setting changes
     useEffect(() => {
@@ -279,7 +279,8 @@ const TwoDViewer = () => {
 
         updateLayout();
         updateNodeColors();
-        updateHighlighted(cy, Array.from(workspace.activeNeurons), Array.from(workspace.selectedNeurons), legendHighlights);
+        updateHighlighted(cy, Array.from(workspace.activeNeurons), Array.from(workspace.selectedNeurons),
+            legendHighlights, workspace.neuronGroups);
     };
 
     const updateLayout = () => {
