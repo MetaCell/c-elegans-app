@@ -1,96 +1,93 @@
-import type { Core, ElementDefinition } from "cytoscape";
-import type { Connection } from "../../rest";
-import type { Workspace } from "../../models/workspace.ts";
+import type {Core, ElementDefinition, Position} from "cytoscape";
+import type {Connection} from "../../rest";
+import type {Workspace} from "../../models/workspace.ts";
 import {annotationLegend} from "../../settings/twoDSettings.tsx";
 import {cellConfig, neurotransmitterConfig} from "./coloringHelper.ts";
 
 export const createEdge = (id: string, conn: Connection, workspace: Workspace, includeAnnotations: boolean): ElementDefinition => {
-  const synapses = conn.synapses || {};
-  const annotations = conn.annotations || [];
+    const synapses = conn.synapses || {};
+    const annotations = conn.annotations || [];
 
-  const label = createEdgeLabel(workspace, synapses);
-  const longLabel = createEdgeLongLabel(workspace, synapses);
+    const label = createEdgeLabel(workspace, synapses);
+    const longLabel = createEdgeLongLabel(workspace, synapses);
 
-  let annotationClasses: string[] = [];
+    let annotationClasses: string[] = [];
 
-  if (includeAnnotations) {
-    annotationClasses = annotations.map(annotation => annotationLegend[annotation]?.id).filter(Boolean);
-    if (annotationClasses.length === 0) {
-      annotationClasses.push(annotationLegend.notClassified.id);
+    if (includeAnnotations) {
+        annotationClasses = annotations.map(annotation => annotationLegend[annotation]?.id).filter(Boolean);
+        if (annotationClasses.length === 0) {
+            annotationClasses.push(annotationLegend.notClassified.id);
+        }
+    } else {
+        annotationClasses.push(conn.type);
     }
-  } else {
-    annotationClasses.push(conn.type);
-  }
 
-  const classes = annotationClasses.join(" ");
+    const classes = annotationClasses.join(" ");
 
-  return {
-    group: "edges",
-    data: {
-      id: id,
-      source: conn.pre,
-      target: conn.post,
-      label: label,
-      longLabel: longLabel,
-      type: conn.type,
-    },
-    classes: classes,
-  };
+    return {
+        group: "edges",
+        data: {
+            id: id,
+            source: conn.pre,
+            target: conn.post,
+            label: label,
+            longLabel: longLabel,
+            type: conn.type,
+        },
+        classes: classes,
+    };
 };
 
 
 // Helper functions to create edge labels
 const createEdgeLabel = (workspace: Workspace, synapses: Record<string, number>) => {
-  const datasets = Object.values(workspace.activeDatasets).map(dataset => dataset.id);
-  return datasets.map(datasetId => synapses[datasetId] || 0).join(',');
+    const datasets = Object.values(workspace.activeDatasets).map(dataset => dataset.id);
+    return datasets.map(datasetId => synapses[datasetId] || 0).join(',');
 };
 
 const createEdgeLongLabel = (workspace: Workspace, synapses: Record<string, number>) => {
-  const datasets = Object.values(workspace.activeDatasets)
-  return datasets.map(dataset => {
-    const datasetLabel = synapses[dataset.id] || 0;
-    return `${dataset.name}: ${datasetLabel}`;
-  }).join('\n');
+    const datasets = Object.values(workspace.activeDatasets)
+    return datasets.map(dataset => {
+        const datasetLabel = synapses[dataset.id] || 0;
+        return `${dataset.name}: ${datasetLabel}`;
+    }).join('\n');
 };
 
-export const createNode = (
-  nodeId: string,
-  selected: boolean,
-  attributes: string[]
-): ElementDefinition => {
-  const data = { id: nodeId, label: nodeId };
-
-  // Set each attribute in the data object to true
-  attributes.forEach(attr => {
-    data[attr] = true;
-  });
-
-  return {
-    group: "nodes",
-    data,
-    classes: selected ? "selected" : "",
-  };
+export const createNode = (nodeId: string, selected: boolean, attributes: string[], position?: Position): ElementDefinition => {
+    const node: ElementDefinition = {
+        group: "nodes",
+        data: {id: nodeId, label: nodeId, ...attributes.reduce((acc, attr) => ({...acc, [attr]: true}), {})},
+        classes: selected ? "selected" : ""
+    };
+    if (position) {
+        node.position = position;
+    }
+    return node;
 };
 
-export function applyLayout(cyRef: React.MutableRefObject<Core | null>, layout: string) {
-  if (cyRef.current) {
-    cyRef.current
-      .layout({
+export function applyLayout(cy: Core, layout: string) {
+    cy.layout({
         name: layout,
-      })
-      .run();
-  }
+    }).run();
+
+    refreshLayout(cy)
+}
+
+export function refreshLayout(cy: Core) {
+    cy.resize(); // Adjust the viewport size
+    cy.center(); // Center the graph in the container
+    cy.fit(); // Fit the graph to the container
 }
 
 // Helper functions
 export const isNeuronCell = (neuronId: string, workspace: Workspace): boolean => {
-  const neuron = workspace.availableNeurons[neuronId];
-  return neuron ? neuron.name !== neuron.nclass : false;
+    const neuron = workspace.availableNeurons[neuronId];
+    return neuron ? neuron.name !== neuron.nclass : false;
 };
 
 export const isNeuronClass = (neuronId: string, workspace: Workspace): boolean => {
-  const neuron = workspace.availableNeurons[neuronId];
-  return neuron ? neuron.name === neuron.nclass : false;
+    const neuron = workspace.availableNeurons[neuronId];
+    return neuron ? neuron.name === neuron.nclass : false;
 };
 
 export const getEdgeId = (conn: Connection, includeAnnotations: boolean): string => {
@@ -101,21 +98,41 @@ export const getEdgeId = (conn: Connection, includeAnnotations: boolean): string
 
 
 export const extractNeuronAttributes = (neuron) => {
-  const cellAttributes = neuron.type.split('').map(char => cellConfig[char]?.type).filter(Boolean);
-  const neurotransmitterAttributes = neuron.neurotransmitter.split('').map(char => neurotransmitterConfig[char]?.type).filter(Boolean);
+    const cellAttributes = neuron.type.split('').map(char => cellConfig[char]?.type).filter(Boolean);
+    const neurotransmitterAttributes = neuron.neurotransmitter.split('').map(char => neurotransmitterConfig[char]?.type).filter(Boolean);
 
-  return [...cellAttributes, ...neurotransmitterAttributes];
+    return [...cellAttributes, ...neurotransmitterAttributes];
 };
 
 export const getNclassSet = (neuronIds: Set<string>, workspace: Workspace): Set<string> => {
-  const nclassSet = new Set<string>();
-  neuronIds.forEach(neuronId => {
-    const neuron = workspace.availableNeurons[neuronId];
-    if (neuron && neuron.nclass) {
-      nclassSet.add(neuron.nclass);
-    }
-  });
-  return nclassSet;
+    const nclassSet = new Set<string>();
+    neuronIds.forEach(neuronId => {
+        const neuron = workspace.availableNeurons[neuronId];
+        if (neuron && neuron.nclass) {
+            nclassSet.add(neuron.nclass);
+        }
+    });
+    return nclassSet;
 };
 
 
+export const calculateMeanPosition = (nodeIds: string[], cy: Core): Position => {
+    let totalX = 0;
+    let totalY = 0;
+    let count = 0;
+
+    nodeIds.forEach(nodeId => {
+        const node = cy.getElementById(nodeId);
+        if (node && node.position) {
+            const position = node.position();
+            totalX += position.x;
+            totalY += position.y;
+            count++;
+        }
+    });
+
+    return {
+        x: totalX / count,
+        y: totalY / count
+    };
+};

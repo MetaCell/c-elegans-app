@@ -15,12 +15,12 @@ import {
 } from "@mui/material";
 import {useState} from "react";
 import {ColoringOptions} from "../../../helpers/twoD/coloringHelper.ts";
-import {applyLayout} from "../../../helpers/twoD/twoDHelpers.ts";
 import {GRAPH_LAYOUTS, ZOOM_DELTA} from "../../../settings/twoDSettings.tsx";
 import {vars} from "../../../theme/variables.ts";
 import CustomSwitch from "../../ViewerContainer/CustomSwitch.tsx";
 import QuantityInput from "./NumberInput.tsx";
 import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace.ts";
+import {applyLayout, refreshLayout} from "../../../helpers/twoD/twoDHelpers.ts";
 
 const {gray500} = vars;
 
@@ -77,9 +77,7 @@ const TwoDMenu = ({
         if (!cy) {
             return;
         }
-        cy.reset(); // Reset the zoom and pan positions
-        applyLayout(cy, layout);
-        cy.fit();
+        applyLayout(cy, layout)
     };
 
     const handleOpenSettings = (event) => {

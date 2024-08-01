@@ -5,7 +5,7 @@ import dagre from "cytoscape-dagre";
 import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace";
 import {type Connection, ConnectivityService} from "../../../rest";
 import {GRAPH_STYLES} from "../../../theme/twoDStyles";
-import {applyLayout} from "../../../helpers/twoD/twoDHelpers";
+import {applyLayout, refreshLayout} from "../../../helpers/twoD/twoDHelpers";
 import {
     CHEMICAL_THRESHOLD,
     ELECTRICAL_THRESHOLD,
@@ -65,7 +65,7 @@ const TwoDViewer = () => {
         const resizeObserver = new ResizeObserver((entries) => {
             for (const entry of entries) {
                 if (entry.target === cyContainer.current) {
-                    updateLayout();
+                    refreshLayout(cy);
                 }
             }
         });
@@ -285,7 +285,7 @@ const TwoDViewer = () => {
 
     const updateLayout = () => {
         if (cyRef.current) {
-            applyLayout(cyRef, layout);
+            applyLayout(cyRef.current, layout);
         }
     };
 
