@@ -123,7 +123,7 @@ const DataSets = () => {
     }
   };
 
-  const getDataseTsypes = (datasets: { [key: string]: Dataset }) => {
+  const getDatasesTypes = (datasets: { [key: string]: Dataset }) => {
     const types = new Set<string>();
     Object.values(datasets).forEach((dataset) => {
       if (dataset.type) {
@@ -163,7 +163,7 @@ const DataSets = () => {
     }
   }, [activeDatasetsList, filterGroupsValue]);
 
-  const datasetsTypes = getDataseTsypes(datasets);
+  const datasetsTypes = getDatasesTypes(datasets);
   return (
     <Box>
       <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb="0">
