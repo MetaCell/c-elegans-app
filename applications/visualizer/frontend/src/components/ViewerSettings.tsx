@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import { CloseIcon, LinkIcon } from "../icons";
 import { threeDViewerWidget, twoDViewerWidget } from "../layout-manager/widgets.ts";
+import { ViewerType } from "../models/models.ts";
 import { vars } from "../theme/variables.ts";
 import CustomSwitch from "./ViewerContainer/CustomSwitch.tsx";
 
@@ -38,8 +39,8 @@ const SyncViewersData = [
 ];
 
 const viewers = {
-  Graph: twoDViewerWidget(),
-  "3D": threeDViewerWidget(),
+  [ViewerType.Graph]: twoDViewerWidget(),
+  [ViewerType.ThreeD]: threeDViewerWidget(),
 };
 
 const textStyles = { ...secondaryTypographyStyles, fontWeight: 500, flex: 1 };
@@ -51,15 +52,13 @@ const ViewerSettings = ({ open, toggleDrawer }) => {
   const dispatch = useDispatch();
   const { workspaces, currentWorkspaceId } = useGlobalContext();
   const currentWorkspace = workspaces[currentWorkspaceId];
+
   const handleToggle = (e, viewer) => {
+    const status = e.target.checked ? WidgetStatus.ACTIVE : WidgetStatus.MINIMIZED;
     const selectedViewer = viewers[viewer];
-    if (selectedViewer) {
-      let viewerConfig = { ...selectedViewer };
-      if (e.target.checked) {
-        viewerConfig = { ...viewerConfig, status: WidgetStatus.ACTIVE };
-      } else {
-        viewerConfig = { ...viewerConfig, status: WidgetStatus.MINIMIZED };
-      }
+    const selectedViewerFunction = viewers[viewer];
+    if (selectedViewerFunction) {
+      const viewerConfig = { ...selectedViewer, status };
       dispatch(updateWidget(viewerConfig));
       currentWorkspace.changeViewerVisibility(viewer, e.target.checked);
     } else {
