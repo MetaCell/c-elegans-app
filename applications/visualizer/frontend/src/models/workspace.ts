@@ -65,14 +65,14 @@ export class Workspace {
 
   activateNeuron(neuron: Neuron): void {
     const updated = produce(this, (draft: Workspace) => {
-      draft.activeNeurons[neuron.name] = neuron;
+      draft.activeNeurons.add(neuron.name);
     });
     this.updateContext(updated);
   }
 
   deactivateNeuron(neuronId: string): void {
     const updated = produce(this, (draft: Workspace) => {
-      delete draft.activeNeurons[neuronId];
+      draft.activeNeurons.delete(neuronId);
     });
     this.updateContext(updated);
   }

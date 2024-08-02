@@ -1,19 +1,36 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Box, IconButton, Stack, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
+import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 import { vars } from "../../theme/variables.ts";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 import CustomListItem from "./CustomListItem.tsx";
 const { gray900, gray500 } = vars;
+const mapNeuronsToListItem = (neuron: string, isActive: boolean) => ({
+  id: neuron,
+  label: neuron,
+  checked: isActive,
+});
 
 const Neurons = () => {
-  const activeNeurons = {
-    title: "Active neurons",
-    neurons: [
-      { label: "ADAR", checked: true, helpText: "helpText" },
-      { label: "ADAL", checked: true, helpText: "helpText" },
-      { label: "RIDD", checked: true, helpText: "helpText" },
-    ],
+  const { workspaces, currentWorkspaceId } = useGlobalContext();
+  const currentWorkspace = workspaces[currentWorkspaceId];
+  const activeNeurons = currentWorkspace.activeNeurons;
+  const availableNeurons = currentWorkspace.availableNeurons;
+
+  const handleSwitchChange = async (neuronId: string, checked: boolean) => {
+    const neuron = availableNeurons[neuronId];
+
+    if (!neuron) return;
+
+    if (checked) {
+      await currentWorkspace.activateNeuron(neuron);
+    } else {
+      await currentWorkspace.deactivateNeuron(neuronId);
+    }
+  };
+  const handleDeleteNeuron = (neuronId: string) => {
+    console.log(neuronId);
   };
   return (
     <Box>
@@ -36,7 +53,7 @@ const Neurons = () => {
         <Stack spacing=".5rem" p="0 .25rem" mt=".75rem">
           <Box display="flex" alignItems="center" justifyContent="space-between" padding=".25rem .5rem">
             <Typography color={gray500} variant="subtitle1">
-              {activeNeurons.title}
+              Active Neurons
             </Typography>
             <Tooltip title="Create new group">
               <IconButton
@@ -49,8 +66,17 @@ const Neurons = () => {
               </IconButton>
             </Tooltip>
           </Box>
-          {activeNeurons.neurons.map((item, i) => (
-            <CustomListItem key={i} data={item} showTooltip={false} showExtraActions={true} listType="neurons" onSwitchChange={(e) => console.log(e)} />
+          {Array.from(activeNeurons).map((neuronId) => (
+            <CustomListItem
+              key={neuronId}
+              data={mapNeuronsToListItem(neuronId, true)}
+              showTooltip={false}
+              showExtraActions={true}
+              listType="neurons"
+              onSwitchChange={handleSwitchChange}
+              onDelete={handleDeleteNeuron}
+              deleteTooltipTitle="Remove neuron from the workspace"
+            />
           ))}
         </Stack>
       </Box>

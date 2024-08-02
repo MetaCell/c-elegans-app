@@ -6,12 +6,34 @@ import CustomSwitch from "./CustomSwitch";
 import PickerWrapper from "./PickerWrapper";
 const { gray600, gray400B, gray500, gray50, error700 } = vars;
 
-const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions = false, onSwitchChange }) => {
+interface CustomListItemProps {
+  data: {
+    id: string;
+    label: string;
+    checked: boolean;
+    helpText?: string;
+    description?: string;
+  };
+  showTooltip?: boolean;
+  listType: string;
+  showExtraActions?: boolean;
+  onSwitchChange?: (id: string, checked: boolean) => void;
+  onDelete?: (id: string) => void;
+  deleteTooltipTitle?: string;
+}
+const CustomListItem = ({
+  data,
+  showTooltip = true,
+  listType,
+  showExtraActions = false,
+  onSwitchChange,
+  onDelete,
+  deleteTooltipTitle,
+}: CustomListItemProps) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [open, setOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState("#9FEE9A");
   const [itemHovered, setItemHovered] = useState(false);
-
   const isNeurons = listType === "neurons";
 
   const handleSwitchChange = (_: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
@@ -42,6 +64,13 @@ const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions =
 
   const handleOnMouseLeave = () => {
     setItemHovered(false);
+  };
+
+  const handleDeleteNeuron = (event) => {
+    event.stopPropagation();
+    if (onDelete) {
+      onDelete(data.id);
+    }
   };
 
   return (
@@ -97,12 +126,13 @@ const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions =
               )}
               {showExtraActions && itemHovered && (
                 <Box display="flex" alignItems="center" gap=".25rem">
-                  <Tooltip title="Remove from all viewers">
+                  <Tooltip title={deleteTooltipTitle}>
                     <IconButton
                       sx={{
                         padding: "0.125rem !important",
                         "&:hover": { "& .MuiSvgIcon-root": { color: error700 } },
                       }}
+                      onClick={handleDeleteNeuron}
                     >
                       <DeleteOutlinedIcon fontSize="small" />
                     </IconButton>
