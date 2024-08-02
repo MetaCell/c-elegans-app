@@ -1,8 +1,8 @@
-import { LayersOutlined } from "@mui/icons-material";
+import { CloseOutlined, LayersOutlined } from "@mui/icons-material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { Box, FormControl, IconButton, Menu, MenuItem, Stack, TextField, Typography } from "@mui/material";
+import { Box, FormControl, Grow, type GrowProps, IconButton, Menu, MenuItem, Snackbar, Stack, TextField, Typography } from "@mui/material";
 import Select from "@mui/material/Select";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 import { CheckIcon } from "../../icons";
 import type { Dataset } from "../../rest";
@@ -10,6 +10,10 @@ import { vars } from "../../theme/variables.ts";
 import CustomListItem from "./CustomListItem.tsx";
 
 const { gray900, gray500, gray400, gray100, gray600 } = vars;
+
+function GrowTransition(props: GrowProps) {
+  return <Grow {...props} />;
+}
 
 // Categorize datasets based on their visualTime
 const categorizeDatasets = (datasets: Dataset[]) => {
@@ -61,6 +65,8 @@ const DataSets = () => {
 
   const [selectedType, setSelectedType] = useState<string | null>(null);
 
+  const [showAlert, setShowAlert] = useState(false);
+
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const handleMenuOpen = (event) => {
@@ -77,6 +83,10 @@ const DataSets = () => {
     if (checked) {
       await currentWorkspace.activateDataset(dataset);
     } else {
+      if (activeDatasetsList?.length === 1) {
+        setShowAlert(true);
+        return;
+      }
       await currentWorkspace.deactivateDataset(dataset.id);
     }
   };
@@ -164,6 +174,25 @@ const DataSets = () => {
   }, [activeDatasetsList, filterGroupsValue]);
 
   const datasetsTypes = getDatasetsTypes(datasets);
+
+  const action = (
+    <React.Fragment>
+      <IconButton
+        size="small"
+        aria-label="close"
+        color="inherit"
+        onClick={() => setShowAlert(false)}
+        sx={{
+          "&:hover": {
+            backgroundColor: "transparent",
+          },
+        }}
+      >
+        <CloseOutlined />
+      </IconButton>
+    </React.Fragment>
+  );
+
   return (
     <Box>
       <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb="0">
@@ -333,6 +362,15 @@ const DataSets = () => {
           </Stack>
         </Box>
       </Box>
+      <Snackbar
+        open={showAlert}
+        onClose={() => setShowAlert(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        message={"You have to have at least 1 active dataset."}
+        TransitionComponent={GrowTransition}
+        action={action}
+        autoHideDuration={6000}
+      />
     </Box>
   );
 };
