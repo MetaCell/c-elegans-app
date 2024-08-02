@@ -45,17 +45,19 @@ const Neurons = () => {
     }
   };
   const handleDeleteNeuron = (neuronId: string) => {
-    currentWorkspace.deleteNeuron(neuronId)
+    currentWorkspace.deleteNeuron(neuronId);
   };
 
   const autoCompleteOptions = Object.values(availableNeurons).map((neuron: Neuron) => mapNeuronsAvailableNeuronsToOptions(neuron));
-  
+
   return (
-    <Box sx={{
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-    }}>
+    <Box
+      sx={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb="0">
         <Typography variant="body1" component="p" color={gray900} fontWeight={500}>
           Neurons
@@ -70,7 +72,7 @@ const Neurons = () => {
         sx={{
           height: "100%",
           overflow: "auto",
-          flex: 1
+          flex: 1,
         }}
       >
         <Stack spacing=".5rem" p="0 .25rem" mt=".75rem">
@@ -92,7 +94,7 @@ const Neurons = () => {
             />
           ))}
         </Stack>
-        
+
         <Stack spacing=".5rem" p="0 .25rem" mt=".75rem">
           <Box display="flex" alignItems="center" justifyContent="space-between" padding=".25rem .5rem">
             <Typography color={gray500} variant="subtitle1">
