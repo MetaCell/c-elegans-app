@@ -2,7 +2,8 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import SearchIcon from "@mui/icons-material/Search";
 import { Box, InputAdornment, Popper, TextField, Typography } from "@mui/material";
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { CheckIcon } from "../../icons";
 import { vars } from "../../theme/variables.ts";
 
 const { gray50, brand600 } = vars;
@@ -20,16 +21,19 @@ type Option = {
 
 interface CustomEntitiesDropdownProps {
   options: Option[];
+  activeNeurons: Set<string>;
+  onNeuronClick?: (neuron: Option) => void;
 }
 
-export default function CustomEntitiesDropdown({ options }: CustomEntitiesDropdownProps) {
+const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick }: CustomEntitiesDropdownProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [hoveredOption, setHoveredOption] = useState<Option | null>(null);
   const [open, setOpen] = useState(false);
+  const popperRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (anchorEl && !anchorEl.contains(event.target as Node)) {
+      if (anchorEl && popperRef.current && !popperRef.current.contains(event.target as Node) && !anchorEl.contains(event.target as Node)) {
         setAnchorEl(null);
         setOpen(false);
       }
@@ -45,14 +49,16 @@ export default function CustomEntitiesDropdown({ options }: CustomEntitiesDropdo
     setAnchorEl(anchorEl ? null : event.currentTarget);
     setOpen(!open);
   };
-  
-  const handleOptionClick = (e, option) => {
-    e.stopPropagation();
-    e.preventDefault();
-    console.log(option)
-  }
+
+  const handleOptionClick = (option: Option) => {
+    onNeuronClick(option);
+  };
 
   const id = open ? "simple-popper" : undefined;
+
+  const filteredOptions = options.filter((option) => !activeNeurons.has(option.id));
+  const selectedNeurons = options.filter((option) => activeNeurons.has(option.id));
+  const sortedOptions = [...selectedNeurons, ...filteredOptions];
 
   return (
     <>
@@ -60,7 +66,7 @@ export default function CustomEntitiesDropdown({ options }: CustomEntitiesDropdo
         onClick={handleClick}
         fullWidth
         type="text"
-        placeholder={"Search"}
+        placeholder="Search"
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
@@ -99,6 +105,7 @@ export default function CustomEntitiesDropdown({ options }: CustomEntitiesDropdo
         open={Boolean(anchorEl)}
         placement="bottom-start"
         anchorEl={anchorEl}
+        ref={popperRef}
         sx={{
           height: "28.125rem",
           borderRadius: "0.5rem",
@@ -121,29 +128,37 @@ export default function CustomEntitiesDropdown({ options }: CustomEntitiesDropdo
             }}
           >
             {options.length > 0 ? (
-              <>
-                <Box overflow="auto" height="calc(100% - (2.75rem + 3.125rem))">
-                  <ul>
-                    {options.map((option) => (
-                      <li
-                        key={option.id}
-                        onMouseEnter={() => setHoveredOption(option)}
-                        onMouseLeave={() => setHoveredOption(null)}
-                        onClick={(e) => handleOptionClick(e, option)}
-                        style={{
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <Typography sx={{ width: 1, height: 1, padding: "0.625rem" }}>
-                          {option?.label?.length > 100 ? option?.label.slice(0, 100) + "..." : option?.label}
-                        </Typography>
-                      </li>
-                    ))}
-                  </ul>
-                </Box>
-              </>
+              <Box overflow="auto" height="calc(100% - (2.75rem + 3.125rem))">
+                <ul>
+                  {sortedOptions.map((option) => (
+                    <li
+                      key={option.id}
+                      onMouseEnter={() => setHoveredOption(option)}
+                      onMouseLeave={() => setHoveredOption(null)}
+                      onClick={() => handleOptionClick(option)}
+                      style={{
+                        cursor: "pointer",
+                        padding: "0.625rem",
+                      }}
+                    >
+                      <Box display="flex" alignItems="center" gap=".5rem">
+                        <Box
+                          sx={{
+                            visibility: selectedNeurons.some((neuron) => option.id === neuron.id) ? "initial" : "hidden",
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          <CheckIcon />
+                        </Box>
+                        {option?.label?.length > 100 ? option?.label.slice(0, 100) + "..." : option?.label}
+                      </Box>
+                    </li>
+                  ))}
+                </ul>
+              </Box>
             ) : (
-              <Box>No</Box>
+              <Box>No options available</Box>
             )}
           </Box>
           {options.length > 0 && (
@@ -158,7 +173,6 @@ export default function CustomEntitiesDropdown({ options }: CustomEntitiesDropdo
                   lineHeight: "142.857%",
                   padding: 0,
                 },
-
                 "& .MuiTypography-body1": {
                   fontSize: "0.75rem",
                   fontWeight: 500,
@@ -167,18 +181,19 @@ export default function CustomEntitiesDropdown({ options }: CustomEntitiesDropdo
                 },
               }}
             >
-              {options.length > 0 &&
-                (hoveredOption ? (
-                  <Box>Content</Box>
-                ) : (
-                  <Box height={1} display="flex" alignItems="center" justifyContent="center">
-                    <Typography variant="body2">Hover over each nerve to its details</Typography>
-                  </Box>
-                ))}
+              {hoveredOption ? (
+                <Box>Content of {hoveredOption.label}</Box>
+              ) : (
+                <Box height={1} display="flex" alignItems="center" justifyContent="center">
+                  <Typography variant="body2">Hover over each item to see details</Typography>
+                </Box>
+              )}
             </Box>
           )}
         </Box>
       </Popper>
     </>
   );
-}
+};
+
+export default CustomEntitiesDropdown;

@@ -2,10 +2,10 @@ import AddIcon from "@mui/icons-material/Add";
 import { Box, IconButton, Stack, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
+import type { Neuron } from "../../rest";
 import { vars } from "../../theme/variables.ts";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 import CustomListItem from "./CustomListItem.tsx";
-import {Neuron} from "../../rest";
 const { gray900, gray500 } = vars;
 const mapNeuronsToListItem = (neuron: string, isActive: boolean) => ({
   id: neuron,
@@ -28,19 +28,27 @@ const Neurons = () => {
     const neuron = availableNeurons[neuronId];
 
     if (!neuron) return;
-
     if (checked) {
       await currentWorkspace.activateNeuron(neuron);
     } else {
       await currentWorkspace.deactivateNeuron(neuronId);
     }
   };
+
+  const onNeuronClick = (option) => {
+    const neuron = availableNeurons[option.id];
+    if (neuron && !activeNeurons.has(option.id)) {
+      currentWorkspace.activateNeuron(neuron);
+    } else {
+      currentWorkspace.deactivateNeuron(option.id);
+    }
+  };
   const handleDeleteNeuron = (neuronId: string) => {
     console.log(neuronId);
   };
-  
-  const autoCompleteOptions = Object.values(availableNeurons).map((neuron: Neuron) => mapNeuronsAvailableNeuronsToOptions(neuron))
-  console.log(autoCompleteOptions)
+
+  const autoCompleteOptions = Object.values(availableNeurons).map((neuron: Neuron) => mapNeuronsAvailableNeuronsToOptions(neuron));
+
   return (
     <Box>
       <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb="0">
@@ -52,7 +60,7 @@ const Neurons = () => {
           Search for the neurons and add it to your workspace. This will affect all viewers.
         </Typography>
       </Stack>
-      <CustomEntitiesDropdown options={autoCompleteOptions} />
+      <CustomEntitiesDropdown options={autoCompleteOptions} activeNeurons={activeNeurons} onNeuronClick={onNeuronClick} />
       <Box
         sx={{
           height: "100%",
