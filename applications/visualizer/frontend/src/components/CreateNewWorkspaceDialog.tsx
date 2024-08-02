@@ -26,6 +26,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
 
   const [errorMessage, setErrorMessage] = useState<string>("");
 
+  const workspaceFieldName = "workspaceName";
   const fetchNeurons = async (name, datasetsIds) => {
     try {
       const Ids = datasetsIds.map((dataset) => dataset.id);
@@ -44,7 +45,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setFormValues({ ...formValues, [name]: value });
-    if (name === "workspaceName" && errorMessage) {
+    if (name === workspaceFieldName && errorMessage) {
       setErrorMessage("");
     }
   };
@@ -84,7 +85,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
   const datasetsArray = Object.values(datasets);
 
   return (
-    <CustomDialog onClose={onCloseCreateWorkspace} showModal={showCreateWorkspaceDialog} title={"Create New workspace"}>
+    <CustomDialog onClose={onCloseCreateWorkspace} showModal={showCreateWorkspaceDialog} title={"Create new workspace"}>
       <Box px="1rem" py="1.5rem" gap={2.5} display="flex" flexDirection="column">
         <Box>
           <FormLabel>
@@ -94,7 +95,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
             fullWidth
             variant="outlined"
             placeholder="Start typing workspace name"
-            name="workspaceName"
+            name={workspaceFieldName}
             value={formValues.workspaceName}
             onChange={handleInputChange}
             error={!!errorMessage}

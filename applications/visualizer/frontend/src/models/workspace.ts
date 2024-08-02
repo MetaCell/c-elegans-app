@@ -1,7 +1,6 @@
 import type { LayoutManager } from "@metacell/geppetto-meta-client/common/layout/LayoutManager";
 import type { configureStore } from "@reduxjs/toolkit";
 import { immerable, produce } from "immer";
-import type { GlobalContextType } from "../contexts/GlobalContext.tsx";
 import { getWorkspaceActiveDatasets } from "../helpers/workspaceHelper.ts";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory.ts";
 import { type Dataset, type Neuron, NeuronsService } from "../rest";
@@ -27,15 +26,14 @@ export class Workspace {
   store: ReturnType<typeof configureStore>;
   layoutManager: LayoutManager;
   updateContext: (workspace: Workspace) => void;
-  globalContext: GlobalContextType;
   constructor(
     id: string,
     name: string,
     datasetIds: Set<string>,
     activeNeurons: Set<string>,
+    datasets: Record<string, Dataset>,
     allWorkspaceNeurons: Set<string>,
     updateContext: (workspace: Workspace) => void,
-    globalContext: GlobalContextType,
   ) {
     this.id = id;
     this.name = name;
@@ -61,9 +59,8 @@ export class Workspace {
     this.layoutManager = layoutManager;
     this.store = store;
     this.updateContext = updateContext;
-    this.globalContext = globalContext;
 
-    this._initializeActiveDatasets(datasetIds);
+    this._initializeActiveDatasets(datasets, datasetIds);
   }
 
   activateNeuron(neuron: Neuron): void {
@@ -153,10 +150,10 @@ export class Workspace {
     this.updateContext(updated);
   }
 
-  async _initializeActiveDatasets(datasetIds: Set<string>) {
-    const datasets = getWorkspaceActiveDatasets(this.globalContext.datasets, datasetIds);
+  async _initializeActiveDatasets(datasets: Record<string, Dataset>, datasetIds: Set<string>) {
+    const datasetsRecord = getWorkspaceActiveDatasets(datasets, datasetIds);
     const updated: Workspace = produce(this, (draft: Workspace) => {
-      draft.activeDatasets = datasets;
+      draft.activeDatasets = datasetsRecord;
     });
 
     const updatedWithNeurons = await this._getAvailableNeurons(updated);
