@@ -1,6 +1,6 @@
 import { CloseOutlined, LayersOutlined } from "@mui/icons-material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { Box, FormControl, Grow, type GrowProps, IconButton, Menu, MenuItem, Snackbar, Stack, TextField, Typography } from "@mui/material";
+import { Box, FormControl, IconButton, Menu, MenuItem, Snackbar, Stack, TextField, Typography } from "@mui/material";
 import Select from "@mui/material/Select";
 import React, { useEffect, useMemo, useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
@@ -10,10 +10,6 @@ import { vars } from "../../theme/variables.ts";
 import CustomListItem from "./CustomListItem.tsx";
 
 const { gray900, gray500, gray400, gray100, gray600 } = vars;
-
-function GrowTransition(props: GrowProps) {
-  return <Grow {...props} />;
-}
 
 // Categorize datasets based on their visualTime
 const categorizeDatasets = (datasets: Dataset[]) => {
@@ -367,7 +363,6 @@ const DataSets = () => {
         onClose={() => setShowAlert(false)}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
         message={"You have to have at least 1 active dataset."}
-        TransitionComponent={GrowTransition}
         action={action}
         autoHideDuration={6000}
       />
