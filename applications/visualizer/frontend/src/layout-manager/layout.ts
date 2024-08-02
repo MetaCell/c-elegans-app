@@ -35,12 +35,6 @@ export default {
             enableDeleteWhenEmpty: false,
             children: [],
           },
-        ],
-      },
-      {
-        type: "row",
-        weight: 100,
-        children: [
           {
             type: "tabset",
             weight: 100,
@@ -52,4 +46,4 @@ export default {
       },
     ],
   },
-};
+}
