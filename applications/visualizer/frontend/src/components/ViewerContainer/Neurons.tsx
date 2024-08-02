@@ -5,11 +5,17 @@ import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 import { vars } from "../../theme/variables.ts";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 import CustomListItem from "./CustomListItem.tsx";
+import {Neuron} from "../../rest";
 const { gray900, gray500 } = vars;
 const mapNeuronsToListItem = (neuron: string, isActive: boolean) => ({
   id: neuron,
   label: neuron,
   checked: isActive,
+});
+const mapNeuronsAvailableNeuronsToOptions = (neuron: Neuron) => ({
+  id: neuron.name,
+  label: neuron.name,
+  content: [],
 });
 
 const Neurons = () => {
@@ -32,6 +38,9 @@ const Neurons = () => {
   const handleDeleteNeuron = (neuronId: string) => {
     console.log(neuronId);
   };
+  
+  const autoCompleteOptions = Object.values(availableNeurons).map((neuron: Neuron) => mapNeuronsAvailableNeuronsToOptions(neuron))
+  console.log(autoCompleteOptions)
   return (
     <Box>
       <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb="0">
@@ -43,7 +52,7 @@ const Neurons = () => {
           Search for the neurons and add it to your workspace. This will affect all viewers.
         </Typography>
       </Stack>
-      <CustomEntitiesDropdown />
+      <CustomEntitiesDropdown options={autoCompleteOptions} />
       <Box
         sx={{
           height: "100%",

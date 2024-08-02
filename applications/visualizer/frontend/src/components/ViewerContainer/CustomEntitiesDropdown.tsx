@@ -18,17 +18,13 @@ type Option = {
   content: OptionDetail[];
 };
 
-const options = [
-  {
-    id: "1",
-    label: "Option",
-    content: [],
-  },
-];
-export default function CustomEntitiesDropdown() {
+interface CustomEntitiesDropdownProps {
+  options: Option[];
+}
+
+export default function CustomEntitiesDropdown({ options }: CustomEntitiesDropdownProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [hoveredOption, setHoveredOption] = useState<Option | null>(null);
-  const [autocompleteOptions, setAutocompleteOptions] = useState<Option[]>(options);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -49,6 +45,12 @@ export default function CustomEntitiesDropdown() {
     setAnchorEl(anchorEl ? null : event.currentTarget);
     setOpen(!open);
   };
+  
+  const handleOptionClick = (e, option) => {
+    e.stopPropagation();
+    e.preventDefault();
+    console.log(option)
+  }
 
   const id = open ? "simple-popper" : undefined;
 
@@ -103,22 +105,22 @@ export default function CustomEntitiesDropdown() {
           background: "#fff",
           boxShadow: "0 0.5rem 0.5rem -0.25rem rgba(7, 8, 8, 0.03), 0 1.25rem 1.5rem -0.25rem rgba(7, 8, 8, 0.08)",
           m: "0.25rem 0  !important",
-          width: autocompleteOptions.length > 0 ? "55.5rem" : "27.75rem",
+          width: options.length > 0 ? "55.5rem" : "27.75rem",
           display: "flex",
           flexDirection: "column",
           zIndex: 1300,
         }}
       >
-        <Box display="flex" flex={1} height={autocompleteOptions.length > 0 ? "calc(100% - 2.75rem)" : "auto"}>
+        <Box display="flex" flex={1} height={options.length > 0 ? "calc(100% - 2.75rem)" : "auto"}>
           <Box
             sx={{
               flexShrink: 0,
               display: "flex",
               flexDirection: "column",
-              width: autocompleteOptions.length > 0 ? "50%" : "100%",
+              width: options.length > 0 ? "50%" : "100%",
             }}
           >
-            {autocompleteOptions.length > 0 ? (
+            {options.length > 0 ? (
               <>
                 <Box overflow="auto" height="calc(100% - (2.75rem + 3.125rem))">
                   <ul>
@@ -127,7 +129,10 @@ export default function CustomEntitiesDropdown() {
                         key={option.id}
                         onMouseEnter={() => setHoveredOption(option)}
                         onMouseLeave={() => setHoveredOption(null)}
-                        onClick={() => setAutocompleteOptions([])}
+                        onClick={(e) => handleOptionClick(e, option)}
+                        style={{
+                          cursor: 'pointer',
+                        }}
                       >
                         <Typography sx={{ width: 1, height: 1, padding: "0.625rem" }}>
                           {option?.label?.length > 100 ? option?.label.slice(0, 100) + "..." : option?.label}
@@ -141,7 +146,7 @@ export default function CustomEntitiesDropdown() {
               <Box>No</Box>
             )}
           </Box>
-          {autocompleteOptions.length > 0 && (
+          {options.length > 0 && (
             <Box
               sx={{
                 width: "50%",
@@ -162,7 +167,7 @@ export default function CustomEntitiesDropdown() {
                 },
               }}
             >
-              {autocompleteOptions.length > 0 &&
+              {options.length > 0 &&
                 (hoveredOption ? (
                   <Box>Content</Box>
                 ) : (
