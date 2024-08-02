@@ -4,6 +4,7 @@ import { Box, InputAdornment, Popper, TextField, Typography } from "@mui/materia
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { CheckIcon } from "../../icons";
+import type { Neuron } from "../../rest";
 import { vars } from "../../theme/variables.ts";
 
 const { gray50, brand600 } = vars;
@@ -23,27 +24,18 @@ interface CustomEntitiesDropdownProps {
   options: Option[];
   activeNeurons: Set<string>;
   onNeuronClick?: (neuron: Option) => void;
+  onSearchNeurons?: (value: string) => void;
+  setNeurons?: (neurons: Record<string, Neuron>) => void;
+  availableNeurons: Record<string, Neuron>;
 }
 
-const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick }: CustomEntitiesDropdownProps) => {
+const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearchNeurons, setNeurons, availableNeurons }: CustomEntitiesDropdownProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [hoveredOption, setHoveredOption] = useState<Option | null>(null);
   const [open, setOpen] = useState(false);
+  const [searchText, setSearchText] = useState("");
+
   const popperRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (anchorEl && popperRef.current && !popperRef.current.contains(event.target as Node) && !anchorEl.contains(event.target as Node)) {
-        setAnchorEl(null);
-        setOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [anchorEl]);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -54,16 +46,40 @@ const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick }: Custo
     onNeuronClick(option);
   };
 
+  const onSearch = (e) => {
+    const value = e.target.value;
+    setSearchText(value);
+    onSearchNeurons(value);
+  };
+
   const id = open ? "simple-popper" : undefined;
 
   const filteredOptions = options.filter((option) => !activeNeurons.has(option.id));
   const selectedNeurons = options.filter((option) => activeNeurons.has(option.id));
   const sortedOptions = [...selectedNeurons, ...filteredOptions];
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (anchorEl && popperRef.current && !popperRef.current.contains(event.target as Node) && !anchorEl.contains(event.target as Node)) {
+        setAnchorEl(null);
+        setOpen(false);
+        setSearchText("");
+        setNeurons(availableNeurons);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [anchorEl]);
+
   return (
     <>
       <TextField
+        value={searchText}
         onClick={handleClick}
+        onChange={onSearch}
         fullWidth
         type="text"
         placeholder="Search"
