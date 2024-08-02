@@ -50,7 +50,7 @@ const Neurons = () => {
             </Tooltip>
           </Box>
           {activeNeurons.neurons.map((item, i) => (
-            <CustomListItem key={i} data={item} showTooltip={false} showExtraActions={true} listType="neurons" />
+            <CustomListItem key={i} data={item} showTooltip={false} showExtraActions={true} listType="neurons" onSwitchChange={(e) => console.log(e)} />
           ))}
         </Stack>
       </Box>
