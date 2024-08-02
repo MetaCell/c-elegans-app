@@ -22,6 +22,7 @@ const Neurons = () => {
   const { workspaces, currentWorkspaceId } = useGlobalContext();
   const currentWorkspace = workspaces[currentWorkspaceId];
   const activeNeurons = currentWorkspace.activeNeurons;
+  const allNeurons = currentWorkspace.allWorkspaceNeurons;
   const availableNeurons = currentWorkspace.availableNeurons;
 
   const handleSwitchChange = async (neuronId: string, checked: boolean) => {
@@ -44,13 +45,17 @@ const Neurons = () => {
     }
   };
   const handleDeleteNeuron = (neuronId: string) => {
-    console.log(neuronId);
+    currentWorkspace.deleteNeuron(neuronId)
   };
 
   const autoCompleteOptions = Object.values(availableNeurons).map((neuron: Neuron) => mapNeuronsAvailableNeuronsToOptions(neuron));
-
+  
   return (
-    <Box>
+    <Box sx={{
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
       <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb="0">
         <Typography variant="body1" component="p" color={gray900} fontWeight={500}>
           Neurons
@@ -65,12 +70,33 @@ const Neurons = () => {
         sx={{
           height: "100%",
           overflow: "auto",
+          flex: 1
         }}
       >
         <Stack spacing=".5rem" p="0 .25rem" mt=".75rem">
           <Box display="flex" alignItems="center" justifyContent="space-between" padding=".25rem .5rem">
             <Typography color={gray500} variant="subtitle1">
               Active Neurons
+            </Typography>
+          </Box>
+          {Array.from(activeNeurons).map((neuronId) => (
+            <CustomListItem
+              key={neuronId}
+              data={mapNeuronsToListItem(neuronId, true)}
+              showTooltip={false}
+              showExtraActions={true}
+              listType="neurons"
+              onSwitchChange={handleSwitchChange}
+              onDelete={handleDeleteNeuron}
+              deleteTooltipTitle="Remove neuron from the workspace"
+            />
+          ))}
+        </Stack>
+        
+        <Stack spacing=".5rem" p="0 .25rem" mt=".75rem">
+          <Box display="flex" alignItems="center" justifyContent="space-between" padding=".25rem .5rem">
+            <Typography color={gray500} variant="subtitle1">
+              All Neurons
             </Typography>
             <Tooltip title="Create new group">
               <IconButton
@@ -83,10 +109,10 @@ const Neurons = () => {
               </IconButton>
             </Tooltip>
           </Box>
-          {Array.from(activeNeurons).map((neuronId) => (
+          {Array.from(allNeurons).map((neuronId) => (
             <CustomListItem
               key={neuronId}
-              data={mapNeuronsToListItem(neuronId, true)}
+              data={mapNeuronsToListItem(neuronId, activeNeurons.has(neuronId))}
               showTooltip={false}
               showExtraActions={true}
               listType="neurons"

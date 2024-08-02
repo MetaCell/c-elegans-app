@@ -124,11 +124,11 @@ const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick }: Custo
               flexShrink: 0,
               display: "flex",
               flexDirection: "column",
-              width: options.length > 0 ? "50%" : "100%",
+              width: options.length > 0 ? "20%" : "100%",
             }}
           >
             {options.length > 0 ? (
-              <Box overflow="auto" height="calc(100% - (2.75rem + 3.125rem))">
+              <Box overflow="auto" height="100%">
                 <ul>
                   {sortedOptions.map((option) => (
                     <li
