@@ -47,7 +47,7 @@ const Neurons = () => {
     if (neuron && !activeNeurons.has(option.id)) {
       currentWorkspace.activateNeuron(neuron);
     } else {
-      currentWorkspace.deactivateNeuron(option.id);
+      currentWorkspace.deleteNeuron(option.id);
     }
   };
   const handleDeleteNeuron = (neuronId: string) => {
@@ -112,29 +112,6 @@ const Neurons = () => {
           flex: 1,
         }}
       >
-        <Stack spacing=".5rem" p="0 .25rem" mt=".75rem">
-          {Array.from(activeNeurons).length !== 0 && (
-            <Box display="flex" alignItems="center" justifyContent="space-between" padding=".25rem .5rem">
-              <Typography color={gray500} variant="subtitle1">
-                Active Neurons
-              </Typography>
-            </Box>
-          )}
-
-          {Array.from(activeNeurons).map((neuronId) => (
-            <CustomListItem
-              key={neuronId}
-              data={mapNeuronsToListItem(neuronId, true)}
-              showTooltip={false}
-              showExtraActions={true}
-              listType="neurons"
-              onSwitchChange={handleSwitchChange}
-              onDelete={handleDeleteNeuron}
-              deleteTooltipTitle="Remove neuron from the workspace"
-            />
-          ))}
-        </Stack>
-
         <Stack spacing=".5rem" p="0 .25rem" mt=".75rem">
           <Box display="flex" alignItems="center" justifyContent="space-between" padding=".25rem .5rem">
             <Typography color={gray500} variant="subtitle1">

@@ -140,7 +140,8 @@ const DataSets = () => {
   };
 
   const handleTypeSelect = (type: string) => {
-    setSelectedType(type);
+    const newSelectedType = selectedType === type ? null : type;
+    setSelectedType(newSelectedType);
 
     const filteredCategories = {
       L1: [],
@@ -150,10 +151,10 @@ const DataSets = () => {
     };
 
     for (const [category, datasets] of Object.entries(categorizedDatasets)) {
-      filteredCategories[category] = datasets.filter((dataset) => dataset.type === type);
+      filteredCategories[category] = datasets.filter((dataset) => newSelectedType === null || dataset.type === newSelectedType);
     }
 
-    const filteredActiveList = activeDatasetsList.filter((dataset) => dataset.type === type);
+    const filteredActiveList = activeDatasetsList.filter((dataset) => newSelectedType === null || dataset.type === newSelectedType);
 
     setFilteredDatasets(filteredCategories);
     setFilterActiveDatasets(filteredActiveList);
