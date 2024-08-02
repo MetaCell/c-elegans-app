@@ -14,7 +14,10 @@ import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
 import Text from "ol/style/Text";
 import { TileGrid } from "ol/tilegrid";
-import { useEffect, useRef } from "react";
+import { defaults as defaultInteractions, MouseWheelZoom } from 'ol/interaction.js';
+import { WheelEventHandler, useEffect, useRef, useState } from "react";
+import { shiftKeyOnly } from "ol/events/condition";
+import Layer from "ol/layer/Layer";
 
 // const width = 42496 / 2;
 // const height = 22528 / 2;
@@ -79,26 +82,45 @@ const setHighlightStyle = (feature: Feature) => {
 	feature.setStyle(style);
 };
 
-const EMStackViewer = () => {
-	const slice = 537;
-	const mapRef = useRef<Map | null>(null);
-	const clickedFeature = useRef<Feature | null>(null);
-
-	const emLayer = new TileLayer({
+const newEMLayer = (slice: number): TileLayer<XYZ> => {
+	return new TileLayer({
 		source: new XYZ({
 			tileGrid: tilegrid,
 			url: `emdata/${slice}/{x}_{y}_{z}.jpg`,
 			projection: projection,
 		}),
 	});
+}
 
-	const segLayer = new VectorLayer({
+const newSegLayer = (slice: number) => {
+	return new VectorLayer({
 		source: new VectorSource({
 			url: `segdata/${slice}`,
 			format: new GeoJSON(),
 		}),
 		style: getFeatureStyle,
 	});
+}
+
+const updateSliceLayer = (map: Map, slice: number) => {
+	map.getAllLayers().map(l => {
+		map.removeLayer(l)
+	})
+	map.addLayer(newEMLayer(slice))
+	map.addLayer(newSegLayer(slice))
+}
+
+const EMStackViewer = () => {
+	const minSlice = 0
+	const maxSlice = 714
+
+	let slice = 537
+
+	const mapRef = useRef<Map | null>(null);
+	const clickedFeature = useRef<Feature | null>(null);
+
+	const emLayer = newEMLayer(slice)
+	const segLayer = newSegLayer(slice)
 
 	// const debugLayer = new TileLayer({
 	// 	source: new TileDebug({
@@ -110,6 +132,14 @@ const EMStackViewer = () => {
 	const scale = new ScaleLine({
 		units: "metric",
 	});
+
+	const interactions = defaultInteractions({
+		mouseWheelZoom: false
+	}).extend([
+		new MouseWheelZoom({
+			condition: shiftKeyOnly
+		})
+	])
 
 	useEffect(() => {
 		if (mapRef.current) {
@@ -128,6 +158,7 @@ const EMStackViewer = () => {
 				resolutions: tilegrid.getResolutions(),
 			}),
 			controls: [scale],
+			interactions: interactions,
 		});
 
 		map.on("click", (evt) => {
@@ -143,12 +174,32 @@ const EMStackViewer = () => {
 			}
 		});
 
+		map.getTargetElement().addEventListener("wheel", function(e) {
+			if (e.shiftKey) {
+				return
+			}
+
+			e.preventDefault()
+			const scrollUp = e.deltaY < 0
+
+			if(scrollUp && slice < maxSlice) {
+				++slice
+			}
+
+			if (!scrollUp && slice > minSlice){
+				--slice
+			}
+
+			updateSliceLayer(map, slice)
+			console.debug(`updated view to slice nº ${slice}`)
+		})
+
 		mapRef.current = map;
 	}, []);
 
 	return (
 		<>
-			<div id="emviewer" style={{ height: "800px", width: "100%" }} />
+			<div id="emviewer" style={{ height: "800px", width: "100%" }}/>
 		</>
 	);
 };
