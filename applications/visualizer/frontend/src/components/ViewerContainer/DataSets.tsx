@@ -1,13 +1,13 @@
+import { LayersOutlined } from "@mui/icons-material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import {Box, FormControl, IconButton, Menu, MenuItem, Stack, TextField, Typography} from "@mui/material";
+import { Box, FormControl, IconButton, Menu, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import Select from "@mui/material/Select";
 import { useEffect, useMemo, useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
+import { CheckIcon } from "../../icons";
 import type { Dataset } from "../../rest";
 import { vars } from "../../theme/variables.ts";
 import CustomListItem from "./CustomListItem.tsx";
-import {LayersOutlined} from "@mui/icons-material";
-import {CheckIcon} from "../../icons";
 
 const { gray900, gray500, gray400, gray100, gray600 } = vars;
 
@@ -58,22 +58,22 @@ const DataSets = () => {
   const activeDatasetsList = useMemo(() => Object.values(datasets).filter((dataset) => activeDatasets[dataset.id]), [datasets, activeDatasets]);
 
   const [filterActiveDatasets, setFilterActiveDatasets] = useState(activeDatasetsList);
-  
-  let [selectedType, setSelectedType] = useState<string | null>(null);
-  
+
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
-  
+
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
   const handleSwitchChange = async (datasetId: string, checked: boolean) => {
     const dataset = Object.values(datasets).find((ds) => ds.id === datasetId);
     if (!dataset) return;
-    
+
     if (checked) {
       await currentWorkspace.activateDataset(dataset);
     } else {
@@ -110,7 +110,7 @@ const DataSets = () => {
       setFilteredDatasets(categorizedDatasets);
       setFilterActiveDatasets(activeDatasetsList);
     } else {
-      const activeGroup = categorizedDatasets[selectedGroup]
+      const activeGroup = categorizedDatasets[selectedGroup];
       // @ts-ignore
       setFilteredDatasets({
         [`${selectedGroup}`]: activeGroup,
@@ -122,7 +122,7 @@ const DataSets = () => {
       setFilterActiveDatasets(filteredActive);
     }
   };
-  
+
   const getDataseTsypes = (datasets: { [key: string]: Dataset }) => {
     const types = new Set<string>();
     Object.values(datasets).forEach((dataset) => {
@@ -132,23 +132,23 @@ const DataSets = () => {
     });
     return Array.from(types);
   };
-  
+
   const handleTypeSelect = (type: string) => {
     setSelectedType(type);
-    
+
     const filteredCategories = {
       L1: [],
       L2: [],
       L3: [],
       Adult: [],
     };
-    
+
     for (const [category, datasets] of Object.entries(categorizedDatasets)) {
       filteredCategories[category] = datasets.filter((dataset) => dataset.type === type);
     }
-    
+
     const filteredActiveList = activeDatasetsList.filter((dataset) => dataset.type === type);
-    
+
     setFilteredDatasets(filteredCategories);
     setFilterActiveDatasets(filteredActiveList);
   };
@@ -162,7 +162,7 @@ const DataSets = () => {
       setFilterActiveDatasets(filteredActive);
     }
   }, [activeDatasetsList, filterGroupsValue]);
-  
+
   const datasetsTypes = getDataseTsypes(datasets);
   return (
     <Box>
@@ -261,29 +261,29 @@ const DataSets = () => {
             "aria-labelledby": "layers-button",
           }}
           sx={{
-            '& .MuiPaper-root': {
-              maxWidth: '10rem',
-              
-              '& .MuiMenuItem-root': {
-                textTransform: 'capitalize',
-              }
-            }
+            "& .MuiPaper-root": {
+              maxWidth: "10rem",
+
+              "& .MuiMenuItem-root": {
+                textTransform: "capitalize",
+              },
+            },
           }}
         >
           {datasetsTypes.map((type, i) => (
             <MenuItem key={i} value={type} onClick={() => handleTypeSelect(type)}>
               <Box display="flex" alignItems="center" gap=".5rem">
-              <Box
-                sx={{
-                  visibility: selectedType === type ? "initial" : "hidden",
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <CheckIcon />
+                <Box
+                  sx={{
+                    visibility: selectedType === type ? "initial" : "hidden",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <CheckIcon />
+                </Box>
+                {type}
               </Box>
-              {type}
-            </Box>
             </MenuItem>
           ))}
         </Menu>
