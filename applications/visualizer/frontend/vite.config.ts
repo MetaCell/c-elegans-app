@@ -28,7 +28,7 @@ export default defineConfig(({ command, mode }) => {
   }
   const isDev = mode === "development";
   const port = process.env.PORT || PORT;
-  const theDomain = process.env.DOMAIN || "http://127.0.0.1:8000";
+  const theDomain = process.env.DOMAIN || "http://localhost:8000";
 
   const replaceHost = (uri: string, appName: string) => (uri.includes("visualizer") && uri.replace("visualizer", appName + "." + theDomain)) || uri;
 
