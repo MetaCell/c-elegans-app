@@ -14,10 +14,11 @@ import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
 import Text from "ol/style/Text";
 import { TileGrid } from "ol/tilegrid";
+import BaseLayer from "ol/layer/Base";
 import { defaults as defaultInteractions, MouseWheelZoom } from 'ol/interaction.js';
 import { WheelEventHandler, useEffect, useRef, useState } from "react";
 import { shiftKeyOnly } from "ol/events/condition";
-import Layer from "ol/layer/Layer";
+
 
 // const width = 42496 / 2;
 // const height = 22528 / 2;
@@ -116,11 +117,14 @@ const EMStackViewer = () => {
 
 	let slice = 537
 
+	const startSlice = 537
+	const ringSize = 11
+
 	const mapRef = useRef<Map | null>(null);
 	const clickedFeature = useRef<Feature | null>(null);
 
-	const emLayer = newEMLayer(slice)
-	const segLayer = newSegLayer(slice)
+	// const emLayer = newEMLayer(slice)
+	// const segLayer = newSegLayer(slice)
 
 	// const debugLayer = new TileLayer({
 	// 	source: new TileDebug({
@@ -148,7 +152,7 @@ const EMStackViewer = () => {
 
 		const map = new Map({
 			target: "emviewer",
-			layers: [emLayer, segLayer],
+			layers: [],
 			view: new View({
 				projection: projection,
 				center: getCenter(extent),
@@ -160,6 +164,28 @@ const EMStackViewer = () => {
 			controls: [scale],
 			interactions: interactions,
 		});
+
+		const ringEM = new SlidingRing({
+			map: map,
+			cacheSize: 5,
+			sliceExtent: [minSlice, maxSlice],
+			startSlice: startSlice,
+			newLayer: newEMLayer,
+			zIndex: 0,
+		})
+
+		ringEM.debug()
+
+		const ringSeg = new SlidingRing({
+			map: map,
+			cacheSize: ringSize,
+			sliceExtent: [minSlice, maxSlice],
+			startSlice: startSlice,
+			newLayer: newSegLayer,
+			zIndex: 1,
+		})
+
+		ringSeg.debug()
 
 		map.on("click", (evt) => {
 			const feature = map.forEachFeatureAtPixel(evt.pixel, (feat) => feat);
@@ -183,15 +209,23 @@ const EMStackViewer = () => {
 			const scrollUp = e.deltaY < 0
 
 			if(scrollUp && slice < maxSlice) {
-				++slice
+				// ++slice
+				ringEM.next()
+				ringEM.debug()
+
+				ringSeg.next()
 			}
 
 			if (!scrollUp && slice > minSlice){
-				--slice
+				// --slice
+				ringEM.prev()
+				ringEM.debug()
+
+				ringSeg.prev()
 			}
 
-			updateSliceLayer(map, slice)
-			console.debug(`updated view to slice nº ${slice}`)
+			// updateSliceLayer(map, slice)
+			console.log(map.getAllLayers())
 		})
 
 		mapRef.current = map;
@@ -205,3 +239,210 @@ const EMStackViewer = () => {
 };
 
 export default EMStackViewer;
+
+
+export interface SlidingRingOpts {
+	map: Map;
+	newLayer: (slice: number) => BaseLayer;
+	cacheSize?: number;
+	sliceExtent: [number, number];
+	startSlice: number;
+	zIndex?: number;
+}
+
+export class SlidingRing {
+	private map: Map;
+	private newLayer: (slice: number) => BaseLayer;
+	private zIndex;
+
+	private ring: Array<{
+		slice: number;
+		layer: BaseLayer;
+	}>;
+	private ringHalfSize: number;
+
+	private currSlice: number;
+	private minSlice: number;
+	private maxSlice: number;
+
+	private pos: number; // ring current position
+	private tail: number;
+	private head: number;
+
+	private backgroundZIndex: number = -999
+
+	constructor(options: SlidingRingOpts) {
+		const defaultOpts = {
+			cacheSize: 11,
+			zIndex: 0,
+		}
+
+		const opts = {...defaultOpts, ...options}
+
+		if (opts.cacheSize < 3) {
+			throw Error("ring must have a cache size greater than 3 to be functional")
+		}
+
+		const minSlice = opts.sliceExtent[0]
+		const maxSlice = opts.sliceExtent[1]
+
+		if (minSlice < 0) {
+			throw Error("bad extent: can not have negative indexes")
+		}
+
+		if (minSlice >= maxSlice) {
+			throw Error("bad extent: set [min, max]")
+		}
+
+		if (opts.startSlice > maxSlice || opts.startSlice < minSlice) {
+			throw Error("startSlice must be between the extent bounds")
+		}
+
+		if (maxSlice - minSlice < opts.cacheSize) {
+			console.warn("setting cache size to extent bounds to save memory")
+			opts.cacheSize = maxSlice - minSlice
+		}
+
+		this.map = opts.map;
+		this.newLayer = opts.newLayer;
+		this.zIndex = opts.zIndex;
+
+		this.ring = new Array(opts.cacheSize)
+		this.ringHalfSize = Math.floor(opts.cacheSize / 2)
+
+		this.currSlice = opts.startSlice
+		this.minSlice = minSlice
+		this.maxSlice = maxSlice
+
+		// initialize ring buffer
+		let initTailSlice = this.currSlice - this.ringHalfSize
+		let initHeadSlice = this.currSlice + this.ringHalfSize
+
+		if (initTailSlice < this.minSlice) {
+			initTailSlice = this.minSlice
+		}
+		if (initHeadSlice > this.maxSlice) {
+			initHeadSlice = this.maxSlice
+			initTailSlice = initHeadSlice - this.ring.length + 1
+		}
+
+		for (let i = 0; i < this.ring.length; i++) {
+			const slice = initTailSlice + i
+			const layer = this.newLayer(slice)
+			this.ring[i] = {
+				slice: slice,
+				layer: layer
+			}
+
+			this.map.addLayer(layer)
+			layer.setZIndex(this.backgroundZIndex)
+		}
+
+		// set current position
+		this.pos = this.currSlice - initTailSlice
+		this.head = this.ring.length - 1
+		this.tail = 0
+
+		// set current layer visible
+		this.ring[this.pos].layer.setZIndex(this.zIndex)
+	}
+
+	next() {
+		const nextSlice = this.currSlice + 1
+		if (nextSlice > this.maxSlice) return
+
+		// TODO: update map with curr layer
+		const nextPos = (this.pos + this.ring.length + 1) % this.ring.length
+		this.ring[nextPos].layer.setZIndex(this.zIndex)
+		this.ring[this.pos].layer.setZIndex(this.backgroundZIndex)
+
+		const newHeadSlice = this.ring[this.head].slice + 1
+
+		// slide window
+		if (newHeadSlice <= this.maxSlice && nextSlice - this.ring[this.tail].slice > this.ringHalfSize) {
+			this.evict(this.tail)
+
+			const layer = this.newLayer(newHeadSlice)
+			layer.setZIndex(this.backgroundZIndex)
+			this.map.addLayer(layer)
+
+			this.ring[this.tail] = {
+				slice: newHeadSlice,
+				layer: layer,
+			}
+
+			// update window
+			this.head = this.tail
+			this.tail = (this.tail + this.ring.length + 1) % this.ring.length
+		}
+
+		// update current state
+		this.currSlice = nextSlice
+		this.pos = nextPos
+	}
+
+	prev() {
+		const prevSlice = this.currSlice - 1
+		if (prevSlice < this.minSlice) return
+
+		// TODO: update map curr layer
+		const prevPos = (this.pos + this.ring.length - 1) % this.ring.length
+		this.ring[prevPos].layer.setZIndex(this.zIndex)
+		this.ring[this.pos].layer.setZIndex(this.backgroundZIndex)
+
+		const newTailSlice = this.ring[this.tail].slice - 1
+
+		// slide window
+		if (newTailSlice >= this.minSlice && this.ring[this.head].slice - prevSlice > this.ringHalfSize){
+			this.evict(this.head)
+
+			const layer = this.newLayer(newTailSlice)
+			layer.setZIndex(this.backgroundZIndex)
+			this.map.addLayer(layer)
+
+			this.ring[this.head] = {
+				slice: newTailSlice,
+				layer: layer,
+			}
+
+			this.tail = this.head
+			this.head = (this.tail + this.ring.length - 1) % this.ring.length
+		}
+
+		// update current state
+		this.currSlice = prevSlice
+		this.pos = prevPos
+	}
+
+	evict(pos: number) {
+		this.map.removeLayer(this.ring[pos].layer)
+		console.debug(`evicted: slice=${this.ring[pos].slice}`)
+	}
+
+	debug() {
+		let text = '['
+
+		for (let i = 0; i < this.ring.length; i++) {
+			if (this.ring[i] === undefined) {
+				text = text. concat('?')
+				continue
+			}
+
+			switch (true) {
+				case i === this.pos:
+					text = text.concat('*')
+					break
+				case i === this.tail:
+					text = text.concat("-")
+					break
+				case i === this.head:
+					text = text.concat("+")
+			}
+
+			text = text.concat(`${this.ring[i].slice}`)
+			if (i !== this.ring.length - 1) text = text.concat(', ')
+		}
+		text = text.concat(']')
+		console.log(text)
+	}
+}
