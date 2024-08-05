@@ -1,30 +1,24 @@
-import type React from "react";
-import {useMemo, useState} from "react";
-import {Box, Divider, Menu, MenuItem} from "@mui/material";
-import { type NeuronGroup, ViewerType } from "../../../models";
-import { calculateMeanPosition, calculateSplitPositions, isNeuronClass } from "../../../helpers/twoD/twoDHelpers.ts";
-import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
-import type { Position } from "cytoscape";
-import type { GraphViewerData } from "../../../models/models.ts";
 import {
   ArrowRightOutlined,
-  CallSplitOutlined, FormatAlignJustifyOutlined,
+  CallSplitOutlined,
+  FormatAlignJustifyOutlined,
   GroupOutlined,
   HubOutlined,
   MergeOutlined,
   VisibilityOutlined,
-  WorkspacesOutlined
+  WorkspacesOutlined,
 } from "@mui/icons-material";
-import {vars} from "../../../theme/variables.ts";
-import {
-  AlignBottomIcon,
-  AlignLeftIcon,
-  AlignRightIcon,
-  AlignTopIcon,
-  DistributeHorizontallyIcon,
-  DistributeVerticallyIcon
-} from "../../../icons";
-const {gray700} = vars
+import { Box, Divider, Menu, MenuItem } from "@mui/material";
+import type { Position } from "cytoscape";
+import type React from "react";
+import { useMemo, useState } from "react";
+import { calculateMeanPosition, calculateSplitPositions, isNeuronClass } from "../../../helpers/twoD/twoDHelpers.ts";
+import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
+import { AlignBottomIcon, AlignLeftIcon, AlignRightIcon, AlignTopIcon, DistributeHorizontallyIcon, DistributeVerticallyIcon } from "../../../icons";
+import { type NeuronGroup, ViewerType } from "../../../models";
+import type { GraphViewerData } from "../../../models/models.ts";
+import { vars } from "../../../theme/variables.ts";
+const { gray700 } = vars;
 
 interface ContextMenuProps {
   open: boolean;
@@ -38,18 +32,17 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
   const workspace = useSelectedWorkspace();
   const [submenuOpen, setSubmenuOpen] = useState(false);
   const [submenuAnchorEl, setSubmenuAnchorEl] = useState<null | HTMLElement>(null);
-  
-  
+
   const handleAlignClick = (event: React.MouseEvent<HTMLElement>) => {
     setSubmenuAnchorEl(event.currentTarget);
     setSubmenuOpen(true);
   };
-  
+
   const handleSubmenuClose = () => {
     setSubmenuAnchorEl(null);
     setSubmenuOpen(false);
   };
-  
+
   const handleAlignOption = (option: string) => {
     console.log(`Selected Align Option: ${option}`);
     handleSubmenuClose();
@@ -288,48 +281,48 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
       onClose={onClose}
       onContextMenu={handleContextMenu}
       sx={{
-        '& .MuiMenuItem-root': {
-          color: gray700
-        }
+        "& .MuiMenuItem-root": {
+          color: gray700,
+        },
       }}
     >
       <MenuItem onClick={handleHide}>
-        <VisibilityOutlined fontSize='small' />
+        <VisibilityOutlined fontSize="small" />
         Hide
       </MenuItem>
       <MenuItem onClick={handleAddToWorkspace}>
-        <HubOutlined fontSize='small' />
+        <HubOutlined fontSize="small" />
         Add to Workspace
       </MenuItem>
-      {
-        joinEnabled &&  <MenuItem onClick={handleJoin} disabled={!joinEnabled}>
-          <MergeOutlined fontSize='small' />
+      {joinEnabled && (
+        <MenuItem onClick={handleJoin} disabled={!joinEnabled}>
+          <MergeOutlined fontSize="small" />
           Join Left-Right
         </MenuItem>
-      }
-      {
-        splitEnabled &&  <MenuItem onClick={handleSplit} disabled={!splitEnabled}>
-          <CallSplitOutlined fontSize='small' />
+      )}
+      {splitEnabled && (
+        <MenuItem onClick={handleSplit} disabled={!splitEnabled}>
+          <CallSplitOutlined fontSize="small" />
           Split Left-Right
         </MenuItem>
-      }
-     
+      )}
+
       <Divider />
-      {
-        groupEnabled &&  <MenuItem onClick={handleGroup} disabled={!groupEnabled}>
-          <GroupOutlined fontSize='small' />
+      {groupEnabled && (
+        <MenuItem onClick={handleGroup} disabled={!groupEnabled}>
+          <GroupOutlined fontSize="small" />
           Group
         </MenuItem>
-      }
-      {
-        ungroupEnabled &&  <MenuItem onClick={handleUngroup} disabled={!ungroupEnabled}>
-          <WorkspacesOutlined fontSize='small' />
+      )}
+      {ungroupEnabled && (
+        <MenuItem onClick={handleUngroup} disabled={!ungroupEnabled}>
+          <WorkspacesOutlined fontSize="small" />
           Ungroup
         </MenuItem>
-      }
+      )}
       <MenuItem onClick={handleAlignClick}>
-        <FormatAlignJustifyOutlined fontSize='small' />
-        <Box width={1} display='flex' alignItems='center' justifyContent='space-between'>
+        <FormatAlignJustifyOutlined fontSize="small" />
+        <Box width={1} display="flex" alignItems="center" justifyContent="space-between">
           Align
           <ArrowRightOutlined />
         </Box>
@@ -338,32 +331,32 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
         anchorEl={submenuAnchorEl}
         open={submenuOpen}
         onClose={handleSubmenuClose}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "left" }}
         MenuListProps={{ onMouseLeave: handleSubmenuClose }}
       >
-        <MenuItem onClick={() => handleAlignOption('left')}>
+        <MenuItem onClick={() => handleAlignOption("left")}>
           <AlignLeftIcon />
           Align Left
         </MenuItem>
-        <MenuItem onClick={() => handleAlignOption('right')}>
+        <MenuItem onClick={() => handleAlignOption("right")}>
           <AlignRightIcon />
           Align right
         </MenuItem>
-        <MenuItem onClick={() => handleAlignOption('top')}>
+        <MenuItem onClick={() => handleAlignOption("top")}>
           <AlignTopIcon />
           Align top
         </MenuItem>
-        <MenuItem onClick={() => handleAlignOption('bottom')}>
+        <MenuItem onClick={() => handleAlignOption("bottom")}>
           <AlignBottomIcon />
           Align bottom
         </MenuItem>
         <Divider />
-        <MenuItem onClick={() => handleAlignOption('distribute_horizontally')}>
+        <MenuItem onClick={() => handleAlignOption("distribute_horizontally")}>
           <DistributeHorizontallyIcon />
           Distribute horizontally
         </MenuItem>
-        <MenuItem onClick={() => handleAlignOption('distribute_vertically')}>
+        <MenuItem onClick={() => handleAlignOption("distribute_vertically")}>
           <DistributeVerticallyIcon />
           Distribute vertically
         </MenuItem>

@@ -16,8 +16,7 @@ const SELECTED_NODE_STYLE = {
   "border-width": 2,
   "border-color": "black",
   "border-opacity": 1,
-  color: 'red'
-  
+  color: "red",
 };
 
 const EDGE_STYLE = {
@@ -33,16 +32,10 @@ const ELECTRICAL_STYLE = {
   "line-color": "#63625F",
   width: 0.5,
   "curve-style": "segments",
-  'target-arrow-color': '#666666',
-  'source-arrow-color': '#666666',
-  'segment-distances': '0 -5 5 -5 5 0',
-  "segment-weights": [
-    0.3,
-    0.4,
-    0.5,
-    0.6,
-    0.7
-  ],
+  "target-arrow-color": "#666666",
+  "source-arrow-color": "#666666",
+  "segment-distances": "0 -5 5 -5 5 0",
+  "segment-weights": [0.3, 0.4, 0.5, 0.6, 0.7],
 };
 
 const FADED_STYLE = [
@@ -72,7 +65,7 @@ const EDGE_LABEL_STYLES = [
       "text-background-padding": "3px",
       "z-index": 10,
       "text-border-radius": "8px",
-      'z-compound-depth': 'top'
+      "z-compound-depth": "top",
     },
   },
   {
