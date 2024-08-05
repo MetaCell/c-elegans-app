@@ -10,12 +10,14 @@ const NODE_STYLE = {
   "font-size": 8,
   width: 24,
   height: 24,
+  'z-compound-depth': 'auto'
 };
 
 const SELECTED_NODE_STYLE = {
   "border-width": 2,
   "border-color": "black",
   "border-opacity": 1,
+  'z-compound-depth': 'top'
 };
 
 const EDGE_STYLE = {
@@ -24,10 +26,11 @@ const EDGE_STYLE = {
   "target-arrow-shape": "triangle",
   "curve-style": "bezier",
   "arrow-scale": 0.3,
+  'z-compound-depth': 'top'
 };
 
 const CHEMICAL_STYLE = { "line-color": "#63625F", width: 0.5 };
-const ELECTRICAL_STYLE = { "line-color": "yellow", width: 0.5 };
+const ELECTRICAL_STYLE = { "line-color": "yellow", width: 0.5,  };
 
 const FADED_STYLE = [
   {
@@ -50,15 +53,25 @@ const EDGE_LABEL_STYLES = [
     selector: "edge.hover, edge.showEdgeLabel",
     style: {
       label: "data(label)",
-      "font-size": "8px",
+      "font-size": "4px",
+      "text-background-color": "#FFF",
+      "text-background-opacity": 1,
+      "text-background-padding": "3px",
+      "z-index": 10,
+      "text-border-radius": "8px",
     },
   },
   {
     selector: "edge.focus",
     style: {
       label: "data(longLabel)",
-      "font-size": "8px",
+      "font-size": "4px",
       "text-wrap": "wrap",
+      "text-background-color": "#FFF",
+      "text-background-opacity": 1,
+      "text-background-padding": "3px",
+      "z-index": 10,
+      "text-border-radius": "8px",
     },
   },
 ];
