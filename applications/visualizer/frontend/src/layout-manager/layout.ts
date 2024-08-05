@@ -47,6 +47,13 @@ export default {
             enableDeleteWhenEmpty: false,
             children: [],
           },
+          {
+            type: "tabset",
+            weight: 100,
+            id: "bottomPanel",
+            enableDeleteWhenEmpty: false,
+            children: [],
+          },
         ],
       },
     ],
