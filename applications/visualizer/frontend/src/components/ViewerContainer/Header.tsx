@@ -1,31 +1,11 @@
-import {
-  AppBar,
-  Box,
-  Button,
-  ButtonGroup,
-  IconButton,
-  Menu,
-  MenuItem,
-  Toolbar,
-  Tooltip,
-  Typography
-} from "@mui/material";
-import type {Theme} from "@mui/material/styles";
-import React, {useState} from "react";
-import {
-  CiteIcon,
-  ConnectionsIcon,
-  ContactIcon,
-  ContributeIcon,
-  DataSourceIcon,
-  DownloadIcon,
-  MoreOptionsIcon,
-  TourIcon
-} from "../../icons";
-import {vars} from "../../theme/variables.ts";
+import { AppBar, Box, Button, ButtonGroup, IconButton, Menu, MenuItem, Toolbar, Tooltip, Typography } from "@mui/material";
+import type { Theme } from "@mui/material/styles";
+import React, { useState } from "react";
+import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
+import { CiteIcon, ConnectionsIcon, ContactIcon, ContributeIcon, DataSourceIcon, DownloadIcon, MoreOptionsIcon, TourIcon } from "../../icons";
+import { ViewMode } from "../../models";
+import { vars } from "../../theme/variables.ts";
 import CompareWorkspaceDialog from "./CompareWorkspaceDialog.tsx";
-import {useGlobalContext} from "../../contexts/GlobalContext.tsx";
-import {ViewMode} from "../../models";
 
 const { gray100 } = vars;
 
@@ -110,7 +90,7 @@ const Header = ({
   const [showModal, setShowModal] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const { workspaces, setSelectedWorkspacesIds, setViewMode } = useGlobalContext();
-  
+
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -123,12 +103,13 @@ const Header = ({
     setActive(index);
 
     switch (index) {
-      case 1: {
-        const keySet = new Set(Object.keys(workspaces));
-        setSelectedWorkspacesIds(keySet)
-        setViewMode(ViewMode.Compare)
-        // setShowModal(true);
-      }
+      case 1:
+        {
+          const keySet = new Set(Object.keys(workspaces));
+          setSelectedWorkspacesIds(keySet);
+          setViewMode(ViewMode.Compare);
+          // setShowModal(true);
+        }
         break;
       default:
         setShowModal(false);
@@ -139,7 +120,6 @@ const Header = ({
     setShowModal(false);
     setActive(0);
   };
-  console.log(workspaces)
   return (
     <>
       <AppBar

@@ -236,10 +236,10 @@ function WorkspaceComponent() {
                   <Button variant="outlined" onClick={toggleDrawer(true)} startIcon={<ViewerSettingsIcon />}>
                     Viewer settings
                   </Button>
-                  <ViewerSettings open={open} toggleDrawer={toggleDrawer} />
                 </Box>
                 <Box p={1.5} height={1} display="flex">
                   <LayoutComponent />
+                  <ViewerSettings open={open} toggleDrawer={toggleDrawer} />
                 </Box>
               </Box>
             </Box>

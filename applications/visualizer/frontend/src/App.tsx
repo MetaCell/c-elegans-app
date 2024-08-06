@@ -1,5 +1,5 @@
+import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
-import  Box from "@mui/material/Box";
 import { ThemeProvider } from "@mui/material/styles";
 import { Provider } from "react-redux";
 import theme from "./theme/index.tsx";
@@ -21,27 +21,27 @@ function App() {
         {hasLaunched ? (
           <Box className={"layout-manager-container"}>
             {viewMode === ViewMode.Compare ? (
-              <Box sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                width: "100%",
-                '& .layout-manager-container': {
-                  '&:first-of-type': {
-                    width: "60%"
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  "& .layout-manager-container": {
+                    "&:first-of-type": {
+                      width: "60%",
+                    },
+                    "&:last-of-type": {
+                      paddingLeft: 0,
+                      width: "40%",
+                    },
                   },
-                  '&:last-of-type': {
-                    paddingLeft: 0,
-                    width: "40%"
-                  }
-                }
-              }}>
-                {
-                  Array.from(selectedWorkspacesIds).map((id) => (
-                    <Provider key={id} store={workspaces[id].store}>
-                      <WorkspaceComponent />
-                    </Provider>
-                  ))
-                }
+                }}
+              >
+                {Array.from(selectedWorkspacesIds).map((id) => (
+                  <Provider key={id} store={workspaces[id].store}>
+                    <WorkspaceComponent />
+                  </Provider>
+                ))}
               </Box>
             ) : (
               <Provider store={workspaces[currentWorkspaceId].store}>

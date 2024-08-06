@@ -14,8 +14,10 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { IconButton, Typography } from "@mui/material";
 import { CameraControls, PerspectiveCamera } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
+import { useSelector } from "react-redux";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { CheckIcon, CloseIcon } from "../../../icons";
+import type { RootState } from "../../../layout-manager/layoutManagerFactory.ts";
 import type { Dataset } from "../../../models";
 import { vars } from "../../../theme/variables.ts";
 import CustomAutocomplete from "../../CustomAutocomplete.tsx";
@@ -41,7 +43,8 @@ function ThreeDViewer() {
   const [showSynapses, setShowSynapses] = useState<boolean>(true);
   const [instances, setInstances] = useState<Instance[]>([]);
   const [isWireframe, setIsWireframe] = useState<boolean>(false);
-  const { workspaces, currentWorkspaceId } = useGlobalContext();
+  const currentWorkspaceId = useSelector((state: RootState) => state.workspaceId);
+  const { workspaces } = useGlobalContext();
   const currentWorkspace = workspaces[currentWorkspaceId];
   const cameraControlRef = useRef<CameraControls | null>(null);
 
