@@ -307,13 +307,14 @@ export class SlidingRing {
 		for (let i = 0; i < this.ring.length; i++) {
 			const slice = initTailSlice + i
 			const layer = this.newLayer(slice)
+			this.hideLayer(layer)
+
 			this.ring[i] = {
 				slice: slice,
 				layer: layer
 			}
 
 			this.map.addLayer(layer)
-			layer.setZIndex(this.backgroundZIndex)
 		}
 
 		// set current position
@@ -322,7 +323,7 @@ export class SlidingRing {
 		this.tail = 0
 
 		// set current layer visible
-		this.ring[this.pos].layer.setZIndex(this.zIndex)
+		this.showLayer(this.ring[this.pos].layer)
 	}
 
 	next() {
@@ -331,8 +332,8 @@ export class SlidingRing {
 
 		// TODO: update map with curr layer
 		const nextPos = (this.pos + this.ring.length + 1) % this.ring.length
-		this.ring[nextPos].layer.setZIndex(this.zIndex)
-		this.ring[this.pos].layer.setZIndex(this.backgroundZIndex)
+		this.showLayer(this.ring[nextPos].layer)
+		this.hideLayer(this.ring[this.pos].layer)
 
 		const newHeadSlice = this.ring[this.head].slice + 1
 
@@ -341,7 +342,7 @@ export class SlidingRing {
 			this.evict(this.tail)
 
 			const layer = this.newLayer(newHeadSlice)
-			layer.setZIndex(this.backgroundZIndex)
+			this.hideLayer(layer)
 			this.map.addLayer(layer)
 
 			this.ring[this.tail] = {
@@ -365,8 +366,8 @@ export class SlidingRing {
 
 		// TODO: update map curr layer
 		const prevPos = (this.pos + this.ring.length - 1) % this.ring.length
-		this.ring[prevPos].layer.setZIndex(this.zIndex)
-		this.ring[this.pos].layer.setZIndex(this.backgroundZIndex)
+		this.showLayer(this.ring[prevPos].layer)
+		this.hideLayer(this.ring[this.pos].layer)
 
 		const newTailSlice = this.ring[this.tail].slice - 1
 
@@ -375,7 +376,7 @@ export class SlidingRing {
 			this.evict(this.head)
 
 			const layer = this.newLayer(newTailSlice)
-			layer.setZIndex(this.backgroundZIndex)
+			this.hideLayer(layer)
 			this.map.addLayer(layer)
 
 			this.ring[this.head] = {
@@ -392,7 +393,18 @@ export class SlidingRing {
 		this.pos = prevPos
 	}
 
-	evict(pos: number) {
+	private showLayer(layer: BaseLayer) {
+		layer.setZIndex(this.zIndex)
+		layer.setOpacity(1)
+	}
+
+	private hideLayer(layer: BaseLayer) {
+		const backgroudZIndex = -999
+		layer.setZIndex(backgroudZIndex)
+		layer.setOpacity(0)
+	}
+
+	private evict(pos: number) {
 		this.map.removeLayer(this.ring[pos].layer)
 		console.debug(`evicted: slice=${this.ring[pos].slice}`)
 	}
