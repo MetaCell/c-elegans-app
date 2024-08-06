@@ -52,7 +52,7 @@ def get_tile(request, slice, x, y, zoom):
 
 def get_seg(request, slice):
     path = Path(
-        f"Dataset8_segmentation_withsoma_Mona_updated_20230127.vsseg_export_s{slice}.json"
+        f"Dataset8_segmentation_withsoma_Mona_updated_20230127.vsseg_export_s{int(slice):03d}.json"
     )
 
     full_path = Path(
