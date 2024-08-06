@@ -13,10 +13,10 @@ import Layout from "./ViewerContainer/Layout.tsx";
 import { WidgetStatus } from "@metacell/geppetto-meta-client/common/layout/model";
 import { DeleteOutlined } from "@mui/icons-material";
 import { AddIcon, CheckIcon, DownIcon, DownloadIcon, LinkIcon, ViewerSettings as ViewerSettingsIcon } from "../icons/index.tsx";
+import { ViewerType } from "../models/models.ts";
 import { vars } from "../theme/variables.ts";
 import CreateNewWorkspaceDialog from "./CreateNewWorkspaceDialog.tsx";
 import ViewerSettings from "./ViewerSettings.tsx";
-import {ViewerType} from "../models/models.ts";
 
 const { gray100, white, orange700 } = vars;
 
