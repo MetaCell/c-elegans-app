@@ -16,7 +16,7 @@ import { AddIcon, CheckIcon, DownIcon, DownloadIcon, LinkIcon, ViewerSettings as
 import { vars } from "../theme/variables.ts";
 import CreateNewWorkspaceDialog from "./CreateNewWorkspaceDialog.tsx";
 import ViewerSettings from "./ViewerSettings.tsx";
-import {ViewerType} from "../models/models.ts";
+import { ViewerType } from "../models/models.ts";
 
 const { gray100, white, orange700 } = vars;
 
