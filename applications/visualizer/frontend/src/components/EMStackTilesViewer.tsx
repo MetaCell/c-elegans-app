@@ -16,7 +16,7 @@ import Text from "ol/style/Text";
 import { TileGrid } from "ol/tilegrid";
 import BaseLayer from "ol/layer/Base";
 import { defaults as defaultInteractions, MouseWheelZoom } from 'ol/interaction.js';
-import { WheelEventHandler, useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { shiftKeyOnly } from "ol/events/condition";
 
 
@@ -103,28 +103,14 @@ const newSegLayer = (slice: number) => {
 	});
 }
 
-const updateSliceLayer = (map: Map, slice: number) => {
-	map.getAllLayers().map(l => {
-		map.removeLayer(l)
-	})
-	map.addLayer(newEMLayer(slice))
-	map.addLayer(newSegLayer(slice))
-}
-
 const EMStackViewer = () => {
 	const minSlice = 0
 	const maxSlice = 714
-
-	let slice = 537
-
 	const startSlice = 537
 	const ringSize = 11
 
 	const mapRef = useRef<Map | null>(null);
 	const clickedFeature = useRef<Feature | null>(null);
-
-	// const emLayer = newEMLayer(slice)
-	// const segLayer = newSegLayer(slice)
 
 	// const debugLayer = new TileLayer({
 	// 	source: new TileDebug({
@@ -167,7 +153,7 @@ const EMStackViewer = () => {
 
 		const ringEM = new SlidingRing({
 			map: map,
-			cacheSize: 5,
+			cacheSize: ringSize,
 			sliceExtent: [minSlice, maxSlice],
 			startSlice: startSlice,
 			newLayer: newEMLayer,
@@ -184,8 +170,6 @@ const EMStackViewer = () => {
 			newLayer: newSegLayer,
 			zIndex: 1,
 		})
-
-		ringSeg.debug()
 
 		map.on("click", (evt) => {
 			const feature = map.forEachFeatureAtPixel(evt.pixel, (feat) => feat);
@@ -208,24 +192,18 @@ const EMStackViewer = () => {
 			e.preventDefault()
 			const scrollUp = e.deltaY < 0
 
-			if(scrollUp && slice < maxSlice) {
+			if(scrollUp) {
 				// ++slice
 				ringEM.next()
 				ringEM.debug()
 
 				ringSeg.next()
-			}
-
-			if (!scrollUp && slice > minSlice){
-				// --slice
+			} else {
 				ringEM.prev()
 				ringEM.debug()
 
 				ringSeg.prev()
 			}
-
-			// updateSliceLayer(map, slice)
-			console.log(map.getAllLayers())
 		})
 
 		mapRef.current = map;
