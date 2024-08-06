@@ -1,7 +1,7 @@
 import type { Core, ElementDefinition, Position } from "cytoscape";
-import type { Connection } from "../../rest";
 import type { Workspace } from "../../models";
 import { ViewerType } from "../../models";
+import type { Connection } from "../../rest";
 
 import { annotationLegend } from "../../settings/twoDSettings.tsx";
 import { cellConfig, neurotransmitterConfig } from "./coloringHelper.ts";
@@ -60,7 +60,7 @@ export const createNode = (nodeId: string, selected: boolean, attributes: string
   const node: ElementDefinition = {
     group: "nodes",
     data: { id: nodeId, label: nodeId, ...attributes.reduce((acc, attr) => ({ ...acc, [attr]: true }), {}) },
-    classes: isGroupNode ? 'groupNode' : selected ? "selected" : "",
+    classes: isGroupNode ? "groupNode" : selected ? "selected" : "",
   };
   if (position) {
     node.position = { x: position.x, y: position.y };

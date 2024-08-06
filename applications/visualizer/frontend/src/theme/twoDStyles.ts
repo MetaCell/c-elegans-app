@@ -19,21 +19,21 @@ const SELECTED_NODE_STYLE = {
 };
 
 const GROUP_NODE_STYLE = {
-  shape: 'roundrectangle',
-  'background-color': '#d0d0d0',
-  'pie-size': '100%',
+  shape: "roundrectangle",
+  "background-color": "#d0d0d0",
+  "pie-size": "100%",
   "font-size": 3,
   width: 20,
   height: 20,
-  'background-opacity': .7,
-  padding: '7px',
-  'text-wrap': 'wrap',
-  'text-valign': 'center',
-  'text-halign': 'center',
-  color: 'black',
-  'border-width': 1,
+  "background-opacity": 0.7,
+  padding: "7px",
+  "text-wrap": "wrap",
+  "text-valign": "center",
+  "text-halign": "center",
+  color: "black",
+  "border-width": 1,
   "border-color": "black",
-  'font-weight': 'semibold',
+  "font-weight": "semibold",
 };
 
 const EDGE_STYLE = {
@@ -83,7 +83,7 @@ const EDGE_LABEL_STYLES = [
       "z-index": 10,
       "text-border-radius": "8px",
       "z-compound-depth": "top",
-      shape: 'roundrectangle',
+      shape: "roundrectangle",
     },
   },
   {
