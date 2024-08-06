@@ -16,7 +16,24 @@ const SELECTED_NODE_STYLE = {
   "border-width": 2,
   "border-color": "black",
   "border-opacity": 1,
-  color: "red",
+};
+
+const GROUP_NODE_STYLE = {
+  shape: 'roundrectangle',
+  'background-color': '#d0d0d0',
+  'pie-size': '100%',
+  "font-size": 3,
+  width: 20,
+  height: 20,
+  'background-opacity': .7,
+  padding: '7px',
+  'text-wrap': 'wrap',
+  'text-valign': 'center',
+  'text-halign': 'center',
+  color: 'black',
+  'border-width': 1,
+  "border-color": "black",
+  'font-weight': 'semibold',
 };
 
 const EDGE_STYLE = {
@@ -66,6 +83,7 @@ const EDGE_LABEL_STYLES = [
       "z-index": 10,
       "text-border-radius": "8px",
       "z-compound-depth": "top",
+      shape: 'roundrectangle',
     },
   },
   {
@@ -99,6 +117,10 @@ export const GRAPH_STYLES = [
   {
     selector: "node.selected",
     style: SELECTED_NODE_STYLE,
+  },
+  {
+    selector: "node.groupNode",
+    style: GROUP_NODE_STYLE,
   },
   {
     selector: "edge",
