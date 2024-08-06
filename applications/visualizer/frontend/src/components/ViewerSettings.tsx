@@ -4,7 +4,7 @@ import { Box, Divider, Drawer, FormControlLabel, FormGroup, IconButton, Typograp
 import { useDispatch } from "react-redux";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import { CloseIcon, LinkIcon } from "../icons";
-import { threeDViewerWidget, twoDViewerWidget } from "../layout-manager/widgets.ts";
+import {emDataViewerWidget, threeDViewerWidget, twoDViewerWidget} from "../layout-manager/widgets.ts";
 import { ViewerType } from "../models/models.ts";
 import { vars } from "../theme/variables.ts";
 import CustomSwitch from "./ViewerContainer/CustomSwitch.tsx";
@@ -41,6 +41,7 @@ const SyncViewersData = [
 const viewers = {
   [ViewerType.Graph]: twoDViewerWidget(),
   [ViewerType.ThreeD]: threeDViewerWidget(),
+  [ViewerType.EM]: emDataViewerWidget(),
 };
 
 const textStyles = { ...secondaryTypographyStyles, fontWeight: 500, flex: 1 };

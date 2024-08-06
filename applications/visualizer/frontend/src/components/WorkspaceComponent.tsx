@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import "@metacell/geppetto-meta-ui/flex-layout/style/light.scss";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import type { RootState } from "../layout-manager/layoutManagerFactory.ts";
-import { threeDViewerWidget, twoDViewerWidget } from "../layout-manager/widgets.ts";
+import { emDataViewerWidget, threeDViewerWidget, twoDViewerWidget } from "../layout-manager/widgets.ts";
 import theme from "../theme";
 import Layout from "./ViewerContainer/Layout.tsx";
 
@@ -16,6 +16,7 @@ import { AddIcon, CheckIcon, DownIcon, DownloadIcon, LinkIcon, ViewerSettings as
 import { vars } from "../theme/variables.ts";
 import CreateNewWorkspaceDialog from "./CreateNewWorkspaceDialog.tsx";
 import ViewerSettings from "./ViewerSettings.tsx";
+import {ViewerType} from "../models/models.ts";
 
 const { gray100, white, orange700 } = vars;
 
@@ -47,6 +48,12 @@ function WorkspaceComponent() {
   };
 
   const currentWorkspace = workspaces[workspaceId];
+
+  useEffect(() => {
+    dispatch(addWidget(threeDViewerWidget()));
+    dispatch(addWidget(twoDViewerWidget()));
+    dispatch(addWidget(emDataViewerWidget()));
+  }, [LayoutComponent, dispatch]);
 
   const [anchorElWorkspace, setAnchorElWorkspace] = React.useState<null | HTMLElement>(null);
   const openWorkspace = Boolean(anchorElWorkspace);
@@ -107,6 +114,7 @@ function WorkspaceComponent() {
   useEffect(() => {
     dispatch(addWidget(threeDViewerWidget()));
     dispatch(addWidget(twoDViewerWidget()));
+    dispatch(addWidget(emDataViewerWidget()));
 
     const updateWidgetStatus = (widget, viewerStatus) => {
       const status = viewerStatus ? WidgetStatus.ACTIVE : WidgetStatus.MINIMIZED;
@@ -115,8 +123,9 @@ function WorkspaceComponent() {
       }
     };
 
-    updateWidgetStatus(threeDViewerWidget(), currentWorkspace.viewers["3D"]);
-    updateWidgetStatus(twoDViewerWidget(), currentWorkspace.viewers["Graph"]);
+    updateWidgetStatus(threeDViewerWidget(), currentWorkspace.viewers[ViewerType.ThreeD]);
+    updateWidgetStatus(twoDViewerWidget(), currentWorkspace.viewers[ViewerType.Graph]);
+    updateWidgetStatus(emDataViewerWidget(), currentWorkspace.viewers[ViewerType.EM]);
   }, [LayoutComponent, dispatch, currentWorkspace.viewers]);
 
   return (

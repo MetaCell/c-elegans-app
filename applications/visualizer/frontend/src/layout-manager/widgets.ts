@@ -3,6 +3,7 @@ import { WidgetStatus } from "@metacell/geppetto-meta-client/common/layout/model
 export const widgetIds = {
   threeDViewer: "threeDViewer",
   twoDViewer: "twoDViewer",
+  emDataViewer: "emDataViewer",
 };
 export const threeDViewerWidget = (status = WidgetStatus.ACTIVE) => ({
   id: widgetIds.threeDViewer,
@@ -20,4 +21,13 @@ export const twoDViewerWidget = (status = WidgetStatus.ACTIVE) => ({
   panelName: "leftPanel",
   enableClose: false,
   status,
+});
+
+export const emDataViewerWidget = () => ({
+  id: widgetIds.emDataViewer,
+  name: "EM Data",
+  component: widgetIds.emDataViewer,
+  panelName: "bottomPanel",
+  enableClose: false,
+  status: WidgetStatus.ACTIVE,
 });
