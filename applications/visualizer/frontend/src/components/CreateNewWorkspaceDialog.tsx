@@ -1,14 +1,15 @@
-import { Box, Button, FormLabel, IconButton, TextField, Typography } from "@mui/material";
-import { debounce } from "lodash";
-import { useCallback, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
-import { useGlobalContext } from "../contexts/GlobalContext.tsx";
-import { CaretIcon, CheckIcon, CloseIcon } from "../icons";
-import type { Dataset, Neuron } from "../models";
-import { NeuronsService } from "../rest";
-import { vars as colors } from "../theme/variables.ts";
+import {Box, Button, FormLabel, IconButton, TextField, Typography} from "@mui/material";
+import {debounce} from "lodash";
+import {useCallback, useState} from "react";
+import {v4 as uuidv4} from "uuid";
+import {useGlobalContext} from "../contexts/GlobalContext.tsx";
+import {CaretIcon, CheckIcon, CloseIcon} from "../icons";
+import type {Dataset, Neuron} from "../models";
+import {NeuronsService} from "../rest";
+import {vars as colors} from "../theme/variables.ts";
 import CustomAutocomplete from "./CustomAutocomplete.tsx";
 import CustomDialog from "./CustomDialog.tsx";
+
 const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceDialog, isCompareMode, title, subTitle, submitButtonText }) => {
   const [neurons, setNeurons] = useState<Neuron[]>([]);
   const { workspaces, datasets, createWorkspace, setSelectedWorkspacesIds } = useGlobalContext();
@@ -22,7 +23,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
     selectedDatasets: [],
     selectedNeurons: [],
   });
-
+  
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const workspaceFieldName = "workspaceName";
@@ -81,15 +82,15 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
     const activeNeurons = new Set(formValues.selectedNeurons.map((neuron) => neuron.name));
     const activeDatasets = new Set(formValues.selectedDatasets.map((dataset) => dataset.id));
     createWorkspace(newWorkspaceId, formValues.workspaceName, activeDatasets, activeNeurons);
-
-    // Update selected workspaces and view mode for compare mode
+   
     if (isCompareMode) {
       const updatedWorkspaces = new Set([...Object.keys(workspaces), newWorkspaceId]);
       setSelectedWorkspacesIds(updatedWorkspaces);
     }
+    onCloseCreateWorkspace()
   };
   const datasetsArray = Object.values(datasets);
-
+  
   return (
     <CustomDialog onClose={onCloseCreateWorkspace} showModal={showCreateWorkspaceDialog} title={title}>
       <Box px="1rem" py="1.5rem" gap={2.5} display="flex" flexDirection="column">

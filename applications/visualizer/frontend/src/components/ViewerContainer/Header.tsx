@@ -125,14 +125,15 @@ const Header = ({
   const onClose = () => {
     setShowModal(false);
     const newIndex = Array.from(selectedWorkspacesIds).length >= 2 ? 1 : 0;
-    updateActiveState(newIndex);
+    setActive(newIndex);
+    setViewMode(ViewMode.Compare);
   };
 
   useEffect(() => {
-    const initialIndex = Array.from(selectedWorkspacesIds).length >= 2 ? 1 : 0;
-    updateActiveState(initialIndex);
-  }, [Array.from(selectedWorkspacesIds).length]);
-
+    const newIndex = Array.from(selectedWorkspacesIds).length >= 2 ? 1 : 0;
+    setActive(newIndex);
+  }, [selectedWorkspacesIds])
+  
   return (
     <>
       <AppBar

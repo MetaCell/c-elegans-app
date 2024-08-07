@@ -17,6 +17,7 @@ import { ViewerType } from "../models/models.ts";
 import { vars } from "../theme/variables.ts";
 import CreateNewWorkspaceDialog from "./CreateNewWorkspaceDialog.tsx";
 import ViewerSettings from "./ViewerSettings.tsx";
+import { setWorkspaceId } from "../layout-manager/actions.ts";
 
 const { gray100, white, orange700 } = vars;
 
@@ -35,7 +36,7 @@ const LoadingComponent = () => (
 
 function WorkspaceComponent() {
   const dispatch = useDispatch();
-  const { workspaces, setCurrentWorkspace, removeWorkspace } = useGlobalContext();
+  const { workspaces, setCurrentWorkspace, removeWorkspace, selectedWorkspacesIds, setSelectedWorkspacesIds } = useGlobalContext();
 
   const workspaceId = useSelector((state: RootState) => state.workspaceId);
   const [LayoutComponent, setLayoutComponent] = useState<React.ComponentType>(() => LoadingComponent);
@@ -46,14 +47,8 @@ function WorkspaceComponent() {
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
   };
-
   const currentWorkspace = workspaces[workspaceId];
-
-  useEffect(() => {
-    dispatch(addWidget(threeDViewerWidget()));
-    dispatch(addWidget(twoDViewerWidget()));
-    dispatch(addWidget(emDataViewerWidget()));
-  }, [LayoutComponent, dispatch]);
+  const [ws, setWs] = useState(currentWorkspace)
 
   const [anchorElWorkspace, setAnchorElWorkspace] = React.useState<null | HTMLElement>(null);
   const openWorkspace = Boolean(anchorElWorkspace);
@@ -71,9 +66,22 @@ function WorkspaceComponent() {
   const onCloseCreateWorkspace = () => {
     setShowCreateWorkspaceDialog(false);
   };
-
+  
+  
   const onClickWorkspace = (workspace) => {
+    // Update the order by replacing the previous ID with the new one
+    const updatedIds = Array.from(selectedWorkspacesIds);
+    const index = updatedIds.indexOf(workspaceId);
+    if (index !== -1) {
+      updatedIds[index] = workspace.id; // Replace the old ID with the new one
+    } else {
+      updatedIds.push(workspace.id); // If the old ID is not found, add the new one
+    }
+    
+    // Set the updated array directly
     setCurrentWorkspace(workspace.id);
+    setWs(workspaces[workspace.id]);
+    setSelectedWorkspacesIds(new Set(updatedIds)); // Convert back to Set if needed
   };
 
   const handleMouseEnter = (workspaceId) => {
@@ -96,7 +104,7 @@ function WorkspaceComponent() {
     const workspaceIdToView = workspaceId === firstWorkspaceId ? secondWorkspaceId : firstWorkspaceId;
 
     // If the current workspace is the one being deleted, switch to the determined workspace
-    if (currentWorkspace.id === workspaceId) {
+    if (ws.id === workspaceId) {
       setCurrentWorkspace(workspaceIdToView);
     }
 
@@ -104,30 +112,48 @@ function WorkspaceComponent() {
   };
 
   const workspacesLength = Object.keys(workspaces).length;
-
+  
   useEffect(() => {
-    if (currentWorkspace.layoutManager) {
-      setLayoutComponent(() => currentWorkspace.layoutManager.getComponent());
+    if (ws.layoutManager) {
+      setLayoutComponent(() => ws.layoutManager.getComponent());
     }
-  }, [currentWorkspace.layoutManager]);
-
+  }, [ws.id, ws.layoutManager]);
+  
   useEffect(() => {
-    dispatch(addWidget(threeDViewerWidget()));
-    dispatch(addWidget(twoDViewerWidget()));
-    dispatch(addWidget(emDataViewerWidget()));
-
-    const updateWidgetStatus = (widget, viewerStatus) => {
-      const status = viewerStatus ? WidgetStatus.ACTIVE : WidgetStatus.MINIMIZED;
-      if (widget.status !== status) {
-        dispatch(updateWidget({ ...widget, status }));
-      }
-    };
-
-    updateWidgetStatus(threeDViewerWidget(), currentWorkspace.viewers[ViewerType.ThreeD]);
-    updateWidgetStatus(twoDViewerWidget(), currentWorkspace.viewers[ViewerType.Graph]);
-    updateWidgetStatus(emDataViewerWidget(), currentWorkspace.viewers[ViewerType.EM]);
-  }, [LayoutComponent, dispatch, currentWorkspace.viewers]);
-
+    if (ws.id) {
+      dispatch(addWidget(threeDViewerWidget()));
+      dispatch(addWidget(twoDViewerWidget()));
+      dispatch(addWidget(emDataViewerWidget()));
+      
+      const updateWidgetStatus = (widget, viewerStatus) => {
+        const status = viewerStatus ? WidgetStatus.ACTIVE : WidgetStatus.MINIMIZED;
+        if (widget.status !== status) {
+          dispatch(updateWidget({ ...widget, status }));
+        }
+      };
+      
+      updateWidgetStatus(threeDViewerWidget(), ws.viewers[ViewerType.ThreeD]);
+      updateWidgetStatus(twoDViewerWidget(), ws.viewers[ViewerType.Graph]);
+      updateWidgetStatus(emDataViewerWidget(), ws.viewers[ViewerType.EM]);
+    }
+  }, [ws.id, ws.viewers, dispatch, LayoutComponent]);
+  
+  useEffect(() => {
+    dispatch(setWorkspaceId(ws.id))
+  }, [ws.id]);
+  
+  
+  // Separate selected and unselected workspaces
+  const selectedWorkspaces = Object.values(workspaces).filter((workspace) =>
+    selectedWorkspacesIds.has(workspace.id)
+  );
+  const unselectedWorkspaces = Object.values(workspaces).filter((workspace) =>
+    !selectedWorkspacesIds.has(workspace.id)
+  );
+  
+  // Combine the sorted workspaces with selected ones first
+  const sortedWorkspaces = [...selectedWorkspaces, ...unselectedWorkspaces];
+  
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -191,31 +217,33 @@ function WorkspaceComponent() {
                         </MenuItem>
                       </Box>
                       <Box>
-                        {Object.keys(workspaces).map((workspace) => (
+                        {sortedWorkspaces.map((workspace) => (
                           <MenuItem
-                            key={workspaces[workspace].id}
-                            value={workspaces[workspace].id}
-                            onClick={() => onClickWorkspace(workspaces[workspace])}
-                            onMouseEnter={() => handleMouseEnter(workspaces[workspace].id)}
+                            key={workspace.id}
+                            value={workspace.id}
+                            onClick={() => onClickWorkspace(workspace)}
+                            onMouseEnter={() => handleMouseEnter(workspace.id)}
                             onMouseLeave={handleMouseLeave}
                             sx={{
                               justifyContent: "space-between",
+                              backgroundColor: "transparent !important",
                             }}
+                            disabled={Array.from(selectedWorkspacesIds).includes(workspace.id)}
                           >
                             <Box display="flex" alignItems="center" gap=".5rem">
                               <Box
                                 sx={{
-                                  visibility: currentWorkspace.id === workspaces[workspace].id ? "initial" : "hidden",
+                                  visibility: currentWorkspace.id === workspace.id ? "initial" : "hidden",
                                   display: "flex",
                                   alignItems: "center",
                                 }}
                               >
                                 <CheckIcon />
                               </Box>
-                              {workspaces[workspace].name}
+                              {workspace.name}
                             </Box>
-                            {hoveredWorkspaceId === workspaces[workspace].id && workspacesLength > 1 && (
-                              <IconButton sx={{ p: 0 }} onClick={(e) => onDeleteWorkspace(e, workspaces[workspace].id)}>
+                            {hoveredWorkspaceId === workspace.id && workspacesLength > 1 && (
+                              <IconButton sx={{ p: 0 }} onClick={(e) => onDeleteWorkspace(e, workspace.id)}>
                                 <DeleteOutlined sx={{ color: orange700 }} />
                               </IconButton>
                             )}
