@@ -5,7 +5,7 @@ import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 import { CiteIcon, ConnectionsIcon, ContactIcon, ContributeIcon, DataSourceIcon, DownloadIcon, MoreOptionsIcon, TourIcon } from "../../icons";
 import { ViewMode } from "../../models";
 import { vars } from "../../theme/variables.ts";
-import CompareWorkspaceDialog from "./CompareWorkspaceDialog.tsx";
+import CreateNewWorkspaceDialog from "../CreateNewWorkspaceDialog.tsx";
 
 const { gray100 } = vars;
 
@@ -99,7 +99,8 @@ const Header = ({
     setAnchorEl(null);
   };
 
-  const onClick = (_, index: number) => {
+  // New function to handle active state
+  const updateActiveState = (index: number) => {
     setActive(index);
 
     if (index === 1) {
@@ -117,17 +118,20 @@ const Header = ({
     }
   };
 
+  const onClick = (_: React.MouseEvent, index: number) => {
+    updateActiveState(index);
+  };
+
   const onClose = () => {
     setShowModal(false);
+    const newIndex = Array.from(selectedWorkspacesIds).length >= 2 ? 1 : 0;
+    updateActiveState(newIndex);
   };
 
   useEffect(() => {
-    if (Array.from(selectedWorkspacesIds).length >= 2) {
-      setActive(1);
-    } else {
-      setActive(0);
-    }
-  }, [selectedWorkspacesIds]);
+    const initialIndex = Array.from(selectedWorkspacesIds).length >= 2 ? 1 : 0;
+    updateActiveState(initialIndex);
+  }, [Array.from(selectedWorkspacesIds).length]);
 
   return (
     <>
@@ -218,7 +222,18 @@ const Header = ({
           </Box>
         </Toolbar>
       </AppBar>
-      {showModal && <CompareWorkspaceDialog showModal={showModal} onClose={onClose} />}
+      {showModal && (
+        <CreateNewWorkspaceDialog
+          onCloseCreateWorkspace={onClose}
+          showCreateWorkspaceDialog={showModal}
+          isCompareMode={true}
+          title={"New workspace configuration"}
+          subTitle={
+            "To start comparing, create workspace by configuring datasets and neurons you would want in the new workspace or start with an empty workspace."
+          }
+          submitButtonText="Configure workspace"
+        />
+      )}
     </>
   );
 };

@@ -58,7 +58,6 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
   const getCurrentWorkspace = () => {
     return workspaces[currentWorkspaceId];
   };
-
   const getGlobalContext = () => ({
     workspaces,
     currentWorkspaceId,
@@ -97,7 +96,6 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
 
   return <GlobalContext.Provider value={getGlobalContext()}>{children}</GlobalContext.Provider>;
 };
-
 export const useGlobalContext = () => {
   const context = useContext(GlobalContext);
   if (context === undefined) {

@@ -244,7 +244,14 @@ function WorkspaceComponent() {
               </Box>
             </Box>
             {showCreateWorkspaceDialog && (
-              <CreateNewWorkspaceDialog onCloseCreateWorkspace={onCloseCreateWorkspace} showCreateWorkspaceDialog={showCreateWorkspaceDialog} />
+              <CreateNewWorkspaceDialog
+                onCloseCreateWorkspace={onCloseCreateWorkspace}
+                showCreateWorkspaceDialog={showCreateWorkspaceDialog}
+                title="Create new workspace"
+                subTitle={null}
+                isCompareMode={false}
+                submitButtonText={"Create workspace"}
+              />
             )}
           </Box>
         </Suspense>
