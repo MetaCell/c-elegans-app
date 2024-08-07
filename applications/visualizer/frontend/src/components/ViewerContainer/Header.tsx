@@ -1,6 +1,6 @@
 import { AppBar, Box, Button, ButtonGroup, IconButton, Menu, MenuItem, Toolbar, Tooltip, Typography } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 import { CiteIcon, ConnectionsIcon, ContactIcon, ContributeIcon, DataSourceIcon, DownloadIcon, MoreOptionsIcon, TourIcon } from "../../icons";
 import { ViewMode } from "../../models";
@@ -89,7 +89,7 @@ const Header = ({
   const [active, setActive] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const { workspaces, setSelectedWorkspacesIds, setViewMode } = useGlobalContext();
+  const { workspaces, setSelectedWorkspacesIds, setViewMode, selectedWorkspacesIds } = useGlobalContext();
 
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -99,27 +99,36 @@ const Header = ({
     setAnchorEl(null);
   };
 
-  const onClick = (index: number) => {
+  const onClick = (_, index: number) => {
     setActive(index);
 
-    switch (index) {
-      case 1:
-        {
-          const keySet = new Set(Object.keys(workspaces));
-          setSelectedWorkspacesIds(keySet);
-          setViewMode(ViewMode.Compare);
-          // setShowModal(true);
-        }
-        break;
-      default:
-        setShowModal(false);
+    if (index === 1) {
+      if (Object.keys(workspaces).length >= 2) {
+        const selectedWorkspaces = new Set(Object.keys(workspaces).slice(0, 2));
+        setSelectedWorkspacesIds(selectedWorkspaces);
+        setViewMode(ViewMode.Compare);
+      } else {
+        setShowModal(true);
+      }
+    } else {
+      const selectedWorkspaces = new Set(Object.keys(workspaces).slice(0, 1));
+      setSelectedWorkspacesIds(selectedWorkspaces);
+      setViewMode(ViewMode.Default);
     }
   };
 
   const onClose = () => {
     setShowModal(false);
-    setActive(0);
   };
+
+  useEffect(() => {
+    if (Array.from(selectedWorkspacesIds).length >= 2) {
+      setActive(1);
+    } else {
+      setActive(0);
+    }
+  }, [selectedWorkspacesIds]);
+
   return (
     <>
       <AppBar
@@ -162,7 +171,7 @@ const Header = ({
             {VIEW_OPTIONS.map((item, index) => {
               return (
                 <Tooltip placement={index === 0 ? "bottom-start" : "bottom"} title={item.description} key={index}>
-                  <Button className={active === index ? "active" : ""} onClick={() => onClick(index)}>
+                  <Button className={active === index ? "active" : ""} onClick={(e) => onClick(e, index)}>
                     {item.label}
                   </Button>
                 </Tooltip>

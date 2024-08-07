@@ -1,5 +1,4 @@
-import Box from "@mui/material/Box";
-import CssBaseline from "@mui/material/CssBaseline";
+import { Box, CssBaseline } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import { Provider } from "react-redux";
 import theme from "./theme/index.tsx";
