@@ -13,11 +13,11 @@ import Layout from "./ViewerContainer/Layout.tsx";
 import { WidgetStatus } from "@metacell/geppetto-meta-client/common/layout/model";
 import { DeleteOutlined } from "@mui/icons-material";
 import { AddIcon, CheckIcon, DownIcon, DownloadIcon, LinkIcon, ViewerSettings as ViewerSettingsIcon } from "../icons/index.tsx";
+import { setWorkspaceId } from "../layout-manager/actions.ts";
 import { ViewerType } from "../models/models.ts";
 import { vars } from "../theme/variables.ts";
 import CreateNewWorkspaceDialog from "./CreateNewWorkspaceDialog.tsx";
 import ViewerSettings from "./ViewerSettings.tsx";
-import { setWorkspaceId } from "../layout-manager/actions.ts";
 
 const { gray100, white, orange700 } = vars;
 
@@ -48,7 +48,7 @@ function WorkspaceComponent() {
     setOpen(newOpen);
   };
   const currentWorkspace = workspaces[workspaceId];
-  const [ws, setWs] = useState(currentWorkspace)
+  const [ws, setWs] = useState(currentWorkspace);
 
   const [anchorElWorkspace, setAnchorElWorkspace] = React.useState<null | HTMLElement>(null);
   const openWorkspace = Boolean(anchorElWorkspace);
@@ -66,8 +66,7 @@ function WorkspaceComponent() {
   const onCloseCreateWorkspace = () => {
     setShowCreateWorkspaceDialog(false);
   };
-  
-  
+
   const onClickWorkspace = (workspace) => {
     // Update the order by replacing the previous ID with the new one
     const updatedIds = Array.from(selectedWorkspacesIds);
@@ -77,7 +76,7 @@ function WorkspaceComponent() {
     } else {
       updatedIds.push(workspace.id); // If the old ID is not found, add the new one
     }
-    
+
     // Set the updated array directly
     setCurrentWorkspace(workspace.id);
     setWs(workspaces[workspace.id]);
@@ -112,48 +111,43 @@ function WorkspaceComponent() {
   };
 
   const workspacesLength = Object.keys(workspaces).length;
-  
+
   useEffect(() => {
     if (ws.layoutManager) {
       setLayoutComponent(() => ws.layoutManager.getComponent());
     }
   }, [ws.id, ws.layoutManager]);
-  
+
   useEffect(() => {
     if (ws.id) {
       dispatch(addWidget(threeDViewerWidget()));
       dispatch(addWidget(twoDViewerWidget()));
       dispatch(addWidget(emDataViewerWidget()));
-      
+
       const updateWidgetStatus = (widget, viewerStatus) => {
         const status = viewerStatus ? WidgetStatus.ACTIVE : WidgetStatus.MINIMIZED;
         if (widget.status !== status) {
           dispatch(updateWidget({ ...widget, status }));
         }
       };
-      
+
       updateWidgetStatus(threeDViewerWidget(), ws.viewers[ViewerType.ThreeD]);
       updateWidgetStatus(twoDViewerWidget(), ws.viewers[ViewerType.Graph]);
       updateWidgetStatus(emDataViewerWidget(), ws.viewers[ViewerType.EM]);
     }
   }, [ws.id, ws.viewers, dispatch, LayoutComponent]);
-  
+
   useEffect(() => {
-    dispatch(setWorkspaceId(ws.id))
+    dispatch(setWorkspaceId(ws.id));
   }, [ws.id]);
-  
-  
+
   // Separate selected and unselected workspaces
-  const selectedWorkspaces = Object.values(workspaces).filter((workspace) =>
-    selectedWorkspacesIds.has(workspace.id)
-  );
-  const unselectedWorkspaces = Object.values(workspaces).filter((workspace) =>
-    !selectedWorkspacesIds.has(workspace.id)
-  );
-  
+  const selectedWorkspaces = Object.values(workspaces).filter((workspace) => selectedWorkspacesIds.has(workspace.id));
+  const unselectedWorkspaces = Object.values(workspaces).filter((workspace) => !selectedWorkspacesIds.has(workspace.id));
+
   // Combine the sorted workspaces with selected ones first
   const sortedWorkspaces = [...selectedWorkspaces, ...unselectedWorkspaces];
-  
+
   return (
     <>
       <ThemeProvider theme={theme}>
