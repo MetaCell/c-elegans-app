@@ -1,6 +1,7 @@
 import { CloseOutlined, LayersOutlined } from "@mui/icons-material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { Box, FormControl, IconButton, Menu, MenuItem, Snackbar, Stack, TextField, Typography } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import { Box, FormControl, IconButton, InputAdornment, Menu, MenuItem, Snackbar, Stack, TextField, Typography } from "@mui/material";
 import Select from "@mui/material/Select";
 import React, { useEffect, useMemo, useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
@@ -44,7 +45,7 @@ const mapDatasetToListItem = (dataset: Dataset, isActive: boolean) => ({
   helpText: dataset.collection,
 });
 
-const DataSets = () => {
+const DataSets = ({ children }) => {
   const { datasets, workspaces, currentWorkspaceId } = useGlobalContext();
   const currentWorkspace = workspaces[currentWorkspaceId];
   const activeDatasets = currentWorkspace.activeDatasets;
@@ -65,6 +66,7 @@ const DataSets = () => {
 
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -201,16 +203,24 @@ const DataSets = () => {
           Toggle on and off to view datasets on the workspace. This will affect all viewers.
         </Typography>
       </Stack>
+      {children}
       <TextField
         value={searchInput}
         onChange={handleSearchChange}
         placeholder="Search"
         variant="outlined"
         fullWidth
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon sx={{ fontSize: "1.25rem", margin: `0 !important` }} />
+            </InputAdornment>
+          ),
+        }}
         sx={{
           mb: "1rem",
           "& .MuiOutlinedInput-root": {
-            padding: "0.5rem 2rem 0.5rem 0.75rem",
+            padding: "1rem 2rem 1rem 0.75rem",
             borderRadius: 0,
             "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
               borderColor: gray100,

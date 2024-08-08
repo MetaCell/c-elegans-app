@@ -85,8 +85,8 @@ const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearc
         placeholder="Search"
         InputProps={{
           startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon sx={{ fontSize: "1.25rem" }} />
+            <InputAdornment position="start" sx={{ margin: 0 }}>
+              <SearchIcon sx={{ fontSize: "1.25rem", marginLeft: `0 !important` }} />
             </InputAdornment>
           ),
           endAdornment: open && (
@@ -113,6 +113,17 @@ const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearc
               </Box>
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiInputBase-root": {
+            padding: "1rem 0.75rem",
+
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderRight: 0,
+              borderLeft: 0,
+              borderRadius: 0,
+            },
+          },
         }}
       />
 

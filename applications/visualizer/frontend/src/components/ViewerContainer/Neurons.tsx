@@ -22,7 +22,7 @@ const mapNeuronsAvailableNeuronsToOptions = (neuron: Neuron) => ({
   content: [],
 });
 
-const Neurons = () => {
+const Neurons = ({ children }) => {
   const { workspaces, datasets, currentWorkspaceId } = useGlobalContext();
   const currentWorkspace = workspaces[currentWorkspaceId];
   const activeNeurons = currentWorkspace.activeNeurons;
@@ -97,6 +97,7 @@ const Neurons = () => {
           Search for the neurons and add it to your workspace. This will affect all viewers.
         </Typography>
       </Stack>
+      {children}
       <CustomEntitiesDropdown
         options={autoCompleteOptions}
         activeNeurons={activeNeurons}
