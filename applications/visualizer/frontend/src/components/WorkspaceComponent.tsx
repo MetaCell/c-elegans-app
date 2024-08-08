@@ -34,7 +34,7 @@ const LoadingComponent = () => (
 
 function WorkspaceComponent({ sidebarOpen }) {
   const dispatch = useDispatch();
-  const { workspaces, setCurrentWorkspace, removeWorkspace, selectedWorkspacesIds, setSelectedWorkspacesIds, setAllWorkspaces, setViewMode } =
+  const { workspaces, setCurrentWorkspace, removeWorkspace, selectedWorkspacesIds, setSelectedWorkspacesIds, setAllWorkspaces, setViewMode, viewMode } =
     useGlobalContext();
 
   const workspaceId = useSelector((state: RootState) => state.workspaceId);
@@ -66,13 +66,10 @@ function WorkspaceComponent({ sidebarOpen }) {
   };
 
   const onClickWorkspace = (workspace) => {
-    const updatedIds = Array.from(selectedWorkspacesIds);
+    let updatedIds = Array.from(selectedWorkspacesIds);
     const index = updatedIds.indexOf(workspaceId);
-    if (index !== -1) {
-      updatedIds[index] = workspace.id;
-    } else {
-      updatedIds.push(workspace.id);
-    }
+
+    updatedIds = updateIds(updatedIds, index, workspace.id, viewMode);
 
     const newSelectedWorkspacesIds = new Set(updatedIds);
     setCurrentWorkspace(workspace.id);
@@ -93,6 +90,19 @@ function WorkspaceComponent({ sidebarOpen }) {
     );
 
     setAllWorkspaces(sortedWorkspacesRecord);
+  };
+
+  const updateIds = (ids, index, id, viewMode) => {
+    if (index !== -1) {
+      ids[index] = id;
+    } else {
+      if (viewMode === ViewMode.Compare) {
+        ids.push(id);
+      } else {
+        ids = [id];
+      }
+    }
+    return ids;
   };
   const handleMouseEnter = (workspaceId) => {
     setHoveredWorkspaceId(workspaceId);

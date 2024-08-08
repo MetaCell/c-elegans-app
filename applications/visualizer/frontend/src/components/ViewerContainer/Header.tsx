@@ -121,18 +121,22 @@ const Header = ({
   const onClick = (_: React.MouseEvent, index: number) => {
     updateActiveState(index);
   };
-
   const onClose = () => {
     setShowModal(false);
     const newIndex = Array.from(selectedWorkspacesIds).length >= 2 ? 1 : 0;
-    setActive(newIndex);
-    setViewMode(ViewMode.Compare);
+    if (Object.keys(workspaces).length > 1) {
+      setActive(newIndex);
+      setViewMode(ViewMode.Compare);
+    } else {
+      setActive(0);
+      setViewMode(ViewMode.Default);
+    }
   };
 
   useEffect(() => {
     const newIndex = Array.from(selectedWorkspacesIds).length >= 2 ? 1 : 0;
     setActive(newIndex);
-  }, [selectedWorkspacesIds, viewMode]);
+  }, [selectedWorkspacesIds]);
 
   return (
     <>

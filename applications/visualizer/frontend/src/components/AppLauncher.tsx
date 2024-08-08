@@ -4,14 +4,14 @@ import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import { parseURLParams } from "../helpers/parseURLHelper.ts";
 import { TEMPLATE_ACTIVE_DATASETS, TEMPLATE_ACTIVE_NEURONS } from "../settings/templateWorkspaceSettings.ts";
 function AppLauncher() {
-  const { workspaces, createWorkspace, setCurrentWorkspace } = useGlobalContext();
+  const { workspaces, createWorkspace, setCurrentWorkspace, setSelectedWorkspacesIds } = useGlobalContext();
 
   const handleTemplateClick = async () => {
     const workspaceId = `workspace-${Date.now()}`;
     const workspaceName = `Template Workspace ${Object.keys(workspaces).length + 1}`;
-
     createWorkspace(workspaceId, workspaceName, new Set(TEMPLATE_ACTIVE_DATASETS), new Set(TEMPLATE_ACTIVE_NEURONS));
     setCurrentWorkspace(workspaceId);
+    setSelectedWorkspacesIds(new Set<string>([workspaceId]));
   };
 
   const handleBlankClick = () => {
@@ -20,6 +20,7 @@ function AppLauncher() {
 
     createWorkspace(workspaceId, workspaceName, new Set(TEMPLATE_ACTIVE_DATASETS));
     setCurrentWorkspace(workspaceId);
+    setSelectedWorkspacesIds(new Set<string>([workspaceId]));
   };
 
   const handlePasteUrlClick = () => {
