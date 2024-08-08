@@ -132,7 +132,7 @@ const Header = ({
   useEffect(() => {
     const newIndex = Array.from(selectedWorkspacesIds).length >= 2 ? 1 : 0;
     setActive(newIndex);
-  }, [selectedWorkspacesIds]);
+  }, [selectedWorkspacesIds, viewMode]);
 
   return (
     <>

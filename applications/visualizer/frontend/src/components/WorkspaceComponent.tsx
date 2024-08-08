@@ -11,6 +11,7 @@ import { setWorkspaceId } from "../layout-manager/actions.ts";
 import type { RootState } from "../layout-manager/layoutManagerFactory.ts";
 import { emDataViewerWidget, threeDViewerWidget, twoDViewerWidget } from "../layout-manager/widgets.ts";
 import type { Workspace } from "../models";
+import { ViewMode } from "../models";
 import { ViewerType } from "../models/models.ts";
 import { vars } from "../theme/variables.ts";
 import CreateNewWorkspaceDialog from "./CreateNewWorkspaceDialog.tsx";
@@ -33,7 +34,8 @@ const LoadingComponent = () => (
 
 function WorkspaceComponent({ sidebarOpen }) {
   const dispatch = useDispatch();
-  const { workspaces, setCurrentWorkspace, removeWorkspace, selectedWorkspacesIds, setSelectedWorkspacesIds, setAllWorkspaces } = useGlobalContext();
+  const { workspaces, setCurrentWorkspace, removeWorkspace, selectedWorkspacesIds, setSelectedWorkspacesIds, setAllWorkspaces, setViewMode } =
+    useGlobalContext();
 
   const workspaceId = useSelector((state: RootState) => state.workspaceId);
   const [LayoutComponent, setLayoutComponent] = useState<React.ComponentType>(() => LoadingComponent);
@@ -44,7 +46,7 @@ function WorkspaceComponent({ sidebarOpen }) {
     setOpen(newOpen);
   };
   const currentWorkspace = workspaces[workspaceId];
-  const [ws, setWs] = useState(currentWorkspace);
+  const [workspace, setWorkspace] = useState(currentWorkspace);
 
   const [anchorElWorkspace, setAnchorElWorkspace] = React.useState<null | HTMLElement>(null);
   const openWorkspace = Boolean(anchorElWorkspace);
@@ -74,7 +76,7 @@ function WorkspaceComponent({ sidebarOpen }) {
 
     const newSelectedWorkspacesIds = new Set(updatedIds);
     setCurrentWorkspace(workspace.id);
-    setWs(workspaces[workspace.id]);
+    setWorkspace(workspaces[workspace.id]);
     setSelectedWorkspacesIds(newSelectedWorkspacesIds);
 
     // change the ordering of workspaces to put the selected on the top
@@ -105,30 +107,44 @@ function WorkspaceComponent({ sidebarOpen }) {
     e.stopPropagation();
 
     const workspaceKeys = Object.keys(workspaces);
-    const firstWorkspaceId = workspaces[workspaceKeys[0]].id;
-    const secondWorkspaceId = workspaces[workspaceKeys[1]].id;
+    const workspaceIndex = workspaceKeys.indexOf(workspaceId);
 
-    // Determine the workspace to switch to after deletion
-    const workspaceIdToView = workspaceId === firstWorkspaceId ? secondWorkspaceId : firstWorkspaceId;
+    let workspaceIdToView;
 
-    // If the current workspace is the one being deleted, switch to the determined workspace
-    if (ws.id === workspaceId) {
+    if (workspaceKeys.length === 2) {
+      workspaceIdToView = workspaceKeys.find((id) => id !== workspaceId);
+      const updatedWorkspace = workspaces[workspaceIdToView];
       setCurrentWorkspace(workspaceIdToView);
+      setWorkspace(updatedWorkspace);
+      setAllWorkspaces({
+        ...workspaces,
+        [workspaceIdToView]: updatedWorkspace,
+      });
+      setViewMode(ViewMode.Default);
+    } else {
+      workspaceIdToView = workspaceKeys[(workspaceIndex + 1) % workspaceKeys.length];
+      if (workspace.id === workspaceId) {
+        setCurrentWorkspace(workspaceIdToView);
+      }
     }
 
+    const newSelectedWorkspacesIds = new Set(selectedWorkspacesIds);
+    newSelectedWorkspacesIds.delete(workspaceId);
+
+    setSelectedWorkspacesIds(newSelectedWorkspacesIds);
     removeWorkspace(workspaceId);
   };
 
   const workspacesLength = Object.keys(workspaces).length;
 
   useEffect(() => {
-    if (ws.layoutManager) {
-      setLayoutComponent(() => ws.layoutManager.getComponent());
+    if (workspace.layoutManager) {
+      setLayoutComponent(() => workspace.layoutManager.getComponent());
     }
-  }, [ws.id, ws.layoutManager]);
+  }, [workspace.id, workspace.layoutManager]);
 
   useEffect(() => {
-    if (ws.id) {
+    if (workspace.id) {
       dispatch(addWidget(threeDViewerWidget()));
       dispatch(addWidget(twoDViewerWidget()));
       dispatch(addWidget(emDataViewerWidget()));
@@ -140,15 +156,15 @@ function WorkspaceComponent({ sidebarOpen }) {
         }
       };
 
-      updateWidgetStatus(threeDViewerWidget(), ws.viewers[ViewerType.ThreeD]);
-      updateWidgetStatus(twoDViewerWidget(), ws.viewers[ViewerType.Graph]);
-      updateWidgetStatus(emDataViewerWidget(), ws.viewers[ViewerType.EM]);
+      updateWidgetStatus(threeDViewerWidget(), workspace.viewers[ViewerType.ThreeD]);
+      updateWidgetStatus(twoDViewerWidget(), workspace.viewers[ViewerType.Graph]);
+      updateWidgetStatus(emDataViewerWidget(), workspace.viewers[ViewerType.EM]);
     }
-  }, [ws.id, ws.viewers, dispatch, LayoutComponent]);
+  }, [workspace.id, workspace.viewers, dispatch, LayoutComponent]);
 
   useEffect(() => {
-    dispatch(setWorkspaceId(ws.id));
-  }, [ws.id]);
+    dispatch(setWorkspaceId(workspace.id));
+  }, [workspace.id]);
 
   return (
     <Suspense fallback={<CircularProgress />}>
@@ -220,7 +236,7 @@ function WorkspaceComponent({ sidebarOpen }) {
                           justifyContent: "space-between",
                           backgroundColor: "transparent !important",
                         }}
-                        disabled={Array.from(selectedWorkspacesIds).includes(workspace.id)}
+                        // disabled={Array.from(selectedWorkspacesIds).includes(workspace.id)}
                       >
                         <Box display="flex" alignItems="center" gap=".5rem">
                           <Box
