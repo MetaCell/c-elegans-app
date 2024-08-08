@@ -89,7 +89,7 @@ const Header = ({
   const [active, setActive] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const { workspaces, setSelectedWorkspacesIds, setViewMode, selectedWorkspacesIds, viewMode } = useGlobalContext();
+  const { workspaces, setSelectedWorkspacesIds, setViewMode, selectedWorkspacesIds, viewMode, setCurrentWorkspace } = useGlobalContext();
 
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -114,6 +114,7 @@ const Header = ({
       const selectedWorkspaces = new Set(Object.keys(workspaces).slice(0, 1));
       setSelectedWorkspacesIds(selectedWorkspaces);
       setViewMode(ViewMode.Default);
+      setCurrentWorkspace(Array.from(selectedWorkspaces)[0]);
     }
   };
 

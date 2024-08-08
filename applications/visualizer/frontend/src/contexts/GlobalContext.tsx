@@ -17,6 +17,7 @@ export interface GlobalContextType {
   setSelectedWorkspacesIds: (workspaceId: Set<string>) => void;
   datasets: Record<string, Dataset>;
   fetchDatasets: () => void;
+  setAllWorkspaces: (workspaces: Record<string, Workspace>) => void;
 }
 
 interface GlobalContextProviderProps {
@@ -45,6 +46,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     }));
   };
 
+  const setAllWorkspaces = (workspaces: Record<string, Workspace>) => {
+    // New function implementation
+    setWorkspaces(workspaces);
+  };
   const removeWorkspace = (workspaceId: string) => {
     const updatedWorkspaces = { ...workspaces };
     delete updatedWorkspaces[workspaceId];
@@ -72,6 +77,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     setSelectedWorkspacesIds,
     fetchDatasets,
     datasets,
+    setAllWorkspaces,
   });
   const fetchDatasets = async () => {
     try {

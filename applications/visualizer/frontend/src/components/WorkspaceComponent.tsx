@@ -10,6 +10,7 @@ import { AddIcon, CheckIcon, DownIcon, DownloadIcon, LinkIcon, ViewerSettings as
 import { setWorkspaceId } from "../layout-manager/actions.ts";
 import type { RootState } from "../layout-manager/layoutManagerFactory.ts";
 import { emDataViewerWidget, threeDViewerWidget, twoDViewerWidget } from "../layout-manager/widgets.ts";
+import type { Workspace } from "../models";
 import { ViewerType } from "../models/models.ts";
 import { vars } from "../theme/variables.ts";
 import CreateNewWorkspaceDialog from "./CreateNewWorkspaceDialog.tsx";
@@ -32,7 +33,7 @@ const LoadingComponent = () => (
 
 function WorkspaceComponent({ sidebarOpen }) {
   const dispatch = useDispatch();
-  const { workspaces, setCurrentWorkspace, removeWorkspace, selectedWorkspacesIds, setSelectedWorkspacesIds } = useGlobalContext();
+  const { workspaces, setCurrentWorkspace, removeWorkspace, selectedWorkspacesIds, setSelectedWorkspacesIds, setAllWorkspaces } = useGlobalContext();
 
   const workspaceId = useSelector((state: RootState) => state.workspaceId);
   const [LayoutComponent, setLayoutComponent] = useState<React.ComponentType>(() => LoadingComponent);
@@ -63,21 +64,34 @@ function WorkspaceComponent({ sidebarOpen }) {
   };
 
   const onClickWorkspace = (workspace) => {
-    // Update the order by replacing the previous ID with the new one
     const updatedIds = Array.from(selectedWorkspacesIds);
     const index = updatedIds.indexOf(workspaceId);
     if (index !== -1) {
-      updatedIds[index] = workspace.id; // Replace the old ID with the new one
+      updatedIds[index] = workspace.id;
     } else {
-      updatedIds.push(workspace.id); // If the old ID is not found, add the new one
+      updatedIds.push(workspace.id);
     }
 
-    // Set the updated array directly
+    const newSelectedWorkspacesIds = new Set(updatedIds);
     setCurrentWorkspace(workspace.id);
     setWs(workspaces[workspace.id]);
-    setSelectedWorkspacesIds(new Set(updatedIds)); // Convert back to Set if needed
-  };
+    setSelectedWorkspacesIds(newSelectedWorkspacesIds);
 
+    // change the ordering of workspaces to put the selected on the top
+    const selectedWorkspaces = Object.values(workspaces).filter((workspace) => newSelectedWorkspacesIds.has(workspace.id));
+    const unselectedWorkspaces = Object.values(workspaces).filter((workspace) => !newSelectedWorkspacesIds.has(workspace.id));
+
+    const sortedWorkspaces = [...selectedWorkspaces, ...unselectedWorkspaces];
+    const sortedWorkspacesRecord = sortedWorkspaces.reduce(
+      (acc, workspace) => {
+        acc[workspace.id] = workspace;
+        return acc;
+      },
+      {} as Record<string, Workspace>,
+    );
+
+    setAllWorkspaces(sortedWorkspacesRecord);
+  };
   const handleMouseEnter = (workspaceId) => {
     setHoveredWorkspaceId(workspaceId);
   };
@@ -135,13 +149,6 @@ function WorkspaceComponent({ sidebarOpen }) {
   useEffect(() => {
     dispatch(setWorkspaceId(ws.id));
   }, [ws.id]);
-
-  // Separate selected and unselected workspaces
-  const selectedWorkspaces = Object.values(workspaces).filter((workspace) => selectedWorkspacesIds.has(workspace.id));
-  const unselectedWorkspaces = Object.values(workspaces).filter((workspace) => !selectedWorkspacesIds.has(workspace.id));
-
-  // Combine the sorted workspaces with selected ones first
-  const sortedWorkspaces = [...selectedWorkspaces, ...unselectedWorkspaces];
 
   return (
     <Suspense fallback={<CircularProgress />}>
@@ -202,7 +209,7 @@ function WorkspaceComponent({ sidebarOpen }) {
                     </MenuItem>
                   </Box>
                   <Box>
-                    {sortedWorkspaces.map((workspace) => (
+                    {Object.values(workspaces).map((workspace) => (
                       <MenuItem
                         key={workspace.id}
                         value={workspace.id}
