@@ -139,7 +139,7 @@ export const LinkIcon = ({ fill = "#757570" }) => (
   </svg>
 );
 
-export const DownIcon = ({ color }) => (
+export const DownIcon = ({ color }: { color?: string }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M6.175 6.91211L10 10.7288L13.825 6.91211L15 8.08711L10 13.0871L5 8.08711L6.175 6.91211Z" fill={color ? color : "#63625F"} />
   </svg>
