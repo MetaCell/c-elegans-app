@@ -6,6 +6,9 @@ from .common import *
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+GCS_BUCKET = "celegans"
+GCS_BUCKET_URL = f"https://storage.googleapis.com/{GCS_BUCKET}"
+
 
 class Config(dict):
     def __getattr__(self, key):

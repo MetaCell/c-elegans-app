@@ -1,10 +1,12 @@
-import {widgetIds} from "./widgets.ts";
-import LeftComponent from "../components/LeftComponent.tsx";
-import RightComponent from "../components/RightComponent.tsx";
+import EMViewer from "../components/viewers/EM/EM.tsx";
+import ThreeDViewer from "../components/viewers/ThreeD/ThreeDViewer.tsx";
+import TwoDViewer from "../components/viewers/TwoD/TwoDViewer.tsx";
+import { widgetIds } from "./widgets.ts";
 
 const componentMap = {
-    [widgetIds.leftComponent]: LeftComponent,
-    [widgetIds.rightComponent]: RightComponent,
+  [widgetIds.threeDViewer]: ThreeDViewer,
+  [widgetIds.twoDViewer]: TwoDViewer,
+  [widgetIds.emDataViewer]: EMViewer,
 };
 
-export default componentMap
+export default componentMap;

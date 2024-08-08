@@ -1,0 +1,17 @@
+name: Check JS/TS/TSX/JSX format
+
+on: [push, pull_request]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Biome
+        uses: biomejs/setup-biome@v2
+        with:
+          version: 1.8.3
+
+      - name: Run Biome format check
+        working-directory: applications/visualizer/frontend
+        run: biome format .

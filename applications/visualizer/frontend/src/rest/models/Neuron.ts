@@ -4,6 +4,7 @@
 /* eslint-disable */
 export type Neuron = {
     name: string;
+    datasetIds: Array<string>;
     nclass: string;
     neurotransmitter: string;
     type: string;

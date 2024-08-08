@@ -6,6 +6,9 @@ const PORT = 9000;
 // https://vitejs.dev/config/
 const defaultConfig = {
 	plugins: [react()],
+	build: {
+		sourcemap: !process.env.NO_SOURCEMAP,
+	},
 	// publicDir: 'src/assets',
 };
 

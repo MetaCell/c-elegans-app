@@ -9,15 +9,22 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class DatasetsService {
     /**
-     * Get All Datasets
-     * Returns all the datasets from the DB
+     * Get Datasets
+     * Returns all datasets or a filtered list based on provided IDs
      * @returns Dataset OK
      * @throws ApiError
      */
-    public static getAllDatasets(): CancelablePromise<Array<Dataset>> {
+    public static getDatasets({
+        ids,
+    }: {
+        ids?: (Array<string> | null),
+    }): CancelablePromise<Array<Dataset>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/datasets',
+            query: {
+                'ids': ids,
+            },
         });
     }
     /**

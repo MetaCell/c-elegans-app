@@ -37,6 +37,7 @@ class Dataset(ModelSchema, BilingualSchema):
 
 class Neuron(ModelSchema, BilingualSchema):
     name: str
+    dataset_ids: list[str]
 
     class Meta:
         model = NeuronModel
@@ -51,9 +52,12 @@ class Neuron(ModelSchema, BilingualSchema):
 
 
 class Connection(ModelSchema, BilingualSchema):
+    annotations: list[str] = []
+    synapses: dict[str, int] = {}
+
     class Meta:
         model = ConnectionModel
-        fields = ["dataset", "pre", "post", "type", "synapses"]
+        fields = ["pre", "post", "type"]
 
 
 class FullDataset(Dataset):

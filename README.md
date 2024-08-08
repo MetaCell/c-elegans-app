@@ -4,7 +4,7 @@ This application is visualizer for various C Elegans brain map datasets, with mu
 
 ## Development Setup
 
-The dev enviroment relies on Python 3.11 and Node >= 18.0.
+The dev environment relies on Python 3.11 and Node >= 18.0.
 For "in situ" tests, this project uses Docker and Docker Compose.
 If you don't want to test the app deployed with Docker Composer, you don't need to install it.
 
@@ -88,7 +88,7 @@ There is two modes, either you can populate the dev DB, which is basically a sql
 
 ### Populate the Dev DB
 
-Run the following script that will take all the data from `raw-data`, process them and insert them in the sqlite3 db.
+Run the following script that will take all the data from `data/db-raw-data`, process them and insert them in the sqlite3 db.
 
 ```
 bash applications/visualizer/backend/populate-db.bash
@@ -96,10 +96,15 @@ bash applications/visualizer/backend/populate-db.bash
 
 This command will apply the necessary migrations to the file db and populate it.
 
+### 3D Data and Data for Local Development
+
+Data files that are related to the 3D artifacts, segmentation, EM Images, ..., can be placed in local in the `data` folder of this repository.
+The development settings are configured to automatically fetch files from this folder instead of the bucket (which is configured for the docker compose and k8s deployment).
+
 ### Populate the Docker Compose DB
 
 First, you need to have your docker compose services running (ensure you are running the `docker compose -f deployment/docker-compose.yaml up` command).
-Then, run the following script that will take all the data from `raw-data`, process them and insert them in the postgresql db
+Then, run the following script that will take all the data from `data/db-raw-data`, process them and insert them in the postgresql db
 
 ```
 bash applications/visualizer/backend/populate-db.bash compose
