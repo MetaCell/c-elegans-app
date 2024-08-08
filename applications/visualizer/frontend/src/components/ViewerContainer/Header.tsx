@@ -89,7 +89,7 @@ const Header = ({
   const [active, setActive] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const { workspaces, setSelectedWorkspacesIds, setViewMode, selectedWorkspacesIds } = useGlobalContext();
+  const { workspaces, setSelectedWorkspacesIds, setViewMode, selectedWorkspacesIds, viewMode } = useGlobalContext();
 
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -99,7 +99,6 @@ const Header = ({
     setAnchorEl(null);
   };
 
-  // New function to handle active state
   const updateActiveState = (index: number) => {
     setActive(index);
 
@@ -185,9 +184,11 @@ const Header = ({
           </ButtonGroup>
 
           <Box display="flex" gap="0.625rem">
-            <Button color="info" variant="contained">
-              Share
-            </Button>
+            {viewMode === ViewMode.Default && (
+              <Button color="info" variant="contained">
+                Share
+              </Button>
+            )}
             <IconButton
               id="dataset-menu-btn"
               aria-controls={open ? "dataset-menu" : undefined}
