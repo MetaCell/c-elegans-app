@@ -51,5 +51,8 @@ export default defineConfig(({ command, mode }) => {
 				},
 			},
 		},
+		optimizeDeps: {
+			include: ["@emotion/react", "@emotion/styled"],
+		},
 	};
 });

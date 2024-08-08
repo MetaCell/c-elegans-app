@@ -1,3 +1,5 @@
+import type { CameraControls } from "@react-three/drei";
+import { Box } from "@mui/material";
 import "ol/ol.css";
 import { type Feature, Map, View } from "ol";
 import type { FeatureLike } from "ol/Feature";
@@ -15,10 +17,11 @@ import Style from "ol/style/Style";
 import Text from "ol/style/Text";
 import { TileGrid } from "ol/tilegrid";
 import { defaults as defaultInteractions, MouseWheelZoom } from 'ol/interaction.js';
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { shiftKeyOnly } from "ol/events/condition";
-import { SlidingRing } from "../helpers/slidingRing";
-
+import { SlidingRing } from "../../../helpers/slidingRing";
+import SceneControls from "./SceneControls.tsx";
+import Control from "ol/control/Control";
 
 // const width = 42496 / 2;
 // const height = 22528 / 2;
@@ -153,8 +156,8 @@ const EMStackViewer = () => {
 			interactions: interactions,
 		});
 
-		const ringEM = new SlidingRing<TileLayer<XYZ>>({
-			cacheSize: ringSize,
+		const ringEM = new SlidingRing({
+			cacheSize: 7,
 			startAt: startSlice,
 			extent: [minSlice, maxSlice],
 			onPush: (slice) => {
@@ -190,7 +193,7 @@ const EMStackViewer = () => {
 			onUnselected: (_, layer) => {
 				layer.setOpacity(0)
 			},
-			onEvict: (slice, layer) => {
+			onEvict: (_, layer) => {
 				map.removeLayer(layer)
 			}
 		})
@@ -226,13 +229,121 @@ const EMStackViewer = () => {
 		})
 
 		mapRef.current = map;
+
+		return () => map.setTarget(null)
 	}, []);
 
+	const onControlZoomIn = useCallback(() => {
+		if (!mapRef.current) return
+		mapRef.current.getView().adjustZoom(1)
+	}, [mapRef])
+
+	const onControlZoomOut = useCallback(() => {
+		if (!mapRef.current) return
+		mapRef.current.getView().adjustZoom(-1)
+	}, [mapRef])
+
+	const onResetView = useCallback(() => {
+		if (!mapRef.current) return
+		const view = mapRef.current.getView()
+		const center = getCenter(extent)
+		view.setCenter(center)
+		view.setZoom(0)
+	}, [mapRef])
+
+	const onPrint = useCallback(() => {
+		if (!mapRef.current) return
+		mapRef.current.once('rendercomplete', () => {
+			printEMView(mapRef.current)
+		})
+		mapRef.current.renderSync();
+	}, [mapRef])
+
 	return (
-		<>
-			<div id="emviewer" style={{ height: "800px", width: "100%" }}/>
-		</>
+		<Box sx={{ position: "relative", display: "flex", width: "100%", height: "100%" }}>
+			<SceneControls
+				onZoomIn={onControlZoomIn}
+				onResetView={onResetView}
+				onZoomOut={onControlZoomOut}
+				onPrint={onPrint}
+			/>
+			<div id="emviewer" style={{ height: "100%", width: "100%" }}/>
+		</Box>
 	);
 };
 
 export default EMStackViewer;
+
+function printEMView(map: Map) {
+	const mapCanvas = document.createElement('canvas');
+
+    const size = map.getSize();
+    mapCanvas.width = size[0];
+    mapCanvas.height = size[1];
+
+	const mapContext = mapCanvas.getContext('2d');
+
+	Array.prototype.forEach.call(
+      map.getViewport().querySelectorAll('.ol-layer canvas, canvas.ol-layer'),
+      function (canvas) {
+        if (canvas.width > 0) {
+          const opacity =
+            canvas.parentNode.style.opacity || canvas.style.opacity;
+          mapContext.globalAlpha = opacity === '' ? 1 : Number(opacity);
+          let matrix;
+          const transform = canvas.style.transform;
+          if (transform) {
+            // Get the transform parameters from the style's transform matrix
+            matrix = transform
+              .match(/^matrix\(([^\(]*)\)$/)[1]
+              .split(',')
+              .map(Number);
+          } else {
+            matrix = [
+              parseFloat(canvas.style.width) / canvas.width,
+              0,
+              0,
+              parseFloat(canvas.style.height) / canvas.height,
+              0,
+              0,
+            ];
+          }
+          // Apply the transform to the export map context
+          CanvasRenderingContext2D.prototype.setTransform.apply(
+            mapContext,
+            matrix,
+          );
+          const backgroundColor = canvas.parentNode.style.backgroundColor;
+          if (backgroundColor) {
+            mapContext.fillStyle = backgroundColor;
+            mapContext.fillRect(0, 0, canvas.width, canvas.height);
+          }
+          mapContext.drawImage(canvas, 0, 0);
+        }
+      },
+    );
+
+    mapContext.globalAlpha = 1;
+    mapContext.setTransform(1, 0, 0, 1, 0, 0);
+
+	// var element = document.createElement('a');
+	// element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+	// element.setAttribute('download', filename);
+
+	// element.style.display = 'none';
+	// document.body.appendChild(element);
+
+	// element.click();
+
+	// document.body.removeChild(element);
+
+	const link = document.createElement('a');
+    link.href = mapCanvas.toDataURL();
+	link.download = 'em.png'
+	link.style.display = 'none'
+	document.body.appendChild(link)
+
+    link.click();
+
+	document.body.removeChild(link)
+}
