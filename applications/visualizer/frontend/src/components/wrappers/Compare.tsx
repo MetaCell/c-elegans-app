@@ -12,7 +12,7 @@ function CompareWrapper({ children, sidebarOpen }) {
         <Suspense fallback={<CircularProgress />}>
           <Box
             sx={{
-              // backgroundColor: 'red',
+              backgroundColor: 'red',
               padding: sidebarOpen ? "3.5rem 0 0 22.25rem" : "3.5rem 0 0 3.5rem",
               width: "100%",
               display: "flex",
