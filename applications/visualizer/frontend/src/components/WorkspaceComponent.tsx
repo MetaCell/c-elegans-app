@@ -246,7 +246,6 @@ function WorkspaceComponent({ sidebarOpen }) {
                           justifyContent: "space-between",
                           backgroundColor: "transparent !important",
                         }}
-                        // disabled={Array.from(selectedWorkspacesIds).includes(workspace.id)}
                       >
                         <Box display="flex" alignItems="center" gap=".5rem">
                           <Box

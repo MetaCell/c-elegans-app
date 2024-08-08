@@ -106,14 +106,12 @@ const Header = ({
       if (Object.keys(workspaces).length >= 2) {
         const selectedWorkspaces = new Set(Object.keys(workspaces).slice(0, 2));
         setSelectedWorkspacesIds(selectedWorkspaces);
-        setViewMode(ViewMode.Compare);
       } else {
         setShowModal(true);
       }
     } else {
       const selectedWorkspaces = new Set(Object.keys(workspaces).slice(0, 1));
       setSelectedWorkspacesIds(selectedWorkspaces);
-      setViewMode(ViewMode.Default);
       setCurrentWorkspace(Array.from(selectedWorkspaces)[0]);
     }
   };
@@ -124,20 +122,18 @@ const Header = ({
   const onClose = () => {
     setShowModal(false);
     const newIndex = Array.from(selectedWorkspacesIds).length >= 2 ? 1 : 0;
-    if (Object.keys(workspaces).length > 1) {
-      setActive(newIndex);
-      setViewMode(ViewMode.Compare);
-    } else {
-      setActive(0);
-      setViewMode(ViewMode.Default);
-    }
+    setActive(newIndex);
   };
 
   useEffect(() => {
     const newIndex = Array.from(selectedWorkspacesIds).length >= 2 ? 1 : 0;
     setActive(newIndex);
+    if (newIndex === 0) {
+      setViewMode(ViewMode.Default);
+    } else {
+      setViewMode(ViewMode.Compare);
+    }
   }, [selectedWorkspacesIds]);
-
   return (
     <>
       <AppBar
