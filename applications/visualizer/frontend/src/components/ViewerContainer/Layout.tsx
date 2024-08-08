@@ -1,4 +1,3 @@
-import CssBaseline from "@mui/material/CssBaseline";
 import Header from "./Header.tsx";
 import Sidebar from "./Sidebar.tsx";
 
@@ -13,7 +12,6 @@ const Layout = ({
 }) => {
   return (
     <>
-      <CssBaseline />
       <Header sidebarOpen={sidebarOpen} drawerHeight={drawerHeight} drawerWidth={drawerWidth} />
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} drawerHeight={drawerHeight} drawerWidth={drawerWidth} />
     </>

@@ -3,9 +3,7 @@ import { Box, IconButton, Stack, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { debounce } from "lodash";
 import { useCallback, useState } from "react";
-import { useSelector } from "react-redux";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
-import type { RootState } from "../../layout-manager/layoutManagerFactory.ts";
 import type { Neuron } from "../../rest";
 import { NeuronsService } from "../../rest";
 import { vars } from "../../theme/variables.ts";
@@ -25,8 +23,7 @@ const mapNeuronsAvailableNeuronsToOptions = (neuron: Neuron) => ({
 });
 
 const Neurons = () => {
-  const currentWorkspaceId = useSelector((state: RootState) => state.workspaceId);
-  const { workspaces, datasets } = useGlobalContext();
+  const { workspaces, datasets, currentWorkspaceId } = useGlobalContext();
   const currentWorkspace = workspaces[currentWorkspaceId];
   const activeNeurons = currentWorkspace.activeNeurons;
   const allNeurons = currentWorkspace.allWorkspaceNeurons;

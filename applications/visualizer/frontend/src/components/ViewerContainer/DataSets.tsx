@@ -3,10 +3,8 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { Box, FormControl, IconButton, Menu, MenuItem, Snackbar, Stack, TextField, Typography } from "@mui/material";
 import Select from "@mui/material/Select";
 import React, { useEffect, useMemo, useState } from "react";
-import { useSelector } from "react-redux";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 import { CheckIcon } from "../../icons";
-import type { RootState } from "../../layout-manager/layoutManagerFactory.ts";
 import type { Dataset } from "../../rest";
 import { vars } from "../../theme/variables.ts";
 import CustomListItem from "./CustomListItem.tsx";
@@ -47,8 +45,7 @@ const mapDatasetToListItem = (dataset: Dataset, isActive: boolean) => ({
 });
 
 const DataSets = () => {
-  const currentWorkspaceId = useSelector((state: RootState) => state.workspaceId);
-  const { datasets, workspaces } = useGlobalContext();
+  const { datasets, workspaces, currentWorkspaceId } = useGlobalContext();
   const currentWorkspace = workspaces[currentWorkspaceId];
   const activeDatasets = currentWorkspace.activeDatasets;
 
