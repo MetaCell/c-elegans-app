@@ -57,10 +57,13 @@ const createEdgeLongLabel = (workspace: Workspace, synapses: Record<string, numb
 };
 
 export const createNode = (nodeId: string, selected: boolean, attributes: string[], position?: Position, isGroupNode?: boolean): ElementDefinition => {
+  let classes = "";
+  if (isGroupNode) classes += "groupNode ";
+  if (selected) classes += "selected";
   const node: ElementDefinition = {
     group: "nodes",
     data: { id: nodeId, label: nodeId, ...attributes.reduce((acc, attr) => ({ ...acc, [attr]: true }), {}) },
-    classes: isGroupNode ? "groupNode" : selected ? "selected" : "",
+    classes: classes,
   };
   if (position) {
     node.position = { x: position.x, y: position.y };

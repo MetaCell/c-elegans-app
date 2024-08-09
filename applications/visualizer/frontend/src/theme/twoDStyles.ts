@@ -20,7 +20,7 @@ const SELECTED_NODE_STYLE = {
 
 const GROUP_NODE_STYLE = {
   shape: "roundrectangle",
-  "background-color": "#d0d0d0",
+  "background-color": "#ECECE9",
   "pie-size": "100%",
   "font-size": 3,
   width: 20,
@@ -35,6 +35,11 @@ const GROUP_NODE_STYLE = {
   "border-color": "black",
   "font-weight": "semibold",
 };
+const UNSELECTED_GROUP_NODE_STYLE = {
+  ...GROUP_NODE_STYLE,
+  "background-color": "#D3D3CF",
+  "border-width": 0,
+};
 
 const EDGE_STYLE = {
   "line-color": "#63625F",
@@ -46,7 +51,7 @@ const EDGE_STYLE = {
 
 const CHEMICAL_STYLE = { "line-color": "#63625F", width: 0.5 };
 const ELECTRICAL_STYLE = {
-  "line-color": "#63625F",
+  "line-color": "red",
   width: 0.5,
   "curve-style": "segments",
   "target-arrow-color": "#666666",
@@ -115,12 +120,16 @@ export const GRAPH_STYLES = [
     style: NODE_STYLE,
   },
   {
-    selector: "node.selected",
-    style: SELECTED_NODE_STYLE,
+    selector: "node.groupNode.selected",
+    style: GROUP_NODE_STYLE,
   },
   {
     selector: "node.groupNode",
-    style: GROUP_NODE_STYLE,
+    style: UNSELECTED_GROUP_NODE_STYLE,
+  },
+  {
+    selector: "node.selected",
+    style: SELECTED_NODE_STYLE,
   },
   {
     selector: "edge",
