@@ -7,6 +7,8 @@ import {
     MergeOutlined,
     VisibilityOutlined,
     WorkspacesOutlined,
+    OpenInFull,
+    CloseFullscreen,
 } from "@mui/icons-material";
 import {Box, Divider, Menu, MenuItem} from "@mui/material";
 import type {Core, Position} from "cytoscape";
@@ -35,10 +37,21 @@ interface ContextMenuProps {
     position: { mouseX: number; mouseY: number } | null;
     setSplitJoinState: React.Dispatch<React.SetStateAction<{ split: Set<string>; join: Set<string> }>>;
     setHiddenNodes: React.Dispatch<React.SetStateAction<Set<string>>>;
+    openGroups: Set<string>;
+    setOpenGroups: React.Dispatch<React.SetStateAction<Set<string>>>;
     cy: Core
 }
 
-const ContextMenu: React.FC<ContextMenuProps> = ({open, onClose, position, setSplitJoinState, setHiddenNodes, cy}) => {
+const ContextMenu: React.FC<ContextMenuProps> = ({
+                                                     open,
+                                                     onClose,
+                                                     position,
+                                                     setSplitJoinState,
+                                                     setHiddenNodes,
+                                                     openGroups,
+                                                     setOpenGroups,
+                                                     cy
+                                                 }) => {
     const workspace = useSelectedWorkspace();
     const [submenuOpen, setSubmenuOpen] = useState(false);
     const [submenuAnchorEl, setSubmenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -263,6 +276,33 @@ const ContextMenu: React.FC<ContextMenuProps> = ({open, onClose, position, setSp
         onClose();
     };
 
+    const handleOpenGroup = () => {
+        workspace.selectedNeurons.forEach((neuronId) => {
+            if (workspace.neuronGroups[neuronId] && !openGroups.has(neuronId)) {
+                // Mark the group as open
+                setOpenGroups((prevOpenGroups:  Set<string>) => {
+                    const updatedOpenGroups = new Set<string>(prevOpenGroups);
+                    updatedOpenGroups.add(neuronId);
+                    return updatedOpenGroups;
+                });
+            }
+        });
+        onClose();
+    };
+    const handleCloseGroup = () => {
+        workspace.selectedNeurons.forEach((neuronId) => {
+            if (workspace.neuronGroups[neuronId] && openGroups.has(neuronId)) {
+                // Mark the group as closed
+                setOpenGroups((prevOpenGroups: Set<string>) => {
+                    const updatedOpenGroups = new Set<string>(prevOpenGroups);
+                    updatedOpenGroups.delete(neuronId);
+                    return updatedOpenGroups;
+                });
+            }
+        });
+        onClose();
+    };
+
     const groupEnabled = useMemo(() => {
         return Array.from(workspace.selectedNeurons).some((neuronId) => !workspace.neuronGroups[neuronId]);
     }, [workspace.selectedNeurons, workspace.neuronGroups]);
@@ -285,6 +325,18 @@ const ContextMenu: React.FC<ContextMenuProps> = ({open, onClose, position, setSp
         });
     }, [workspace.selectedNeurons, workspace.availableNeurons]);
 
+
+    const openGroupEnabled = useMemo(() => {
+        return Array.from(workspace.selectedNeurons).some(
+            (neuronId) => workspace.neuronGroups[neuronId] && !openGroups.has(neuronId)
+        );
+    }, [workspace.selectedNeurons, workspace.neuronGroups, openGroups]);
+
+    const closeGroupEnabled = useMemo(() => {
+        return Array.from(workspace.selectedNeurons).some(
+            (neuronId) => workspace.neuronGroups[neuronId] && openGroups.has(neuronId)
+        );
+    }, [workspace.selectedNeurons, workspace.neuronGroups, openGroups]);
     const handleContextMenu = (event: React.MouseEvent) => {
         event.preventDefault(); // Prevent default context menu
     };
@@ -334,6 +386,18 @@ const ContextMenu: React.FC<ContextMenuProps> = ({open, onClose, position, setSp
                 <MenuItem onClick={handleUngroup} disabled={!ungroupEnabled}>
                     <WorkspacesOutlined fontSize="small"/>
                     Ungroup
+                </MenuItem>
+            )}
+            {openGroupEnabled && (
+                <MenuItem onClick={handleOpenGroup} disabled={!openGroupEnabled}>
+                    <OpenInFull fontSize="small"/>
+                    Open Group
+                </MenuItem>
+            )}
+            {closeGroupEnabled && (
+                <MenuItem onClick={handleCloseGroup} disabled={!closeGroupEnabled}>
+                    <CloseFullscreen fontSize="small" style={{transform: 'rotate(180deg)'}}/>
+                    Close Group
                 </MenuItem>
             )}
             <MenuItem onClick={handleAlignClick}>
