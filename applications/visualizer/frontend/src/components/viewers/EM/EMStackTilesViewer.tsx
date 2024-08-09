@@ -148,6 +148,7 @@ const EMStackViewer = () => {
 				center: getCenter(extent),
 				extent: extent,
 				zoom: 1,
+				minZoom: 1, // mitigates blanc tiles on reset view (EM layer doesn't have tiles at zoom 0)
 				maxZoom: 5,
 				resolutions: tilegrid.getResolutions(),
 			}),
