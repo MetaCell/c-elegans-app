@@ -1,4 +1,3 @@
-import type { CameraControls } from "@react-three/drei";
 import { Box } from "@mui/material";
 import "ol/ol.css";
 import { type Feature, Map, View } from "ol";
@@ -21,7 +20,6 @@ import { useCallback, useEffect, useRef } from "react";
 import { shiftKeyOnly } from "ol/events/condition";
 import { SlidingRing } from "../../../helpers/slidingRing";
 import SceneControls from "./SceneControls.tsx";
-import Control from "ol/control/Control";
 
 // const width = 42496 / 2;
 // const height = 22528 / 2;
@@ -109,12 +107,13 @@ const newSegLayer = (slice: number) => {
 }
 
 const EMStackViewer = () => {
-	const minSlice = 0
-	const maxSlice = 714
-	const startSlice = 537
-	const ringSize = 11
+	const minSlice = 0;
+	const maxSlice = 714;
+	const startSlice = 537;
+	const ringSize = 11;
 
 	const mapRef = useRef<Map | null>(null);
+	const currSegLayer = useRef<VectorLayer<Feature> | null>(null);
 	const clickedFeature = useRef<Feature | null>(null);
 
 	// const debugLayer = new TileLayer({
@@ -134,12 +133,12 @@ const EMStackViewer = () => {
 		new MouseWheelZoom({
 			condition: shiftKeyOnly
 		})
-	])
+	]);
 
 	useEffect(() => {
 		if (mapRef.current) {
 			return;
-		}
+		};
 
 		const map = new Map({
 			target: "emviewer",
@@ -157,7 +156,7 @@ const EMStackViewer = () => {
 		});
 
 		const ringEM = new SlidingRing({
-			cacheSize: 7,
+			cacheSize: ringSize,
 			startAt: startSlice,
 			extent: [minSlice, maxSlice],
 			onPush: (slice) => {
@@ -175,7 +174,7 @@ const EMStackViewer = () => {
 			onEvict: (_, layer) => {
 				map.removeLayer(layer)
 			}
-		})
+		});
 
 		const ringSeg = new SlidingRing({
 			cacheSize: ringSize,
@@ -189,6 +188,7 @@ const EMStackViewer = () => {
 			},
 			onSelected: (_, layer) => {
 				layer.setOpacity(1)
+				currSegLayer.current = layer
 			},
 			onUnselected: (_, layer) => {
 				layer.setOpacity(0)
@@ -196,10 +196,15 @@ const EMStackViewer = () => {
 			onEvict: (_, layer) => {
 				map.removeLayer(layer)
 			}
-		})
+		});
 
 		map.on("click", (evt) => {
-			const feature = map.forEachFeatureAtPixel(evt.pixel, (feat) => feat);
+			if (!currSegLayer.current) return
+
+			const features = currSegLayer.current.getSource().getFeaturesAtCoordinate(evt.coordinate)
+			if (features.length === 0) return
+
+			const feature = features[0]
 			if (clickedFeature.current) {
 				resetStyle(clickedFeature.current);
 			}
@@ -211,7 +216,7 @@ const EMStackViewer = () => {
 			}
 		});
 
-		map.getTargetElement().addEventListener("wheel", function(e) {
+		map.getTargetElement().addEventListener("wheel", function (e) {
 			if (e.shiftKey) {
 				return
 			}
@@ -219,45 +224,45 @@ const EMStackViewer = () => {
 			e.preventDefault()
 			const scrollUp = e.deltaY < 0
 
-			if(scrollUp) {
+			if (scrollUp) {
 				ringEM.next()
 				ringSeg.next()
 			} else {
 				ringEM.prev()
 				ringSeg.prev()
 			}
-		})
+		});
 
 		mapRef.current = map;
 
-		return () => map.setTarget(null)
+		return () => map.setTarget(null);
 	}, []);
 
-	const onControlZoomIn = useCallback(() => {
+	const onControlZoomIn = () => {
 		if (!mapRef.current) return
 		mapRef.current.getView().adjustZoom(1)
-	}, [mapRef])
+	};
 
-	const onControlZoomOut = useCallback(() => {
+	const onControlZoomOut = () => {
 		if (!mapRef.current) return
 		mapRef.current.getView().adjustZoom(-1)
-	}, [mapRef])
+	};
 
-	const onResetView = useCallback(() => {
+	const onResetView = () => {
 		if (!mapRef.current) return
 		const view = mapRef.current.getView()
 		const center = getCenter(extent)
 		view.setCenter(center)
-		view.setZoom(0)
-	}, [mapRef])
+		view.setZoom(1)
+	};
 
-	const onPrint = useCallback(() => {
+	const onPrint = () => {
 		if (!mapRef.current) return
 		mapRef.current.once('rendercomplete', () => {
 			printEMView(mapRef.current)
 		})
 		mapRef.current.renderSync();
-	}, [mapRef])
+	};
 
 	return (
 		<Box sx={{ position: "relative", display: "flex", width: "100%", height: "100%" }}>
@@ -267,83 +272,71 @@ const EMStackViewer = () => {
 				onZoomOut={onControlZoomOut}
 				onPrint={onPrint}
 			/>
-			<div id="emviewer" style={{ height: "100%", width: "100%" }}/>
+			<div id="emviewer" style={{ height: "100%", width: "100%" }} />
 		</Box>
 	);
 };
 
 export default EMStackViewer;
 
+
 function printEMView(map: Map) {
 	const mapCanvas = document.createElement('canvas');
 
-    const size = map.getSize();
-    mapCanvas.width = size[0];
-    mapCanvas.height = size[1];
+	const size = map.getSize();
+	mapCanvas.width = size[0];
+	mapCanvas.height = size[1];
 
 	const mapContext = mapCanvas.getContext('2d');
 
 	Array.prototype.forEach.call(
-      map.getViewport().querySelectorAll('.ol-layer canvas, canvas.ol-layer'),
-      function (canvas) {
-        if (canvas.width > 0) {
-          const opacity =
-            canvas.parentNode.style.opacity || canvas.style.opacity;
-          mapContext.globalAlpha = opacity === '' ? 1 : Number(opacity);
-          let matrix;
-          const transform = canvas.style.transform;
-          if (transform) {
-            // Get the transform parameters from the style's transform matrix
-            matrix = transform
-              .match(/^matrix\(([^\(]*)\)$/)[1]
-              .split(',')
-              .map(Number);
-          } else {
-            matrix = [
-              parseFloat(canvas.style.width) / canvas.width,
-              0,
-              0,
-              parseFloat(canvas.style.height) / canvas.height,
-              0,
-              0,
-            ];
-          }
-          // Apply the transform to the export map context
-          CanvasRenderingContext2D.prototype.setTransform.apply(
-            mapContext,
-            matrix,
-          );
-          const backgroundColor = canvas.parentNode.style.backgroundColor;
-          if (backgroundColor) {
-            mapContext.fillStyle = backgroundColor;
-            mapContext.fillRect(0, 0, canvas.width, canvas.height);
-          }
-          mapContext.drawImage(canvas, 0, 0);
-        }
-      },
-    );
+		map.getViewport().querySelectorAll('.ol-layer canvas, canvas.ol-layer'),
+		function (canvas) {
+			if (canvas.width > 0) {
+				const opacity =
+					canvas.parentNode.style.opacity || canvas.style.opacity;
+				mapContext.globalAlpha = opacity === '' ? 1 : Number(opacity);
+				let matrix;
+				const transform = canvas.style.transform;
+				if (transform) {
+					// Get the transform parameters from the style's transform matrix
+					matrix = transform
+						.match(/^matrix\(([^\(]*)\)$/)[1]
+						.split(',')
+						.map(Number);
+				} else {
+					matrix = [
+						parseFloat(canvas.style.width) / canvas.width,
+						0,
+						0,
+						parseFloat(canvas.style.height) / canvas.height,
+						0,
+						0,
+					];
+				}
+				// Apply the transform to the export map context
+				CanvasRenderingContext2D.prototype.setTransform.apply(
+					mapContext,
+					matrix,
+				);
+				const backgroundColor = canvas.parentNode.style.backgroundColor;
+				if (backgroundColor) {
+					mapContext.fillStyle = backgroundColor;
+					mapContext.fillRect(0, 0, canvas.width, canvas.height);
+				}
+				mapContext.drawImage(canvas, 0, 0);
+			}
+		},
+	);
 
-    mapContext.globalAlpha = 1;
-    mapContext.setTransform(1, 0, 0, 1, 0, 0);
-
-	// var element = document.createElement('a');
-	// element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-	// element.setAttribute('download', filename);
-
-	// element.style.display = 'none';
-	// document.body.appendChild(element);
-
-	// element.click();
-
-	// document.body.removeChild(element);
+	mapContext.globalAlpha = 1;
+	mapContext.setTransform(1, 0, 0, 1, 0, 0);
 
 	const link = document.createElement('a');
-    link.href = mapCanvas.toDataURL();
-	link.download = 'em.png'
+	link.href = mapCanvas.toDataURL();
+	link.download = 'em.png' // TODO: define a better name
 	link.style.display = 'none'
 	document.body.appendChild(link)
-
-    link.click();
-
+	link.click();
 	document.body.removeChild(link)
 }

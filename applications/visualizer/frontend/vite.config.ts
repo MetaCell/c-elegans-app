@@ -52,7 +52,7 @@ export default defineConfig(({ command, mode }) => {
 			},
 		},
 		optimizeDeps: {
-			include: ["@emotion/react", "@emotion/styled"],
+			include: ["@emotion/react", '@mui/material/Tooltip', '@emotion/styled', '@mui/material/Unstable_Grid2']
 		},
 	};
 });
