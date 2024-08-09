@@ -41,3 +41,10 @@ export interface ViewerData {
   [ViewerType.EM]?: any; // Define specific data for EM viewer if needed
   [ViewerType.InstanceDetails]?: any; // Define specific data for Instance Details viewer if needed
 }
+
+export enum Alignment {
+    Left = "left",
+    Right = "right",
+    Top = "top",
+    Bottom = "bottom",
+}

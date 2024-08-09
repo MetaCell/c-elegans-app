@@ -9,15 +9,16 @@ import {
   WorkspacesOutlined,
 } from "@mui/icons-material";
 import { Box, Divider, Menu, MenuItem } from "@mui/material";
-import type { Position } from "cytoscape";
+import type {Core, Position} from "cytoscape";
 import type React from "react";
 import { useMemo, useState } from "react";
 import { calculateMeanPosition, calculateSplitPositions, isNeuronClass } from "../../../helpers/twoD/twoDHelpers.ts";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
 import { AlignBottomIcon, AlignLeftIcon, AlignRightIcon, AlignTopIcon, DistributeHorizontallyIcon, DistributeVerticallyIcon } from "../../../icons";
-import { type NeuronGroup, ViewerType } from "../../../models";
+import { type NeuronGroup, ViewerType, Alignment} from "../../../models";
 import type { GraphViewerData } from "../../../models/models.ts";
 import { vars } from "../../../theme/variables.ts";
+import {alignNeurons} from "../../../helpers/twoD/alignHelper.ts";
 const { gray700 } = vars;
 
 interface ContextMenuProps {
@@ -26,9 +27,10 @@ interface ContextMenuProps {
   position: { mouseX: number; mouseY: number } | null;
   setSplitJoinState: React.Dispatch<React.SetStateAction<{ split: Set<string>; join: Set<string> }>>;
   setHiddenNodes: React.Dispatch<React.SetStateAction<Set<string>>>;
+  cy: Core
 }
 
-const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setSplitJoinState, setHiddenNodes }) => {
+const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setSplitJoinState, setHiddenNodes, cy }) => {
   const workspace = useSelectedWorkspace();
   const [submenuOpen, setSubmenuOpen] = useState(false);
   const [submenuAnchorEl, setSubmenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -43,8 +45,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
     setSubmenuOpen(false);
   };
 
-  const handleAlignOption = (option: string) => {
-    console.log(`Selected Align Option: ${option}`);
+const handleAlignOption = (option: Alignment) => {
+    alignNeurons(option, Array.from(workspace.selectedNeurons), cy);
     handleSubmenuClose();
     onClose();
   };
@@ -335,28 +337,28 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
         transformOrigin={{ vertical: "top", horizontal: "left" }}
         MenuListProps={{ onMouseLeave: handleSubmenuClose }}
       >
-        <MenuItem onClick={() => handleAlignOption("left")}>
+        <MenuItem onClick={() => handleAlignOption(Alignment.Left)}>
           <AlignLeftIcon />
-          Align Left
+          Align left
         </MenuItem>
-        <MenuItem onClick={() => handleAlignOption("right")}>
+        <MenuItem onClick={() => handleAlignOption(Alignment.Right)}>
           <AlignRightIcon />
           Align right
         </MenuItem>
-        <MenuItem onClick={() => handleAlignOption("top")}>
+        <MenuItem onClick={() => handleAlignOption(Alignment.Top)}>
           <AlignTopIcon />
           Align top
         </MenuItem>
-        <MenuItem onClick={() => handleAlignOption("bottom")}>
+        <MenuItem onClick={() => handleAlignOption(Alignment.Bottom)}>
           <AlignBottomIcon />
           Align bottom
         </MenuItem>
         <Divider />
-        <MenuItem onClick={() => handleAlignOption("distribute_horizontally")}>
+        <MenuItem onClick={() => console.log("distribute_horizontally")}>
           <DistributeHorizontallyIcon />
           Distribute horizontally
         </MenuItem>
-        <MenuItem onClick={() => handleAlignOption("distribute_vertically")}>
+        <MenuItem onClick={() => console.log("distribute_vertically")}>
           <DistributeVerticallyIcon />
           Distribute vertically
         </MenuItem>

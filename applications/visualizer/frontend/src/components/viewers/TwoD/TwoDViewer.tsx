@@ -375,6 +375,7 @@ const TwoDViewer = () => {
         position={mousePosition}
         setSplitJoinState={setSplitJoinState}
         setHiddenNodes={setHiddenNodes}
+        cy={cyRef.current}
       />
     </Box>
   );
