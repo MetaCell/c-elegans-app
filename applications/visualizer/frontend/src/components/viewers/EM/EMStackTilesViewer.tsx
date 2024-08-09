@@ -18,8 +18,9 @@ import { TileGrid } from "ol/tilegrid";
 import { defaults as defaultInteractions, MouseWheelZoom } from 'ol/interaction.js';
 import { useCallback, useEffect, useRef } from "react";
 import { shiftKeyOnly } from "ol/events/condition";
-import { SlidingRing } from "../../../helpers/slidingRing";
+import { SlidingRing, SlidingRingCb } from "../../../helpers/slidingRing";
 import SceneControls from "./SceneControls.tsx";
+import BaseLayer from "ol/layer/Base";
 
 // const width = 42496 / 2;
 // const height = 22528 / 2;
@@ -156,10 +157,7 @@ const EMStackViewer = () => {
 			interactions: interactions,
 		});
 
-		const ringEM = new SlidingRing({
-			cacheSize: ringSize,
-			startAt: startSlice,
-			extent: [minSlice, maxSlice],
+		const ringEMCallbacks: SlidingRingCb<TileLayer<XYZ>> = {
 			onPush: (slice) => {
 				const layer = newEMLayer(slice)
 				layer.setOpacity(0)
@@ -175,12 +173,16 @@ const EMStackViewer = () => {
 			onEvict: (_, layer) => {
 				map.removeLayer(layer)
 			}
-		});
+		}
 
-		const ringSeg = new SlidingRing({
+		const ringEM = new SlidingRing({
 			cacheSize: ringSize,
 			startAt: startSlice,
 			extent: [minSlice, maxSlice],
+			...debounceLayerLoad({map, debounceDelay: 700}, ringEMCallbacks),
+		});
+
+		const ringSegCallbaks: SlidingRingCb<VectorLayer<Feature>> = {
 			onPush: (slice) => {
 				const layer = newSegLayer(slice)
 				layer.setOpacity(0)
@@ -197,6 +199,13 @@ const EMStackViewer = () => {
 			onEvict: (_, layer) => {
 				map.removeLayer(layer)
 			}
+		}
+
+		const ringSeg = new SlidingRing({
+			cacheSize: ringSize,
+			startAt: startSlice,
+			extent: [minSlice, maxSlice],
+			...ringSegCallbaks,
 		});
 
 		map.on("click", (evt) => {
@@ -340,4 +349,57 @@ function printEMView(map: Map) {
 	document.body.appendChild(link)
 	link.click();
 	document.body.removeChild(link)
+}
+
+
+function debounceLayerLoad({ map, debounceDelay }: {
+	map: Map;
+	debounceDelay: number;
+}, callbacks: SlidingRingCb<BaseLayer>): SlidingRingCb<BaseLayer> {
+	let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+	let isFirstLoad: boolean = true;
+
+	const setLayersVisible = () => {
+		isFirstLoad = false;
+		map.getAllLayers().forEach(layer => layer.setVisible(true));
+	};
+
+	const handleCallback = (layer: BaseLayer) => {
+		// unload layer
+		layer.setVisible(false);
+
+		//if there's an existing debounce timer, clear it
+        if (debounceTimer) {
+            clearTimeout(debounceTimer);
+        }
+
+		if (isFirstLoad) layer.setVisible(true);
+
+        // start a new debounce timer
+        debounceTimer = setTimeout(() => setLayersVisible(), debounceDelay);
+	}
+
+	const onPush = (n: number) => {
+		const layer = callbacks.onPush(n);
+		handleCallback(layer);
+        return layer;
+    };
+    const onEvict = (n: number, layer: BaseLayer) => {
+		// assumes that layers are removed without delay
+        return callbacks.onEvict(n, layer);
+    };
+    const onSelected = (n: number, layer: BaseLayer) => {
+        return callbacks.onSelected(n, layer);
+    };
+    const onUnselected = (n: number, layer: BaseLayer) => {
+		handleCallback(layer);
+		return callbacks.onUnselected(n, layer);
+	};
+
+    return {
+        onPush: onPush,
+        onEvict: onEvict,
+        onSelected: onSelected,
+        onUnselected: onUnselected,
+    };
 }
