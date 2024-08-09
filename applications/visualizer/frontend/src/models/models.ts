@@ -47,4 +47,6 @@ export enum Alignment {
     Right = "right",
     Top = "top",
     Bottom = "bottom",
+    Horizontal = 'Horizontal',
+    Vertical = 'Vertical'
 }
