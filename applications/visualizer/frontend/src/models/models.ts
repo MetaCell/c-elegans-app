@@ -1,3 +1,6 @@
+import type { Neuron } from "../rest";
+import type { Position } from "cytoscape";
+
 export enum ViewMode {
   Default = "Default",
   Compare = "Compare",
@@ -23,16 +26,20 @@ export interface NeuronGroup {
   neurons: Set<string>;
 }
 
-export interface Dataset {
-  name: string;
-  neuron3DUrl: string;
-  // Add other properties as needed
+export interface EnhancedNeuron extends Neuron {
+  viewerData: ViewerData;
 }
 
-export interface Neuron {
-  name: string;
-  model3DUrl: string;
-  // Add other properties as needed
+export interface GraphViewerData {
+  defaultPosition: Position | null;
+  visibility: boolean;
+}
+
+export interface ViewerData {
+  [ViewerType.Graph]?: GraphViewerData;
+  [ViewerType.ThreeD]?: any; // Define specific data for 3D viewer if needed
+  [ViewerType.EM]?: any; // Define specific data for EM viewer if needed
+  [ViewerType.InstanceDetails]?: any; // Define specific data for Instance Details viewer if needed
 }
 
 const buildUrlFromFormat = (s: string, param: string) => {

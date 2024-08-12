@@ -1,12 +1,12 @@
-import { Outlines } from "@react-three/drei";
-import type { ThreeEvent } from "@react-three/fiber";
 import type { FC } from "react";
-import { useSelector } from "react-redux";
-import { type BufferGeometry, DoubleSide, NormalBlending } from "three";
+import { Outlines } from "@react-three/drei";
 import { useGlobalContext } from "../../../contexts/GlobalContext";
-import { getFurthestIntersectedObject } from "../../../helpers/threeDHelpers";
+import { useSelector } from "react-redux";
+import type { Workspace } from "../../../models/workspace";
 import type { RootState } from "../../../layout-manager/layoutManagerFactory";
-import type { Workspace } from "../../../models";
+import { type BufferGeometry, DoubleSide, NormalBlending } from "three";
+import type { ThreeEvent } from "@react-three/fiber";
+import { getFurthestIntersectedObject } from "../../../helpers/threeDHelpers";
 import { OUTLINE_COLOR, OUTLINE_THICKNESS } from "../../../settings/threeDSettings";
 
 interface Props {
@@ -25,11 +25,11 @@ const STLMesh: FC<Props> = ({ id, color, opacity, renderOrder, isWireframe, stl 
   const onClick = (event: ThreeEvent<MouseEvent>) => {
     const clicked = getFurthestIntersectedObject(event);
     if (clicked) {
-      workspace.highlightNeuron(clicked.userData.id);
+      workspace.toggleSelectedNeuron(clicked.userData.id);
     }
   };
 
-  const isSelected = id === workspace.highlightedNeuron;
+  const isSelected = id in workspace.selectedNeurons;
   return (
     <mesh userData={{ id }} onClick={onClick} frustumCulled={false} renderOrder={renderOrder}>
       <primitive attach="geometry" object={stl} />
