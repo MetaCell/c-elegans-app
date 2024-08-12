@@ -416,14 +416,7 @@
             "type": "string"
           },
           "emData": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/EMData"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "$ref": "#/components/schemas/EMData"
           },
           "collection": {
             "maxLength": 20,
@@ -467,6 +460,7 @@
         "required": [
           "id",
           "neuron3DUrl",
+          "emData",
           "collection",
           "name",
           "description",
@@ -494,13 +488,18 @@
           "resource_url": {
             "title": "Resource Url",
             "type": "string"
+          },
+          "segmentation_url": {
+            "title": "Segmentation Url",
+            "type": "string"
           }
         },
         "required": [
           "min_zoom",
           "max_zoom",
           "nb_slices",
-          "resource_url"
+          "resource_url",
+          "segmentation_url"
         ],
         "title": "EMData",
         "type": "object"

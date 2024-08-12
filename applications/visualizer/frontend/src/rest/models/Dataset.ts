@@ -6,7 +6,7 @@ import type { EMData } from './EMData';
 export type Dataset = {
     id: string;
     neuron3DUrl: string;
-    emData?: (EMData | null);
+    emData: EMData;
     collection: string;
     name: string;
     description: string;

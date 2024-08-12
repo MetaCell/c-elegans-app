@@ -61,7 +61,12 @@ def annotate_dataset(datasets: Iterable[DatasetModel]):
             min_zoom=0,
             max_zoom=0,
             nb_slices=0,
-            resource_url=settings.DATASET_EMDATA_URL_FORMAT.format(dataset=dataset_id),
+            # resource_url=settings.DATASET_EMDATA_URL_FORMAT.format(dataset=dataset_id),
+            # segmentation_url=settings.DATASET_EMDATA_SEGMENTATION_URL_FORMAT.format(
+            # dataset=dataset_id
+            # ),
+            resource_url=settings.DATASET_EMDATA_URL_FORMAT,
+            segmentation_url=settings.DATASET_EMDATA_SEGMENTATION_URL_FORMAT,
         )
 
 
@@ -127,7 +132,7 @@ def annotate_neurons(neurons: BaseManager[NeuronModel]) -> None:
     for neuron in neurons:
         name = neuron.name
         neuron.dataset_ids = neurons_dataset_ids[name]  # type: ignore
-        neuron.model3D = settings.NEURON_REPRESENTATION_3D_URL_FORMAT.format(name=name)  # type: ignore
+        neuron.model3D_url = settings.NEURON_REPRESENTATION_3D_URL_FORMAT.format(name=name)  # type: ignore
 
 
 def neurons_from_datasets(

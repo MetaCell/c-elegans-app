@@ -32,12 +32,13 @@ class EMData(Artifact):
     max_zoom: int
     nb_slices: int
     resource_url: str
+    segmentation_url: str
 
 
 class Dataset(ModelSchema, BilingualSchema):
     id: str
     neuron3D_url: str
-    em_data: EMData | None = None
+    em_data: EMData
 
     class Meta:
         model = DatasetModel

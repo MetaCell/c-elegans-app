@@ -7,5 +7,6 @@ export type EMData = {
     max_zoom: number;
     nb_slices: number;
     resource_url: string;
+    segmentation_url: string;
 };
 
