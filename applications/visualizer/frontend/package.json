@@ -12,7 +12,7 @@
     "lint-fix": "biome lint --write .",
     "generate-client": "openapi --input ../backend/openapi/openapi.json --output ./src/rest --useOptions --useUnionTypes --client xhr",
     "start": "DOMAIN=http://localhost:8000 vite",
-    "start:dev": "DOMAIN=https://visualizer.celegans.metacell.us vite",
+    "start:dev": "DOMAIN=https://celegans.dev.metacell.us vite",
     "start:local": "DOMAIN=http://visualizer.celegans.local vite"
   },
   "dependencies": {
