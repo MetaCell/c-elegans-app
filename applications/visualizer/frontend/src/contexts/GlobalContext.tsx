@@ -31,8 +31,11 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
   const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.Default);
   const [selectedWorkspacesIds, setSelectedWorkspacesIds] = useState<Set<string>>(new Set<string>());
   const [datasets, setDatasets] = useState<Record<string, Dataset>>({});
+
   const createWorkspace = (id: string, name: string, activeDatasets: Set<string>, activeNeurons: Set<string>) => {
-    const newWorkspace = new Workspace(id, name, activeDatasets, activeNeurons, datasets, updateWorkspace);
+    const initialAllDatasetNeutons = activeNeurons;
+
+    const newWorkspace = new Workspace(id, name, activeDatasets, activeNeurons, datasets, initialAllDatasetNeutons, updateWorkspace);
     setWorkspaces((prev) => ({ ...prev, [id]: newWorkspace }));
   };
   const updateWorkspace = (workspace: Workspace) => {

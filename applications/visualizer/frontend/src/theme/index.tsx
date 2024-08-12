@@ -36,6 +36,7 @@ const {
   brand500,
   brand300,
   brand200,
+  gray900,
 } = vars;
 
 const theme = createTheme({
@@ -1044,6 +1045,28 @@ const theme = createTheme({
 
             "& .MuiOutlinedInput-notchedOutline": {
               borderColor: `${gray100} !important`,
+            },
+          },
+        },
+      },
+    },
+    MuiSnackbarContent: {
+      styleOverrides: {
+        root: {
+          "&.MuiPaper-root": {
+            height: "fit-content !important",
+            backgroundColor: gray900,
+            borderRadius: "0.5rem",
+            fontSize: "0.75rem",
+            fontWeight: 600,
+            padding: "0.5rem 0.75rem",
+          },
+        },
+        action: {
+          "& .MuiButtonBase-root": {
+            "& .MuiSvgIcon-root": {
+              color: "white",
+              fontWeight: 600,
             },
           },
         },

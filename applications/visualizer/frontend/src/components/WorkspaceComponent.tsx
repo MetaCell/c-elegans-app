@@ -16,6 +16,7 @@ import { AddIcon, CheckIcon, DownIcon, DownloadIcon, LinkIcon, ViewerSettings as
 import { vars } from "../theme/variables.ts";
 import CreateNewWorkspaceDialog from "./CreateNewWorkspaceDialog.tsx";
 import ViewerSettings from "./ViewerSettings.tsx";
+import { ViewerType } from "../models/models.ts";
 
 const { gray100, white, orange700 } = vars;
 
@@ -113,6 +114,7 @@ function WorkspaceComponent() {
   useEffect(() => {
     dispatch(addWidget(threeDViewerWidget()));
     dispatch(addWidget(twoDViewerWidget()));
+    dispatch(addWidget(emDataViewerWidget()));
 
     const updateWidgetStatus = (widget, viewerStatus) => {
       const status = viewerStatus ? WidgetStatus.ACTIVE : WidgetStatus.MINIMIZED;
@@ -121,8 +123,9 @@ function WorkspaceComponent() {
       }
     };
 
-    updateWidgetStatus(threeDViewerWidget(), currentWorkspace.viewers["3D"]);
-    updateWidgetStatus(twoDViewerWidget(), currentWorkspace.viewers["Graph"]);
+    updateWidgetStatus(threeDViewerWidget(), currentWorkspace.viewers[ViewerType.ThreeD]);
+    updateWidgetStatus(twoDViewerWidget(), currentWorkspace.viewers[ViewerType.Graph]);
+    updateWidgetStatus(emDataViewerWidget(), currentWorkspace.viewers[ViewerType.EM]);
   }, [LayoutComponent, dispatch, currentWorkspace.viewers]);
 
   return (

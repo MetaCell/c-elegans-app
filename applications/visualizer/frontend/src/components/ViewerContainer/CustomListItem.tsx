@@ -1,28 +1,45 @@
-import AddIcon from "@mui/icons-material/Add";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import { Box, IconButton } from "@mui/material";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Stack from "@mui/material/Stack";
-import Tooltip from "@mui/material/Tooltip";
-import Typography from "@mui/material/Typography";
+import { Add as AddIcon, DeleteOutlined as DeleteOutlinedIcon, HelpOutline as HelpOutlineIcon } from "@mui/icons-material";
+import { Box, FormControlLabel, IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import { useState } from "react";
 import { vars } from "../../theme/variables.ts";
-import CustomSwitch from "./CustomSwitch.tsx";
-import PickerWrapper from "./PickerWrapper.tsx";
-
+import CustomSwitch from "./CustomSwitch";
+import PickerWrapper from "./PickerWrapper";
 const { gray600, gray400B, gray500, gray50, error700 } = vars;
 
-const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions = false }) => {
-  const [checked, setChecked] = useState(false);
+interface CustomListItemProps {
+  data: {
+    id: string;
+    label: string;
+    checked: boolean;
+    helpText?: string;
+    description?: string;
+  };
+  showTooltip?: boolean;
+  listType: string;
+  showExtraActions?: boolean;
+  onSwitchChange?: (id: string, checked: boolean) => void;
+  onDelete?: (id: string) => void;
+  deleteTooltipTitle?: string;
+}
+const CustomListItem = ({
+  data,
+  showTooltip = true,
+  listType,
+  showExtraActions = false,
+  onSwitchChange,
+  onDelete,
+  deleteTooltipTitle,
+}: CustomListItemProps) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [open, setOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState("#9FEE9A");
   const [itemHovered, setItemHovered] = useState(false);
-
   const isNeurons = listType === "neurons";
-  const onSwitchChange = (e) => {
-    setChecked(e.target.checked);
+
+  const handleSwitchChange = (_: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+    if (onSwitchChange) {
+      onSwitchChange(data.id, checked);
+    }
   };
 
   const handleClick = (event) => {
@@ -36,6 +53,7 @@ const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions =
     setAnchorEl(null);
     setOpen(false);
   };
+
   const handleColorChange = (color) => {
     setSelectedColor(color.hex);
   };
@@ -48,15 +66,21 @@ const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions =
     setItemHovered(false);
   };
 
+  const handleDeleteNeuron = (event) => {
+    event.stopPropagation();
+    if (onDelete) {
+      onDelete(data.id);
+    }
+  };
+
   return (
     <>
       <FormControlLabel
         control={
           <Tooltip title={"data.helpText"}>
-            <CustomSwitch />
+            <CustomSwitch checked={data.checked} onChange={handleSwitchChange} />
           </Tooltip>
         }
-        onChange={onSwitchChange}
         onMouseEnter={handleOnMouseEnter}
         onMouseLeave={handleOnMouseLeave}
         sx={{
@@ -70,13 +94,11 @@ const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions =
           "& .MuiFormControlLabel-label": {
             width: "100%",
           },
-
           "& .MuiIconButton-root": {
             padding: ".25rem",
             borderRadius: ".25rem",
           },
         }}
-        checked={checked}
         label={
           <Stack>
             <Stack direction="row" alignItems="center" width={1} spacing=".5rem" justifyContent="space-between">
@@ -94,33 +116,23 @@ const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions =
                   />
                 )}
                 <Typography color={gray600} variant="subtitle1">
-                  {data?.label?.length > 32 ? `${data?.label.slice(0, 32)}...` : data?.label}
+                  {data?.label?.length > 32 ? data?.label.slice(0, 32) + "..." : data?.label}
                 </Typography>
               </Stack>
-
               {showTooltip && (
                 <Tooltip title={data.helpText}>
-                  <HelpOutlineIcon
-                    sx={{
-                      color: gray400B,
-                      fontSize: "1rem",
-                    }}
-                  />
+                  <HelpOutlineIcon sx={{ color: gray400B, fontSize: "1rem" }} />
                 </Tooltip>
               )}
               {showExtraActions && itemHovered && (
                 <Box display="flex" alignItems="center" gap=".25rem">
-                  <Tooltip title="Remove from all viewers">
+                  <Tooltip title={deleteTooltipTitle}>
                     <IconButton
                       sx={{
                         padding: "0.125rem !important",
-
-                        "&:hover": {
-                          "& .MuiSvgIcon-root": {
-                            color: error700,
-                          },
-                        },
+                        "&:hover": { "& .MuiSvgIcon-root": { color: error700 } },
                       }}
+                      onClick={handleDeleteNeuron}
                     >
                       <DeleteOutlinedIcon fontSize="small" />
                     </IconButton>

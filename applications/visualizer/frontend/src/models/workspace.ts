@@ -17,6 +17,7 @@ export class Workspace {
   availableNeurons: Record<string, Neuron>;
   // neuronId
   activeNeurons: Set<string>;
+  allWorkspaceNeurons: Set<string>;
   highlightedNeuron: string | undefined;
   viewers: Record<ViewerType, boolean>;
   synchronizations: Record<ViewerSynchronizationPair, boolean>;
@@ -31,6 +32,7 @@ export class Workspace {
     datasetIds: Set<string>,
     activeNeurons: Set<string>,
     datasets: Record<string, Dataset>,
+    allWorkspaceNeurons: Set<string>,
     updateContext: (workspace: Workspace) => void,
   ) {
     this.id = id;
@@ -38,6 +40,7 @@ export class Workspace {
     this.activeDatasets = {};
     this.availableNeurons = {};
     this.activeNeurons = activeNeurons;
+    this.allWorkspaceNeurons = allWorkspaceNeurons;
     this.highlightedNeuron = undefined;
     this.viewers = {
       [ViewerType.Graph]: false,
@@ -62,14 +65,25 @@ export class Workspace {
 
   activateNeuron(neuron: Neuron): void {
     const updated = produce(this, (draft: Workspace) => {
-      draft.activeNeurons[neuron.name] = neuron;
+      draft.activeNeurons.add(neuron.name);
+      // Add neuron to allWorkspaceNeurons if it's not already present
+      if (!draft.allWorkspaceNeurons.has(neuron.name)) {
+        draft.allWorkspaceNeurons.add(neuron.name);
+      }
+    });
+    this.updateContext(updated);
+  }
+  deactivateNeuron(neuronId: string): void {
+    const updated = produce(this, (draft: Workspace) => {
+      draft.activeNeurons.delete(neuronId);
     });
     this.updateContext(updated);
   }
 
-  deactivateNeuron(neuronId: string): void {
+  deleteNeuron(neuronId: string): void {
     const updated = produce(this, (draft: Workspace) => {
-      delete draft.activeNeurons[neuronId];
+      draft.activeNeurons.delete(neuronId);
+      draft.allWorkspaceNeurons.delete(neuronId);
     });
     this.updateContext(updated);
   }
@@ -107,7 +121,7 @@ export class Workspace {
 
   addNeuronToGroup(neuronId: string, groupId: string): void {
     const updated = produce(this, (draft: Workspace) => {
-      if (!draft.activeNeurons[neuronId]) {
+      if (!draft.allWorkspaceNeurons[neuronId]) {
         throw new Error("Neuron not found");
       }
       const group = draft.neuronGroups[groupId];
