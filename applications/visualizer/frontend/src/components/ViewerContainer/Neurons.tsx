@@ -9,7 +9,7 @@ import {NeuronsService} from "../../rest";
 import {vars} from "../../theme/variables.ts";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 import CustomListItem from "./CustomListItem.tsx";
-import {EnhancedNeuron} from "../../models/models.ts";
+import type {EnhancedNeuron} from "../../models/models.ts";
 
 const {gray900, gray500} = vars;
 const mapNeuronsToListItem = (neuron: string, isActive: boolean) => ({

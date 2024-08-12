@@ -3,7 +3,6 @@ import type {configureStore} from "@reduxjs/toolkit";
 import {type EnhancedNeuron, type NeuronGroup, ViewerSynchronizationPair, ViewerType} from "./models";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
 import {type Dataset, type Neuron, NeuronsService} from "../rest";
-import {fetchDatasets} from "../helpers/workspaceHelper";
 import type {LayoutManager} from "@metacell/geppetto-meta-client/common/layout/LayoutManager";
 
 export class Workspace {
