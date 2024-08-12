@@ -1,5 +1,5 @@
-import type { Neuron } from "../rest";
 import type { Position } from "cytoscape";
+import type { Dataset, Neuron } from "../rest";
 
 export enum ViewMode {
   Default = "Default",
@@ -52,4 +52,12 @@ export function getNeuronUrlForDataset(neuron: Neuron, datasetId: string) {
 
 export function getNeuronURL(dataset: Dataset, neuronName: string) {
   return buildUrlFromFormat(dataset.neuron3DUrl, neuronName);
+}
+
+export function getSegmentationURL(dataset: Dataset, sliceIndex: number) {
+  return buildUrlFromFormat(dataset.emData.segmentation_url, sliceIndex?.toString());
+}
+
+export function getEMDataURL(dataset: Dataset, sliceIndex: number) {
+  return buildUrlFromFormat(dataset.emData.resource_url, sliceIndex?.toString());
 }
