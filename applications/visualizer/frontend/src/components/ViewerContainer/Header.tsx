@@ -1,9 +1,12 @@
 import { AppBar, Box, Button, ButtonGroup, IconButton, Menu, MenuItem, Toolbar, Tooltip, Typography } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 import { CiteIcon, ConnectionsIcon, ContactIcon, ContributeIcon, DataSourceIcon, DownloadIcon, MoreOptionsIcon, TourIcon } from "../../icons";
+import { ViewMode } from "../../models";
 import { vars } from "../../theme/variables.ts";
-import CompareWorkspaceDialog from "./CompareWorkspaceDialog.tsx";
+import CreateNewWorkspaceDialog from "../CreateNewWorkspaceDialog.tsx";
+
 const { gray100 } = vars;
 
 const MENU_ARR = [
@@ -86,6 +89,8 @@ const Header = ({
   const [active, setActive] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const { workspaces, setSelectedWorkspacesIds, setViewMode, selectedWorkspacesIds, viewMode, setCurrentWorkspace } = useGlobalContext();
+
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -94,23 +99,41 @@ const Header = ({
     setAnchorEl(null);
   };
 
-  const onClick = (index: number) => {
+  const updateActiveState = (index: number) => {
     setActive(index);
 
-    switch (index) {
-      case 1:
+    if (index === 1) {
+      if (Object.keys(workspaces).length >= 2) {
+        const selectedWorkspaces = new Set(Object.keys(workspaces).slice(0, 2));
+        setSelectedWorkspacesIds(selectedWorkspaces);
+      } else {
         setShowModal(true);
-        break;
-      default:
-        setShowModal(false);
+      }
+    } else {
+      const selectedWorkspaces = new Set(Object.keys(workspaces).slice(0, 1));
+      setSelectedWorkspacesIds(selectedWorkspaces);
+      setCurrentWorkspace(Array.from(selectedWorkspaces)[0]);
     }
   };
 
+  const onClick = (_: React.MouseEvent, index: number) => {
+    updateActiveState(index);
+  };
   const onClose = () => {
     setShowModal(false);
-    setActive(0);
+    const newIndex = Array.from(selectedWorkspacesIds).length >= 2 ? 1 : 0;
+    setActive(newIndex);
   };
 
+  useEffect(() => {
+    const newIndex = Array.from(selectedWorkspacesIds).length >= 2 ? 1 : 0;
+    setActive(newIndex);
+    if (newIndex === 0) {
+      setViewMode(ViewMode.Default);
+    } else {
+      setViewMode(ViewMode.Compare);
+    }
+  }, [selectedWorkspacesIds]);
   return (
     <>
       <AppBar
@@ -153,7 +176,7 @@ const Header = ({
             {VIEW_OPTIONS.map((item, index) => {
               return (
                 <Tooltip placement={index === 0 ? "bottom-start" : "bottom"} title={item.description} key={index}>
-                  <Button className={active === index ? "active" : ""} onClick={() => onClick(index)}>
+                  <Button className={active === index ? "active" : ""} onClick={(e) => onClick(e, index)}>
                     {item.label}
                   </Button>
                 </Tooltip>
@@ -162,9 +185,11 @@ const Header = ({
           </ButtonGroup>
 
           <Box display="flex" gap="0.625rem">
-            <Button color="info" variant="contained">
-              Share
-            </Button>
+            {viewMode === ViewMode.Default && (
+              <Button color="info" variant="contained">
+                Share
+              </Button>
+            )}
             <IconButton
               id="dataset-menu-btn"
               aria-controls={open ? "dataset-menu" : undefined}
@@ -200,7 +225,18 @@ const Header = ({
           </Box>
         </Toolbar>
       </AppBar>
-      {showModal && <CompareWorkspaceDialog showModal={showModal} onClose={onClose} />}
+      {showModal && (
+        <CreateNewWorkspaceDialog
+          onCloseCreateWorkspace={onClose}
+          showCreateWorkspaceDialog={showModal}
+          isCompareMode={true}
+          title={"New workspace configuration"}
+          subTitle={
+            "To start comparing, create workspace by configuring datasets and neurons you would want in the new workspace or start with an empty workspace."
+          }
+          submitButtonText="Configure workspace"
+        />
+      )}
     </>
   );
 };

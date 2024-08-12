@@ -10,9 +10,9 @@ import { vars as colors } from "../theme/variables.ts";
 import CustomAutocomplete from "./CustomAutocomplete.tsx";
 import CustomDialog from "./CustomDialog.tsx";
 
-const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceDialog }) => {
+const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceDialog, isCompareMode, title, subTitle, submitButtonText }) => {
   const [neurons, setNeurons] = useState<Neuron[]>([]);
-  const { workspaces, datasets, createWorkspace } = useGlobalContext();
+  const { workspaces, datasets, createWorkspace, setSelectedWorkspacesIds } = useGlobalContext();
   const [searchedNeuron, setSearchedNeuron] = useState("");
   const [formValues, setFormValues] = useState<{
     workspaceName: string;
@@ -30,7 +30,10 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
   const fetchNeurons = async (name, datasetsIds) => {
     try {
       const Ids = datasetsIds.map((dataset) => dataset.id);
-      const response = await NeuronsService.searchCells({ name: name, datasetIds: Ids });
+      const response = await NeuronsService.searchCells({
+        name: name,
+        datasetIds: Ids,
+      });
       setNeurons(response);
     } catch (error) {
       console.error("Failed to fetch datasets", error);
@@ -79,14 +82,19 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
     const activeNeurons = new Set(formValues.selectedNeurons.map((neuron) => neuron.name));
     const activeDatasets = new Set(formValues.selectedDatasets.map((dataset) => dataset.id));
     createWorkspace(newWorkspaceId, formValues.workspaceName, activeDatasets, activeNeurons);
+
+    if (isCompareMode) {
+      const updatedWorkspaces = new Set([...Object.keys(workspaces), newWorkspaceId]);
+      setSelectedWorkspacesIds(updatedWorkspaces);
+    }
     onCloseCreateWorkspace();
   };
-
   const datasetsArray = Object.values(datasets);
 
   return (
-    <CustomDialog onClose={onCloseCreateWorkspace} showModal={showCreateWorkspaceDialog} title={"Create new workspace"}>
+    <CustomDialog onClose={onCloseCreateWorkspace} showModal={showCreateWorkspaceDialog} title={title}>
       <Box px="1rem" py="1.5rem" gap={2.5} display="flex" flexDirection="column">
+        {subTitle && <Typography>{subTitle}</Typography>}
         <Box>
           <FormLabel>
             Workspace name <Typography variant="caption">(REQUIRED)</Typography>
@@ -160,7 +168,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
       </Box>
       <Box borderTop={`0.0625rem solid ${colors.gray100}`} px="1rem" py="0.75rem" gap={0.5} display="flex" justifyContent="flex-end">
         <Button variant="contained" color="info" onClick={handleSubmit} disabled={!formValues.workspaceName}>
-          Create workspace
+          {submitButtonText}
         </Button>
       </Box>
     </CustomDialog>

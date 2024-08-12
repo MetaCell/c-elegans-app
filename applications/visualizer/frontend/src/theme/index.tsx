@@ -369,7 +369,6 @@ const theme = createTheme({
     MuiList: {
       styleOverrides: {
         root: {
-          // maxHeight: '12.5rem',
           maxHeight: "100%",
           "& > div + div": {
             marginTop: "0.25rem",
@@ -378,6 +377,12 @@ const theme = createTheme({
             flexDirection: "column",
             gap: "0.25rem",
             borderTop: `0.0625rem solid ${gray100}`,
+          },
+
+          "& .MuiMenuItem-root": {
+            "&.Mui-disabled": {
+              background: "transparent",
+            },
           },
         },
       },
