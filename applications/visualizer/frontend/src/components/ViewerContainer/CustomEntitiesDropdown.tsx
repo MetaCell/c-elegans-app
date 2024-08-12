@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { CheckIcon } from "../../icons";
 import type { Neuron } from "../../rest";
 import { vars } from "../../theme/variables.ts";
+import {EnhancedNeuron} from "../../models/models.ts";
 
 const { gray50, brand600 } = vars;
 
@@ -25,8 +26,8 @@ interface CustomEntitiesDropdownProps {
   activeNeurons: Set<string>;
   onNeuronClick?: (neuron: Option) => void;
   onSearchNeurons?: (value: string) => void;
-  setNeurons?: (neurons: Record<string, Neuron>) => void;
-  availableNeurons: Record<string, Neuron>;
+  setNeurons?: (neurons: Record<string, EnhancedNeuron>) => void;
+  availableNeurons: Record<string, EnhancedNeuron>;
 }
 
 const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearchNeurons, setNeurons, availableNeurons }: CustomEntitiesDropdownProps) => {

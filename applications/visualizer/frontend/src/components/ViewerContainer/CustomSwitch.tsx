@@ -16,13 +16,15 @@ interface CustomSwitchProps {
   disabled?: boolean;
 }
 
-const CustomSwitch: React.FC<CustomSwitchProps> = ({ width, height, thumbDimension, checkedPosition, checked, onChange }) => {
+const CustomSwitch: React.FC<CustomSwitchProps> = ({ width, height, thumbDimension, checkedPosition, checked, onChange, showTooltip, disabled }) => {
+
   return (
-    <Tooltip title={checked ? "Hide" : "Show"}>
+    <Tooltip title={showTooltip ? (checked ? "Hide" : "Show") : ""}>
       <Switch
         focusVisibleClassName=".Mui-focusVisible"
         checked={checked}
         onChange={onChange}
+        disabled={disabled}
         sx={(theme) => ({
           marginRight: ".5rem",
           width: width ?? 23,
