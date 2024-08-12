@@ -10,7 +10,7 @@ export const threeDViewerWidget = () => ({
   id: widgetIds.threeDViewer,
   name: "3D Viewer",
   component: widgetIds.threeDViewer,
-  panelName: "leftPanel",
+  panelName: "rightPanel",
   enableClose: false,
   status: WidgetStatus.ACTIVE,
 });
@@ -19,7 +19,7 @@ export const twoDViewerWidget = () => ({
   id: widgetIds.twoDViewer,
   name: "Connectivity Graph",
   component: widgetIds.twoDViewer,
-  panelName: "rightPanel",
+  panelName: "leftPanel",
   enableClose: false,
   status: WidgetStatus.ACTIVE,
 });

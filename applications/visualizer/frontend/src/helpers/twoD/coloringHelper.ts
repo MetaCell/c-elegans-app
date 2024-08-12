@@ -19,7 +19,7 @@ interface CellDesign {
   color: string;
 }
 
-const cellConfig: { [key: string]: CellDesign } = {
+export const cellConfig: { [key: string]: CellDesign } = {
   b: { type: CellType.Muscle, color: "#A8F5A2" },
   u: { type: CellType.Others, color: "#D9D9D9" },
   s: { type: CellType.Sensory, color: "#F9CEF9" },
@@ -45,7 +45,7 @@ interface NeurotransmitterDesign {
   color: string;
 }
 
-const neurotransmitterConfig: { [key: string]: NeurotransmitterDesign } = {
+export const neurotransmitterConfig: { [key: string]: NeurotransmitterDesign } = {
   a: { type: NeurotransmitterType.Acetylcholine, color: "#FF887A" },
   d: { type: NeurotransmitterType.Dopamine, color: "#A8F5A2" },
   g: { type: NeurotransmitterType.GABA, color: "#99CCFF" },
@@ -77,4 +77,22 @@ export const getColorMap = (option: ColoringOptions): { [key: string]: string } 
 
 const extractColors = (config: Config, chars: string): string[] => {
   return chars.split("").map((char) => config[char]?.color || "#FFFFFF");
+};
+
+export const legendNodeNameMapping: Record<string, string> = {
+  [CellType.Neurosecretory]: "Modulatory",
+  [CellType.Sensory]: "Sensory neuron",
+  [CellType.Inter]: "Interneuron",
+  [CellType.Motor]: "Motor neuron",
+  [CellType.Muscle]: "Muscle",
+  [CellType.Others]: "Other",
+  [NeurotransmitterType.Acetylcholine]: "Acetylcholine",
+  [NeurotransmitterType.Dopamine]: "Dopamine",
+  [NeurotransmitterType.GABA]: "GABA",
+  [NeurotransmitterType.Glutamate]: "Glutamate",
+  [NeurotransmitterType.Octopamine]: "Octopamine",
+  [NeurotransmitterType.Serotonin]: "Serotonin",
+  [NeurotransmitterType.Tyramine]: "Tyramine",
+  [NeurotransmitterType.Unknown]: "Unknown",
+  [NeurotransmitterType.None]: "Non-neuronal",
 };

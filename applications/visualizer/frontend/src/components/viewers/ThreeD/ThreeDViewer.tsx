@@ -16,13 +16,13 @@ import { CameraControls, PerspectiveCamera } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { CheckIcon, CloseIcon } from "../../../icons";
-import type { Dataset } from "../../../models/models.ts";
 import { vars } from "../../../theme/variables.ts";
 import CustomAutocomplete from "../../CustomAutocomplete.tsx";
 import Gizmo from "./Gizmo.tsx";
 import Loader from "./Loader.tsx";
 import STLViewer from "./STLViewer.tsx";
 import SceneControls from "./SceneControls.tsx";
+import type { Dataset } from "../../../rest";
 
 const { gray100, gray600 } = vars;
 export interface Instance {

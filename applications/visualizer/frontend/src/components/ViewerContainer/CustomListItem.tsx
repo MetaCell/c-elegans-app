@@ -1,28 +1,23 @@
-import AddIcon from "@mui/icons-material/Add";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import { Box, IconButton } from "@mui/material";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Stack from "@mui/material/Stack";
-import Tooltip from "@mui/material/Tooltip";
-import Typography from "@mui/material/Typography";
 import { useState } from "react";
+import { Box, Stack, Typography, IconButton, Tooltip, FormControlLabel } from "@mui/material";
+import { HelpOutline as HelpOutlineIcon, DeleteOutlined as DeleteOutlinedIcon, Add as AddIcon } from "@mui/icons-material";
+import CustomSwitch from "./CustomSwitch";
+import PickerWrapper from "./PickerWrapper";
 import { vars } from "../../theme/variables.ts";
-import CustomSwitch from "./CustomSwitch.tsx";
-import PickerWrapper from "./PickerWrapper.tsx";
-
 const { gray600, gray400B, gray500, gray50, error700 } = vars;
 
-const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions = false }) => {
-  const [checked, setChecked] = useState(false);
+const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions = false, onSwitchChange }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [open, setOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState("#9FEE9A");
   const [itemHovered, setItemHovered] = useState(false);
 
   const isNeurons = listType === "neurons";
-  const onSwitchChange = (e) => {
-    setChecked(e.target.checked);
+
+  const handleSwitchChange = (_: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+    if (onSwitchChange) {
+      onSwitchChange(data.id, checked);
+    }
   };
 
   const handleClick = (event) => {
@@ -36,6 +31,7 @@ const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions =
     setAnchorEl(null);
     setOpen(false);
   };
+
   const handleColorChange = (color) => {
     setSelectedColor(color.hex);
   };
@@ -53,10 +49,9 @@ const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions =
       <FormControlLabel
         control={
           <Tooltip title={"data.helpText"}>
-            <CustomSwitch />
+            <CustomSwitch checked={data.checked} onChange={handleSwitchChange} />
           </Tooltip>
         }
-        onChange={onSwitchChange}
         onMouseEnter={handleOnMouseEnter}
         onMouseLeave={handleOnMouseLeave}
         sx={{
@@ -70,13 +65,11 @@ const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions =
           "& .MuiFormControlLabel-label": {
             width: "100%",
           },
-
           "& .MuiIconButton-root": {
             padding: ".25rem",
             borderRadius: ".25rem",
           },
         }}
-        checked={checked}
         label={
           <Stack>
             <Stack direction="row" alignItems="center" width={1} spacing=".5rem" justifyContent="space-between">
@@ -94,18 +87,12 @@ const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions =
                   />
                 )}
                 <Typography color={gray600} variant="subtitle1">
-                  {data?.label?.length > 32 ? `${data?.label.slice(0, 32)}...` : data?.label}
+                  {data?.label?.length > 32 ? data?.label.slice(0, 32) + "..." : data?.label}
                 </Typography>
               </Stack>
-
               {showTooltip && (
                 <Tooltip title={data.helpText}>
-                  <HelpOutlineIcon
-                    sx={{
-                      color: gray400B,
-                      fontSize: "1rem",
-                    }}
-                  />
+                  <HelpOutlineIcon sx={{ color: gray400B, fontSize: "1rem" }} />
                 </Tooltip>
               )}
               {showExtraActions && itemHovered && (
@@ -114,12 +101,7 @@ const CustomListItem = ({ data, showTooltip = true, listType, showExtraActions =
                     <IconButton
                       sx={{
                         padding: "0.125rem !important",
-
-                        "&:hover": {
-                          "& .MuiSvgIcon-root": {
-                            color: error700,
-                          },
-                        },
+                        "&:hover": { "& .MuiSvgIcon-root": { color: error700 } },
                       }}
                     >
                       <DeleteOutlinedIcon fontSize="small" />
