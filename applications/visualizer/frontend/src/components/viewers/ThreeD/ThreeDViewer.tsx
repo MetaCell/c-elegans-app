@@ -24,7 +24,7 @@ import Gizmo from "./Gizmo.tsx";
 import Loader from "./Loader.tsx";
 import STLViewer from "./STLViewer.tsx";
 import SceneControls from "./SceneControls.tsx";
-import type {Dataset} from "../../../rest";
+import type { Dataset } from "../../../rest";
 
 const { gray100, gray600 } = vars;
 export interface Instance {

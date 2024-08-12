@@ -5,7 +5,7 @@ import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { CheckIcon } from "../../icons";
 import { vars } from "../../theme/variables.ts";
-import type {EnhancedNeuron} from "../../models/models.ts";
+import type { EnhancedNeuron } from "../../models/models.ts";
 
 const { gray50, brand600 } = vars;
 

@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import { CaretIcon, CheckIcon, CloseIcon } from "../icons";
-import {type Dataset, type Neuron, NeuronsService} from "../rest";
+import { type Dataset, type Neuron, NeuronsService } from "../rest";
 import { vars as colors } from "../theme/variables.ts";
 import CustomAutocomplete from "./CustomAutocomplete.tsx";
 import CustomDialog from "./CustomDialog.tsx";

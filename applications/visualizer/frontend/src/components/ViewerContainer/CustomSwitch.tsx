@@ -17,7 +17,6 @@ interface CustomSwitchProps {
 }
 
 const CustomSwitch: React.FC<CustomSwitchProps> = ({ width, height, thumbDimension, checkedPosition, checked, onChange, showTooltip, disabled }) => {
-
   return (
     <Tooltip title={showTooltip ? (checked ? "Hide" : "Show") : ""}>
       <Switch
