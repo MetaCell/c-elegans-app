@@ -10,7 +10,7 @@ const defaultConfig = {
     sourcemap: !process.env.NO_SOURCEMAP,
   },
   optimizeDeps: {
-    include: ["@mui/material", "@emotion/react", "@emotion/styled"],
+    include: ["@mui/material", "@emotion/react", "@emotion/styled", "@mui/material/Tooltip"],
   },
   // publicDir: 'src/assets',
 };
