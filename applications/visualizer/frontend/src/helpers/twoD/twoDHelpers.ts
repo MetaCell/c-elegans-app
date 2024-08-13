@@ -3,7 +3,7 @@ import type { Workspace } from "../../models";
 import { ViewerType } from "../../models";
 import type { Connection } from "../../rest";
 
-import { annotationLegend } from "../../settings/twoDSettings.tsx";
+import {annotationLegend, BOUNDING_BOX_BASENAME} from "../../settings/twoDSettings.tsx";
 import { cellConfig, neurotransmitterConfig } from "./coloringHelper.ts";
 
 export const createEdge = (id: string, conn: Connection, workspace: Workspace, includeAnnotations: boolean): ElementDefinition => {
@@ -203,3 +203,8 @@ export const updateWorkspaceNeurons2DViewerData = (workspace: Workspace, cy: Cor
     });
   });
 };
+
+
+export const getBoundingBoxId = (groupId: string) => {
+  return `${BOUNDING_BOX_BASENAME}_${groupId}`
+}

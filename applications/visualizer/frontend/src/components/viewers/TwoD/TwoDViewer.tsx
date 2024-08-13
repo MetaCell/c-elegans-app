@@ -14,7 +14,7 @@ import {
     INCLUDE_ANNOTATIONS,
     INCLUDE_NEIGHBORING_CELLS,
     INCLUDE_LABELS,
-    INCLUDE_POST_EMBRYONIC,
+    INCLUDE_POST_EMBRYONIC, BOUNDING_BOX_BASENAME,
 } from "../../../settings/twoDSettings";
 import TwoDMenu from "./TwoDMenu";
 import TwoDLegend from "./TwoDLegend";
@@ -129,7 +129,7 @@ const TwoDViewer = () => {
         if (cyRef.current) {
             updateGraphElements(cyRef.current, connections);
         }
-    }, [connections, hiddenNodes, workspace.neuronGroups, includePostEmbryonic, splitJoinState]);
+    }, [connections, hiddenNodes, workspace.neuronGroups, includePostEmbryonic, splitJoinState, openGroups]);
 
     useEffect(() => {
         if (cyRef.current) {
@@ -276,6 +276,7 @@ const TwoDViewer = () => {
             workspace,
             splitJoinState,
             hiddenNodes,
+            openGroups,
             includeNeighboringCellsAsIndividualCells,
             includeAnnotations,
             includePostEmbryonic,
@@ -306,7 +307,12 @@ const TwoDViewer = () => {
         }
         cyRef.current.nodes().forEach((node) => {
             const nodeId = node.id();
+            // Skip bounding box nodes
+            if (nodeId.startsWith(BOUNDING_BOX_BASENAME)) {
+                return;
+            }
             const group = workspace.neuronGroups[nodeId];
+
             let colors = [];
 
             if (group) {

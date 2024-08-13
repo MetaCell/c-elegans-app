@@ -14,7 +14,7 @@ const defaultConfig = {
     }),
   ],
   optimizeDeps: {
-    include: ["@emotion/react", "@emotion/styled", "@mui/material/Tooltip"],
+    include: ["@emotion/react", "@emotion/styled", "@mui/material/Tooltip", "@mui/material/Box"],
   },
   build: {
     sourcemap: !process.env.NO_SOURCEMAP,
