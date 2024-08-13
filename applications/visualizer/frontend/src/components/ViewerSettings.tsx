@@ -1,5 +1,12 @@
+import { updateWidget } from "@metacell/geppetto-meta-client/common/layout/actions";
+import { WidgetStatus } from "@metacell/geppetto-meta-client/common/layout/model";
 import { Box, Divider, Drawer, FormControlLabel, FormGroup, IconButton, Typography } from "@mui/material";
-import { CloseIcon, LinkIcon } from "../icons/index.tsx";
+import { useDispatch, useSelector } from "react-redux";
+import { useGlobalContext } from "../contexts/GlobalContext.tsx";
+import { CloseIcon, LinkIcon } from "../icons";
+import type { RootState } from "../layout-manager/layoutManagerFactory.ts";
+import { emDataViewerWidget, threeDViewerWidget, twoDViewerWidget } from "../layout-manager/widgets.ts";
+import { ViewerType } from "../models/models.ts";
 import { vars } from "../theme/variables.ts";
 import CustomSwitch from "./ViewerContainer/CustomSwitch.tsx";
 
@@ -32,7 +39,11 @@ const SyncViewersData = [
   },
 ];
 
-const ViewersList = ["Connectivity graph", "3D viewer", "EM viewer"];
+const viewers = {
+  [ViewerType.Graph]: twoDViewerWidget(),
+  [ViewerType.ThreeD]: threeDViewerWidget(),
+  [ViewerType.EM]: emDataViewerWidget(),
+};
 
 const textStyles = { ...secondaryTypographyStyles, fontWeight: 500, flex: 1 };
 const buttonStyle = {
@@ -40,6 +51,27 @@ const buttonStyle = {
 };
 
 const ViewerSettings = ({ open, toggleDrawer }) => {
+  const dispatch = useDispatch();
+  const currentWorkspaceId = useSelector((state: RootState) => state.workspaceId);
+  const { workspaces } = useGlobalContext();
+  const currentWorkspace = workspaces[currentWorkspaceId];
+
+  const handleToggle = (e, viewer) => {
+    const status = e.target.checked ? WidgetStatus.ACTIVE : WidgetStatus.MINIMIZED;
+    const selectedViewer = viewers[viewer];
+    const selectedViewerFunction = viewers[viewer];
+    if (selectedViewerFunction) {
+      const viewerConfig = { ...selectedViewer, status };
+      dispatch(updateWidget(viewerConfig));
+      currentWorkspace.changeViewerVisibility(viewer, e.target.checked);
+    } else {
+      return;
+    }
+  };
+  const handleChangeSynchronizations = (_, index, status) => {
+    currentWorkspace.updateViewerSynchronizationStatus(index, !status);
+  };
+
   return (
     <Drawer
       anchor="right"
@@ -107,19 +139,26 @@ const ViewerSettings = ({ open, toggleDrawer }) => {
               },
             }}
           >
-            {ViewersList?.map((viewer) => {
-              return (
-                <FormControlLabel
-                  control={<CustomSwitch width={28.8} height={16} thumbDimension={12.8} checkedPosition="translateX(0.8125rem)" />}
-                  key={`viewer-${viewer}`}
-                  label={
-                    <Typography color={gray600} variant="subtitle1">
-                      {viewer} graph
-                    </Typography>
-                  }
-                />
-              );
-            })}
+            {Object.keys(currentWorkspace?.viewers)?.map((viewer) => (
+              <FormControlLabel
+                control={
+                  <CustomSwitch
+                    width={28.8}
+                    height={16}
+                    thumbDimension={12.8}
+                    checkedPosition="translateX(0.8125rem)"
+                    checked={currentWorkspace?.viewers[viewer]}
+                    onChange={(e) => handleToggle(e, viewer)}
+                  />
+                }
+                key={`viewer-${viewer}`}
+                label={
+                  <Typography color={gray600} variant="subtitle1">
+                    {viewer}
+                  </Typography>
+                }
+              />
+            ))}
           </FormGroup>
         </Box>
         <Divider sx={{ borderColor: gray100 }} />
@@ -128,17 +167,19 @@ const ViewerSettings = ({ open, toggleDrawer }) => {
           <Typography sx={{ ...secondaryTypographyStyles, marginBottom: "0.75rem" }}>Sync viewers</Typography>
 
           <Box display="flex" gap="0.25rem" flexDirection="column">
-            {SyncViewersData?.map((data, index) => {
-              return (
-                <Box display="flex" alignItems="center" gap="0.75rem" py="0.25rem" key={data.primaryText}>
-                  <Typography sx={textStyles}>{data.primaryText}</Typography>
-                  <IconButton className={index === 2 ? "active" : ""} sx={buttonStyle}>
-                    <LinkIcon />
-                  </IconButton>
-                  <Typography sx={textStyles}>{data.secondaryText}</Typography>
-                </Box>
-              );
-            })}
+            {SyncViewersData?.map((data, index) => (
+              <Box display="flex" alignItems="center" gap="0.75rem" py="0.25rem" key={data.primaryText}>
+                <Typography sx={textStyles}>{data.primaryText}</Typography>
+                <IconButton
+                  className={currentWorkspace?.synchronizations[index] ? "active" : ""}
+                  sx={buttonStyle}
+                  onClick={(e) => handleChangeSynchronizations(e, index, currentWorkspace?.synchronizations[index])}
+                >
+                  <LinkIcon />
+                </IconButton>
+                <Typography sx={textStyles}>{data.secondaryText}</Typography>
+              </Box>
+            ))}
           </Box>
         </Box>
       </Box>

@@ -24,7 +24,7 @@ export default defineConfig(({ command, mode }) => {
 		(uri.includes("visualizer") &&
 			uri.replace("visualizer", appName + "." + theDomain)) ||
 		uri;
-	console.log("XXX", replaceHost(theDomain, "visualizer"));
+
 	return {
 		...defaultConfig,
 		build: {
@@ -51,8 +51,8 @@ export default defineConfig(({ command, mode }) => {
 				},
 			},
 		},
-		optimizeDeps: {
-			include: ["@emotion/react", '@mui/material/Tooltip', '@emotion/styled', '@mui/material/Unstable_Grid2']
-		},
+		// optimizeDeps: {
+		// 	include: ["@emotion/react", '@mui/material/Tooltip', '@emotion/styled', '@mui/material/Unstable_Grid2'] // https://github.com/mui/material-ui/issues/32727
+		// },
 	};
 });

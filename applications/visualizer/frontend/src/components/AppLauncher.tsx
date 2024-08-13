@@ -3,24 +3,24 @@ import footerImage from "../assets/summary-neurons.png";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import { parseURLParams } from "../helpers/parseURLHelper.ts";
 import { TEMPLATE_ACTIVE_DATASETS, TEMPLATE_ACTIVE_NEURONS } from "../settings/templateWorkspaceSettings.ts";
-
 function AppLauncher() {
-  const { workspaces, createWorkspace, setCurrentWorkspace } = useGlobalContext();
+  const { workspaces, createWorkspace, setCurrentWorkspace, setSelectedWorkspacesIds } = useGlobalContext();
 
   const handleTemplateClick = async () => {
     const workspaceId = `workspace-${Date.now()}`;
     const workspaceName = `Template Workspace ${Object.keys(workspaces).length + 1}`;
-
     createWorkspace(workspaceId, workspaceName, new Set(TEMPLATE_ACTIVE_DATASETS), new Set(TEMPLATE_ACTIVE_NEURONS));
     setCurrentWorkspace(workspaceId);
+    setSelectedWorkspacesIds(new Set<string>([workspaceId]));
   };
 
   const handleBlankClick = () => {
     const workspaceId = `workspace-${Date.now()}`;
     const workspaceName = `Workspace ${Object.keys(workspaces).length + 1}`;
 
-    createWorkspace(workspaceId, workspaceName);
+    createWorkspace(workspaceId, workspaceName, new Set(TEMPLATE_ACTIVE_DATASETS));
     setCurrentWorkspace(workspaceId);
+    setSelectedWorkspacesIds(new Set<string>([workspaceId]));
   };
 
   const handlePasteUrlClick = () => {
@@ -29,7 +29,6 @@ function AppLauncher() {
     const parsedParams = parseURLParams(exampleURL);
     console.log(parsedParams);
   };
-
   return (
     <>
       <Box>

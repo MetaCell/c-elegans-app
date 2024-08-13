@@ -4,11 +4,12 @@ import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import { Box, Divider, FormControlLabel, FormGroup, IconButton, Popover, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from "@mui/material";
 import { useState } from "react";
 import { ColoringOptions } from "../../../helpers/twoD/coloringHelper.ts";
-import { applyLayout } from "../../../helpers/twoD/twoDHelpers.ts";
 import { GRAPH_LAYOUTS, ZOOM_DELTA } from "../../../settings/twoDSettings.tsx";
 import { vars } from "../../../theme/variables.ts";
 import CustomSwitch from "../../ViewerContainer/CustomSwitch.tsx";
 import QuantityInput from "./NumberInput.tsx";
+import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
+import { applyLayout } from "../../../helpers/twoD/twoDHelpers.ts";
 
 const { gray500 } = vars;
 
@@ -28,7 +29,12 @@ const TwoDMenu = ({
   setThresholdChemical,
   thresholdElectrical,
   setThresholdElectrical,
+  includeLabels,
+  setIncludeLabels,
+  includePostEmbryonic,
+  setIncludePostEmbryonic,
 }) => {
+  const workspace = useSelectedWorkspace();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   const onZoomIn = () => {
@@ -60,7 +66,6 @@ const TwoDMenu = ({
     if (!cy) {
       return;
     }
-    cy.reset(); // Reset the zoom and pan positions
     applyLayout(cy, layout);
   };
 
@@ -70,6 +75,27 @@ const TwoDMenu = ({
 
   const handleCloseSettings = () => {
     setAnchorEl(null);
+  };
+
+  const handleDownloadClick = () => {
+    if (!cy) return;
+
+    const pngDataUrl = cy.png({
+      output: "base64uri",
+      bg: "white",
+      full: true,
+      scale: 2,
+    });
+
+    // Create a link element
+    const link = document.createElement("a");
+    link.href = pngDataUrl;
+    link.download = `${workspace.name}.png`;
+
+    // Programmatically trigger a click event to download the image
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const open = Boolean(anchorEl);
@@ -242,7 +268,7 @@ const TwoDMenu = ({
           >
             <FormControlLabel
               control={<CustomSwitch checked={includeNeighboringCells} onChange={(e) => setIncludeNeighboringCells(e.target.checked)} showTooltip={false} />}
-              label="Connected Cells"
+              label="Connected cells"
             />
             <Tooltip title={!includeNeighboringCells ? "Enable 'Connected Cells' to use this switch" : ""}>
               <FormControlLabel
@@ -258,20 +284,28 @@ const TwoDMenu = ({
               />
             </Tooltip>
             <FormControlLabel
+              control={<CustomSwitch checked={includeLabels} onChange={(e) => setIncludeLabels(e.target.checked)} showTooltip={false} />}
+              label="Show connection labels"
+            />
+            <FormControlLabel
               control={<CustomSwitch checked={includeAnnotations} onChange={(e) => setIncludeAnnotations(e.target.checked)} showTooltip={false} />}
-              label="Types of Connections"
+              label="Types of connections"
+            />
+            <FormControlLabel
+              control={<CustomSwitch checked={includePostEmbryonic} onChange={(e) => setIncludePostEmbryonic(e.target.checked)} showTooltip={false} />}
+              label="Post-embryonic cells"
             />
           </FormGroup>
         </Box>
       </Popover>
-      <Tooltip title="Show/Hide neurons" placement="right-start">
-        <IconButton>
+      <Tooltip title="Show/Hide neurons (Coming Soon)" placement="right-start">
+        <IconButton disabled={true}>
           <VisibilityOutlined />
         </IconButton>
       </Tooltip>
       <Divider />
       <Tooltip title="Download graph" placement="right-start">
-        <IconButton>
+        <IconButton onClick={handleDownloadClick}>
           <GetAppOutlined />
         </IconButton>
       </Tooltip>

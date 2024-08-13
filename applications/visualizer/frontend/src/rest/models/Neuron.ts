@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export type Neuron = {
+    id: string;
     name: string;
     datasetIds: Array<string>;
     nclass: string;

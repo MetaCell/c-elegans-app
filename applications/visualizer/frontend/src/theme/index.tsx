@@ -36,6 +36,7 @@ const {
   brand500,
   brand300,
   brand200,
+  gray900,
 } = vars;
 
 const theme = createTheme({
@@ -304,6 +305,11 @@ const theme = createTheme({
           "&:focus": {
             outline: 0,
           },
+          "&.Mui-disabled": {
+            background: gray100,
+            color: gray400,
+            borderColor: gray200,
+          },
         },
       },
     },
@@ -363,7 +369,6 @@ const theme = createTheme({
     MuiList: {
       styleOverrides: {
         root: {
-          // maxHeight: '12.5rem',
           maxHeight: "100%",
           "& > div + div": {
             marginTop: "0.25rem",
@@ -372,6 +377,12 @@ const theme = createTheme({
             flexDirection: "column",
             gap: "0.25rem",
             borderTop: `0.0625rem solid ${gray100}`,
+          },
+
+          "& .MuiMenuItem-root": {
+            "&.Mui-disabled": {
+              background: "transparent",
+            },
           },
         },
       },
@@ -470,7 +481,7 @@ const theme = createTheme({
           borderRadius: "0.375rem",
           gap: "0.5rem",
 
-          "&:not(:first-child)": {
+          "&:not(:first-of-type)": {
             marginTop: "0.25rem",
           },
 
@@ -1003,6 +1014,64 @@ const theme = createTheme({
               "&:hover": {
                 backgroundColor: gray50,
               },
+            },
+          },
+        },
+      },
+    },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          borderRight: 0,
+          borderLeft: 0,
+          borderRadius: 0,
+          padding: "0.5rem 0.875rem",
+          borderColor: gray100,
+          "&.Mui-focused": {
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderWidth: 0,
+              background: `transparent !important`,
+              boxShadow: "none !important",
+              borderColor: `${gray100} !important`,
+            },
+          },
+
+          "& .MuiInputBase-input": {
+            padding: "0",
+            height: "1.25rem",
+          },
+
+          "& .MuiSvgIcon-root": {
+            color: `${gray400B}`,
+          },
+
+          "&:has( .Mui-disabled)": {
+            backgroundColor: gray100,
+
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderColor: `${gray100} !important`,
+            },
+          },
+        },
+      },
+    },
+    MuiSnackbarContent: {
+      styleOverrides: {
+        root: {
+          "&.MuiPaper-root": {
+            height: "fit-content !important",
+            backgroundColor: gray900,
+            borderRadius: "0.5rem",
+            fontSize: "0.75rem",
+            fontWeight: 600,
+            padding: "0.5rem 0.75rem",
+          },
+        },
+        action: {
+          "& .MuiButtonBase-root": {
+            "& .MuiSvgIcon-root": {
+              color: "white",
+              fontWeight: 600,
             },
           },
         },

@@ -16,7 +16,7 @@ import Style from "ol/style/Style";
 import Text from "ol/style/Text";
 import { TileGrid } from "ol/tilegrid";
 import { defaults as defaultInteractions, MouseWheelZoom } from 'ol/interaction.js';
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { shiftKeyOnly } from "ol/events/condition";
 import { SlidingRing } from "../../../helpers/slidingRing";
 import SceneControls from "./SceneControls.tsx";

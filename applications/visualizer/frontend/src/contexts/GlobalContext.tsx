@@ -15,8 +15,9 @@ export interface GlobalContextType {
   setCurrentWorkspace: (workspaceId: string) => void;
   getCurrentWorkspace: () => Workspace;
   setSelectedWorkspacesIds: (workspaceId: Set<string>) => void;
-  datasets: Array<Dataset>;
+  datasets: Record<string, Dataset>;
   fetchDatasets: () => void;
+  setAllWorkspaces: (workspaces: Record<string, Workspace>) => void;
 }
 
 interface GlobalContextProviderProps {
@@ -30,9 +31,19 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
   const [currentWorkspaceId, setCurrentWorkspaceId] = useState<string | undefined>(undefined);
   const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.Default);
   const [selectedWorkspacesIds, setSelectedWorkspacesIds] = useState<Set<string>>(new Set<string>());
-  const [datasets, setDatasets] = useState<Array<Dataset>>([]);
+  const [datasets, setDatasets] = useState<Record<string, Dataset>>({});
 
-  const createWorkspace = (id: string, name: string, activeDatasets: Set<string>, activeNeurons: Set<string>) => {
+  const createWorkspace = (id: string, name: string, activeDatasetKeys: Set<string>, activeNeurons: Set<string>) => {
+    // Convert the activeDatasetKeys into a Record<string, Dataset>
+    const activeDatasets: Record<string, Dataset> = {};
+
+    activeDatasetKeys.forEach((key) => {
+      if (datasets[key]) {
+        activeDatasets[key] = datasets[key];
+      }
+    });
+
+    // Create a new workspace using the activeDatasets record
     const newWorkspace = new Workspace(id, name, activeDatasets, activeNeurons, updateWorkspace);
     setWorkspaces((prev) => ({ ...prev, [id]: newWorkspace }));
   };
@@ -44,6 +55,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     }));
   };
 
+  const setAllWorkspaces = (workspaces: Record<string, Workspace>) => {
+    // New function implementation
+    setWorkspaces(workspaces);
+  };
   const removeWorkspace = (workspaceId: string) => {
     const updatedWorkspaces = { ...workspaces };
     delete updatedWorkspaces[workspaceId];
@@ -57,11 +72,34 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
   const getCurrentWorkspace = () => {
     return workspaces[currentWorkspaceId];
   };
-
+  const getGlobalContext = () => ({
+    workspaces,
+    currentWorkspaceId,
+    getCurrentWorkspace,
+    createWorkspace,
+    updateWorkspace,
+    removeWorkspace,
+    setCurrentWorkspace,
+    viewMode,
+    setViewMode,
+    selectedWorkspacesIds,
+    setSelectedWorkspacesIds,
+    fetchDatasets,
+    datasets,
+    setAllWorkspaces,
+  });
   const fetchDatasets = async () => {
     try {
       const response = await DatasetsService.getDatasets({});
-      setDatasets(response);
+      const datasetsRecord = response.reduce(
+        (acc, dataset) => {
+          acc[dataset.id] = dataset;
+          return acc;
+        },
+        {} as Record<string, Dataset>,
+      );
+
+      setDatasets(datasetsRecord);
     } catch (error) {
       console.error("Failed to fetch datasets", error);
     }
@@ -71,29 +109,8 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     fetchDatasets();
   }, []);
 
-  return (
-    <GlobalContext.Provider
-      value={{
-        workspaces,
-        currentWorkspaceId,
-        getCurrentWorkspace,
-        createWorkspace,
-        updateWorkspace,
-        removeWorkspace,
-        setCurrentWorkspace,
-        viewMode,
-        setViewMode,
-        selectedWorkspacesIds,
-        setSelectedWorkspacesIds,
-        fetchDatasets,
-        datasets,
-      }}
-    >
-      {children}
-    </GlobalContext.Provider>
-  );
+  return <GlobalContext.Provider value={getGlobalContext()}>{children}</GlobalContext.Provider>;
 };
-
 export const useGlobalContext = () => {
   const context = useContext(GlobalContext);
   if (context === undefined) {

@@ -14,15 +14,17 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { IconButton, Typography } from "@mui/material";
 import { CameraControls, PerspectiveCamera } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
+import { useSelector } from "react-redux";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { CheckIcon, CloseIcon } from "../../../icons";
-import type { Dataset } from "../../../models/models.ts";
+import type { RootState } from "../../../layout-manager/layoutManagerFactory.ts";
 import { vars } from "../../../theme/variables.ts";
 import CustomAutocomplete from "../../CustomAutocomplete.tsx";
 import Gizmo from "./Gizmo.tsx";
 import Loader from "./Loader.tsx";
 import STLViewer from "./STLViewer.tsx";
 import SceneControls from "./SceneControls.tsx";
+import type { Dataset } from "../../../rest";
 
 const { gray100, gray600 } = vars;
 export interface Instance {
@@ -41,8 +43,9 @@ function ThreeDViewer() {
   const [showSynapses, setShowSynapses] = useState<boolean>(true);
   const [instances, setInstances] = useState<Instance[]>([]);
   const [isWireframe, setIsWireframe] = useState<boolean>(false);
-  const activeDatasets = Object.values(useGlobalContext().getCurrentWorkspace().activateDataset);
-
+  const currentWorkspaceId = useSelector((state: RootState) => state.workspaceId);
+  const { workspaces } = useGlobalContext();
+  const currentWorkspace = workspaces[currentWorkspaceId];
   const cameraControlRef = useRef<CameraControls | null>(null);
 
   useEffect(() => {
@@ -64,11 +67,14 @@ function ThreeDViewer() {
     }
   }, [showNeurons, showSynapses]);
 
+  const dataSets = Object.values(currentWorkspace.activeDatasets);
+
   return (
     <>
       <CustomAutocomplete
         multiple={false}
-        options={activeDatasets}
+        options={dataSets}
+        onChange={(e) => console.log(e)}
         getOptionLabel={(option: Dataset) => option.name}
         renderOption={(props, option) => (
           <li {...props}>

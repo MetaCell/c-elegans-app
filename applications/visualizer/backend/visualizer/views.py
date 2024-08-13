@@ -3,7 +3,7 @@ import mimetypes
 from pathlib import Path
 
 from django.conf import settings
-from django.http import FileResponse, Http404, HttpResponseRedirect
+from django.http import FileResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils._os import safe_join
