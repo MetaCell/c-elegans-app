@@ -10,7 +10,7 @@ import { MouseWheelZoom, defaults as defaultInteractions } from "ol/interaction.
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
 import { Projection } from "ol/proj";
-import { TileDebug, XYZ } from "ol/source";
+import { XYZ } from "ol/source";
 import VectorSource from "ol/source/Vector";
 import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
