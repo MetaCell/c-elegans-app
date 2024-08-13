@@ -21,12 +21,16 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from api.api import api
-from .views import index, access_bucket_artifact
+from .views import index, access_bucket_artifact, get_tile, get_seg
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", api.urls),
     *static(settings.STATIC_URL, document_root=settings.STATIC_ROOT),
+    re_path(
+        r"^emdata/(?P<slice>\d+)/(?P<x>\d+)_(?P<y>\d+)_(?P<zoom>\d+).jpg", get_tile
+    ),
+    re_path(r"^segdata/(?P<slice>\d+)", get_seg),
     re_path(r"resources/(?P<path>.+)", access_bucket_artifact, name="resources"),
     re_path(r"(?P<path>.*)", index, name="index"),
 ]

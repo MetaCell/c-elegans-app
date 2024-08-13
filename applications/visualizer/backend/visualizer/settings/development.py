@@ -17,3 +17,6 @@ DATABASES = {
         "TEST": {"NAME": BASE_DIR / "tests" / "testdb.sqlite3"},
     }
 }
+
+
+EM_DATA_FOLDER = BASE_DIR.parent.parent.parent / "SEM_adult_catmaid_tiles"
