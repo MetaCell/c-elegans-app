@@ -1,86 +1,146 @@
-import { Box, IconButton, Stack, Typography, Tooltip } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import { Box, IconButton, Stack, Typography } from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
+import { debounce } from "lodash";
+import { useCallback, useState } from "react";
+import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
+import type { Neuron } from "../../rest";
+import { NeuronsService } from "../../rest";
 import { vars } from "../../theme/variables.ts";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 import CustomListItem from "./CustomListItem.tsx";
-import AddIcon from "@mui/icons-material/Add";
-import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
+import type { EnhancedNeuron } from "../../models/models.ts";
 
 const { gray900, gray500 } = vars;
+const mapNeuronsToListItem = (neuron: string, isActive: boolean) => ({
+  id: neuron,
+  label: neuron,
+  checked: isActive,
+});
+const mapNeuronsAvailableNeuronsToOptions = (neuron: Neuron) => ({
+  id: neuron.name,
+  label: neuron.name,
+  content: [],
+});
 
-const Neurons = () => {
-  const { workspaces, currentWorkspaceId } = useGlobalContext();
+const Neurons = ({ children }) => {
+  const { workspaces, datasets, currentWorkspaceId } = useGlobalContext();
   const currentWorkspace = workspaces[currentWorkspaceId];
   const activeNeurons = currentWorkspace.activeNeurons;
+  const recentNeurons = Object.values(currentWorkspace.availableNeurons).filter((neuron) => neuron.isInteractant);
   const availableNeurons = currentWorkspace.availableNeurons;
 
-  // Transform available neurons to options for CustomEntitiesDropdown
-  const neuronOptions = Object.values(availableNeurons).map((neuron) => ({
-    id: neuron.name,
-    label: neuron.name,
-    content: [
-      { title: "Class", value: neuron.nclass },
-      { title: "Neurotransmitter", value: neuron.neurotransmitter },
-      { title: "Type", value: neuron.type },
-    ],
-  }));
+  const [neurons, setNeurons] = useState(availableNeurons);
 
-  // Transform active neurons data to the format expected by CustomListItem
-  const neuronList = activeNeurons
-    ? Array.from(activeNeurons).map((neuronName) => {
-        const neuron = availableNeurons[neuronName];
-        return {
-          id: neuron.name,
-          label: neuron.name,
-          checked: true,
-        };
-      })
-    : [];
+  const handleSwitchChange = async (neuronId: string, checked: boolean) => {
+    const neuron = availableNeurons[neuronId];
 
-  // Handle activation and deactivation of neurons
-  const handleSwitchChange = (neuronName: string, checked: boolean) => {
-    const neuron = availableNeurons[neuronName];
     if (!neuron) return;
-
     if (checked) {
+      await currentWorkspace.activateNeuron(neuron);
+    } else {
+      await currentWorkspace.deactivateNeuron(neuronId);
+    }
+  };
+
+  const onNeuronClick = (option) => {
+    const neuron = availableNeurons[option.id];
+    if (neuron && !activeNeurons.has(option.id)) {
       currentWorkspace.activateNeuron(neuron);
     } else {
-      currentWorkspace.deactivateNeuron(neuronName);
+      currentWorkspace.deleteNeuron(option.id);
+    }
+  };
+  const handleDeleteNeuron = (neuronId: string) => {
+    currentWorkspace.deleteNeuron(neuronId);
+  };
+
+  const fetchNeurons = async (name: string, datasetsIds: { id: string }[]) => {
+    try {
+      const ids = datasetsIds.map((dataset) => dataset.id);
+      const response = await NeuronsService.searchCells({ name: name, datasetIds: ids });
+
+      // Convert the object to a Record<string, Neuron>
+      const neuronsRecord = Object.entries(response).reduce((acc: Record<string, EnhancedNeuron>, [_, neuron]: [string, EnhancedNeuron]) => {
+        acc[neuron.name] = neuron;
+        return acc;
+      }, {});
+
+      setNeurons(neuronsRecord);
+    } catch (error) {
+      console.error("Failed to fetch datasets", error);
     }
   };
 
-  // Handle neuron selection from CustomEntitiesDropdown
-  const handleNeuronSelect = (option) => {
-    const neuron = availableNeurons[option.id];
-    if (neuron) {
-      currentWorkspace.activateNeuron(neuron);
-    }
+  const debouncedFetchNeurons = useCallback(debounce(fetchNeurons, 300), []);
+
+  const onSearchNeurons = (value) => {
+    const datasetsIds = Object.keys(datasets);
+    debouncedFetchNeurons(value, datasetsIds);
   };
+
+  const autoCompleteOptions = Object.values(neurons).map((neuron: Neuron) => mapNeuronsAvailableNeuronsToOptions(neuron));
 
   return (
-    <Box>
+    <Box
+      sx={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb="0">
         <Typography variant="body1" component="p" color={gray900} fontWeight={500}>
           Neurons
         </Typography>
+
         <Typography variant="body1" component="p" color={gray500}>
           Search for the neurons and add it to your workspace. This will affect all viewers.
         </Typography>
       </Stack>
-      <CustomEntitiesDropdown options={neuronOptions} onSelect={handleNeuronSelect} />
-      <Box sx={{ height: "100%", overflow: "auto" }}>
+      {children}
+      <CustomEntitiesDropdown
+        options={autoCompleteOptions}
+        activeNeurons={activeNeurons}
+        onNeuronClick={onNeuronClick}
+        onSearchNeurons={onSearchNeurons}
+        setNeurons={setNeurons}
+        availableNeurons={availableNeurons}
+      />
+      <Box
+        sx={{
+          height: "100%",
+          overflow: "auto",
+          flex: 1,
+        }}
+      >
         <Stack spacing=".5rem" p="0 .25rem" mt=".75rem">
           <Box display="flex" alignItems="center" justifyContent="space-between" padding=".25rem .5rem">
             <Typography color={gray500} variant="subtitle1">
-              Active neurons
+              All Neurons
             </Typography>
             <Tooltip title="Create new group">
-              <IconButton sx={{ padding: ".25rem", borderRadius: ".25rem" }}>
+              <IconButton
+                sx={{
+                  padding: ".25rem",
+                  borderRadius: ".25rem",
+                }}
+              >
                 <AddIcon fontSize="medium" />
               </IconButton>
             </Tooltip>
           </Box>
-          {neuronList.map((item) => (
-            <CustomListItem key={item.id} data={item} showTooltip={false} showExtraActions={true} listType="neurons" onSwitchChange={handleSwitchChange} />
+          {Array.from(recentNeurons).map((neuron) => (
+            <CustomListItem
+              key={neuron.name}
+              data={mapNeuronsToListItem(neuron.name, activeNeurons.has(neuron.name))}
+              showTooltip={false}
+              showExtraActions={true}
+              listType="neurons"
+              onSwitchChange={handleSwitchChange}
+              onDelete={handleDeleteNeuron}
+              deleteTooltipTitle="Remove neuron from the workspace"
+            />
           ))}
         </Stack>
       </Box>
