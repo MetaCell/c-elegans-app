@@ -8,7 +8,6 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils._os import safe_join
 
-from .settings import EM_DATA_FOLDER
 from PIL import Image
 
 
@@ -49,31 +48,6 @@ def get_tile(request, slice, x, y, zoom):
     )
 
     return access_bucket_artifact(request, path)
-    # full_path = Path(safe_join(EM_DATA_FOLDER, path))
-    # content_type, _ = mimetypes.guess_type(str(full_path))
-    # content_type = content_type or "application/octet-stream"
-    # if not full_path.exists():
-    #     content = BLACK_TILE_BUFFER.getbuffer()
-    #     # raise Http404()
-    # else:
-    #     content = full_path.open("rb")
-
-    # return FileResponse(content, content_type=content_type)
-
-
-def get_seg(request, slice):
-    path = Path(
-        f"Dataset8_segmentation_withsoma_Mona_updated_20230127.vsseg_export_s{int(slice):03d}.json"
-    )
-
-    full_path = Path(
-        safe_join(EM_DATA_FOLDER.parent / "SEM_adult_segmentation_mip0/", path)
-    )
-
-    content_type, _ = mimetypes.guess_type(str(full_path))
-    content_type = content_type or "application/octet-stream"
-    content = full_path.open("rb")
-    return FileResponse(content, content_type=content_type)
 
 
 def access_bucket_artifact(request, path):
