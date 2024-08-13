@@ -41,18 +41,24 @@ MAX_ZOOM = 6
 
 
 def get_tile(request, slice, x, y, zoom):
-    path = Path(f"{slice}") / f"{y}_{x}_{MAX_ZOOM - int(zoom)}.jpg"
+    path = (
+        Path("sem-adult")
+        / "catmaid-tiles"
+        / f"{slice}"
+        / f"{y}_{x}_{MAX_ZOOM - int(zoom)}.jpg"
+    )
 
-    full_path = Path(safe_join(EM_DATA_FOLDER, path))
-    content_type, _ = mimetypes.guess_type(str(full_path))
-    content_type = content_type or "application/octet-stream"
-    if not full_path.exists():
-        content = BLACK_TILE_BUFFER.getbuffer()
-        # raise Http404()
-    else:
-        content = full_path.open("rb")
+    return access_bucket_artifact(request, path)
+    # full_path = Path(safe_join(EM_DATA_FOLDER, path))
+    # content_type, _ = mimetypes.guess_type(str(full_path))
+    # content_type = content_type or "application/octet-stream"
+    # if not full_path.exists():
+    #     content = BLACK_TILE_BUFFER.getbuffer()
+    #     # raise Http404()
+    # else:
+    #     content = full_path.open("rb")
 
-    return FileResponse(content, content_type=content_type)
+    # return FileResponse(content, content_type=content_type)
 
 
 def get_seg(request, slice):

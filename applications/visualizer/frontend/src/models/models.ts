@@ -44,7 +44,7 @@ export interface ViewerData {
 }
 
 const buildUrlFromFormat = (s: string, param: string) => {
-  return s.replace(s.match("{.+}")?.[0], param);
+  return s.replace(s.match("{[^}]+}")?.[0], param);
 };
 
 export function getNeuronUrlForDataset(neuron: Neuron, datasetId: string) {

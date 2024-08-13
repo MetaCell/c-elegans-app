@@ -31,6 +31,11 @@ urlpatterns = [
         r"^emdata/(?P<slice>\d+)/(?P<x>\d+)_(?P<y>\d+)_(?P<zoom>\d+).jpg", get_tile
     ),
     re_path(r"^segdata/(?P<slice>\d+)", get_seg),
+    re_path(
+        r"resources/(?P<slice>\d+)/(?P<x>\d+)_(?P<y>\d+)_(?P<zoom>\d+).jpg",
+        get_tile,
+        name="em_resources",
+    ),
     re_path(r"resources/(?P<path>.+)", access_bucket_artifact, name="resources"),
     re_path(r"(?P<path>.*)", index, name="index"),
 ]
