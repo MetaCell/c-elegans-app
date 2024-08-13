@@ -28,6 +28,7 @@ export interface NeuronGroup {
 
 export interface EnhancedNeuron extends Neuron {
   viewerData: ViewerData;
+  isInteractant: boolean;
 }
 
 export interface GraphViewerData {
