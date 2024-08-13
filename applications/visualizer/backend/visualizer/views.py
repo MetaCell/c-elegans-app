@@ -43,10 +43,12 @@ def get_tile(request, slice, x, y, zoom):
         / f"{y}_{x}_{MAX_ZOOM - int(zoom)}.jpg"
     )
 
-    return access_bucket_artifact(request, path)
+    return access_bucket_artifact(
+        request, path, unavaiable_page=BLACK_TILE_BUFFER.getbuffer()
+    )
 
 
-def access_bucket_artifact(request, path):
+def access_bucket_artifact(request, path, unavaiable_page=None):
     resource_folder = Path(settings.GCS_BUCKET_URL)
     if resource_folder.exists():
         full_path = resource_folder / path
@@ -55,6 +57,8 @@ def access_bucket_artifact(request, path):
         try:
             return FileResponse(full_path.open("rb"), content_type=content_type)
         except FileNotFoundError:
+            if unavaiable_page:
+                return FileResponse(unavaiable_page, content_type=content_type)
             return index(request, "")  # index.html
 
     return redirect(f"{settings.GCS_BUCKET_URL}/{path}", permanent=True)
