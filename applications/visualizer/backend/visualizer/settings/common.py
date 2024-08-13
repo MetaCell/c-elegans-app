@@ -146,7 +146,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 NINJA_PAGINATION_PER_PAGE = 100
 
 # Fragments for various artifacts
-# In this format: {var} is changed by the backend, while {{var}} is something that need to be changed by the frontend
+# In this format: {var} is changed by the backend, while the first {{var}} is something that will be changed by the frontend
 # NEURON_REPRESENTATION_3D_URL_FORMAT = "resources/{{dataset}}/3d-model/{name}"
 # DATASET_NEURON_REPRESENTATION_3D_URL_FORMAT = "resources/{dataset}/3d-model/{{name}}"
 # DATASET_EMDATA_URL_FORMAT = "resources/{dataset}/em-data/tiles/{{index}}"

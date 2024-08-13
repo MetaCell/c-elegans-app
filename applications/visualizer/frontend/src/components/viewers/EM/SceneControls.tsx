@@ -11,12 +11,7 @@ interface ScaleControlsHandlers {
   onPrint: () => void;
 }
 
-function SceneControls({
-  onZoomIn,
-  onResetView,
-  onZoomOut,
-  onPrint,
-}: ScaleControlsHandlers) {
+function SceneControls({ onZoomIn, onResetView, onZoomOut, onPrint }: ScaleControlsHandlers) {
   return (
     <Box
       sx={{
