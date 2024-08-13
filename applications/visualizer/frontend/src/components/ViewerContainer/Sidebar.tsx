@@ -108,6 +108,7 @@ const Sidebar = ({
   const handleToggleContent = (_, type) => {
     setContent(type);
   };
+
   return (
     <Drawer
       variant="permanent"

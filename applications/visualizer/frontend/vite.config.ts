@@ -50,9 +50,6 @@ export default defineConfig(({ command, mode }) => {
 					secure: !isDev,
 				},
 			},
-		},
-		// optimizeDeps: {
-		// 	include: ["@emotion/react", '@mui/material/Tooltip', '@emotion/styled', '@mui/material/Unstable_Grid2'] // https://github.com/mui/material-ui/issues/32727
-		// },
+		}
 	};
 });

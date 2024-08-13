@@ -53,6 +53,7 @@ const CustomListItem = ({
     setAnchorEl(null);
     setOpen(false);
   };
+
   const handleColorChange = (color) => {
     setSelectedColor(color.hex);
   };
