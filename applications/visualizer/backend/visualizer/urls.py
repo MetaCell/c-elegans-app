@@ -28,9 +28,6 @@ urlpatterns = [
     path("api/", api.urls),
     *static(settings.STATIC_URL, document_root=settings.STATIC_ROOT),
     re_path(
-        r"^emdata/(?P<slice>\d+)/(?P<x>\d+)_(?P<y>\d+)_(?P<zoom>\d+).jpg", get_tile
-    ),
-    re_path(
         r"resources/(?P<slice>\d+)/(?P<x>\d+)_(?P<y>\d+)_(?P<zoom>\d+).jpg",
         get_tile,
         name="em_resources",
