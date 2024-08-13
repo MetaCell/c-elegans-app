@@ -3,7 +3,7 @@ import mimetypes
 from pathlib import Path
 
 from django.conf import settings
-from django.http import FileResponse, HttpResponseRedirect
+from django.http import FileResponse, HttpResponseRedirect, Http404, HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils._os import safe_join
@@ -15,7 +15,7 @@ def view_404(request, exception=None):
     return HttpResponseRedirect(reverse("index"))
 
 
-def index(request, path=""):
+def index(request, path="", already_asked=False):
     if path == "":
         path = "index.html"
     fullpath = Path(safe_join(settings.STATIC_ROOT, "www", path))
@@ -24,15 +24,18 @@ def index(request, path=""):
     try:
         fullpath.open("rb")
     except FileNotFoundError:
-        return index(request, "")  # index.html
+        if already_asked:
+            # This is here to avoid recursive loop in local dev
+            return HttpResponse(content=f"Page {path} cannot be found :(", status=404)
+        return index(request, "", already_asked=True)  # index.html
     return FileResponse(fullpath.open("rb"), content_type=content_type)
 
 
-TILE_SIZE = 512
+TILE_SIZE = 512  # Should be computed
 BLACK_TILE = Image.new("RGB", (TILE_SIZE, TILE_SIZE))
 BLACK_TILE_BUFFER = io.BytesIO()
 BLACK_TILE.save(BLACK_TILE_BUFFER, format="JPEG")
-MAX_ZOOM = 6
+MAX_ZOOM = 6  # Should be set
 
 
 def get_tile(request, slice, x, y, zoom):
