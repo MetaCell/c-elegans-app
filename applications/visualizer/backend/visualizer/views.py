@@ -15,8 +15,7 @@ def view_404(request, exception=None):
     return HttpResponseRedirect(reverse("index"))
 
 
-def index(request, original_path=""):
-    path = "index.html" if original_path == "" else original_path
+def index(request, path=""):
     if path == "":
         path = "index.html"
     fullpath = Path(safe_join(settings.STATIC_ROOT, "www", path))
@@ -25,9 +24,6 @@ def index(request, original_path=""):
     try:
         fullpath.open("rb")
     except FileNotFoundError:
-        # shortcuts the normal behavior as we are in dev mode
-        if not settings.IS_PRODUCTION:
-            return f"Nothing at {original_path} :()"
         return index(request, "")  # index.html
     return FileResponse(fullpath.open("rb"), content_type=content_type)
 
