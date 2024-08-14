@@ -63,9 +63,9 @@ Each JSON object represents a specific dataset with this schema:
 {
     "id": string           // unique ID for the dataset
     "name": string         // display name of the dataset
-    "type": string         // type of dataset: "complete" or "head"
+    "type": string         // type of dataset: "complete", "head" or "tail"
     "time": int            // time of the dataset
-    "visualTime": int      // visualTime of the dataset
+    "visualTime": float    // visualTime of the dataset
     "description": string  // description of the dataset
     "axes": [              // OPTIONAL: different axes and their representation, not used but can appear in the file
         ...
