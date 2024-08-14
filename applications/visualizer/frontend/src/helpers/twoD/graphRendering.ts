@@ -3,7 +3,7 @@ import {
     calculateMeanPosition,
     createEdge,
     createNode,
-    extractNeuronAttributes, getBoundingBoxId,
+    extractNeuronAttributes,
     getEdgeId,
     getNclassSet,
     isNeuronCell,
@@ -85,21 +85,9 @@ export const computeGraphDifferences = (
     expectedEdges = applySplitJoinRulesToEdges(expectedEdges, expectedNodes, connectionMap);
 
     // Replace individual neurons and edges with groups if necessary
-    expectedNodes = replaceNodesWithClosedGroups(expectedNodes, workspace.neuronGroups, hiddenNodes, openGroups);
-    replaceEdgesWithGroups(expectedEdges, workspace.neuronGroups, connectionMap, includeAnnotations, openGroups);
+    expectedNodes = applyGroupingRulesToNodes(expectedNodes, workspace.neuronGroups, hiddenNodes, openGroups);
+    expectedEdges = applyGroupingRulesToEdges(expectedEdges, workspace.neuronGroups, connectionMap, includeAnnotations, openGroups);
 
-    // Remove existing bounding box nodes from the graph
-    openGroups.forEach((groupId) => {
-        const boundingBoxNodeId = getBoundingBoxId(groupId);
-        const boundingBoxNode = cy.getElementById(boundingBoxNodeId);
-        if (boundingBoxNode.length > 0) {
-            nodesToRemove.merge(boundingBoxNode);
-        }
-    });
-
-    // Add open group bounding box nodes
-    const boundingBoxNodes = createBoundingBoxNodes(cy, openGroups, workspace, expectedNodes);
-    nodesToAdd.push(...boundingBoxNodes);
 
     // Determine nodes to add and remove
     for (const nodeId of expectedNodes) {
@@ -117,10 +105,19 @@ export const computeGraphDifferences = (
                 const groupPosition = calculateMeanPosition(groupNeurons, workspace);
                 nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), Array.from(attributes), groupPosition, true));
             } else {
+                let parent = undefined;
+
+                // Check if the neuron belongs to an open group
+                for (const groupId of openGroups) {
+                    if (workspace.neuronGroups[groupId]?.neurons.has(nodeId)) {
+                        parent = groupId;
+                        break;
+                    }
+                }
                 const neuron = workspace.availableNeurons[nodeId];
                 const attributes = extractNeuronAttributes(neuron);
                 const position = neuron.viewerData[ViewerType.Graph]?.defaultPosition ?? null;
-                nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), attributes, position));
+                nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), attributes, position, false, parent));
             }
         }
     }
@@ -152,7 +149,7 @@ export const computeGraphDifferences = (
 };
 
 // Replace individual neurons with group nodes
-const replaceNodesWithClosedGroups = (
+const applyGroupingRulesToNodes = (
     expectedNodes: Set<string>,
     neuronGroups: Record<string, NeuronGroup>,
     hiddenNodes: Set<string>,
@@ -164,24 +161,28 @@ const replaceNodesWithClosedGroups = (
     expectedNodes.forEach((nodeId) => {
         for (const groupId in neuronGroups) {
             const group = neuronGroups[groupId];
-            // Only replace nodes with their group if the group is closed
-            if (group.neurons.has(nodeId) && !openGroups.has(groupId)) {
+
+            if (group.neurons.has(nodeId)) {
                 if (!hiddenNodes.has(groupId)) {
                     nodesToAdd.add(groupId);
                 }
-                nodesToRemove.add(nodeId);
+                if (!openGroups.has(groupId)) {
+                    nodesToRemove.add(nodeId);
+                }
             }
         }
     });
 
+    // Remove individual nodes if they are replaced by a closed group node
     nodesToRemove.forEach((nodeId) => expectedNodes.delete(nodeId));
+    // Add group nodes
     nodesToAdd.forEach((nodeId) => expectedNodes.add(nodeId));
+
     return expectedNodes;
 };
 
-
 // Replace edges involving individual neurons with edges involving group nodes
-const replaceEdgesWithGroups = (
+const applyGroupingRulesToEdges = (
     expectedEdges: Set<string>,
     neuronGroups: Record<string, NeuronGroup>,
     connectionMap: Map<string, Connection>,
@@ -253,6 +254,8 @@ const replaceEdgesWithGroups = (
 
     edgesToRemove.forEach((edgeId) => expectedEdges.delete(edgeId));
     edgesToAdd.forEach((edgeId) => expectedEdges.add(edgeId));
+
+    return expectedEdges
 };
 
 const getSimpleEdgeId = (pre: string, post: string, type: string): string => {
@@ -412,48 +415,4 @@ export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights, n
     highlightedEdges = highlightedEdges.filter(edgeSel);
 
     cy.elements().not(highlightedNodes).not(highlightedEdges).addClass("faded");
-};
-
-const createBoundingBoxNodes = (
-    cy: Core,
-    openGroups: Set<string>,
-    workspace: Workspace,
-    expectedNodes: Set<string>
-): ElementDefinition[] => {
-    const nodesToAdd: ElementDefinition[] = [];
-
-    openGroups.forEach((groupId) => {
-        const group = workspace.neuronGroups[groupId];
-        if (group) {
-            const groupNeurons = Array.from(group.neurons).filter((neuronId) => expectedNodes.has(neuronId));
-            if (groupNeurons.length > 0) {
-                const boundingBox = cy.collection(groupNeurons.map((neuronId) => cy.getElementById(neuronId))).boundingBox();
-
-                // Add a "dummy" node representing the bounding box
-                nodesToAdd.push({
-                    group: 'nodes',
-                    data: {
-                        id: getBoundingBoxId(groupId),
-                        label: '',
-                    },
-                    position: {
-                        x: boundingBox.x1 + boundingBox.w / 2,
-                        y: boundingBox.y1 + boundingBox.h / 2,
-                    },
-                    style: {
-                        width: boundingBox.w,
-                        height: boundingBox.h,
-                        'background-opacity': 0,
-                        'border-color': '#aaa',
-                        'border-width': 2,
-                        shape: 'rectangle',
-                    },
-                    selectable: false,
-                    locked: true,
-                });
-            }
-        }
-    });
-
-    return nodesToAdd;
 };

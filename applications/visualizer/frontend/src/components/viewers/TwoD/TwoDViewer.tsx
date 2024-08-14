@@ -5,7 +5,11 @@ import dagre from "cytoscape-dagre";
 import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace";
 import {type Connection, ConnectivityService} from "../../../rest";
 import {GRAPH_STYLES} from "../../../theme/twoDStyles";
-import {applyLayout, refreshLayout, updateWorkspaceNeurons2DViewerData} from "../../../helpers/twoD/twoDHelpers";
+import {
+    applyLayout,
+    refreshLayout,
+    updateWorkspaceNeurons2DViewerData
+} from "../../../helpers/twoD/twoDHelpers";
 import {
     CHEMICAL_THRESHOLD,
     ELECTRICAL_THRESHOLD,
@@ -130,6 +134,7 @@ const TwoDViewer = () => {
             updateGraphElements(cyRef.current, connections);
         }
     }, [connections, hiddenNodes, workspace.neuronGroups, includePostEmbryonic, splitJoinState, openGroups]);
+
 
     useEffect(() => {
         if (cyRef.current) {

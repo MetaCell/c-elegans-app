@@ -56,17 +56,30 @@ const createEdgeLongLabel = (workspace: Workspace, synapses: Record<string, numb
     .join("\n");
 };
 
-export const createNode = (nodeId: string, selected: boolean, attributes: string[], position?: Position, isGroupNode?: boolean): ElementDefinition => {
-  const node: ElementDefinition = {
-    group: "nodes",
-    data: { id: nodeId, label: nodeId, ...attributes.reduce((acc, attr) => ({ ...acc, [attr]: true }), {}) },
-    classes: isGroupNode ? "groupNode" : selected ? "selected" : "",
-  };
-  if (position) {
-    node.position = { x: position.x, y: position.y };
-  }
-  return node;
+export const createNode = (
+    nodeId: string,
+    selected: boolean,
+    attributes: string[],
+    position?: Position,
+    isGroupNode?: boolean,
+    parent?: string // Optional parent node ID for compound nodes
+): ElementDefinition => {
+    const node: ElementDefinition = {
+        group: "nodes",
+        data: {
+            id: nodeId,
+            label: nodeId,
+            ...attributes.reduce((acc, attr) => ({ ...acc, [attr]: true }), {}),
+            parent: parent || undefined // Set the parent if provided
+        },
+        classes: isGroupNode ? "groupNode" : selected ? "selected" : "",
+    };
+    if (position) {
+        node.position = { x: position.x, y: position.y };
+    }
+    return node;
 };
+
 
 export function applyLayout(cy: Core, layout: string) {
   cy.layout({
