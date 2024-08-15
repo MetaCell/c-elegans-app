@@ -46,12 +46,17 @@ components:
         description:
           title: Description
           type: string
+        emData:
+          $ref: '#/components/schemas/EMData'
         id:
           title: Id
           type: string
         name:
           maxLength: 50
           title: Name
+          type: string
+        neuron3DUrl:
+          title: Neuron3Durl
           type: string
         time:
           title: Time
@@ -65,6 +70,8 @@ components:
           type: number
       required:
       - id
+      - neuron3DUrl
+      - emData
       - collection
       - name
       - description
@@ -72,6 +79,31 @@ components:
       - visualTime
       - type
       title: Dataset
+      type: object
+    EMData:
+      properties:
+        max_zoom:
+          title: Max Zoom
+          type: integer
+        min_zoom:
+          title: Min Zoom
+          type: integer
+        nb_slices:
+          title: Nb Slices
+          type: integer
+        resource_url:
+          title: Resource Url
+          type: string
+        segmentation_url:
+          title: Segmentation Url
+          type: string
+      required:
+      - min_zoom
+      - max_zoom
+      - nb_slices
+      - resource_url
+      - segmentation_url
+      title: EMData
       type: object
     ErrorMessage:
       properties:
@@ -110,6 +142,9 @@ components:
           default: false
           title: Intail
           type: boolean
+        model3DUrl:
+          title: Model3Durl
+          type: string
         name:
           title: Name
           type: string
@@ -128,6 +163,7 @@ components:
       required:
       - name
       - datasetIds
+      - model3DUrl
       - nclass
       - neurotransmitter
       - type
