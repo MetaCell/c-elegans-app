@@ -1,15 +1,14 @@
 from collections import defaultdict
-from typing import Optional
+from typing import Iterable, Optional
 
-from django.http import HttpResponse
 from ninja import NinjaAPI, Router, Schema, Query
 from ninja.pagination import paginate, PageNumberPagination
 from django.shortcuts import aget_object_or_404
-from django.db.models import Q, F, Value, CharField, Func, OuterRef
+from django.db.models import Q
 from django.db.models.manager import BaseManager
-from django.db.models.functions import Coalesce, Concat
+from django.conf import settings
 
-from .schemas import Dataset, Neuron, Connection
+from .schemas import Dataset, EMData, Neuron, Connection
 from .models import (
     Dataset as DatasetModel,
     Neuron as NeuronModel,
@@ -50,6 +49,27 @@ api = CElegansAPI(title="C. Elegans Visualizer", default_router=ByAliasRouter())
 #     )
 
 
+def annotate_dataset(datasets: Iterable[DatasetModel]):
+    for dataset in datasets:
+        dataset_id = dataset.id
+        dataset.neuron3D_url = (  # type: ignore
+            settings.DATASET_NEURON_REPRESENTATION_3D_URL_FORMAT.format(
+                dataset=dataset_id
+            )
+        )
+        dataset.em_data = EMData(  # type: ignore
+            min_zoom=0,
+            max_zoom=0,
+            nb_slices=0,
+            # resource_url=settings.DATASET_EMDATA_URL_FORMAT.format(dataset=dataset_id),
+            # segmentation_url=settings.DATASET_EMDATA_SEGMENTATION_URL_FORMAT.format(
+            # dataset=dataset_id
+            # ),
+            resource_url=settings.DATASET_EMDATA_URL_FORMAT,
+            segmentation_url=settings.DATASET_EMDATA_SEGMENTATION_URL_FORMAT,
+        )
+
+
 @api.get("/datasets", response=list[Dataset], tags=["datasets"])
 async def get_datasets(request, ids: Optional[list[str]] = Query(None)):
     """Returns all datasets or a filtered list based on provided IDs"""
@@ -57,6 +77,8 @@ async def get_datasets(request, ids: Optional[list[str]] = Query(None)):
         datasets = await to_list(DatasetModel.objects.filter(id__in=ids))
     else:
         datasets = await to_list(DatasetModel.objects.all())
+
+    annotate_dataset(datasets)
     return datasets
 
 
@@ -82,10 +104,12 @@ async def get_datasets(request, ids: Optional[list[str]] = Query(None)):
 )
 async def get_dataset(request, dataset: str):
     """Returns a specific dataset"""
-    return await aget_object_or_404(DatasetModel, id=dataset)
+    obj = await aget_object_or_404(DatasetModel, id=dataset)
+    annotate_dataset((obj,))
+    return obj
 
 
-def annotate_neurons_w_dataset_ids(neurons: BaseManager[NeuronModel]) -> None:
+def annotate_neurons(neurons: BaseManager[NeuronModel]) -> None:
     """Queries the datasets ids for each neuron."""
     neuron_names = neurons.values_list("name", flat=True).distinct()
     pre = (
@@ -104,15 +128,18 @@ def annotate_neurons_w_dataset_ids(neurons: BaseManager[NeuronModel]) -> None:
     for neuron, dataset in pre.union(post):
         neurons_dataset_ids[neuron].add(dataset)
 
+    # Add dataset ids and 3D representation path
     for neuron in neurons:
-        neuron.dataset_ids = neurons_dataset_ids[neuron.name]  # type: ignore
+        name = neuron.name
+        neuron.dataset_ids = neurons_dataset_ids[name]  # type: ignore
+        neuron.model3D_url = settings.NEURON_REPRESENTATION_3D_URL_FORMAT.format(name=name)  # type: ignore
 
 
 def neurons_from_datasets(
     neurons: BaseManager[NeuronModel], dataset_ids: list[str]
 ) -> BaseManager[NeuronModel]:
     """Filters neurons belonging to specific datasets."""
-    return neurons.filter(
+    neurons = neurons.filter(
         Q(
             name__in=ConnectionModel.objects.filter(
                 dataset__id__in=dataset_ids
@@ -124,6 +151,7 @@ def neurons_from_datasets(
             ).values_list("post", flat=True)
         )
     )
+    return neurons
 
 
 @api.get(
@@ -134,7 +162,8 @@ def neurons_from_datasets(
 def get_dataset_neurons(request, dataset: str):
     """Returns all the neurons of a dedicated dataset"""
     neurons = neurons_from_datasets(NeuronModel.objects, [dataset])
-    annotate_neurons_w_dataset_ids(neurons)
+    annotate_neurons(neurons)
+
     return neurons
 
 
@@ -144,17 +173,14 @@ def search_cells(
     name: Optional[str] = Query(None),
     dataset_ids: Optional[list[str]] = Query(None),
 ):
-    neurons = NeuronModel.objects
+    neurons = NeuronModel.objects.all()
 
     if name:
         neurons = neurons.filter(name__istartswith=name)
 
     if dataset_ids:
         neurons = neurons_from_datasets(neurons, dataset_ids)
-    else:
-        neurons = neurons.all()
-
-    annotate_neurons_w_dataset_ids(neurons)
+    annotate_neurons(neurons)
 
     return neurons
 
@@ -163,15 +189,12 @@ def search_cells(
 @paginate(PageNumberPagination, page_size=50)  # BUG: this is not being applied
 def get_all_cells(request, dataset_ids: Optional[list[str]] = Query(None)):
     """Returns all the cells (neurons) from the DB"""
-    neurons = NeuronModel.objects
+    neurons = NeuronModel.objects.all()
 
     if dataset_ids:
         neurons = neurons_from_datasets(neurons, dataset_ids)
-    else:
-        neurons = neurons.all()
 
-    annotate_neurons_w_dataset_ids(neurons)
-
+    annotate_neurons(neurons)
     return neurons
 
 

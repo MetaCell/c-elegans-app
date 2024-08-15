@@ -1,11 +1,14 @@
-import { Box, Drawer, Stack } from "@mui/material";
+import { Box, Divider, Drawer, Stack } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import type { CSSObject, Theme } from "@mui/material/styles";
-import { useState } from "react";
+import React, { useState } from "react";
+import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 import { DataSetsIcon, NeuronsIcon, SidebarExpandIcon } from "../../icons";
+import { ViewMode } from "../../models";
 import { vars } from "../../theme/variables.ts";
 import DataSets from "./DataSets.tsx";
 import Neurons from "./Neurons.tsx";
+import WorkspaceSelector from "./WorkspaceSelector";
 
 const { gray100, white, gray200, gray50, buttonShadow } = vars;
 
@@ -76,7 +79,24 @@ const Sidebar = ({
   drawerHeight: string;
   drawerWidth: string;
 }) => {
+  const { setCurrentWorkspace, viewMode } = useGlobalContext();
+
   const [content, setContent] = useState("dataSets");
+
+  const [anchorElWorkspace, setAnchorElWorkspace] = React.useState<null | HTMLElement>(null);
+  const openWorkspace = Boolean(anchorElWorkspace);
+
+  const handleClickWorkspace = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorElWorkspace(event.currentTarget);
+  };
+  const handleCloseWorkspace = () => {
+    setAnchorElWorkspace(null);
+  };
+
+  const onClickWorkspace = (workspace) => {
+    setCurrentWorkspace(workspace.id);
+  };
+
   const handleDrawerOpen = () => {
     setSidebarOpen(true);
   };
@@ -88,6 +108,7 @@ const Sidebar = ({
   const handleToggleContent = (_, type) => {
     setContent(type);
   };
+
   return (
     <Drawer
       variant="permanent"
@@ -117,7 +138,7 @@ const Sidebar = ({
       <Box
         sx={{
           display: "flex",
-          height: "calc(100vh - 3.5rem)",
+          height: "calc(100vh - 4rem)",
           overflow: "hidden",
         }}
       >
@@ -151,7 +172,41 @@ const Sidebar = ({
             <NeuronsIcon />
           </IconButton>
         </Stack>
-        {sidebarOpen && <>{content === "dataSets" ? <DataSets /> : <Neurons />}</>}
+        {sidebarOpen && (
+          <>
+            {content === "dataSets" ? (
+              <DataSets>
+                {viewMode === ViewMode.Compare && (
+                  <>
+                    <Divider />
+                    <WorkspaceSelector
+                      anchorElWorkspace={anchorElWorkspace}
+                      openWorkspace={openWorkspace}
+                      handleClickWorkspace={handleClickWorkspace}
+                      handleCloseWorkspace={handleCloseWorkspace}
+                      onClickWorkspace={onClickWorkspace}
+                    />
+                  </>
+                )}
+              </DataSets>
+            ) : (
+              <Neurons>
+                {viewMode === ViewMode.Compare && (
+                  <>
+                    <Divider />
+                    <WorkspaceSelector
+                      anchorElWorkspace={anchorElWorkspace}
+                      openWorkspace={openWorkspace}
+                      handleClickWorkspace={handleClickWorkspace}
+                      handleCloseWorkspace={handleCloseWorkspace}
+                      onClickWorkspace={onClickWorkspace}
+                    />
+                  </>
+                )}
+              </Neurons>
+            )}
+          </>
+        )}
       </Box>
     </Drawer>
   );

@@ -1,10 +1,9 @@
-import { produce, immerable } from "immer";
-import type { configureStore } from "@reduxjs/toolkit";
-import { type EnhancedNeuron, type NeuronGroup, ViewerSynchronizationPair, ViewerType } from "./models";
-import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
-import { type Dataset, DatasetsService, type Neuron } from "../rest";
-import { fetchDatasets } from "../helpers/workspaceHelper";
 import type { LayoutManager } from "@metacell/geppetto-meta-client/common/layout/LayoutManager";
+import type { configureStore } from "@reduxjs/toolkit";
+import { immerable, produce } from "immer";
+import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
+import { type Dataset, type Neuron, NeuronsService } from "../rest";
+import { type EnhancedNeuron, type NeuronGroup, ViewerSynchronizationPair, ViewerType } from "./models";
 
 export class Workspace {
   [immerable] = true;
@@ -26,15 +25,15 @@ export class Workspace {
   layoutManager: LayoutManager;
   updateContext: (workspace: Workspace) => void;
 
-  constructor(id: string, name: string, datasetIds: Set<string>, activeNeurons: Set<string>, updateContext: (workspace: Workspace) => void) {
+  constructor(id: string, name: string, activeDatasets: Record<string, Dataset>, activeNeurons: Set<string>, updateContext: (workspace: Workspace) => void) {
     this.id = id;
     this.name = name;
-    this.activeDatasets = {};
+    this.activeDatasets = activeDatasets;
     this.availableNeurons = {};
     this.activeNeurons = activeNeurons || new Set();
     this.selectedNeurons = new Set();
     this.viewers = {
-      [ViewerType.Graph]: true,
+      [ViewerType.Graph]: false,
       [ViewerType.ThreeD]: true,
       [ViewerType.EM]: false,
       [ViewerType.InstanceDetails]: false,
@@ -51,19 +50,37 @@ export class Workspace {
     this.store = store;
     this.updateContext = updateContext;
 
-    this._initializeActiveDatasets(datasetIds);
+    this._initializeAvailableNeurons();
   }
 
   activateNeuron(neuron: Neuron): void {
     const updated = produce(this, (draft: Workspace) => {
       draft.activeNeurons.add(neuron.name);
+      // Set isInteractant to true if the neuron exists in availableNeurons
+      if (draft.availableNeurons[neuron.name]) {
+        draft.availableNeurons[neuron.name].isInteractant = true;
+      }
     });
+
     this.updateContext(updated);
   }
 
   deactivateNeuron(neuronId: string): void {
     const updated = produce(this, (draft: Workspace) => {
       draft.activeNeurons.delete(neuronId);
+    });
+    this.updateContext(updated);
+  }
+
+  deleteNeuron(neuronId: string): void {
+    const updated = produce(this, (draft: Workspace) => {
+      // Remove the neuron from activeNeurons
+      draft.activeNeurons.delete(neuronId);
+
+      // Set isInteractant to false if the neuron exists in availableNeurons
+      if (draft.availableNeurons[neuronId]) {
+        draft.availableNeurons[neuronId].isInteractant = false;
+      }
     });
     this.updateContext(updated);
   }
@@ -148,28 +165,16 @@ export class Workspace {
     this.updateContext(updated);
   }
 
-  customUpdate(updateFunction: (draft: Workspace) => void): void {
-    const updated = produce(this, updateFunction);
-    this.updateContext(updated);
-  }
-
-  async _initializeActiveDatasets(datasetIds: Set<string>) {
-    if (!datasetIds) {
-      return;
-    }
-    const datasets = await fetchDatasets(datasetIds);
-    const updated: Workspace = produce(this, (draft: Workspace) => {
-      draft.activeDatasets = datasets;
-    });
-    const updatedWithNeurons = await this._getAvailableNeurons(updated);
+  async _initializeAvailableNeurons() {
+    const updatedWithNeurons = await this._getAvailableNeurons(this);
     this.updateContext(updatedWithNeurons);
   }
 
   async _getAvailableNeurons(updatedWorkspace: Workspace): Promise<Workspace> {
     try {
-      const neuronPromises = Object.keys(updatedWorkspace.activeDatasets).map((datasetId) => DatasetsService.getDatasetNeurons({ dataset: datasetId }));
+      const datasetIds = Object.keys(updatedWorkspace.activeDatasets);
+      const neuronArrays = await NeuronsService.searchCells({ datasetIds });
 
-      const neuronArrays = await Promise.all(neuronPromises);
       const uniqueNeurons = new Set<Neuron>();
 
       // Flatten and deduplicate neurons
@@ -182,18 +187,22 @@ export class Workspace {
       return produce(updatedWorkspace, (draft: Workspace) => {
         draft.availableNeurons = {};
         for (const neuron of uniqueNeurons) {
+          const previousNeuron = draft.availableNeurons[neuron.name];
+
           const enhancedNeuron: EnhancedNeuron = {
             ...neuron,
             viewerData: {
               [ViewerType.Graph]: {
-                defaultPosition: null,
-                visibility: false,
+                defaultPosition: previousNeuron?.viewerData[ViewerType.Graph]?.defaultPosition || null,
+                visibility: previousNeuron?.viewerData[ViewerType.Graph]?.visibility || false,
               },
-              [ViewerType.ThreeD]: {},
-              [ViewerType.EM]: {},
-              [ViewerType.InstanceDetails]: {},
+              [ViewerType.ThreeD]: previousNeuron?.viewerData[ViewerType.ThreeD] || {},
+              [ViewerType.EM]: previousNeuron?.viewerData[ViewerType.EM] || {},
+              [ViewerType.InstanceDetails]: previousNeuron?.viewerData[ViewerType.InstanceDetails] || {},
             },
+            isInteractant: previousNeuron?.isInteractant ?? draft.activeNeurons.has(neuron.name),
           };
+
           draft.availableNeurons[neuron.name] = enhancedNeuron;
         }
       });
@@ -201,5 +210,10 @@ export class Workspace {
       console.error("Failed to fetch neurons:", error);
       return updatedWorkspace;
     }
+  }
+
+  customUpdate(updateFunction: (draft: Workspace) => void): void {
+    const updated = produce(this, updateFunction);
+    this.updateContext(updated);
   }
 }

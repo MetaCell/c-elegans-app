@@ -9,6 +9,7 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { Connection } from './models/Connection';
 export type { Dataset } from './models/Dataset';
+export type { EMData } from './models/EMData';
 export type { ErrorMessage } from './models/ErrorMessage';
 export type { Input } from './models/Input';
 export type { Neuron } from './models/Neuron';

@@ -1,5 +1,5 @@
-import type { Neuron } from "../rest";
 import type { Position } from "cytoscape";
+import type { Dataset, Neuron } from "../rest";
 
 export enum ViewMode {
   Default = "Default",
@@ -28,6 +28,7 @@ export interface NeuronGroup {
 
 export interface EnhancedNeuron extends Neuron {
   viewerData: ViewerData;
+  isInteractant: boolean;
 }
 
 export interface GraphViewerData {
@@ -40,4 +41,24 @@ export interface ViewerData {
   [ViewerType.ThreeD]?: any; // Define specific data for 3D viewer if needed
   [ViewerType.EM]?: any; // Define specific data for EM viewer if needed
   [ViewerType.InstanceDetails]?: any; // Define specific data for Instance Details viewer if needed
+}
+
+const buildUrlFromFormat = (s: string, param: string) => {
+  return s.replace(s.match("{[^}]+}")?.[0], param);
+};
+
+export function getNeuronUrlForDataset(neuron: Neuron, datasetId: string) {
+  return buildUrlFromFormat(neuron.model3DUrl, datasetId);
+}
+
+export function getNeuronURL(dataset: Dataset, neuronName: string) {
+  return buildUrlFromFormat(dataset.neuron3DUrl, neuronName);
+}
+
+export function getSegmentationURL(dataset: Dataset, sliceIndex: number) {
+  return buildUrlFromFormat(dataset.emData.segmentation_url, sliceIndex?.toString());
+}
+
+export function getEMDataURL(dataset: Dataset, sliceIndex: number) {
+  return buildUrlFromFormat(dataset.emData.resource_url, sliceIndex?.toString());
 }

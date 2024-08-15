@@ -5,6 +5,7 @@ import geppettoClientReducer, { clientInitialState, type ClientState } from "@me
 import { type LayoutState, layout, layoutInitialState, widgets } from "@metacell/geppetto-meta-client/common/reducer/geppettoLayout";
 import { reducerDecorator } from "@metacell/geppetto-meta-client/common/reducer/reducerDecorator";
 import { type Action, type Reducer, combineReducers, configureStore } from "@reduxjs/toolkit";
+import { SET_WORKSPACE_ID } from "./actionsTypes.ts";
 
 import componentMap from "./componentMap.ts";
 import baseLayout from "./layout.ts";
@@ -18,7 +19,7 @@ export interface RootState {
 
 const workspaceReducer = (state = "", action) => {
   switch (action.type) {
-    case "SET_WORKSPACE_ID":
+    case SET_WORKSPACE_ID:
       return action.payload;
     default:
       return state;

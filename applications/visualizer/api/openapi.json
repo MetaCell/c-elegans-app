@@ -411,6 +411,13 @@
             "title": "Id",
             "type": "string"
           },
+          "neuron3DUrl": {
+            "title": "Neuron3Durl",
+            "type": "string"
+          },
+          "emData": {
+            "$ref": "#/components/schemas/EMData"
+          },
           "collection": {
             "maxLength": 20,
             "title": "Collection",
@@ -452,6 +459,8 @@
         },
         "required": [
           "id",
+          "neuron3DUrl",
+          "emData",
           "collection",
           "name",
           "description",
@@ -460,6 +469,39 @@
           "type"
         ],
         "title": "Dataset",
+        "type": "object"
+      },
+      "EMData": {
+        "properties": {
+          "min_zoom": {
+            "title": "Min Zoom",
+            "type": "integer"
+          },
+          "max_zoom": {
+            "title": "Max Zoom",
+            "type": "integer"
+          },
+          "nb_slices": {
+            "title": "Nb Slices",
+            "type": "integer"
+          },
+          "resource_url": {
+            "title": "Resource Url",
+            "type": "string"
+          },
+          "segmentation_url": {
+            "title": "Segmentation Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "min_zoom",
+          "max_zoom",
+          "nb_slices",
+          "resource_url",
+          "segmentation_url"
+        ],
+        "title": "EMData",
         "type": "object"
       },
       "ErrorMessage": {
@@ -487,6 +529,10 @@
             },
             "title": "Datasetids",
             "type": "array"
+          },
+          "model3DUrl": {
+            "title": "Model3Durl",
+            "type": "string"
           },
           "nclass": {
             "maxLength": 30,
@@ -522,6 +568,7 @@
         "required": [
           "name",
           "datasetIds",
+          "model3DUrl",
           "nclass",
           "neurotransmitter",
           "type"

@@ -125,7 +125,7 @@ PERSISTENT_ROOT = BASE_DIR / "persistent"
 # # ***********************************************************************
 # from cloudharness_django.settings import *
 
-# add the local apps
+# add the local apps to get access to new custom management commands
 INSTALLED_APPS += ["api"]
 
 # # override django admin base template with a local template
@@ -144,3 +144,19 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 NINJA_PAGINATION_PER_PAGE = 100
+
+# Fragments for various artifacts
+# In this format: {var} is changed by the backend, while the first {{var}} is something that will be changed by the frontend
+# NEURON_REPRESENTATION_3D_URL_FORMAT = "resources/{{dataset}}/3d-model/{name}"
+# DATASET_NEURON_REPRESENTATION_3D_URL_FORMAT = "resources/{dataset}/3d-model/{{name}}"
+# DATASET_EMDATA_URL_FORMAT = "resources/{dataset}/em-data/tiles/{{index}}"
+# DATASET_EMDATA_SEGMENTATION_URL_FORMAT = "resources/{dataset}/em-data/segmentation/{{index}}"
+
+
+NEURON_REPRESENTATION_3D_URL_FORMAT = "resources/{{dataset}}/3d-model/{name}"
+DATASET_NEURON_REPRESENTATION_3D_URL_FORMAT = "resources/{dataset}/3d-model/{{name}}"
+# DATASET_EMDATA_URL_FORMAT = (
+#     f"resources/sem-adult/catmaid-tiles/{{index}}/{{x}}_{{y}}_{{z}}.jpg"
+# )
+DATASET_EMDATA_URL_FORMAT = f"resources/{{index}}/{{x}}_{{y}}_{{z}}.jpg"
+DATASET_EMDATA_SEGMENTATION_URL_FORMAT = f"resources/sem-adult/segmentation-mip0/Dataset8_segmentation_withsoma_Mona_updated_20230127.vsseg_export_s{{index}}.json"
