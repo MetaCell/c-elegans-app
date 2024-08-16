@@ -4,7 +4,14 @@ import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import { Box, Divider, IconButton } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 
-function SceneControls({ cameraControlRef }) {
+interface ScaleControlsHandlers {
+  onZoomIn: () => void;
+  onResetView: () => void;
+  onZoomOut: () => void;
+  onPrint: () => void;
+}
+
+function SceneControls({ onZoomIn, onResetView, onZoomOut, onPrint }: ScaleControlsHandlers) {
   return (
     <Box
       sx={{
@@ -19,32 +26,21 @@ function SceneControls({ cameraControlRef }) {
         border: "1px solid #ECECE9",
         boxShadow: "0px 1px 2px 0px rgba(16, 24, 40, 0.05)",
         padding: "0.25rem",
+        zIndex: 1,
       }}
     >
       <Tooltip title="Zoom in" placement="right-start">
-        <IconButton
-          onClick={() => {
-            cameraControlRef.current?.zoom(cameraControlRef.current?._camera.zoom / 2, true);
-          }}
-        >
+        <IconButton onClick={onZoomIn}>
           <ZoomInIcon />
         </IconButton>
       </Tooltip>
       <Tooltip title="Reset to original size and position" placement="right-start">
-        <IconButton
-          onClick={() => {
-            cameraControlRef.current?.reset(true);
-          }}
-        >
+        <IconButton onClick={onResetView}>
           <HomeOutlined />
         </IconButton>
       </Tooltip>
       <Tooltip title="Zoom out" placement="right-start">
-        <IconButton
-          onClick={() => {
-            cameraControlRef.current?.zoom(-cameraControlRef.current?._camera.zoom / 2, true);
-          }}
-        >
+        <IconButton onClick={onZoomOut}>
           <ZoomOutIcon />
         </IconButton>
       </Tooltip>
@@ -55,8 +51,8 @@ function SceneControls({ cameraControlRef }) {
         </IconButton>
       </Tooltip>
       <Divider />
-      <Tooltip title="Download graph" placement="right-start">
-        <IconButton>
+      <Tooltip title="Download image" placement="right-start">
+        <IconButton onClick={onPrint}>
           <FileDownloadOutlined />
         </IconButton>
       </Tooltip>

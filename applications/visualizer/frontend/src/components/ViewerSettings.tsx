@@ -1,10 +1,9 @@
 import { updateWidget } from "@metacell/geppetto-meta-client/common/layout/actions";
 import { WidgetStatus } from "@metacell/geppetto-meta-client/common/layout/model";
 import { Box, Divider, Drawer, FormControlLabel, FormGroup, IconButton, Typography } from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import { CloseIcon, LinkIcon } from "../icons";
-import type { RootState } from "../layout-manager/layoutManagerFactory.ts";
 import { emDataViewerWidget, threeDViewerWidget, twoDViewerWidget } from "../layout-manager/widgets.ts";
 import { ViewerType } from "../models/models.ts";
 import { vars } from "../theme/variables.ts";
@@ -52,9 +51,7 @@ const buttonStyle = {
 
 const ViewerSettings = ({ open, toggleDrawer }) => {
   const dispatch = useDispatch();
-  const currentWorkspaceId = useSelector((state: RootState) => state.workspaceId);
-  const { workspaces } = useGlobalContext();
-  const currentWorkspace = workspaces[currentWorkspaceId];
+  const currentWorkspace = useGlobalContext().getCurrentWorkspace();
 
   const handleToggle = (e, viewer) => {
     const status = e.target.checked ? WidgetStatus.ACTIVE : WidgetStatus.MINIMIZED;
