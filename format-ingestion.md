@@ -89,7 +89,7 @@ The schema is the following:
     "pre": string,        // the name of a neuron as defined in "neurons.json"
     "pre_tid": [ ... ],   // a list of int where each int represents the ID of a pre synapse for a dedicated pre neuron
     "syn": [ ... ],       // a list of int where each int represents the weight of a post or pre synapses (indice matches the neuron in pre/post_tid)
-    "typ": int            // the type of connection ("electrical" or "chemical")
+    "typ": int            // the type of connection ("electrical" (0) or "chemical" (2))
 }
 ```
 

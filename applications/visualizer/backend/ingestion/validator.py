@@ -1,17 +1,19 @@
 from __future__ import annotations
 
-from enum import IntEnum
-from typing import Any, Dict, List, Literal, Optional, Tuple
+from enum import IntEnum, StrEnum
+from typing import Dict, List, Literal, Optional, Tuple
 
-from pydantic import BaseModel, Field
-from pydantic.alias_generators import to_camel
+from pydantic import BaseModel, Field, RootModel, model_validator
 
 
 class Data(BaseModel):
     neurons: List[Neuron]
     datasets: List[Dataset]
-    connections: Dict[str, Connection]
-    annotations: Dict[str, Annotation]
+    connections: Dict[str, List[Connection]]
+    annotations: Dict[
+        Literal["head", "complete"], # TODO: should 'tail' be included
+        Annotation
+    ]
 
 
 class Neuron(BaseModel):
@@ -24,6 +26,12 @@ class Neuron(BaseModel):
     typ: str  # type of the neuron
 
 
+class DatasetType(StrEnum):
+    COMPLETE = "complete"
+    HEAD = "head"
+    TAIL = "tail"
+
+
 class Axe(BaseModel):
     face: str
     axisIndex: int
@@ -33,7 +41,7 @@ class Axe(BaseModel):
 class Dataset(BaseModel):
     id: str
     name: str
-    type: Literal["complete", "head", "tail"]
+    type: DatasetType
     time: int  # TODO: should be gte than 0?
     visualTime: float  # TODO: should be gte than 0?
     description: str
@@ -67,11 +75,25 @@ class Connection(BaseModel):
     )
     typ: ConnectionType  # the type of connection ("electrical" or "chemical")
 
+    @model_validator(mode="after")
+    def check_same_size_elements(self):
+        length = len(self.ids)
+        ok = all(
+            len(l) == length for l in iter([self.post_tid, self.pre_tid, self.syn])
+        )
+        assert (
+            ok
+        ), "ids, post_tid, pre_tid and syn must have the same number of elements"
+        return self
 
-class Annotation(BaseModel):
-    increase: List[
-        Tuple[  # the type of annotation
-            str,  # pre, the ID/name of a neuron from "neurons.json"
-            str,  # post, the ID/name of the other neuron from "neurons.json" that is part of the couple
-        ]
-    ]
+
+class Annotation(RootModel):
+    root: Dict[
+        Literal["increase", "variable", "postembryonic", "decrease", "stable"],
+        List[
+            Tuple[  # the type of annotation
+                str,  # pre, the ID/name of a neuron from "neurons.json"
+                str,  # post, the ID/name of the other neuron from "neurons.json" that is part of the couple
+            ]
+        ],
+    ] = {}
