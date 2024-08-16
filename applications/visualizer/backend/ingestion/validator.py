@@ -6,16 +6,6 @@ from typing import Dict, List, Literal, Optional, Tuple
 from pydantic import BaseModel, Field, RootModel, model_validator
 
 
-class Data(BaseModel):
-    neurons: List[Neuron]
-    datasets: List[Dataset]
-    connections: Dict[str, List[Connection]]
-    annotations: Dict[
-        Literal["head", "complete"], # TODO: should 'tail' be included
-        Annotation
-    ]
-
-
 class Neuron(BaseModel):
     inhead: bool  # int used as bool, is the neuron part of the head or not
     name: str  # name of the neuron, can be same as classes, or L or R of classes
@@ -58,17 +48,17 @@ class ConnectionType(IntEnum):
 class Connection(BaseModel):
     ids: List[int] = Field(
         ..., description="list of neuron IDs involved in this connection"
-    )
+    )  # TODO: should be optional? appers to be empty in some entries
     post: str  # the name of a neuron as defined in "neurons.json"
     post_tid: List[int] = Field(
         ...,
         description="list of neuron IDs of a post synapse for a dedicated post neuron",
-    )
+    )  # TODO: should be optional? appers to be empty in some entries
     pre: str  # the name of a neuron as defined in "neurons.json"
     pre_tid: List[int] = Field(
         ...,
         description="list of neuron IDs of a pre synapse for a dedicated pre neuron",
-    )
+    )  # TODO: should be optional? appers to be empty in some entries
     syn: List[int] = Field(
         ...,
         description="list of weights of a post or pre synapses (indice matches the neuron in pre/post_tid)",
@@ -78,11 +68,8 @@ class Connection(BaseModel):
     @model_validator(mode="after")
     def check_same_size_elements(self):
         length = len(self.ids)
-        ok = all(
+        assert all(
             len(l) == length for l in iter([self.post_tid, self.pre_tid, self.syn])
-        )
-        assert (
-            ok
         ), "ids, post_tid, pre_tid and syn must have the same number of elements"
         return self
 
@@ -97,3 +84,20 @@ class Annotation(RootModel):
             ]
         ],
     ] = {}
+
+
+class Data(BaseModel):
+    neurons: List[Neuron]
+    datasets: List[Dataset]
+    connections: Dict[str, List[Connection]] = {}
+    annotations: Dict[
+        Literal["head", "complete"], Annotation  # TODO: should 'tail' be included
+    ] = {}
+
+    @model_validator(mode="after")
+    def check_connection_dataset_exists(self):
+        existing_datasets = [dt.id for dt in self.datasets]
+        assert all(
+            [dataset_id in existing_datasets for dataset_id in self.connections.keys()]
+        ), "missing dataset definition for connection"
+        return self

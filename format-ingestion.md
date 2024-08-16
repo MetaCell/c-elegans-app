@@ -6,7 +6,7 @@ Different files are necessary:
 * `neurons.json` that encodes the information about the neurons in general
 * `datasets.json` that encodes the information about the different datasets
 * `connections/xxx.json` that encodes the different connections for dedicated datasets
-* `annotations/xxx.json` that encodes annotatinos for different zones of the anatomy
+* `annotations/xxx.json` that encodes annotations for different zones of the anatomy
 
 Those files are automatically exported from third-party tool and shouldn't be edited manually.
 

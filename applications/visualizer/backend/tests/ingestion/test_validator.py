@@ -1,5 +1,7 @@
 import json
-from typing import Any, Dict, List, NamedTuple
+import os
+from pathlib import Path
+from typing import Any, Callable, Dict, List, NamedTuple
 
 import pytest
 from pydantic import ValidationError
@@ -9,6 +11,7 @@ from ingestion.validator import (
     Axe,
     Connection,
     ConnectionType,
+    Data,
     Dataset,
     DatasetType,
     Neuron,
@@ -298,3 +301,134 @@ invalid_annotations_tc: List[JSON] = [
 def test__invalid_annotation(data: JSON):
     with pytest.raises(ValidationError):
         Annotation.model_validate(data)
+
+
+instanciate_valid_data_tc: List[Callable[..., Data]] = [
+    lambda: Data(
+        neurons=[
+            Neuron(
+                inhead=True,
+                name="ADAL",
+                emb=True,
+                nt="l",
+                intail=False,
+                classes="ADA",
+                typ="i",
+            ),
+            Neuron(
+                inhead=True,
+                name="ADAR",
+                emb=True,
+                nt="l",
+                intail=False,
+                classes="ADA",
+                typ="i",
+            ),
+        ],
+        datasets=[
+            Dataset(
+                id="white_1986_jse",
+                name="White et al., 1986, JSE (adult)",
+                type=DatasetType.TAIL,
+                time=60,
+                visualTime=50,
+                description="Adult legacy tail with pre-anal ganglion",
+            )
+        ],
+        connections={
+            "white_1986_jse": [
+                Connection(
+                    ids=[6949667],
+                    post="ADAR",
+                    post_tid=[6693872],
+                    pre="ADAL",
+                    pre_tid=[6719648],
+                    syn=[1],
+                    typ=ConnectionType.CHEMICAL,
+                )
+            ]
+        },
+        annotations={
+            "head": Annotation(
+                root={
+                    "increase": [
+                        ("ADAL", "RIPL"),
+                        ("ADAR", "RIPR"),
+                        ("ADEL", "AVKR"),
+                    ],
+                    "postembryonic": [
+                        ("ADAL", "RMFL"),
+                    ],
+                }
+            ),
+            "complete": Annotation(),
+        },
+    ),
+]
+
+
+@pytest.mark.parametrize("data_fn", instanciate_valid_data_tc)
+def test__valid_data(data_fn: Callable[..., Data]):
+    # every data definition should be able to correctly
+    # be instanciated
+    data_fn()
+
+
+instanciate_invalid_data_tc: List[Callable[..., Data]] = [
+    lambda: Data(
+        neurons=[],
+        datasets=[],
+        connections={"white_1986_jse": []},  # dataset id not in datasets
+    ),
+    lambda: Data(
+        neurons=[],
+        datasets=[],
+        connections={},
+        annotations={
+            # headd is not a valid annotation key
+            "headd": Annotation(),  # type: ignore
+        },
+    ),
+]
+
+
+@pytest.mark.parametrize("data_fn", instanciate_invalid_data_tc)
+def test__invalid_data(data_fn: Callable[..., Data]):
+    # every data definition should raise an exception upon
+    # being instanciated
+    with pytest.raises(ValidationError):
+        data_fn()
+
+
+@pytest.fixture
+def data_fixture(request: pytest.FixtureRequest) -> JSON:
+    # TODO: can we move fixtures close to the test? i.g Path(request.fspath).parent / Path("fixtures")
+    ROOT_DIR = Path(request.fspath).parent.parent.parent.parent.parent.parent  # type: ignore
+    FIXTURES_DIR = ROOT_DIR / Path("data/db-raw-data")
+
+    def load_file(f: str) -> Dict:
+        with open(FIXTURES_DIR / Path(f)) as file:
+            return json.load(file)
+
+    def load_dir(dir: str, *, trim_file_extension: bool = True) -> Dict[str, Any]:
+        dir_path = FIXTURES_DIR / Path(dir)
+        files_data = {}
+
+        for file_path in dir_path.glob("*.json"):
+            key = file_path.stem if trim_file_extension else file_path.name
+            with open(file_path, "r") as file:
+                files_data[key] = json.load(file)
+
+        return files_data
+
+    return {
+        "neurons": load_file("neurons.json"),
+        "datasets": load_file("datasets.json"),
+        "connections": load_dir("connections"),
+        "annotations": load_dir("annotations"),
+    }
+
+
+def test__data_fixtures(data_fixture: JSON):
+    pytest.skip("understanding what should be enforced")  # TODO: remove
+    Data(**data_fixture)
