@@ -45,12 +45,12 @@ function SceneControls({ onZoomIn, onResetView, onZoomOut, onPrint }: ScaleContr
         </IconButton>
       </Tooltip>
       <Divider />
-      <Tooltip title="Add comment" placement="right-start">
+      {/* <Tooltip title="Add comment" placement="right-start">
         <IconButton>
           <TextsmsOutlined />
         </IconButton>
       </Tooltip>
-      <Divider />
+      <Divider /> */}
       <Tooltip title="Download image" placement="right-start">
         <IconButton onClick={onPrint}>
           <FileDownloadOutlined />
