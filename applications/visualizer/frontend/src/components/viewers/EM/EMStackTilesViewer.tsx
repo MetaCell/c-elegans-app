@@ -168,8 +168,8 @@ const EMStackViewer = () => {
     });
 
     // set map zoom to the minimum zoom possible
-    const minZoomAvailable = tilegrid.getMinZoom()
-    map.getView().setZoom(minZoomAvailable)
+    const minZoomAvailable = tilegrid.getMinZoom();
+    map.getView().setZoom(minZoomAvailable);
 
     const ringEM = new SlidingRing({
       cacheSize: ringSize,
@@ -256,16 +256,16 @@ const EMStackViewer = () => {
 
   const onControlZoomIn = () => {
     if (!mapRef.current) return;
-    const view = mapRef.current.getView()
-    const targetZoom = view.getZoom() + 1
-    view.setZoom(view.getConstrainedZoom(targetZoom, 1))
+    const view = mapRef.current.getView();
+    const targetZoom = view.getZoom() + 1;
+    view.setZoom(view.getConstrainedZoom(targetZoom, 1));
   };
 
   const onControlZoomOut = () => {
     if (!mapRef.current) return;
-    const view = mapRef.current.getView()
-    const targetZoom = view.getZoom() - 1
-    view.setZoom(view.getConstrainedZoom(targetZoom, -1))
+    const view = mapRef.current.getView();
+    const targetZoom = view.getZoom() - 1;
+    view.setZoom(view.getConstrainedZoom(targetZoom, -1));
   };
 
   const onResetView = () => {
@@ -275,8 +275,8 @@ const EMStackViewer = () => {
     const center = getCenter(extent);
     view.setCenter(center);
 
-    const minZoomAvailable = tilegrid.getMinZoom()
-    view.setZoom(minZoomAvailable)
+    const minZoomAvailable = tilegrid.getMinZoom();
+    view.setZoom(minZoomAvailable);
   };
 
   const onPrint = () => {
