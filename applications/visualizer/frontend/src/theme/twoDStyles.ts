@@ -51,7 +51,7 @@ const EDGE_STYLE = {
 
 const CHEMICAL_STYLE = { "line-color": "#63625F", width: 0.5 };
 const ELECTRICAL_STYLE = {
-  "line-color": "red",
+  "line-color": "#63625F",
   width: 0.5,
   "curve-style": "segments",
   "target-arrow-color": "#666666",

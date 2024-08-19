@@ -8,7 +8,7 @@ import {
   VisibilityOutlined,
   WorkspacesOutlined,
 } from "@mui/icons-material";
-import { Box, Divider, Menu, MenuItem } from "@mui/material";
+import { Box, Divider, Menu, MenuItem, Popover } from "@mui/material";
 import type { Position } from "cytoscape";
 import type React from "react";
 import { useMemo, useState } from "react";
@@ -30,23 +30,20 @@ interface ContextMenuProps {
 
 const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setSplitJoinState, setHiddenNodes }) => {
   const workspace = useSelectedWorkspace();
-  const [submenuOpen, setSubmenuOpen] = useState(false);
   const [submenuAnchorEl, setSubmenuAnchorEl] = useState<null | HTMLElement>(null);
 
-  const handleAlignClick = (event: React.MouseEvent<HTMLElement>) => {
+  const submenuOpen = Boolean(submenuAnchorEl);
+  const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
     setSubmenuAnchorEl(event.currentTarget);
-    setSubmenuOpen(true);
   };
 
-  const handleSubmenuClose = () => {
+  const handlePopoverClose = () => {
     setSubmenuAnchorEl(null);
-    setSubmenuOpen(false);
   };
-
   const handleAlignOption = (option: string) => {
     console.log(`Selected Align Option: ${option}`);
-    handleSubmenuClose();
     onClose();
+    setSubmenuAnchorEl(null);
   };
   const handleHide = () => {
     setHiddenNodes((prevHiddenNodes) => {
@@ -320,20 +317,36 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
           Ungroup
         </MenuItem>
       )}
-      <MenuItem onClick={handleAlignClick}>
+      <MenuItem onMouseEnter={handlePopoverOpen}>
         <FormatAlignJustifyOutlined fontSize="small" />
         <Box width={1} display="flex" alignItems="center" justifyContent="space-between">
           Align
           <ArrowRightOutlined />
         </Box>
       </MenuItem>
-      <Menu
-        anchorEl={submenuAnchorEl}
+      <Popover
+        id="mouse-over-popover"
+        sx={{
+          "& .MuiMenuItem-root": {
+            color: gray700,
+          },
+          "& .MuiPopover-paper": {
+            padding: "0.5rem",
+            borderRadius: "0.5rem",
+          },
+        }}
         open={submenuOpen}
-        onClose={handleSubmenuClose}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
-        MenuListProps={{ onMouseLeave: handleSubmenuClose }}
+        anchorEl={submenuAnchorEl}
+        anchorOrigin={{
+          vertical: "center",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+        onClose={handlePopoverClose}
+        disableRestoreFocus
       >
         <MenuItem onClick={() => handleAlignOption("left")}>
           <AlignLeftIcon />
@@ -360,7 +373,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
           <DistributeVerticallyIcon />
           Distribute vertically
         </MenuItem>
-      </Menu>
+      </Popover>
     </Menu>
   );
 };
