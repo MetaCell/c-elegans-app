@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from ninja import ModelSchema, Schema
 from .models import (
     Dataset as DatasetModel,
@@ -19,8 +21,24 @@ class BilingualSchema(Schema):
         populate_by_name = True
 
 
+class Artifact(Schema): ...
+
+
+class Model3D(Artifact): ...
+
+
+class EMData(Artifact):
+    min_zoom: int
+    max_zoom: int
+    nb_slices: int
+    resource_url: str
+    segmentation_url: str
+
+
 class Dataset(ModelSchema, BilingualSchema):
     id: str
+    neuron3D_url: str
+    em_data: EMData
 
     class Meta:
         model = DatasetModel
@@ -38,6 +56,7 @@ class Dataset(ModelSchema, BilingualSchema):
 class Neuron(ModelSchema, BilingualSchema):
     name: str
     dataset_ids: list[str]
+    model3D_url: str
 
     class Meta:
         model = NeuronModel

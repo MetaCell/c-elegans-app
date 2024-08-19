@@ -6,6 +6,7 @@ export type Neuron = {
     id: string;
     name: string;
     datasetIds: Array<string>;
+    model3DUrl: string;
     nclass: string;
     neurotransmitter: string;
     type: string;
