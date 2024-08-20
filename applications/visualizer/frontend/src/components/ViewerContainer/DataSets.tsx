@@ -18,17 +18,20 @@ const categorizeDatasets = (datasets: Dataset[]) => {
     L1: [],
     L2: [],
     L3: [],
+    L4: [],
     Adult: [],
   };
 
   datasets.forEach((dataset) => {
-    if (dataset.visualTime >= 0 && dataset.visualTime < 10) {
+    if (dataset.visualTime >= 0 && dataset.visualTime < 16) {
       categories["L1"].push(dataset);
-    } else if (dataset.visualTime >= 10 && dataset.visualTime < 20) {
+    } else if (dataset.visualTime >= 16 && dataset.visualTime < 25) {
       categories["L2"].push(dataset);
-    } else if (dataset.visualTime >= 20 && dataset.visualTime < 30) {
+    } else if (dataset.visualTime >= 25 && dataset.visualTime < 34) {
       categories["L3"].push(dataset);
-    } else if (dataset.visualTime >= 30) {
+    } else if (dataset.visualTime >= 34 && dataset.visualTime < 45) {
+      categories["L4"].push(dataset);
+    } else if (dataset.visualTime >= 45) {
       categories["Adult"].push(dataset);
     }
   });
@@ -97,6 +100,7 @@ const DataSets = ({ children }) => {
       L1: [],
       L2: [],
       L3: [],
+      L4: [],
       Adult: [],
     };
 
@@ -149,6 +153,7 @@ const DataSets = ({ children }) => {
       L1: [],
       L2: [],
       L3: [],
+      L4: [],
       Adult: [],
     };
 
@@ -191,7 +196,7 @@ const DataSets = ({ children }) => {
       </IconButton>
     </React.Fragment>
   );
-
+  console.log(filteredDatasets);
   return (
     <Box>
       <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb="0">

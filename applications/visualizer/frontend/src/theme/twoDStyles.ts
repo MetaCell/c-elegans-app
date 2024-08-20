@@ -47,6 +47,8 @@ const EDGE_STYLE = {
   "target-arrow-shape": "triangle",
   "curve-style": "bezier",
   "arrow-scale": 0.3,
+  "source-distance-from-node": 1,
+  "target-distance-from-node": 1,
 };
 
 const CHEMICAL_STYLE = { "line-color": "#63625F", width: 0.5 };
@@ -58,6 +60,7 @@ const ELECTRICAL_STYLE = {
   "source-arrow-color": "#666666",
   "segment-distances": "0 -5 5 -5 5 0",
   "segment-weights": [0.3, 0.4, 0.5, 0.6, 0.7],
+  "target-arrow-shape": "none",
 };
 
 const FADED_STYLE = [
@@ -142,6 +145,22 @@ export const GRAPH_STYLES = [
   {
     selector: ".electrical",
     style: ELECTRICAL_STYLE,
+  },
+  {
+    selector: ".electrical:loop",
+    css: {
+      "target-arrow-shape": "tee",
+      "source-arrow-shape": "tee",
+      "arrow-scale": 0.5,
+    },
+  },
+  {
+    selector: "edge:loop",
+    css: {
+      "source-distance-from-node": 0,
+      "target-distance-from-node": 0,
+      "arrow-scale": 0.3,
+    },
   },
   ...EDGE_LABEL_STYLES,
   ...FADED_STYLE,
