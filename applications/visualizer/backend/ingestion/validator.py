@@ -32,8 +32,8 @@ class Dataset(BaseModel):
     id: str
     name: str
     type: DatasetType
-    time: float  # TODO: should be gte than 0?
-    visualTime: float  # TODO: should be gte than 0?
+    time: float  # TODO: should add validation gte than 0?
+    visualTime: float  # TODO: should add validation gte than 0?
     description: str
     axes: Optional[List[Axe]] = Field(
         default=None, description="different axes and their representation"
@@ -94,7 +94,7 @@ class Data(BaseModel):
     datasets: List[Dataset]
     connections: Dict[str, List[Connection]] = {}
     annotations: Dict[
-        Literal["head", "complete"], Annotation  # TODO: should 'tail' be included
+        Literal["head", "complete"], Annotation  # TODO: should 'tail' be included?
     ] = {}
 
     @model_validator(mode="after")

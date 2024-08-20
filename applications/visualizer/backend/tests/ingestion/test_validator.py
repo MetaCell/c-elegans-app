@@ -120,7 +120,7 @@ valid_datasets_tc: List[DatasetTc] = [
             "id": "witvliet_2020_1",
             "name": "Witvliet et al., 2020, Dataset 1 (L1)",
             "type": "head",
-            "time": 0,
+            "time": 0.62,
             "visualTime": 0.5,
             "description": "~0 hours after birth",
             "axes": [
@@ -133,7 +133,7 @@ valid_datasets_tc: List[DatasetTc] = [
             id="witvliet_2020_1",
             name="Witvliet et al., 2020, Dataset 1 (L1)",
             type=DatasetType.HEAD,
-            time=0,
+            time=0.62,
             visualTime=0.5,
             description="~0 hours after birth",
             axes=[
@@ -237,14 +237,14 @@ invalid_connections_tc: List[JSON] = [
         "post": "ADAR",
         "post_tid": [9576727],
         "pre": "ADAL",
-        "pre_tid": [9577831],  # not same length as ids
+        "pre_tid": [9577831],  # should be the same length as ids
         "syn": [1],
         "typ": 2,
     },
     {
         "ids": [9583833],
         "post": "ADAR",
-        "post_tid": [9576727, 9583834, 9583834],  # not same length as ids
+        "post_tid": [9576727, 9583834, 9583834],  # should be the same length as ids
         "pre": "ADAL",
         "pre_tid": [9577831],
         "syn": [1],
