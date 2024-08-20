@@ -64,7 +64,7 @@ Each JSON object represents a specific dataset with this schema:
     "id": string           // unique ID for the dataset
     "name": string         // display name of the dataset
     "type": string         // type of dataset: "complete", "head" or "tail"
-    "time": int            // time of the dataset
+    "time": float          // time of the dataset
     "visualTime": float    // visualTime of the dataset
     "description": string  // description of the dataset
     "axes": [              // OPTIONAL: different axes and their representation, not used but can appear in the file
@@ -93,7 +93,7 @@ The schema is the following:
 }
 ```
 
-For each of those objects: `ids`, `post_tid`, `pre_tid` and `syn` need to have the same number of elements.
+For each of those objects: `ids`, `post_tid`, `pre_tid` and `syn` need to have the same number of elements when `ids` is present.
 
 ## Format of `annotations/xxx.json`
 
