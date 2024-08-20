@@ -151,7 +151,6 @@ export const GRAPH_STYLES = [
     css: {
       "target-arrow-shape": "tee",
       "source-arrow-shape": "tee",
-      "arrow-scale": 0.5,
     },
   },
   {

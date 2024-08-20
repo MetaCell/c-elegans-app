@@ -196,7 +196,7 @@ const DataSets = ({ children }) => {
       </IconButton>
     </React.Fragment>
   );
-  console.log(filteredDatasets);
+
   return (
     <Box>
       <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb="0">
