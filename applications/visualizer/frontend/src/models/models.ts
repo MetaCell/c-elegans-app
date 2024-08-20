@@ -33,7 +33,7 @@ export interface EnhancedNeuron extends Neuron {
 
 export interface GraphViewerData {
   defaultPosition: Position | null;
-  isVisible: boolean;
+  visibility: Visibility;
 }
 
 export interface ViewerData {
@@ -70,4 +70,10 @@ export enum Alignment {
     Bottom = "bottom",
     Horizontal = 'Horizontal',
     Vertical = 'Vertical'
+}
+
+export enum Visibility {
+    Visible = "Visible",
+    Hidden = "Hidden",
+    Unset = "Unset",
 }

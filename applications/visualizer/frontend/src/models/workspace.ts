@@ -3,7 +3,7 @@ import type {configureStore} from "@reduxjs/toolkit";
 import {immerable, produce} from "immer";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
 import {type Dataset, type Neuron, NeuronsService} from "../rest";
-import {type EnhancedNeuron, type NeuronGroup, ViewerSynchronizationPair, ViewerType} from "./models";
+import {type EnhancedNeuron, type NeuronGroup, ViewerSynchronizationPair, ViewerType, Visibility} from "./models";
 
 export class Workspace {
     [immerable] = true;
@@ -33,8 +33,8 @@ export class Workspace {
         this.activeNeurons = activeNeurons || new Set();
         this.selectedNeurons = new Set();
         this.viewers = {
-            [ViewerType.Graph]: false,
-            [ViewerType.ThreeD]: true,
+            [ViewerType.Graph]: true,
+            [ViewerType.ThreeD]: false,
             [ViewerType.EM]: false,
             [ViewerType.InstanceDetails]: false,
         };
@@ -72,8 +72,9 @@ export class Workspace {
         const updated = produce(this, (draft: Workspace) => {
             if (draft.availableNeurons[neuronId]) {
                 draft.availableNeurons[neuronId].isVisible = false
+                draft.selectedNeurons.delete(neuronId);
                 // todo: add actions for other viewers
-                draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].isVisible = false;
+                draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].visibility = Visibility.Hidden;
             }
         });
         this.updateContext(updated);
@@ -84,7 +85,7 @@ export class Workspace {
             if (draft.availableNeurons[neuronId]) {
                 draft.availableNeurons[neuronId].isVisible = true
                 // todo: add actions for other viewers
-                draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].isVisible = true;
+                draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].visibility = Visibility.Visible;
             }
         });
         this.updateContext(updated);
@@ -199,7 +200,8 @@ export class Workspace {
                         viewerData: {
                             [ViewerType.Graph]: {
                                 defaultPosition: previousNeuron?.viewerData[ViewerType.Graph]?.defaultPosition || null,
-                                isVisible: previousNeuron?.viewerData[ViewerType.Graph]?.isVisible || draft.activeNeurons.has(neuron.name),
+                                visibility: previousNeuron?.viewerData[ViewerType.Graph]?.visibility ||
+                                draft.activeNeurons.has(neuron.name) ? Visibility.Visible : Visibility.Unset,
                             },
                             [ViewerType.ThreeD]: previousNeuron?.viewerData[ViewerType.ThreeD] || {},
                             [ViewerType.EM]: previousNeuron?.viewerData[ViewerType.EM] || {},
@@ -220,5 +222,18 @@ export class Workspace {
     customUpdate(updateFunction: (draft: Workspace) => void): void {
         const updated = produce(this, updateFunction);
         this.updateContext(updated);
+    }
+
+    getHiddenNeurons() {
+        const hiddenNodes = new Set<string>();
+
+        this.activeNeurons.forEach(neuronId => {
+            const neuron = this.availableNeurons[neuronId];
+            if (neuron && !neuron.isVisible) {
+                hiddenNodes.add(neuronId);
+            }
+        });
+
+        return hiddenNodes;
     }
 }

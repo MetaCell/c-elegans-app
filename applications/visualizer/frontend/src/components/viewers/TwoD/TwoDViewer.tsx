@@ -6,7 +6,7 @@ import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace";
 import {type Connection, ConnectivityService} from "../../../rest";
 import {GRAPH_STYLES} from "../../../theme/twoDStyles";
 import {
-    applyLayout, getVisibleActiveNeuronsIn2D,
+    applyLayout, getHiddenNeuronsIn2D, getVisibleActiveNeuronsIn2D,
     refreshLayout,
     updateWorkspaceNeurons2DViewerData
 } from "../../../helpers/twoD/twoDHelpers";
@@ -28,6 +28,7 @@ import ContextMenu from "./ContextMenu";
 import {computeGraphDifferences, updateHighlighted} from "../../../helpers/twoD/graphRendering.ts";
 import {areSetsEqual} from "../../../helpers/utils.ts";
 import {ViewerType} from "../../../models";
+import {Visibility} from "../../../models/models.ts";
 
 cytoscape.use(fcose);
 cytoscape.use(dagre);
@@ -52,13 +53,21 @@ const TwoDViewer = () => {
     const [includePostEmbryonic, setIncludePostEmbryonic] = useState<boolean>(INCLUDE_POST_EMBRYONIC);
     const [mousePosition, setMousePosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
     const [legendHighlights, setLegendHighlights] = useState<Map<LegendType, string>>(new Map());
-    const [hiddenNodes, setHiddenNodes] = useState<Set<string>>(new Set());
     const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
 
-    const visibleActiveNeurons = useMemo(() => {
-        return getVisibleActiveNeuronsIn2D(workspace);
-    }, [Object.keys(workspace.availableNeurons).map(key => workspace.availableNeurons[key].viewerData[ViewerType.Graph]?.isVisible).join(',')
-        , workspace.activeNeurons]);
+    const {visibleActiveNeurons, hiddenNeurons} = useMemo(() => {
+        const visibleActiveNeurons = getVisibleActiveNeuronsIn2D(workspace);
+        const hiddenNeurons = getHiddenNeuronsIn2D(workspace);
+
+        return {visibleActiveNeurons, hiddenNeurons};
+    }, [
+        // Create a string of visibility values for all available neurons to track changes
+        Object.keys(workspace.availableNeurons)
+            .map(neuronId => workspace.availableNeurons[neuronId]?.viewerData[ViewerType.Graph]?.visibility || '')
+            .join(','),
+        workspace.activeNeurons
+    ]);
+
 
     const handleContextMenuClose = () => {
         setMousePosition(null);
@@ -139,7 +148,7 @@ const TwoDViewer = () => {
         if (cyRef.current) {
             updateGraphElements(cyRef.current, connections);
         }
-    }, [connections, hiddenNodes, workspace.neuronGroups, includePostEmbryonic, splitJoinState, openGroups]);
+    }, [connections, hiddenNeurons, workspace.neuronGroups, includePostEmbryonic, splitJoinState, openGroups]);
 
 
     useEffect(() => {
@@ -286,7 +295,7 @@ const TwoDViewer = () => {
             connections,
             workspace,
             splitJoinState,
-            hiddenNodes,
+            hiddenNeurons,
             openGroups,
             includeNeighboringCellsAsIndividualCells,
             includeAnnotations,
@@ -388,7 +397,6 @@ const TwoDViewer = () => {
                 onClose={handleContextMenuClose}
                 position={mousePosition}
                 setSplitJoinState={setSplitJoinState}
-                setHiddenNodes={setHiddenNodes}
                 openGroups={openGroups}
                 setOpenGroups={setOpenGroups}
                 cy={cyRef.current}
