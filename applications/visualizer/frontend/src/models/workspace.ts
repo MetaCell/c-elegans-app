@@ -200,8 +200,11 @@ export class Workspace {
                         viewerData: {
                             [ViewerType.Graph]: {
                                 defaultPosition: previousNeuron?.viewerData[ViewerType.Graph]?.defaultPosition || null,
-                                visibility: previousNeuron?.viewerData[ViewerType.Graph]?.visibility ||
-                                draft.activeNeurons.has(neuron.name) ? Visibility.Visible : Visibility.Unset,
+                                visibility: previousNeuron?.viewerData[ViewerType.Graph]?.visibility !== undefined
+                                    ? previousNeuron.viewerData[ViewerType.Graph].visibility
+                                    : draft.activeNeurons.has(neuron.name)
+                                        ? Visibility.Visible
+                                        : Visibility.Unset,
                             },
                             [ViewerType.ThreeD]: previousNeuron?.viewerData[ViewerType.ThreeD] || {},
                             [ViewerType.EM]: previousNeuron?.viewerData[ViewerType.EM] || {},

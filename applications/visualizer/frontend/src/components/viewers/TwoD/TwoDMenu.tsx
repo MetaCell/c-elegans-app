@@ -1,7 +1,18 @@
 import { GetAppOutlined, HomeOutlined, TuneOutlined, VisibilityOutlined } from "@mui/icons-material";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
-import { Box, Divider, FormControlLabel, FormGroup, IconButton, Popover, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from "@mui/material";
+import {
+  Box,
+  Divider,
+  FormControlLabel,
+  FormGroup,
+  IconButton,
+  Popover,
+  Switch, ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+  Typography
+} from "@mui/material";
 import { useState } from "react";
 import { ColoringOptions } from "../../../helpers/twoD/coloringHelper.ts";
 import { GRAPH_LAYOUTS, ZOOM_DELTA } from "../../../settings/twoDSettings.tsx";
@@ -10,6 +21,7 @@ import CustomSwitch from "../../ViewerContainer/CustomSwitch.tsx";
 import QuantityInput from "./NumberInput.tsx";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
 import { applyLayout } from "../../../helpers/twoD/twoDHelpers.ts";
+import { Visibility, ViewerType } from "../../../models";
 
 const { gray500 } = vars;
 
@@ -35,7 +47,8 @@ const TwoDMenu = ({
   setIncludePostEmbryonic,
 }) => {
   const workspace = useSelectedWorkspace();
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [settingsAnchorEl, setSettingsAnchorEl] = useState<HTMLElement | null>(null);
+  const [visibilityAnchorEl, setVisibilityAnchorEl] = useState<HTMLElement | null>(null);
 
   const onZoomIn = () => {
     if (!cy) {
@@ -70,11 +83,11 @@ const TwoDMenu = ({
   };
 
   const handleOpenSettings = (event) => {
-    setAnchorEl(event.currentTarget);
+    setSettingsAnchorEl(event.currentTarget);
   };
 
   const handleCloseSettings = () => {
-    setAnchorEl(null);
+    setSettingsAnchorEl(null);
   };
 
   const handleDownloadClick = () => {
@@ -87,19 +100,47 @@ const TwoDMenu = ({
       scale: 2,
     });
 
-    // Create a link element
     const link = document.createElement("a");
     link.href = pngDataUrl;
     link.download = `${workspace.name}.png`;
 
-    // Programmatically trigger a click event to download the image
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  const open = Boolean(anchorEl);
-  const id = open ? "settings-popover" : undefined;
+  const handleOpenVisibility = (event) => {
+    setVisibilityAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseVisibility = () => {
+    setVisibilityAnchorEl(null);
+  };
+
+  const handleToggleVisibility = (neuronId) => {
+    workspace.customUpdate((draft) => {
+      const neuron = draft.availableNeurons[neuronId];
+      if (neuron) {
+        const currentVisibility = neuron.viewerData[ViewerType.Graph]?.visibility;
+        neuron.viewerData[ViewerType.Graph].visibility =
+          currentVisibility === Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
+      }
+    });
+  };
+
+  const openSettings = Boolean(settingsAnchorEl);
+  const settingsId = openSettings ? "settings-popover" : undefined;
+
+  const openVisibility = Boolean(visibilityAnchorEl);
+  const visibilityId = openVisibility ? "visibility-popover" : undefined;
+
+  const visibleNeurons = Object.keys(workspace.availableNeurons).filter(
+    (neuronId) => workspace.availableNeurons[neuronId]?.viewerData[ViewerType.Graph]?.visibility === Visibility.Visible
+  );
+
+  const hiddenNeurons = Object.keys(workspace.availableNeurons).filter(
+    (neuronId) => workspace.availableNeurons[neuronId]?.viewerData[ViewerType.Graph]?.visibility === Visibility.Hidden
+  );
 
   return (
     <Box
@@ -140,9 +181,9 @@ const TwoDMenu = ({
         </IconButton>
       </Tooltip>
       <Popover
-        id={id}
-        open={open}
-        anchorEl={anchorEl}
+        id={settingsId}
+        open={openSettings}
+        anchorEl={settingsAnchorEl}
         onClose={handleCloseSettings}
         anchorOrigin={{
           vertical: "top",
@@ -174,7 +215,6 @@ const TwoDMenu = ({
             exclusive
             onChange={(_, newColoringOption) => {
               if (newColoringOption !== null) {
-                // Prevent deselecting all options
                 onColoringOptionChange(newColoringOption);
               }
             }}
@@ -193,14 +233,7 @@ const TwoDMenu = ({
             Neuroconnectors have at least:
           </Typography>
           <Box sx={{ display: "flex", flexDirection: "column", gap: ".5rem" }}>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                width: "100%",
-              }}
-            >
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
               <Typography variant="caption" color={gray500}>
                 Chemical Synapses
               </Typography>
@@ -240,7 +273,6 @@ const TwoDMenu = ({
             exclusive
             onChange={(_, newLayout) => {
               if (newLayout !== null) {
-                // Prevent deselecting all options
                 onLayoutChange(newLayout);
               }
             }}
@@ -267,7 +299,13 @@ const TwoDMenu = ({
             }}
           >
             <FormControlLabel
-              control={<CustomSwitch checked={includeNeighboringCells} onChange={(e) => setIncludeNeighboringCells(e.target.checked)} showTooltip={false} />}
+              control={
+                <CustomSwitch
+                  checked={includeNeighboringCells}
+                  onChange={(e) => setIncludeNeighboringCells(e.target.checked)}
+                  showTooltip={false}
+                />
+              }
               label="Connected cells"
             />
             <Tooltip title={!includeNeighboringCells ? "Enable 'Connected Cells' to use this switch" : ""}>
@@ -298,11 +336,70 @@ const TwoDMenu = ({
           </FormGroup>
         </Box>
       </Popover>
-      <Tooltip title="Show/Hide neurons (Coming Soon)" placement="right-start">
-        <IconButton disabled={true}>
+      <Tooltip title="Show/Hide neurons" placement="right-start">
+        <IconButton onClick={handleOpenVisibility}>
           <VisibilityOutlined />
         </IconButton>
       </Tooltip>
+      <Popover
+        id={visibilityId}
+        open={openVisibility}
+        anchorEl={visibilityAnchorEl}
+        onClose={handleCloseVisibility}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+        slotProps={{
+          paper: {
+            sx: {
+              padding: ".5rem 1rem",
+              borderRadius: "0.5rem",
+              width: "200px",
+            },
+          },
+        }}
+      >
+        <Typography variant="subtitle1" color={gray500} gutterBottom>
+          Visible Neurons
+        </Typography>
+        <FormGroup>
+          {visibleNeurons.map((neuronId) => (
+            <FormControlLabel
+              key={neuronId}
+              control={
+                <Switch
+                  checked={workspace.availableNeurons[neuronId].viewerData[ViewerType.Graph]?.visibility === Visibility.Visible}
+                  onChange={() => handleToggleVisibility(neuronId)}
+                />
+              }
+              label={neuronId}
+            />
+          ))}
+        </FormGroup>
+        <Divider />
+        <Typography variant="subtitle1" color={gray500} gutterBottom>
+          Hidden Neurons
+        </Typography>
+        <FormGroup>
+          {hiddenNeurons.map((neuronId) => (
+            <FormControlLabel
+              key={neuronId}
+              control={
+                <Switch
+                  checked={workspace.availableNeurons[neuronId].viewerData[ViewerType.Graph]?.visibility === Visibility.Visible}
+                  onChange={() => handleToggleVisibility(neuronId)}
+                />
+              }
+              label={neuronId}
+            />
+          ))}
+        </FormGroup>
+      </Popover>
       <Divider />
       <Tooltip title="Download graph" placement="right-start">
         <IconButton onClick={handleDownloadClick}>
