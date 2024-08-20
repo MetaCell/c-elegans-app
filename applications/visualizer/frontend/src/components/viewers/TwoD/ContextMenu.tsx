@@ -157,7 +157,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             const newJoin = new Set(prevState.join);
 
             const newSelectedNeurons = new Set(workspace.selectedNeurons);
-            const graphViewDataUpdates: Record<string, { position?: Position | null; visibility: boolean }> = {};
+            const graphViewDataUpdates: Record<string, { position?: Position | null; isVisible: boolean }> = {};
 
             workspace.selectedNeurons.forEach((neuronId) => {
                 if (isNeuronClass(neuronId, workspace)) {
@@ -182,9 +182,9 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                         newSelectedNeurons.add(neuronName);
                         // Only set the position if it doesn't exist yet
                         if (!workspace.availableNeurons[neuronName].viewerData[ViewerType.Graph]?.defaultPosition) {
-                            graphViewDataUpdates[neuronName] = {position: positions[neuronName], visibility: true};
+                            graphViewDataUpdates[neuronName] = {position: positions[neuronName], isVisible: true};
                         } else {
-                            graphViewDataUpdates[neuronName] = {visibility: true};
+                            graphViewDataUpdates[neuronName] = {isVisible: true};
                         }
                     });
 
@@ -195,7 +195,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                         }
                     });
 
-                    graphViewDataUpdates[neuronId] = {visibility: false};
+                    graphViewDataUpdates[neuronId] = {isVisible: false};
                 }
             });
 
@@ -213,7 +213,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             const newSplit = new Set(prevState.split);
 
             const newSelectedNeurons = new Set(workspace.selectedNeurons);
-            const graphViewDataUpdates: Record<string, { position?: Position | null; visibility: boolean }> = {};
+            const graphViewDataUpdates: Record<string, { position?: Position | null; isVisible: boolean }> = {};
 
             workspace.selectedNeurons.forEach((neuronId) => {
                 const neuronClass = workspace.availableNeurons[neuronId].nclass;
@@ -225,17 +225,17 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                 const classPosition = calculateMeanPosition(individualNeuronIds, workspace);
 
                 if (!workspace.availableNeurons[neuronClass].viewerData[ViewerType.Graph]?.defaultPosition) {
-                    graphViewDataUpdates[neuronClass] = {position: classPosition, visibility: true};
+                    graphViewDataUpdates[neuronClass] = {position: classPosition, isVisible: true};
                 } else {
-                    graphViewDataUpdates[neuronClass] = {...graphViewDataUpdates[neuronClass], visibility: true};
+                    graphViewDataUpdates[neuronClass] = {...graphViewDataUpdates[neuronClass], isVisible: true};
                 }
                 // Remove the individual neurons from the selected neurons and add the class neuron
                 individualNeuronIds.forEach((neuronName) => {
                     newSelectedNeurons.delete(neuronName);
                     newJoin.add(neuronName);
 
-                    // Set individual neurons' visibility to false
-                    graphViewDataUpdates[neuronName] = {visibility: false};
+                    // Set individual neurons' isVisible to false
+                    graphViewDataUpdates[neuronName] = {isVisible: false};
                 });
                 newSelectedNeurons.add(neuronClass);
 

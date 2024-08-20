@@ -27,6 +27,7 @@ import {ColoringOptions, getColor} from "../../../helpers/twoD/coloringHelper";
 import ContextMenu from "./ContextMenu";
 import {computeGraphDifferences, updateHighlighted} from "../../../helpers/twoD/graphRendering.ts";
 import {areSetsEqual} from "../../../helpers/utils.ts";
+import {ViewerType} from "../../../models";
 
 cytoscape.use(fcose);
 cytoscape.use(dagre);
@@ -56,7 +57,8 @@ const TwoDViewer = () => {
 
     const visibleActiveNeurons = useMemo(() => {
         return getVisibleActiveNeuronsIn2D(workspace);
-    }, [workspace.availableNeurons, workspace.activeNeurons]);
+    }, [Object.keys(workspace.availableNeurons).map(key => workspace.availableNeurons[key].viewerData[ViewerType.Graph]?.isVisible).join(',')
+        , workspace.activeNeurons]);
 
     const handleContextMenuClose = () => {
         setMousePosition(null);
