@@ -32,7 +32,7 @@ class Dataset(BaseModel):
     id: str
     name: str
     type: DatasetType
-    time: int  # TODO: should be gte than 0?
+    time: float  # TODO: should be gte than 0?
     visualTime: float  # TODO: should be gte than 0?
     description: str
     axes: Optional[List[Axe]] = Field(
@@ -47,16 +47,17 @@ class ConnectionType(IntEnum):
 
 class Connection(BaseModel):
     ids: List[int] = Field(
-        ..., description="list of neuron IDs involved in this connection"
+        default_factory=list,
+        description="list of neuron IDs involved in this connection",
     )  # TODO: should be optional? appers to be empty in some entries
     post: str  # the name of a neuron as defined in "neurons.json"
     post_tid: List[int] = Field(
-        ...,
+        default_factory=list,
         description="list of neuron IDs of a post synapse for a dedicated post neuron",
     )  # TODO: should be optional? appers to be empty in some entries
     pre: str  # the name of a neuron as defined in "neurons.json"
     pre_tid: List[int] = Field(
-        ...,
+        default_factory=list,
         description="list of neuron IDs of a pre synapse for a dedicated pre neuron",
     )  # TODO: should be optional? appers to be empty in some entries
     syn: List[int] = Field(
@@ -67,10 +68,12 @@ class Connection(BaseModel):
 
     @model_validator(mode="after")
     def check_same_size_elements(self):
-        length = len(self.ids)
-        assert all(
-            len(l) == length for l in iter([self.post_tid, self.pre_tid, self.syn])
-        ), "ids, post_tid, pre_tid and syn must have the same number of elements"
+        if len(self.ids) != 0:
+            length = len(self.ids)
+            assert all(
+                len(l) == length for l in iter([self.post_tid, self.pre_tid, self.syn])
+            ), "ids, post_tid, pre_tid and syn must have the same number of elements"
+
         return self
 
 

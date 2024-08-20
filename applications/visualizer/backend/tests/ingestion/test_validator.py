@@ -1,5 +1,4 @@
 import json
-import os
 from pathlib import Path
 from typing import Any, Callable, Dict, List, NamedTuple
 
@@ -196,7 +195,24 @@ valid_connections_tc: List[ConnectionTc] = [
             syn=[1],
             typ=ConnectionType.CHEMICAL,
         ),
-    )
+    ),
+    ConnectionTc(
+        data={
+            "post": "ADAR",
+            "pre": "ADAL",
+            "syn": [1],
+            "typ": 2,
+        },
+        expected=Connection(
+            ids=[],
+            post="ADAR",
+            post_tid=[],
+            pre="ADAL",
+            pre_tid=[],
+            syn=[1],
+            typ=ConnectionType.CHEMICAL,
+        ),
+    ),
 ]
 
 
@@ -217,9 +233,18 @@ invalid_connections_tc: List[JSON] = [
         "typ": 1,  # invalid connection type
     },
     {
-        "ids": [9583833, 9583834],  # not same length
+        "ids": [9583833, 9583834],
         "post": "ADAR",
         "post_tid": [9576727],
+        "pre": "ADAL",
+        "pre_tid": [9577831],  # not same length as ids
+        "syn": [1],
+        "typ": 2,
+    },
+    {
+        "ids": [9583833],
+        "post": "ADAR",
+        "post_tid": [9576727, 9583834, 9583834],  # not same length as ids
         "pre": "ADAL",
         "pre_tid": [9577831],
         "syn": [1],
@@ -228,10 +253,10 @@ invalid_connections_tc: List[JSON] = [
     {
         "ids": [9583833],
         "post": "ADAR",
-        "post_tid": [9576727, 9583834, 9583834],  # not same length
+        "post_tid": [9576727],
         "pre": "ADAL",
         "pre_tid": [9577831],
-        "syn": [1],
+        "syn": [1, 1],  # should be the same length as ids
         "typ": 2,
     },
 ]
@@ -421,14 +446,18 @@ def data_fixture(request: pytest.FixtureRequest) -> JSON:
 
         return files_data
 
+    annotations = load_dir("annotations")
+    for annotation_file_name in annotations.copy().keys():
+        name = annotation_file_name.split(".")[0]
+        annotations[name] = annotations.pop(annotation_file_name)
+
     return {
         "neurons": load_file("neurons.json"),
         "datasets": load_file("datasets.json"),
         "connections": load_dir("connections"),
-        "annotations": load_dir("annotations"),
+        "annotations": annotations,
     }
 
 
 def test__data_fixtures(data_fixture: JSON):
-    pytest.skip("understanding what should be enforced")  # TODO: remove
-    Data(**data_fixture)
+    Data.model_validate(data_fixture)
