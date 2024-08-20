@@ -78,6 +78,3 @@ export const annotationLegend = {
     icon: <ArrowForwardIcon style={{ color: "#228B22" }} />,
   },
 };
-
-
-export const BOUNDING_BOX_BASENAME = "bbox_"

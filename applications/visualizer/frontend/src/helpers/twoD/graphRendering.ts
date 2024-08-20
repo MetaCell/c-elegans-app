@@ -5,7 +5,7 @@ import {
     createNode,
     extractNeuronAttributes,
     getEdgeId,
-    getNclassSet,
+    getNclassSet, getVisibleActiveNeuronsIn2D,
     isNeuronCell,
     isNeuronClass
 } from "./twoDHelpers";
@@ -25,6 +25,9 @@ export const computeGraphDifferences = (
     includeAnnotations: boolean,
     includePostEmbryonic: boolean,
 ) => {
+
+    const visibleActiveNeurons = getVisibleActiveNeuronsIn2D(workspace)
+
     // Current nodes and edges in the Cytoscape instance
     const currentNodes = new Set(cy.nodes().map((node) => node.id()));
     const currentEdges = new Set(cy.edges().map((edge) => edge.id()));
@@ -45,8 +48,8 @@ export const computeGraphDifferences = (
         connectionMap.set(edgeId, conn);
     });
 
-    // Compute expected nodes based on workspace.activeNeurons and connections
-    const filteredActiveNeurons = Array.from(workspace.activeNeurons).filter((neuronId: string) => {
+    // Compute expected nodes based on visibleActiveNeurons and connections
+    const filteredActiveNeurons = Array.from(visibleActiveNeurons).filter((neuronId: string) => {
         const neuron = workspace.availableNeurons[neuronId];
         if (!neuron || hiddenNodes.has(neuronId)) {
             return false;
@@ -58,7 +61,7 @@ export const computeGraphDifferences = (
         if (neuronId === nclass) {
             return true;
         }
-        return !(workspace.activeNeurons.has(neuronId) && workspace.activeNeurons.has(nclass));
+        return !(visibleActiveNeurons.has(neuronId) && visibleActiveNeurons.has(nclass));
     });
 
     // Add active neurons to expected nodes
@@ -81,12 +84,14 @@ export const computeGraphDifferences = (
     }
 
     // Apply split and join rules to expected nodes and edges
-    expectedNodes = applySplitJoinRulesToNodes(expectedNodes, splitJoinState.split, splitJoinState.join, includeNeighboringCellsAsIndividualCells, workspace);
+    expectedNodes = applySplitJoinRulesToNodes(expectedNodes, splitJoinState.split, splitJoinState.join,
+        includeNeighboringCellsAsIndividualCells, workspace, visibleActiveNeurons);
     expectedEdges = applySplitJoinRulesToEdges(expectedEdges, expectedNodes, connectionMap);
 
     // Replace individual neurons and edges with groups if necessary
     expectedNodes = applyGroupingRulesToNodes(expectedNodes, workspace.neuronGroups, hiddenNodes, openGroups);
-    expectedEdges = applyGroupingRulesToEdges(expectedEdges, workspace.neuronGroups, connectionMap, includeAnnotations, openGroups);
+    expectedEdges = applyGroupingRulesToEdges(expectedEdges, workspace.neuronGroups, connectionMap,
+        includeAnnotations, openGroups);
 
 
     // Determine nodes to add and remove
@@ -269,11 +274,13 @@ const applySplitJoinRulesToNodes = (
     toJoin: Set<string>,
     includeNeighboringCellsAsIndividualCells: boolean,
     workspace: Workspace,
+    visibleActiveNeurons: Set<string>
 ) => {
     const nodesToRemove = new Set<string>();
 
     expectedNodes.forEach((nodeId) => {
-        if (!workspace.activeNeurons.has(nodeId) && shouldRemoveNode(nodeId, toSplit, toJoin, includeNeighboringCellsAsIndividualCells, workspace)) {
+        if (!visibleActiveNeurons.has(nodeId) && shouldRemoveNode(nodeId, toSplit, toJoin,
+            includeNeighboringCellsAsIndividualCells, workspace, visibleActiveNeurons)) {
             nodesToRemove.add(nodeId);
         }
     });
@@ -311,8 +318,9 @@ const shouldRemoveNode = (
     toJoin: Set<string>,
     includeNeighboringCellsAsIndividualCells: boolean,
     workspace: Workspace,
+    visibleActiveNeurons: Set<string>
 ): boolean => {
-    const isActive = workspace.activeNeurons.has(nodeId);
+    const isActive = visibleActiveNeurons.has(nodeId);
     const isClass = isNeuronClass(nodeId, workspace);
     const isCell = isNeuronCell(nodeId, workspace);
     const neuron = workspace.availableNeurons[nodeId];

@@ -27,20 +27,16 @@ const Neurons = ({children}) => {
     const {workspaces, datasets, currentWorkspaceId} = useGlobalContext();
     const currentWorkspace = workspaces[currentWorkspaceId];
     const activeNeurons = currentWorkspace.activeNeurons;
-    const recentNeurons = Object.values(currentWorkspace.availableNeurons).filter((neuron) => neuron.isInteractant);
     const availableNeurons = currentWorkspace.availableNeurons;
     const groups = currentWorkspace.neuronGroups;
 
     const [neurons, setNeurons] = useState(availableNeurons);
 
-    const handleSwitchChange = async (neuronId: string, checked: boolean) => {
-        const neuron = availableNeurons[neuronId];
-
-        if (!neuron) return;
-        if (checked) {
-            await currentWorkspace.activateNeuron(neuron);
+    const handleSwitchChange = async (neuronId: string, isChecked: boolean) => {
+        if (isChecked) {
+            await currentWorkspace.showNeuron(neuronId);
         } else {
-            await currentWorkspace.deactivateNeuron(neuronId);
+            await currentWorkspace.hideNeuron(neuronId);
         }
     };
 
@@ -49,11 +45,11 @@ const Neurons = ({children}) => {
         if (neuron && !activeNeurons.has(option.id)) {
             currentWorkspace.activateNeuron(neuron);
         } else {
-            currentWorkspace.deleteNeuron(option.id);
+            currentWorkspace.deactivateNeuron(option.id);
         }
     };
     const handleDeleteNeuron = (neuronId: string) => {
-        currentWorkspace.deleteNeuron(neuronId);
+        currentWorkspace.deactivateNeuron(neuronId);
     };
 
     const fetchNeurons = async (name: string, datasetsIds: { id: string }[]) => {
@@ -131,10 +127,10 @@ const Neurons = ({children}) => {
                             </IconButton>
                         </Tooltip>
                     </Box>
-                    {Array.from(recentNeurons).map((neuron) => (
+                    {Array.from(activeNeurons).map((neuronId) => (
                         <CustomListItem
-                            key={neuron.name}
-                            data={mapNeuronsToListItem(neuron.name, activeNeurons.has(neuron.name))}
+                            key={neuronId}
+                            data={mapNeuronsToListItem(neuronId, currentWorkspace.availableNeurons[neuronId].isVisible)}
                             showTooltip={false}
                             showExtraActions={true}
                             listType="neurons"

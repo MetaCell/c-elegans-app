@@ -28,12 +28,12 @@ export interface NeuronGroup {
 
 export interface EnhancedNeuron extends Neuron {
   viewerData: ViewerData;
-  isInteractant: boolean;
+  isVisible: boolean;
 }
 
 export interface GraphViewerData {
   defaultPosition: Position | null;
-  visibility: boolean;
+  isVisible: boolean;
 }
 
 export interface ViewerData {

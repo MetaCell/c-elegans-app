@@ -266,7 +266,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                     if (update.defaultPosition !== undefined) {
                         draft.availableNeurons[neuronName].viewerData[ViewerType.Graph].defaultPosition = update.defaultPosition;
                     }
-                    draft.availableNeurons[neuronName].viewerData[ViewerType.Graph].visibility = update.visibility;
+                    draft.availableNeurons[neuronName].viewerData[ViewerType.Graph].isVisible = update.isVisible;
                 }
             });
         });
