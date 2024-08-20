@@ -49,17 +49,17 @@ class Connection(BaseModel):
     ids: List[int] = Field(
         default_factory=list,
         description="list of neuron IDs involved in this connection",
-    )  # TODO: should be optional? appers to be empty in some entries
+    )
     post: str  # the name of a neuron as defined in "neurons.json"
     post_tid: List[int] = Field(
         default_factory=list,
         description="list of neuron IDs of a post synapse for a dedicated post neuron",
-    )  # TODO: should be optional? appers to be empty in some entries
+    )
     pre: str  # the name of a neuron as defined in "neurons.json"
     pre_tid: List[int] = Field(
         default_factory=list,
         description="list of neuron IDs of a pre synapse for a dedicated pre neuron",
-    )  # TODO: should be optional? appers to be empty in some entries
+    )
     syn: List[int] = Field(
         ...,
         description="list of weights of a post or pre synapses (indice matches the neuron in pre/post_tid)",
