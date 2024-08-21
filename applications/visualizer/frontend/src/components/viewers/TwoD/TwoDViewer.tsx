@@ -25,7 +25,7 @@ import TwoDLegend from "./TwoDLegend";
 import {Box} from "@mui/material";
 import {ColoringOptions, getColor} from "../../../helpers/twoD/coloringHelper";
 import ContextMenu from "./ContextMenu";
-import {computeGraphDifferences, updateHighlighted} from "../../../helpers/twoD/graphRendering.ts";
+import {computeGraphDifferences, updateHighlighted, updateParentNodes} from "../../../helpers/twoD/graphRendering.ts";
 import {areSetsEqual} from "../../../helpers/utils.ts";
 import {ViewerType} from "../../../models";
 import {Visibility} from "../../../models/models.ts";
@@ -303,10 +303,11 @@ const TwoDViewer = () => {
         );
 
         cy.batch(() => {
-            cy.remove(nodesToRemove);
-            cy.remove(edgesToRemove);
             cy.add(nodesToAdd);
             cy.add(edgesToAdd);
+            updateParentNodes(cy, workspace, openGroups)
+            cy.remove(nodesToRemove);
+            cy.remove(edgesToRemove);
         });
 
         updateNodeColors();

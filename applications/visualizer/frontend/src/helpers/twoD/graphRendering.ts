@@ -363,13 +363,13 @@ export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights, n
     let sourceNodes = cy.collection();
 
     sourceIds.forEach(id => {
-      let node = cy.getElementById(id);
+        let node = cy.getElementById(id);
 
-      if (node.isParent()) {
-        sourceNodes = sourceNodes.union(node.children());
-      } else {
-        sourceNodes = sourceNodes.union(node);
-      }
+        if (node.isParent()) {
+            sourceNodes = sourceNodes.union(node.children());
+        } else {
+            sourceNodes = sourceNodes.union(node);
+        }
     });
 
 
@@ -420,12 +420,21 @@ export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights, n
 };
 
 
-export function removeNodeFromGroup(cy: Core, nodeId: string, setSelected: boolean) {
-    const cyNode = cy.getElementById(nodeId);
-    if (cyNode && cyNode.isNode()) {
-        cyNode.move({parent: null});
-        if (setSelected){
-            cyNode.addClass(SELECTED_CLASS)
-        }
-    }
-}
+export const updateParentNodes = (cy: Core, workspace: Workspace, openGroups: Set<string>) => {
+    // Iterate through each neuron group in the workspace
+    Object.entries(workspace.neuronGroups).forEach(([groupId, group]) => {
+        const groupIsOpen = openGroups.has(groupId);
+
+        group.neurons.forEach((neuronId) => {
+            const cyNode = cy.getElementById(neuronId);
+
+            if (groupIsOpen) {
+                // If the group is open, the neuron should have the group as its parent
+                if (cyNode.parent().id() !== groupId) {
+                    console.log(cyNode.id(), cyNode.parent())
+                    cyNode.move({parent: groupId});
+                }
+            }
+        });
+    });
+};

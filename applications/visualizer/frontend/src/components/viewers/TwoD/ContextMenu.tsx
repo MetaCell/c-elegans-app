@@ -11,10 +11,9 @@ import {
     WorkspacesOutlined,
 } from "@mui/icons-material";
 import {Box, Divider, Menu, MenuItem} from "@mui/material";
-import type {Core, Position} from "cytoscape";
+import type {Core} from "cytoscape";
 import type React from "react";
 import {useMemo, useState} from "react";
-import {calculateMeanPosition, calculateSplitPositions, isNeuronClass} from "../../../helpers/twoD/twoDHelpers.ts";
 import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace.ts";
 import {
     AlignBottomIcon,
@@ -24,12 +23,12 @@ import {
     DistributeHorizontallyIcon,
     DistributeVerticallyIcon
 } from "../../../icons";
-import {Alignment, type NeuronGroup, ViewerType} from "../../../models";
+import {Alignment, ViewerType} from "../../../models";
 import {Visibility} from "../../../models/models.ts";
 import {vars} from "../../../theme/variables.ts";
 import {alignNeurons, distributeNeurons} from "../../../helpers/twoD/alignHelper.ts";
-import {removeNodeFromGroup} from "../../../helpers/twoD/graphRendering.ts";
 import {processNeuronJoin, processNeuronSplit} from "../../../helpers/twoD/splitJoinHelper.ts";
+import {groupNeurons, removeNodeFromGroup} from "../../../helpers/twoD/groupHelper.ts";
 
 const {gray700} = vars;
 
@@ -92,35 +91,39 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
     };
 
     const handleGroup = () => {
-        const newGroupId = `group_${Date.now()}`;
-        const newGroupNeurons = new Set<string>();
-        const groupsToDelete = new Set<string>();
-
-        for (const neuronId of workspace.selectedNeurons) {
-            const group = workspace.neuronGroups[neuronId];
-            if (group) {
-                for (const groupedNeuronId of group.neurons) {
-                    newGroupNeurons.add(groupedNeuronId);
-                }
-                groupsToDelete.add(neuronId);
-            } else {
-                newGroupNeurons.add(neuronId);
-            }
-        }
-
-        const newGroup: NeuronGroup = {
-            id: newGroupId,
-            name: newGroupId,
-            color: "#9FEE9A",
-            neurons: newGroupNeurons,
-        };
+        const {newGroupId, newGroup, groupsToDelete} = groupNeurons(workspace.selectedNeurons, workspace);
 
         workspace.customUpdate((draft) => {
+            // Add the new group
             draft.neuronGroups[newGroupId] = newGroup;
+
+            // Remove the old groups that were merged into the new group
             groupsToDelete.forEach((groupId) => delete draft.neuronGroups[groupId]);
+
+            // Clear the current selection and select the new group
             draft.selectedNeurons.clear();
             draft.selectedNeurons.add(newGroupId);
         });
+
+        setOpenGroups((prevOpenGroups: Set<string>) => {
+            const updatedOpenGroups = new Set(prevOpenGroups);
+            let wasGroupOpen = false;
+
+            groupsToDelete.forEach((groupId) => {
+                if (updatedOpenGroups.has(groupId)) {
+                    updatedOpenGroups.delete(groupId);
+                    wasGroupOpen = true;
+                }
+            });
+
+            // Only add the new group if any of the deleted groups were open
+            if (wasGroupOpen) {
+                updatedOpenGroups.add(newGroupId);
+            }
+
+            return updatedOpenGroups;
+        });
+
         onClose();
     };
     const handleUngroup = () => {
@@ -239,13 +242,24 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
     };
 
     const groupEnabled = useMemo(() => {
-        return Array.from(workspace.selectedNeurons).some((neuronId) => {
-            // Check if the neuronId is not a group and is not part of any group
-            const isGroup = Boolean(workspace.neuronGroups[neuronId]);
-            const isPartOfGroup = Object.values(workspace.neuronGroups).some(group => group.neurons.has(neuronId));
+        const groupOrPartOfGroupSet = new Set<string>();
+        let nonGroupOrPartCount = 0;
 
-            return !isGroup && !isPartOfGroup;
+        Array.from(workspace.selectedNeurons).forEach((neuronId) => {
+            const isGroup = Boolean(workspace.neuronGroups[neuronId]);
+            const isPartOfGroup = Object.entries(workspace.neuronGroups).find(([, group]) => group.neurons.has(neuronId));
+
+            if (isGroup) {
+                groupOrPartOfGroupSet.add(neuronId);
+            } else if (isPartOfGroup) {
+                groupOrPartOfGroupSet.add(isPartOfGroup[0]);
+            } else {
+                nonGroupOrPartCount++;
+            }
         });
+
+        // Enable grouping if there are neurons not in any group and at most one group or part of a group is selected.
+        return nonGroupOrPartCount > 0 && groupOrPartOfGroupSet.size <= 1;
     }, [workspace.selectedNeurons, workspace.neuronGroups]);
 
     const ungroupEnabled = useMemo(() => {
