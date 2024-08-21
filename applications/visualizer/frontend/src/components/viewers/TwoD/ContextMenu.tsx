@@ -128,19 +128,39 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
         workspace.customUpdate((draft) => {
             const nextSelected = new Set<string>();
+
             for (const elementId of draft.selectedNeurons) {
                 if (draft.neuronGroups[elementId]) {
+                    // Handle the case where the selected element is a group
                     const group = draft.neuronGroups[elementId];
                     for (const groupedNeuronId of group.neurons) {
                         nextSelected.add(groupedNeuronId);
                         removeNodeFromGroup(cy, groupedNeuronId, true);
                     }
-                    delete draft.neuronGroups[elementId];
+                    delete draft.neuronGroups[elementId];  // Delete the entire group
                     if (openGroups.has(elementId)) {
                         groupsToRemoveFromOpen.add(elementId);
                     }
+                } else {
+                    // Handle the case where the selected element is a neuron within a group
+                    Object.entries(draft.neuronGroups).forEach(([groupId, group]) => {
+                        if (group.neurons.has(elementId)) {
+                            group.neurons.delete(elementId);  // Remove the neuron from the group
+                            nextSelected.add(elementId);
+                            removeNodeFromGroup(cy, elementId, true);
+
+                            if (group.neurons.size === 0) {
+                                // If the group is now empty, delete it
+                                delete draft.neuronGroups[groupId];
+                                if (openGroups.has(groupId)) {
+                                    groupsToRemoveFromOpen.add(groupId);
+                                }
+                            }
+                        }
+                    });
                 }
             }
+
             draft.selectedNeurons = nextSelected;
         });
 
@@ -150,6 +170,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             groupsToRemoveFromOpen.forEach((groupId) => updatedOpenGroups.delete(groupId));
             return updatedOpenGroups;
         });
+
         onClose();
     };
 
@@ -228,8 +249,18 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
     }, [workspace.selectedNeurons, workspace.neuronGroups]);
 
     const ungroupEnabled = useMemo(() => {
-        return Array.from(workspace.selectedNeurons).some((neuronId) => workspace.neuronGroups[neuronId]);
+        return Array.from(workspace.selectedNeurons).some((neuronId) => {
+            // Check if the neuronId is a group itself
+            const isGroup = Boolean(workspace.neuronGroups[neuronId]);
+
+            // Check if the neuronId is part of any group
+            const isPartOfGroup = Object.values(workspace.neuronGroups).some(group => group.neurons.has(neuronId));
+
+            // Enable ungroup if the neuron is a group or is part of a group
+            return isGroup || isPartOfGroup;
+        });
     }, [workspace.selectedNeurons, workspace.neuronGroups]);
+
 
     const splitEnabled = useMemo(() => {
         return Array.from(workspace.selectedNeurons).some((neuronId) => {
