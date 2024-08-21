@@ -439,7 +439,7 @@ def test__invalid_data(data_fn: Callable[..., Data]):
 
 @pytest.fixture
 def data_fixture(request: pytest.FixtureRequest) -> JSON:
-    FIXTURES_DIR = Path(request.fspath).parent / "fixtures" / "reference-data" # type: ignore
+    FIXTURES_DIR = Path(request.fspath).parent / "fixtures" / "reference-data"  # type: ignore
 
     def load_file(f: str) -> dict:
         with (FIXTURES_DIR / f).open() as file:
