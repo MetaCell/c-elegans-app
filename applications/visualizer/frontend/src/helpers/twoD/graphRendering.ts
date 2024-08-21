@@ -418,3 +418,11 @@ export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights, n
 
     cy.elements().not(highlightedNodes).not(highlightedEdges).addClass("faded");
 };
+
+
+export function removeNodeFromGroup(cy: Core, nodeId: string) {
+    const cyNode = cy.getElementById(nodeId);
+    if (cyNode && cyNode.isNode()) {
+        cyNode.move({parent: null});
+    }
+}

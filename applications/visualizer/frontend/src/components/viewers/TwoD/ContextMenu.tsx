@@ -29,6 +29,7 @@ import type {GraphViewerData} from "../../../models/models.ts";
 import {Visibility} from "../../../models/models.ts";
 import {vars} from "../../../theme/variables.ts";
 import {alignNeurons, distributeNeurons} from "../../../helpers/twoD/alignHelper.ts";
+import {removeNodeFromGroup} from "../../../helpers/twoD/graphRendering.ts";
 
 const {gray700} = vars;
 
@@ -41,6 +42,7 @@ interface ContextMenuProps {
     setOpenGroups: React.Dispatch<React.SetStateAction<Set<string>>>;
     cy: Core
 }
+
 
 const ContextMenu: React.FC<ContextMenuProps> = ({
                                                      open,
@@ -132,6 +134,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                     const group = draft.neuronGroups[elementId];
                     for (const groupedNeuronId of group.neurons) {
                         nextSelected.add(groupedNeuronId);
+                        // Remove the parent property from the Cytoscape node
+                        removeNodeFromGroup(cy, groupedNeuronId);
                     }
                     delete draft.neuronGroups[elementId];
                     if (openGroups.has(elementId)) {
