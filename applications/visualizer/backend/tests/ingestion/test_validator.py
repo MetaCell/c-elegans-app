@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Callable, Dict, List, NamedTuple
+from typing import Any, Callable, NamedTuple
 
 import pytest
 from pydantic import ValidationError
@@ -16,7 +16,7 @@ from ingestion.validator import (
     Neuron,
 )
 
-JSON = Dict[str, Any]  # just for type checking; otherwise does nothing
+JSON = dict[str, Any]  # just for type checking; otherwise does nothing
 
 
 class NeuronTc(NamedTuple):
@@ -24,7 +24,7 @@ class NeuronTc(NamedTuple):
     expected: Neuron
 
 
-valid_neurons_tc: List[NeuronTc] = [
+valid_neurons_tc: list[NeuronTc] = [
     NeuronTc(
         data={
             "inhead": 1,
@@ -54,7 +54,7 @@ def test__valid_neuron(data: JSON, expected: Neuron):
     assert neuron == expected
 
 
-invalid_neurons_tc: List[JSON] = [
+invalid_neurons_tc: list[JSON] = [
     {
         "inhead": 2,  # not valid bool interpretation
         "name": "ADAL",
@@ -96,7 +96,7 @@ class DatasetTc(NamedTuple):
     expected: Dataset
 
 
-valid_datasets_tc: List[DatasetTc] = [
+valid_datasets_tc: list[DatasetTc] = [
     DatasetTc(
         data={
             "id": "white_1986_jse",
@@ -152,7 +152,7 @@ def test__valid_dataset(data: JSON, expected: Dataset):
     assert dataset == expected
 
 
-invalid_datasets_tc: List[JSON] = [
+invalid_datasets_tc: list[JSON] = [
     {
         "id": "white_1986_jse",
         "name": "White et al., 1986, JSE (adult)",
@@ -175,7 +175,7 @@ class ConnectionTc(NamedTuple):
     expected: Connection
 
 
-valid_connections_tc: List[ConnectionTc] = [
+valid_connections_tc: list[ConnectionTc] = [
     ConnectionTc(
         data={
             "ids": [9583833],
@@ -222,7 +222,7 @@ def test__valid_connection(data: JSON, expected: Connection):
     assert conn == expected
 
 
-invalid_connections_tc: List[JSON] = [
+invalid_connections_tc: list[JSON] = [
     {
         "ids": [9583833],
         "post": "ADAR",
@@ -273,7 +273,7 @@ class AnnotationTc(NamedTuple):
     expected: Annotation
 
 
-valid_annotations_tc: List[AnnotationTc] = [
+valid_annotations_tc: list[AnnotationTc] = [
     AnnotationTc(
         data={
             "increase": [
@@ -311,7 +311,7 @@ def test__valid_annotation(data: JSON, expected: Annotation):
     assert annotation == expected
 
 
-invalid_annotations_tc: List[JSON] = [
+invalid_annotations_tc: list[JSON] = [
     {"inexistent": [["ADAL", "RIPL"]]},  # inexistent is not an annotation type
     {
         "increase": [
@@ -328,7 +328,7 @@ def test__invalid_annotation(data: JSON):
         Annotation.model_validate(data)
 
 
-instanciate_valid_data_tc: List[Callable[..., Data]] = [
+instanciate_valid_data_tc: list[Callable[..., Data]] = [
     lambda: Data(
         neurons=[
             Neuron(
@@ -399,7 +399,7 @@ def test__valid_data(data_fn: Callable[..., Data]):
     data_fn()
 
 
-instanciate_invalid_data_tc: List[Callable[..., Data]] = [
+instanciate_invalid_data_tc: list[Callable[..., Data]] = [
     lambda: Data(
         neurons=[],
         datasets=[],
@@ -429,14 +429,14 @@ def test__invalid_data(data_fn: Callable[..., Data]):
 def data_fixture(request: pytest.FixtureRequest) -> JSON:
     # TODO: can we move fixtures close to the test? i.g Path(request.fspath).parent / Path("fixtures")
     ROOT_DIR = Path(request.fspath).parent.parent.parent.parent.parent.parent  # type: ignore
-    FIXTURES_DIR = ROOT_DIR / Path("data/db-raw-data")
+    FIXTURES_DIR = ROOT_DIR / "data" / "db-raw-data"
 
-    def load_file(f: str) -> Dict:
-        with open(FIXTURES_DIR / Path(f)) as file:
+    def load_file(f: str) -> dict:
+        with (FIXTURES_DIR / f).open() as file:
             return json.load(file)
 
-    def load_dir(dir: str, *, trim_file_extension: bool = True) -> Dict[str, Any]:
-        dir_path = FIXTURES_DIR / Path(dir)
+    def load_dir(dir: str, *, trim_file_extension: bool = True) -> dict[str, Any]:
+        dir_path = FIXTURES_DIR / dir
         files_data = {}
 
         for file_path in dir_path.glob("*.json"):

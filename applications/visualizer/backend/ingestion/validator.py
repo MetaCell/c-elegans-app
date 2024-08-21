@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import IntEnum, StrEnum
-from typing import Dict, List, Literal, Optional, Tuple
+from typing import Literal
 
 from pydantic import BaseModel, Field, RootModel, model_validator
 
@@ -35,7 +35,7 @@ class Dataset(BaseModel):
     time: float  # TODO: should add validation gte than 0?
     visualTime: float  # TODO: should add validation gte than 0?
     description: str
-    axes: Optional[List[Axe]] = Field(
+    axes: list[Axe] | None = Field(
         default=None, description="different axes and their representation"
     )
 
@@ -46,21 +46,21 @@ class ConnectionType(IntEnum):
 
 
 class Connection(BaseModel):
-    ids: List[int] = Field(
+    ids: list[int] = Field(
         default_factory=list,
         description="list of neuron IDs involved in this connection",
     )
     post: str  # the name of a neuron as defined in "neurons.json"
-    post_tid: List[int] = Field(
+    post_tid: list[int] = Field(
         default_factory=list,
         description="list of neuron IDs of a post synapse for a dedicated post neuron",
     )
     pre: str  # the name of a neuron as defined in "neurons.json"
-    pre_tid: List[int] = Field(
+    pre_tid: list[int] = Field(
         default_factory=list,
         description="list of neuron IDs of a pre synapse for a dedicated pre neuron",
     )
-    syn: List[int] = Field(
+    syn: list[int] = Field(
         ...,
         description="list of weights of a post or pre synapses (indice matches the neuron in pre/post_tid)",
     )
@@ -69,19 +69,21 @@ class Connection(BaseModel):
     @model_validator(mode="after")
     def check_same_size_elements(self):
         if len(self.ids) != 0:
-            length = len(self.ids)
-            assert all(
-                len(l) == length for l in iter([self.post_tid, self.pre_tid, self.syn])
+            assert (
+                len(self.ids)
+                == len(self.post_tid)
+                == len(self.pre_tid)
+                == len(self.syn)
             ), "ids, post_tid, pre_tid and syn must have the same number of elements"
 
         return self
 
 
 class Annotation(RootModel):
-    root: Dict[
+    root: dict[
         Literal["increase", "variable", "postembryonic", "decrease", "stable"],
-        List[
-            Tuple[  # the type of annotation
+        list[
+            tuple[  # the type of annotation
                 str,  # pre, the ID/name of a neuron from "neurons.json"
                 str,  # post, the ID/name of the other neuron from "neurons.json" that is part of the couple
             ]
@@ -90,17 +92,15 @@ class Annotation(RootModel):
 
 
 class Data(BaseModel):
-    neurons: List[Neuron]
-    datasets: List[Dataset]
-    connections: Dict[str, List[Connection]] = {}
-    annotations: Dict[
-        Literal["head", "complete"], Annotation  # TODO: should 'tail' be included?
-    ] = {}
+    neurons: list[Neuron]
+    datasets: list[Dataset]
+    connections: dict[str, list[Connection]] = {}
+    annotations: dict[Literal["head", "complete", "tail"], Annotation] = {}
 
     @model_validator(mode="after")
     def check_connection_dataset_exists(self):
         existing_datasets = [dt.id for dt in self.datasets]
         assert all(
-            [dataset_id in existing_datasets for dataset_id in self.connections.keys()]
+            dataset_id in existing_datasets for dataset_id in self.connections.keys()
         ), "missing dataset definition for connection"
         return self
