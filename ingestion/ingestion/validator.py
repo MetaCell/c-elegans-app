@@ -16,7 +16,7 @@ class Neuron(BaseModel):
     typ: str  # type of the neuron
 
 
-class DatasetType(Enum):
+class DatasetType(str, Enum):
     COMPLETE = "complete"
     HEAD = "head"
     TAIL = "tail"
