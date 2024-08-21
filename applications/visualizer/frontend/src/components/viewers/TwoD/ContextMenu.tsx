@@ -25,11 +25,11 @@ import {
     DistributeVerticallyIcon
 } from "../../../icons";
 import {Alignment, type NeuronGroup, ViewerType} from "../../../models";
-import type {GraphViewerData} from "../../../models/models.ts";
 import {Visibility} from "../../../models/models.ts";
 import {vars} from "../../../theme/variables.ts";
 import {alignNeurons, distributeNeurons} from "../../../helpers/twoD/alignHelper.ts";
 import {removeNodeFromGroup} from "../../../helpers/twoD/graphRendering.ts";
+import {processNeuronJoin, processNeuronSplit} from "../../../helpers/twoD/splitJoinHelper.ts";
 
 const {gray700} = vars;
 
@@ -123,7 +123,6 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
         });
         onClose();
     };
-
     const handleUngroup = () => {
         const groupsToRemoveFromOpen = new Set<string>();
 
@@ -156,139 +155,18 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
     const handleSplit = () => {
         setSplitJoinState((prevState) => {
-            const newSplit = new Set(prevState.split);
-            const newJoin = new Set(prevState.join);
-
-            const newSelectedNeurons = new Set(workspace.selectedNeurons);
-            const graphViewDataUpdates: Record<string, {
-                defaultPosition?: Position | null;
-                visibility: Visibility
-            }> = {};
-
-            workspace.selectedNeurons.forEach((neuronId) => {
-                if (isNeuronClass(neuronId, workspace)) {
-                    newSplit.add(neuronId);
-                    newSelectedNeurons.delete(neuronId);
-
-                    const individualNeurons = Object.values(workspace.availableNeurons)
-                        .filter((neuron) => {
-                            return neuron.nclass === neuronId && neuron.nclass !== neuron.name;
-                        })
-                        .map((neuron) => neuron.name);
-
-                    // Calculate the positions for the individual neurons
-                    const basePosition = workspace.availableNeurons[neuronId].viewerData[ViewerType.Graph]?.defaultPosition || {
-                        x: 0,
-                        y: 0,
-                    };
-                    const positions = calculateSplitPositions(individualNeurons, basePosition);
-
-                    // Update the selected neurons with individual neurons
-                    individualNeurons.forEach((neuronName) => {
-                        newSelectedNeurons.add(neuronName);
-                        // Only set the position if it doesn't exist yet
-                        if (!workspace.availableNeurons[neuronName].viewerData[ViewerType.Graph]?.defaultPosition) {
-                            graphViewDataUpdates[neuronName] = {
-                                defaultPosition: positions[neuronName],
-                                visibility: Visibility.Visible
-                            };
-                        } else {
-                            graphViewDataUpdates[neuronName] = {visibility: Visibility.Visible};
-                        }
-                    });
-
-                    // Remove the corresponding class from the toJoin set
-                    newJoin.forEach((joinNeuronId) => {
-                        if (workspace.availableNeurons[joinNeuronId].nclass === neuronId) {
-                            newJoin.delete(joinNeuronId);
-                        }
-                    });
-
-                    graphViewDataUpdates[neuronId] = {visibility: Visibility.Unset};
-                }
-            });
-
-            // Update the selected neurons in the workspace
-            updateWorkspace(newSelectedNeurons, graphViewDataUpdates);
-
-            return {split: newSplit, join: newJoin};
+            return processNeuronSplit(workspace, prevState);
         });
         onClose();
     };
 
     const handleJoin = () => {
         setSplitJoinState((prevState) => {
-            const newJoin = new Set(prevState.join);
-            const newSplit = new Set(prevState.split);
-
-            const newSelectedNeurons = new Set(workspace.selectedNeurons);
-            const graphViewDataUpdates: Record<string, {
-                defaultPosition?: Position | null;
-                visibility: Visibility
-            }> = {};
-
-            workspace.selectedNeurons.forEach((neuronId) => {
-                const neuronClass = workspace.availableNeurons[neuronId].nclass;
-
-                const individualNeurons = Object.values(workspace.availableNeurons).filter((neuron) => neuron.nclass === neuronClass && neuron.name !== neuronClass);
-                const individualNeuronIds = individualNeurons.map((neuron) => neuron.name);
-
-                // Calculate and set the class position if not set already
-                const classPosition = calculateMeanPosition(individualNeuronIds, workspace);
-
-                if (!workspace.availableNeurons[neuronClass].viewerData[ViewerType.Graph]?.defaultPosition) {
-                    graphViewDataUpdates[neuronClass] = {
-                        defaultPosition: classPosition,
-                        visibility: Visibility.Visible
-                    };
-                } else {
-                    graphViewDataUpdates[neuronClass] = {
-                        ...graphViewDataUpdates[neuronClass],
-                        visibility: Visibility.Visible
-                    };
-                }
-                // Remove the individual neurons from the selected neurons and add the class neuron
-                individualNeuronIds.forEach((neuronName) => {
-                    newSelectedNeurons.delete(neuronName);
-                    newJoin.add(neuronName);
-
-                    // Set individual neurons' isVisible to false
-                    graphViewDataUpdates[neuronName] = {visibility: Visibility.Unset};
-                });
-                newSelectedNeurons.add(neuronClass);
-
-                // Remove the corresponding cells from the toSplit set
-                newSplit.forEach((splitNeuronId) => {
-                    if (workspace.availableNeurons[splitNeuronId].nclass === neuronClass) {
-                        newSplit.delete(splitNeuronId);
-                    }
-                });
-            });
-
-            // Update the selected neurons in the workspace
-            updateWorkspace(newSelectedNeurons, graphViewDataUpdates);
-
-            return {split: newSplit, join: newJoin};
+            return processNeuronJoin(workspace, prevState);
         });
         onClose();
     };
 
-    const updateWorkspace = (newSelectedNeurons: Set<string>, graphViewDataUpdates: Record<string, Partial<GraphViewerData>>) => {
-        workspace.customUpdate((draft) => {
-            // Update the selected neurons
-            draft.selectedNeurons = newSelectedNeurons;
-
-            // Update the positions and visibility for the individual neurons and class neuron
-            Object.entries(graphViewDataUpdates).forEach(([neuronName, update]) => {
-                if (draft.availableNeurons[neuronName]) {
-                    if (update.defaultPosition !== undefined) {
-                        draft.availableNeurons[neuronName].viewerData[ViewerType.Graph].defaultPosition = update.defaultPosition;
-                    }
-                    draft.availableNeurons[neuronName].viewerData[ViewerType.Graph].visibility = update.visibility;
-                }
-            });
-        });
-    };
 
     const handleAddToWorkspace = () => {
         workspace.customUpdate((draft) => {
