@@ -18,17 +18,20 @@ const categorizeDatasets = (datasets: Dataset[]) => {
     L1: [],
     L2: [],
     L3: [],
+    L4: [],
     Adult: [],
   };
 
   datasets.forEach((dataset) => {
-    if (dataset.visualTime >= 0 && dataset.visualTime < 10) {
+    if (dataset.visualTime >= 0 && dataset.visualTime < 16) {
       categories["L1"].push(dataset);
-    } else if (dataset.visualTime >= 10 && dataset.visualTime < 20) {
+    } else if (dataset.visualTime >= 16 && dataset.visualTime < 25) {
       categories["L2"].push(dataset);
-    } else if (dataset.visualTime >= 20 && dataset.visualTime < 30) {
+    } else if (dataset.visualTime >= 25 && dataset.visualTime < 34) {
       categories["L3"].push(dataset);
-    } else if (dataset.visualTime >= 30) {
+    } else if (dataset.visualTime >= 34 && dataset.visualTime < 45) {
+      categories["L4"].push(dataset);
+    } else if (dataset.visualTime >= 45) {
       categories["Adult"].push(dataset);
     }
   });
@@ -97,6 +100,7 @@ const DataSets = ({ children }) => {
       L1: [],
       L2: [],
       L3: [],
+      L4: [],
       Adult: [],
     };
 
@@ -106,10 +110,18 @@ const DataSets = ({ children }) => {
 
     const filteredActiveList = inputValue ? activeDatasetsList.filter((dataset) => dataset.name.toLowerCase().includes(inputValue)) : activeDatasetsList;
 
-    setFilteredDatasets(filteredCategories);
-    setFilterActiveDatasets(filteredActiveList);
+    if (filterGroupsValue === "All") {
+      setFilteredDatasets(filteredCategories);
+      setFilterActiveDatasets(filteredActiveList);
+    } else {
+      const activeGroup = filteredCategories[filterGroupsValue];
+      const updatedFilteredDatasets = { ...filteredActiveList, [filterGroupsValue]: activeGroup };
+      // @ts-ignore
+      setFilteredDatasets(updatedFilteredDatasets);
+      const updatedFilteredActiveDatasets = filteredActiveList.filter((dataset) => activeGroup.some((catDataset) => catDataset.id === dataset.id));
+      setFilterActiveDatasets(updatedFilteredActiveDatasets);
+    }
   };
-
   const onSelectGroupChange = (e) => {
     const selectedGroup = e.target.value;
     setFilterGroupsValue(selectedGroup);
@@ -149,6 +161,7 @@ const DataSets = ({ children }) => {
       L1: [],
       L2: [],
       L3: [],
+      L4: [],
       Adult: [],
     };
 
