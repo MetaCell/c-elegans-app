@@ -1,0 +1,22 @@
+{
+  "increase": [
+    [
+      "ADAL", 
+      "RIPL"
+    ], 
+    [
+      "ADAR", 
+      "RIPR"
+    ]
+  ], 
+  "variable": [
+    [
+      "ADAL", 
+      "AIAL"
+    ], 
+    [
+      "ADAL", 
+      "AIBL"
+    ]
+  ]
+}
