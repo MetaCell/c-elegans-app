@@ -362,22 +362,16 @@ export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights, n
     const sourceIds = selectedIds.length ? selectedIds : inputIds;
     let sourceNodes = cy.collection();
 
-    sourceIds.forEach((id) => {
-        let node = cy.getElementById(id);
+    sourceIds.forEach(id => {
+      let node = cy.getElementById(id);
 
-        if (node.empty()) {
-            // If node is not found, search in neuron groups
-            for (const groupId in neuronGroups) {
-                const group = neuronGroups[groupId];
-                if (group.neurons.has(id)) {
-                    node = cy.getElementById(groupId);
-                    break;
-                }
-            }
-        }
-
+      if (node.isParent()) {
+        sourceNodes = sourceNodes.union(node.children());
+      } else {
         sourceNodes = sourceNodes.union(node);
+      }
     });
+
 
     // Filter network by edges, as set by legend.
     let edgeSel = "edge";
