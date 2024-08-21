@@ -134,8 +134,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                     const group = draft.neuronGroups[elementId];
                     for (const groupedNeuronId of group.neurons) {
                         nextSelected.add(groupedNeuronId);
-                        // Remove the parent property from the Cytoscape node
-                        removeNodeFromGroup(cy, groupedNeuronId);
+                        removeNodeFromGroup(cy, groupedNeuronId, true);
                     }
                     delete draft.neuronGroups[elementId];
                     if (openGroups.has(elementId)) {

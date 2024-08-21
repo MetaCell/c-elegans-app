@@ -12,7 +12,7 @@ import {
 import type {NeuronGroup, Workspace} from "../../models";
 import {ViewerType} from "../../models";
 import type {Connection} from "../../rest";
-import {LegendType} from "../../settings/twoDSettings.tsx";
+import {FADED_CLASS, LegendType, SELECTED_CLASS} from "../../settings/twoDSettings.tsx";
 
 export const computeGraphDifferences = (
     cy: Core,
@@ -416,13 +416,16 @@ export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights, n
     let highlightedEdges = highlightedNodes.edgesWith(highlightedNodes);
     highlightedEdges = highlightedEdges.filter(edgeSel);
 
-    cy.elements().not(highlightedNodes).not(highlightedEdges).addClass("faded");
+    cy.elements().not(highlightedNodes).not(highlightedEdges).addClass(FADED_CLASS);
 };
 
 
-export function removeNodeFromGroup(cy: Core, nodeId: string) {
+export function removeNodeFromGroup(cy: Core, nodeId: string, setSelected: boolean) {
     const cyNode = cy.getElementById(nodeId);
     if (cyNode && cyNode.isNode()) {
         cyNode.move({parent: null});
+        if (setSelected){
+            cyNode.addClass(SELECTED_CLASS)
+        }
     }
 }

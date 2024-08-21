@@ -78,3 +78,9 @@ export const annotationLegend = {
     icon: <ArrowForwardIcon style={{ color: "#228B22" }} />,
   },
 };
+
+
+export const SELECTED_CLASS = "selected";
+export const FADED_CLASS = "faded";
+export const HOVER_CLASS = "hover";
+export const FOCUS_CLASS = "focus";

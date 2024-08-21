@@ -18,7 +18,7 @@ import {
     INCLUDE_ANNOTATIONS,
     INCLUDE_NEIGHBORING_CELLS,
     INCLUDE_LABELS,
-    INCLUDE_POST_EMBRYONIC,
+    INCLUDE_POST_EMBRYONIC, SELECTED_CLASS, HOVER_CLASS, FOCUS_CLASS,
 } from "../../../settings/twoDSettings";
 import TwoDMenu from "./TwoDMenu";
 import TwoDLegend from "./TwoDLegend";
@@ -180,16 +180,16 @@ const TwoDViewer = () => {
             workspace.toggleSelectedNeuron(neuronId);
 
             if (isSelected) {
-                event.target.removeClass("selected");
+                event.target.removeClass(SELECTED_CLASS);
             } else {
-                event.target.addClass("selected");
+                event.target.addClass(SELECTED_CLASS);
             }
         };
 
         const handleBackgroundClick = (event) => {
             if (event.target === cy) {
                 workspace.clearSelectedNeurons();
-                cy.nodes(".selected").removeClass("selected");
+                cy.nodes(`.${SELECTED_CLASS}`).removeClass(SELECTED_CLASS);
 
                 setLegendHighlights(new Map()); // Reset legend highlights
             }
@@ -212,16 +212,16 @@ const TwoDViewer = () => {
         };
 
         const handleEdgeMouseOver = (event) => {
-            event.target.addClass("hover");
+            event.target.addClass(HOVER_CLASS);
         };
 
         const handleEdgeMouseOut = (event) => {
-            event.target.removeClass("hover");
-            event.target.removeClass("focus");
+            event.target.removeClass(HOVER_CLASS);
+            event.target.removeClass(FOCUS_CLASS);
         };
 
         const handleEdgeFocus = (event) => {
-            event.target.addClass("focus");
+            event.target.addClass(FOCUS_CLASS);
         };
 
         cy.on("tap", "node", handleNodeClick);
@@ -310,7 +310,8 @@ const TwoDViewer = () => {
         });
 
         updateNodeColors();
-        updateHighlighted(cy, Array.from(visibleActiveNeurons), Array.from(workspace.selectedNeurons), legendHighlights, workspace.neuronGroups);
+        updateHighlighted(cy, Array.from(visibleActiveNeurons), Array.from(workspace.selectedNeurons),
+            legendHighlights, workspace.neuronGroups);
     };
 
     const updateLayout = () => {
