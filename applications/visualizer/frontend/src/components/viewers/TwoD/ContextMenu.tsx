@@ -218,7 +218,13 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
     };
 
     const groupEnabled = useMemo(() => {
-        return Array.from(workspace.selectedNeurons).some((neuronId) => !workspace.neuronGroups[neuronId]);
+        return Array.from(workspace.selectedNeurons).some((neuronId) => {
+            // Check if the neuronId is not a group and is not part of any group
+            const isGroup = Boolean(workspace.neuronGroups[neuronId]);
+            const isPartOfGroup = Object.values(workspace.neuronGroups).some(group => group.neurons.has(neuronId));
+
+            return !isGroup && !isPartOfGroup;
+        });
     }, [workspace.selectedNeurons, workspace.neuronGroups]);
 
     const ungroupEnabled = useMemo(() => {
