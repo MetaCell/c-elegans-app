@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import IntEnum, StrEnum
+from enum import Enum, IntEnum
 from typing import Literal
 
 from pydantic import BaseModel, Field, RootModel, model_validator
@@ -16,7 +16,7 @@ class Neuron(BaseModel):
     typ: str  # type of the neuron
 
 
-class DatasetType(StrEnum):
+class DatasetType(Enum):
     COMPLETE = "complete"
     HEAD = "head"
     TAIL = "tail"

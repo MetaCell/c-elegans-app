@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 from pathlib import Path
 from typing import Any, Callable, NamedTuple
@@ -244,7 +246,11 @@ invalid_connections_tc: list[JSON] = [
     {
         "ids": [9583833],
         "post": "ADAR",
-        "post_tid": [9576727, 9583834, 9583834],  # should be the same length as ids
+        "post_tid": [
+            9576727,
+            9583834,
+            9583834,
+        ],  # should be the same length as ids
         "pre": "ADAL",
         "pre_tid": [9577831],
         "syn": [1],
@@ -297,9 +303,15 @@ valid_annotations_tc: list[AnnotationTc] = [
         expected=Annotation(),
     ),
     AnnotationTc(  # multiple annotation types
-        data={"increase": [["ADAL", "RIPL"]], "postembryonic": [["ADAL", "RIPL"]]},
+        data={
+            "increase": [["ADAL", "RIPL"]],
+            "postembryonic": [["ADAL", "RIPL"]],
+        },
         expected=Annotation(
-            root={"increase": [("ADAL", "RIPL")], "postembryonic": [("ADAL", "RIPL")]}
+            root={
+                "increase": [("ADAL", "RIPL")],
+                "postembryonic": [("ADAL", "RIPL")],
+            }
         ),
     ),
 ]
@@ -428,7 +440,7 @@ def test__invalid_data(data_fn: Callable[..., Data]):
 @pytest.fixture
 def data_fixture(request: pytest.FixtureRequest) -> JSON:
     # TODO: can we move fixtures close to the test? i.g Path(request.fspath).parent / Path("fixtures")
-    ROOT_DIR = Path(request.fspath).parent.parent.parent.parent.parent.parent  # type: ignore
+    ROOT_DIR = Path(request.fspath).parent.parent.parent  # type: ignore
     FIXTURES_DIR = ROOT_DIR / "data" / "db-raw-data"
 
     def load_file(f: str) -> dict:

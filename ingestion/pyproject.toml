@@ -1,0 +1,72 @@
+[build-system] 
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ingestion"
+version = "0.0.1"
+description = "CLI tool to ingest c-elegans data"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "Vincent Aranega", email = "vincent@metacell.us" },
+    { name = "Diogo Correia", email = "diogo@metacell.us" },
+]
+maintainers = [
+    { name = "Vincent Aranega", email = "vincent@metacell.us" },
+    { name = "Diogo Correia", email = "diogo@metacell.us" },
+]
+dependencies = [
+    "pydantic==2.8.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=24.8.0",
+    "coverage>=7.6.1",
+    "isort>=5.13.2",
+    "mypy==1.11.1", # lock version: manual upgrade is advised
+    "pytest>=8",
+    "pytest-asyncio",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]  # list of folders that contain the packages (["."] by default)
+include = ["*"]  # package names should match these glob patterns (["*"] by default)
+exclude = [
+    "tests*",
+]  # exclude packages matching these glob patterns (empty by default)
+namespaces = false  # false to disable scanning PEP 420 namespaces (true by default)
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 88
+src_paths = ["ingestion", "tests"]
+add_imports = ["from __future__ import annotations"]
+
+[tool.mypy]
+python_version = "3.10"
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-v"
+asyncio_mode = "strict"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["ingestion"]
+omit = [
+    "venv/*",
+    ".venv/*",
+    "tests/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 0
