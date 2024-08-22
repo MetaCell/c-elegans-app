@@ -56,19 +56,21 @@ const TwoDViewer = () => {
     const [legendHighlights, setLegendHighlights] = useState<Map<LegendType, string>>(new Map());
     const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
 
-    const {visibleActiveNeurons, hiddenNeurons} = useMemo(() => {
-        const visibleActiveNeurons = getVisibleActiveNeuronsIn2D(workspace);
-        const hiddenNeurons = getHiddenNeuronsIn2D(workspace);
-
-        return {visibleActiveNeurons, hiddenNeurons};
+    const visibleActiveNeurons = useMemo(() => {
+        return getVisibleActiveNeuronsIn2D(workspace);
     }, [
-        // Create a string of visibility values for all available neurons to track changes
-        Object.keys(workspace.availableNeurons)
+        Array.from(workspace.activeNeurons)
             .map(neuronId => workspace.availableNeurons[neuronId]?.viewerData[ViewerType.Graph]?.visibility || '')
-            .join(','),
-        workspace.activeNeurons
+            .join(',')
     ]);
 
+    const hiddenNeurons = useMemo(() => {
+        return getHiddenNeuronsIn2D(workspace);
+    }, [
+        Object.keys(workspace.availableNeurons)
+            .map(neuronId => workspace.availableNeurons[neuronId]?.viewerData[ViewerType.Graph]?.visibility || '')
+            .join(',')
+    ]);
 
     const handleContextMenuClose = () => {
         setMousePosition(null);
@@ -362,7 +364,6 @@ const TwoDViewer = () => {
                 node.style(`pie-${index + 1}-background-color`, color);
                 node.style(`pie-${index + 1}-background-size`, 100 / colors.length); // Equal size for each slice
             });
-            node.style("pie-background-opacity", 1);
         });
     };
 
