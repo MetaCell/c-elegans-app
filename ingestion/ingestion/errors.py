@@ -3,10 +3,9 @@ from __future__ import annotations
 from contextlib import contextmanager
 from enum import Enum
 from itertools import groupby
-from pathlib import Path
+from typing import Callable
 
 from pydantic import ValidationError
-from pydantic_core import ErrorDetails
 
 from ingestion.validator import Data
 
@@ -122,27 +121,34 @@ class ErrorWriter:
         self.w += ENDC
 
 
-class HumanizedDataValidationError:
-    _header: str | None  # show a custom head at the beginning of the error message
-    _show_help_utilities: bool  # shows jq commands that can be used to debug the data
-    _data_dir: Path | None  # add data directory context to the error message
+DataErrorWriterOpt = Callable[
+    ["DataErrorWriter"], None
+]  # defines a DataErrorWriter configuration option
 
-    def __init__(
-        self,
-        *,
-        header: str | None = None,
-        show_help_utilities: bool = False,
-        data_dir: Path | None = None,
-    ) -> None:
-        self._header = header
-        self._show_help_utilities = show_help_utilities
-        self._data_dir = data_dir
+
+def with_header(header: str) -> DataErrorWriterOpt:
+    """Show a custom head at the beginning of the error message"""
+
+    def fn(dew: DataErrorWriter):
+        dew.header = header
+
+    return fn
+
+
+class DataErrorWriter:
+    header: str | None = (
+        None  # show a custom head at the beginning of the error message
+    )
+
+    def __init__(self, *opts: DataErrorWriterOpt) -> None:
+        for opt in opts:
+            opt(self)
 
     def humanize(self, exc: ValidationError) -> str:
         w = ErrorWriter()
 
-        if self._header is not None:
-            w.write(self._header, color=Colors.FAIL)
+        if self.header is not None:
+            w.write(self.header, color=Colors.FAIL)
             w.linebreak()
 
         for k, errors in groupby(exc.errors(), lambda err: err["loc"][0]):
@@ -271,12 +277,11 @@ if __name__ == "__main__":
         },
     }
 
-    error_humanizer = HumanizedDataValidationError(
-        header="Woops! We found some inconsistencies in your dataaaa!",
-        show_help_utilities=True,
+    err_w = DataErrorWriter(
+        with_header("Woops! We found some inconsistencies in your data!")
     )
 
     try:
         Data.model_validate(bad_data)
     except ValidationError as e:
-        print(error_humanizer.humanize(e))
+        print(err_w.humanize(e))
