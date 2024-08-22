@@ -7,7 +7,7 @@ from typing import Any, Callable, NamedTuple
 import pytest
 from pydantic import ValidationError
 
-from ingestion.validator import (
+from ingestion.schema import (
     Annotation,
     Axe,
     Connection,

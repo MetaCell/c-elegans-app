@@ -18,6 +18,7 @@ maintainers = [
 ]
 dependencies = [
     "pydantic==2.8.2",
+    "json_source_map==1.0.5",
 ]
 
 [project.optional-dependencies]

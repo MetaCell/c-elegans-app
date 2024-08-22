@@ -3,11 +3,13 @@ from __future__ import annotations
 from contextlib import contextmanager
 from enum import Enum
 from itertools import groupby
+from pathlib import Path
 from typing import Callable
 
+import json_source_map
 from pydantic import ValidationError
 
-from ingestion.validator import Data
+from ingestion.schema import Data, DataContainer
 
 
 class Colors(str, Enum):
@@ -130,25 +132,46 @@ def with_header(header: str) -> DataErrorWriterOpt:
     """Show a custom head at the beginning of the error message"""
 
     def fn(dew: DataErrorWriter):
-        dew.header = header
+        dew._header = header
+
+    return fn
+
+
+def with_file_loc(data_files: DataContainer[Path]) -> DataErrorWriterOpt:
+    """Adds a file snippet with the error line of code error to the error message"""
+
+    def fn(dew: DataErrorWriter):
+        dew._file_loc_enabled = True
+        dew._data_files = data_files
 
     return fn
 
 
 class DataErrorWriter:
-    header: str | None = (
+    _header: str | None = (
         None  # show a custom head at the beginning of the error message
     )
+
+    _file_loc_enabled: bool = False
+    _data_files: DataContainer[Path] | None = None
+    _source_map: DataContainer | None = None
 
     def __init__(self, *opts: DataErrorWriterOpt) -> None:
         for opt in opts:
             opt(self)
 
+    def compute_source_map(self):
+        ...
+        # json_source_map.calculate()
+
     def humanize(self, exc: ValidationError) -> str:
         w = ErrorWriter()
 
-        if self.header is not None:
-            w.write(self.header, color=Colors.FAIL)
+        if self._file_loc_enabled:
+            self.compute_source_map()
+
+        if self._header is not None:
+            w.write(self._header, color=Colors.FAIL)
             w.linebreak()
 
         for k, errors in groupby(exc.errors(), lambda err: err["loc"][0]):

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from enum import Enum, IntEnum
-from typing import Literal
+from typing import Generic, Literal, TypeVar
 
 from pydantic import BaseModel, Field, RootModel, model_validator
 
@@ -107,3 +108,16 @@ class Data(BaseModel):
             dataset_id in existing_datasets for dataset_id in self.connections.keys()
         ), "missing dataset definition for connection"
         return self
+
+
+T = TypeVar("T")
+
+
+@dataclass
+class DataContainer(Generic[T]):
+    """Utility to keep track of object related to the data entries"""
+
+    neurons: T
+    datasets: T
+    connections: dict[str, T] = field(default_factory=dict)  # dataset_name: T
+    annotations: dict[DataAnnotationEntry, T] = field(default_factory=dict)

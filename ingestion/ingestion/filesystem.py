@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import json
 import logging
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, get_args
 
-from ingestion.validator import DataAnnotationEntry
+from ingestion.schema import DataAnnotationEntry, DataContainer
 
 logger = logging.getLogger(__name__)
 
@@ -16,18 +15,7 @@ _CONNECTIONS_DIR = Path("connections")
 _ANNOTATIONS_DIR = Path("annotations")
 
 
-DatasetName = str  # type alias for a dataset name
-
-
-@dataclass
-class DataFiles:
-    neurons: Path
-    datasets: Path
-    connections: dict[DatasetName, Path] = field(default_factory=dict)
-    annotations: dict[DataAnnotationEntry, Path] = field(default_factory=dict)
-
-
-def find_data_files(dir: Path) -> DataFiles:
+def find_data_files(dir: Path) -> DataContainer[Path]:
     neurons_file = dir / _NEURONS_FILE
     if not neurons_file.exists():
         raise FileNotFoundError(neurons_file)
@@ -58,7 +46,7 @@ def find_data_files(dir: Path) -> DataFiles:
         else:
             logger.debug(f"did not find '{possible_entry}' annotations file")
 
-    return DataFiles(
+    return DataContainer(
         neurons=neurons_file,
         datasets=datasets_file,
         connections=connections_files,
@@ -66,7 +54,7 @@ def find_data_files(dir: Path) -> DataFiles:
     )
 
 
-def load_data(files: DataFiles) -> dict:
+def load_data(files: DataContainer[Path]) -> dict:
     with open(files.neurons) as f:
         neurons = json.load(f)
 

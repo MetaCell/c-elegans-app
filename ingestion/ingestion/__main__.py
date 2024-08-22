@@ -5,7 +5,7 @@ import logging
 from pydantic import ValidationError
 
 from ingestion.filesystem import find_data_files, load_data
-from ingestion.validator import Data
+from ingestion.schema import Data
 
 
 def main():
