@@ -91,11 +91,14 @@ class Annotation(RootModel):
     ] = {}
 
 
+DataAnnotationEntry = Literal["head", "complete", "tail"]
+
+
 class Data(BaseModel):
     neurons: list[Neuron]
     datasets: list[Dataset]
     connections: dict[str, list[Connection]] = {}
-    annotations: dict[Literal["head", "complete", "tail"], Annotation] = {}
+    annotations: dict[DataAnnotationEntry, Annotation] = {}
 
     @model_validator(mode="after")
     def check_connection_dataset_exists(self):
