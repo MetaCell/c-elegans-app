@@ -30,9 +30,7 @@ export const processNeuronSplit = (
         newSplit.add(neuronId);
         newSelectedNeurons.delete(neuronId);
 
-        const individualNeurons = Object.values(workspace.availableNeurons)
-            .filter((neuron) => neuron.nclass === neuronId && neuron.nclass !== neuron.name)
-            .map((neuron) => neuron.name);
+        const individualNeurons = workspace.getNeuronCellsByClass(neuronId)
 
         const basePosition = workspace.availableNeurons[neuronId].viewerData[ViewerType.Graph]?.defaultPosition || {
             x: 0,
@@ -244,10 +242,3 @@ export const updateGroupWithJoinedNeurons = (
         }
     });
 };
-
-
-export function areAllSplitNeuronsInGraph(cy: Core, splitJoinState: SplitJoinState,) {
-    const missingNeurons = Array.from(splitJoinState.split).filter(neuronId => !cy.getElementById(neuronId).length);
-
-    return missingNeurons.length == 0
-}

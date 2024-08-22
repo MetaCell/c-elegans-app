@@ -28,7 +28,6 @@ import ContextMenu from "./ContextMenu";
 import {computeGraphDifferences, updateHighlighted, updateParentNodes} from "../../../helpers/twoD/graphRendering.ts";
 import {areSetsEqual} from "../../../helpers/utils.ts";
 import {ViewerType} from "../../../models";
-import {areAllSplitNeuronsInGraph} from "../../../helpers/twoD/splitJoinHelper.ts";
 
 cytoscape.use(fcose);
 cytoscape.use(dagre);
@@ -55,8 +54,10 @@ const TwoDViewer = () => {
     const [legendHighlights, setLegendHighlights] = useState<Map<LegendType, string>>(new Map());
     const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
 
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-
+    const [missingNeuronsState, setMissingNeuronsState] = useState({
+        reportedNeurons: new Set(),
+        unreportedNeurons: new Set()
+    });
     const visibleActiveNeurons = useMemo(() => {
         return getVisibleActiveNeuronsIn2D(workspace);
     }, [
@@ -77,6 +78,12 @@ const TwoDViewer = () => {
         setMousePosition(null);
     };
 
+    const handleCloseSnackbar = () => {
+        setMissingNeuronsState(prevState => ({
+            reportedNeurons: new Set([...prevState.reportedNeurons, ...prevState.unreportedNeurons]),
+            unreportedNeurons: new Set()
+        }));
+    };
     // Initialize and update Cytoscape
     useEffect(() => {
         if (!cyContainer.current) return;
@@ -323,11 +330,32 @@ const TwoDViewer = () => {
         checkSplitNeuronsInGraph()
     };
 
-    const checkSplitNeuronsInGraph = () => {
-        if (!areAllSplitNeuronsInGraph(cyRef.current, splitJoinState)) {
-            setSnackbarOpen(true);
+      const checkSplitNeuronsInGraph = () => {
+        const newMissingNeurons = new Set();
+        splitJoinState.split.forEach(neuronId => {
+            const cells = workspace.getNeuronCellsByClass(neuronId);
+            cells.forEach(cellId => {
+                if (!cyRef.current.getElementById(cellId).length) {
+                    newMissingNeurons.add(cellId);
+                }
+            });
+        });
+
+        const { reportedNeurons } = missingNeuronsState;
+
+        // Find the newly missing neurons that haven't been reported yet
+        const unreportedNeurons = new Set(
+            [...newMissingNeurons].filter(neuron => !reportedNeurons.has(neuron))
+        );
+
+        if (unreportedNeurons.size > 0) {
+            setMissingNeuronsState(prevState => ({
+                ...prevState,
+                unreportedNeurons: unreportedNeurons
+            }));
         }
-    }
+    };
+
 
     const updateLayout = () => {
         if (cyRef.current) {
@@ -417,15 +445,12 @@ const TwoDViewer = () => {
                 cy={cyRef.current}
             />
             <Snackbar
-                open={snackbarOpen}
+                open={missingNeuronsState.unreportedNeurons.size > 0}
+                onClose={handleCloseSnackbar}
+                message={`Warning: The following neurons are missing from the graph due to the threshold filters: 
+                ${Array.from(missingNeuronsState.unreportedNeurons).join(', ')}`}
                 autoHideDuration={6000}
-                onClose={() => setSnackbarOpen(false)}
-                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
-            >
-                <Alert onClose={() => setSnackbarOpen(false)} severity="warning">
-                    Warning: Some neurons in the split state are not part of the graph due to the filter thresholds.
-                </Alert>
-            </Snackbar>
+            />
         </Box>
     );
 };

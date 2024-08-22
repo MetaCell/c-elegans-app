@@ -239,4 +239,10 @@ export class Workspace {
 
         return hiddenNodes;
     }
+
+    getNeuronCellsByClass(neuronClassId: string): string[] {
+        return Object.values(this.availableNeurons)
+            .filter(neuron => neuron.nclass === neuronClassId && neuron.nclass !== neuron.name)
+            .map(neuron => neuron.name);
+    }
 }
