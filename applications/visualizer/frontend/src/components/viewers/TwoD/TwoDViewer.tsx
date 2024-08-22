@@ -180,20 +180,17 @@ const TwoDViewer = () => {
 
     const cy = cyRef.current;
 
-    // Create a debounced version of correctGjSegments
     const debouncedCorrectGjSegments = debounce(() => {
       correctGjSegments();
     }, 100);
 
-    // Trigger the debounced function on relevant events
     cy.on("position", "node", debouncedCorrectGjSegments);
     cy.on("layoutstop", debouncedCorrectGjSegments);
 
-    // Clean up event listeners and debounced function on unmount
     return () => {
       cy.off("position", "node", debouncedCorrectGjSegments);
       cy.off("layoutstop", debouncedCorrectGjSegments);
-      debouncedCorrectGjSegments.cancel(); // Cancel any pending debounced calls
+      debouncedCorrectGjSegments.cancel();
     };
   }, []);
 
