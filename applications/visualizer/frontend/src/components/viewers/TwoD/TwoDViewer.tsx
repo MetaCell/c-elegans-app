@@ -22,13 +22,13 @@ import {
 } from "../../../settings/twoDSettings";
 import TwoDMenu from "./TwoDMenu";
 import TwoDLegend from "./TwoDLegend";
-import {Box} from "@mui/material";
+import {Alert, Box, Snackbar} from "@mui/material";
 import {ColoringOptions, getColor} from "../../../helpers/twoD/coloringHelper";
 import ContextMenu from "./ContextMenu";
 import {computeGraphDifferences, updateHighlighted, updateParentNodes} from "../../../helpers/twoD/graphRendering.ts";
 import {areSetsEqual} from "../../../helpers/utils.ts";
 import {ViewerType} from "../../../models";
-import {Visibility} from "../../../models/models.ts";
+import {areAllSplitNeuronsInGraph} from "../../../helpers/twoD/splitJoinHelper.ts";
 
 cytoscape.use(fcose);
 cytoscape.use(dagre);
@@ -55,6 +55,8 @@ const TwoDViewer = () => {
     const [mousePosition, setMousePosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
     const [legendHighlights, setLegendHighlights] = useState<Map<LegendType, string>>(new Map());
     const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
+
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
 
     const visibleActiveNeurons = useMemo(() => {
         return getVisibleActiveNeuronsIn2D(workspace);
@@ -319,7 +321,14 @@ const TwoDViewer = () => {
         updateNodeColors();
         updateHighlighted(cy, Array.from(visibleActiveNeurons), Array.from(workspace.selectedNeurons),
             legendHighlights, workspace.neuronGroups);
+        checkSplitNeuronsInGraph()
     };
+
+    const checkSplitNeuronsInGraph = () => {
+        if (!areAllSplitNeuronsInGraph(cyRef.current, splitJoinState)) {
+            setSnackbarOpen(true);
+        }
+    }
 
     const updateLayout = () => {
         if (cyRef.current) {
@@ -408,6 +417,16 @@ const TwoDViewer = () => {
                 setOpenGroups={setOpenGroups}
                 cy={cyRef.current}
             />
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+            >
+                <Alert onClose={() => setSnackbarOpen(false)} severity="warning">
+                    Warning: Some neurons in the split state are not part of the graph due to the filter thresholds.
+                </Alert>
+            </Snackbar>
         </Box>
     );
 };

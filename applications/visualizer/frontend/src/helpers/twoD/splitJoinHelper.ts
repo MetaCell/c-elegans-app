@@ -1,6 +1,7 @@
 import {GraphViewerData, Visibility} from "../../models/models.ts";
 import {Workspace, ViewerType} from "../../models";
 import {calculateMeanPosition, calculateSplitPositions, isNeuronClass, isNeuronCell} from "./twoDHelpers.ts";
+import {Core} from "cytoscape";
 
 
 interface SplitJoinState {
@@ -243,3 +244,10 @@ export const updateGroupWithJoinedNeurons = (
         }
     });
 };
+
+
+export function areAllSplitNeuronsInGraph(cy: Core, splitJoinState: SplitJoinState,) {
+    const missingNeurons = Array.from(splitJoinState.split).filter(neuronId => !cy.getElementById(neuronId).length);
+
+    return missingNeurons.length == 0
+}
