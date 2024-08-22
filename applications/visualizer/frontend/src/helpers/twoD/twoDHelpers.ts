@@ -3,7 +3,7 @@ import type {Workspace} from "../../models";
 import {ViewerType} from "../../models";
 import type {Connection} from "../../rest";
 
-import {annotationLegend} from "../../settings/twoDSettings.tsx";
+import {annotationLegend, LAYOUT_OPTIONS} from "../../settings/twoDSettings.tsx";
 import {cellConfig, neurotransmitterConfig} from "./coloringHelper.ts";
 import {Visibility} from "../../models/models.ts";
 
@@ -83,9 +83,8 @@ export const createNode = (
 
 
 export function applyLayout(cy: Core, layout: string) {
-    cy.layout({
-        name: layout,
-    }).run();
+
+    cy.layout(LAYOUT_OPTIONS[layout]).run();
 
     refreshLayout(cy);
 }

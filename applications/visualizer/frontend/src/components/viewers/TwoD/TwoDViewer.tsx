@@ -38,6 +38,7 @@ const TwoDViewer = () => {
     const cyContainer = useRef(null);
     const cyRef = useRef<Core | null>(null);
     const [connections, setConnections] = useState<Connection[]>([]);
+    cytoscape
     const [layout, setLayout] = useState<string>(GRAPH_LAYOUTS.Concentric);
     const [coloringOption, setColoringOption] = useState<ColoringOptions>(ColoringOptions.CELL_TYPE);
     const [thresholdChemical, setThresholdChemical] = useState<number>(CHEMICAL_THRESHOLD);
@@ -83,6 +84,9 @@ const TwoDViewer = () => {
             layout: {
                 name: layout,
             },
+            boxSelectionEnabled: true,
+            motionBlur: true,
+            selectionType: 'additive',
         });
         cyRef.current = cy;
 
