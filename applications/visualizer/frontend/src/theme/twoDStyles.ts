@@ -1,17 +1,6 @@
 import type { Stylesheet } from "cytoscape";
 import { annotationLegend } from "../settings/twoDSettings.tsx";
 
-const NODE_STYLE = {
-  "background-color": "#666",
-  label: "data(label)",
-  color: "#fff",
-  "text-valign": "center",
-  "text-halign": "center",
-  "font-size": 8,
-  width: 24,
-  height: 24,
-};
-
 const SELECTED_NODE_STYLE = {
   "border-width": 2,
   "border-color": "black",
@@ -41,27 +30,52 @@ const UNSELECTED_GROUP_NODE_STYLE = {
   "border-width": 0,
 };
 
-const EDGE_STYLE = {
-  "line-color": "#63625F",
-  "target-arrow-color": "#63625F",
-  "target-arrow-shape": "triangle",
-  "curve-style": "bezier",
-  "arrow-scale": 0.3,
-  "source-distance-from-node": 1,
-  "target-distance-from-node": 1,
-};
+const EDGE_STYLE = [
+  {
+    selector: "edge",
+    style: {
+      "line-color": "#63625F",
+      "target-arrow-color": "#63625F",
+      "target-arrow-shape": "triangle",
+      "curve-style": "bezier",
+      "arrow-scale": 0.3,
+      "source-distance-from-node": 1,
+      "target-distance-from-node": 1,
+    },
+  },
+  {
+    selector: "edge:loop",
+    css: {
+      "source-distance-from-node": 0,
+      "target-distance-from-node": 0,
+      "arrow-scale": 0.3,
+    },
+  },
+];
 
 const CHEMICAL_STYLE = { "line-color": "#63625F", width: 0.5 };
-const ELECTRICAL_STYLE = {
-  "line-color": "#63625F",
-  width: 0.5,
-  "curve-style": "segments",
-  "target-arrow-color": "#666666",
-  "source-arrow-color": "#666666",
-  "segment-distances": "0 -4 4 -4 4 0",
-  "segment-weights": [-2.0, -1.5, -0.5, 0.5, 1.5, 2.0],
-  "target-arrow-shape": "none",
-};
+const ELECTRICAL_STYLE = [
+  {
+    selector: ".electrical",
+    style: {
+      "line-color": "#63625F",
+      width: 0.5,
+      "curve-style": "segments",
+      "target-arrow-color": "#666666",
+      "source-arrow-color": "#666666",
+      "segment-distances": "0 -4 4 -4 4 0",
+      "segment-weights": [-2.0, -1.5, -0.5, 0.5, 1.5, 2.0],
+      "target-arrow-shape": "none",
+    },
+  },
+  {
+    selector: ".electrical:loop",
+    css: {
+      "target-arrow-shape": "tee",
+      "source-arrow-shape": "tee",
+    },
+  },
+];
 
 const FADED_STYLE = [
   {
@@ -109,18 +123,41 @@ const EDGE_LABEL_STYLES = [
   },
 ];
 
-const ANNOTATION_STYLES = Object.entries(annotationLegend).map(([, { id, color }]) => ({
-  selector: `.${id}`,
-  style: {
-    "line-color": color,
-    "target-arrow-color": color,
-  },
-}));
-
-export const GRAPH_STYLES = [
+const NODE_STYLE = [
   {
     selector: "node",
-    style: NODE_STYLE,
+    style: {
+      "background-color": "#666",
+      label: "data(label)",
+      color: "black",
+      "text-valign": "center",
+      "text-halign": "center",
+      "font-size": 8,
+      width: 24,
+      height: 24,
+    },
+  },
+  {
+    selector: "node[?none], node[?muscle], node[?others]",
+    css: {
+      "font-size": "16px",
+      shape: "roundrectangle",
+      "text-margin-y": "2px",
+      width: "label",
+      height: "10px",
+      padding: "12px",
+    },
+  },
+  {
+    selector: "node[?none], node[?muscle], node[?others]",
+    css: {
+      "font-size": "16px",
+      shape: "roundrectangle",
+      "text-margin-y": "2px",
+      width: "label",
+      height: "10px",
+      padding: "12px",
+    },
   },
   {
     selector: "node.groupNode.selected",
@@ -135,33 +172,17 @@ export const GRAPH_STYLES = [
     style: SELECTED_NODE_STYLE,
   },
   {
-    selector: "edge",
-    style: EDGE_STYLE,
-  },
-  {
     selector: ".chemical",
     style: CHEMICAL_STYLE,
   },
-  {
-    selector: ".electrical",
-    style: ELECTRICAL_STYLE,
+];
+
+const ANNOTATION_STYLES = Object.entries(annotationLegend).map(([, { id, color }]) => ({
+  selector: `.${id}`,
+  style: {
+    "line-color": color,
+    "target-arrow-color": color,
   },
-  {
-    selector: ".electrical:loop",
-    css: {
-      "target-arrow-shape": "tee",
-      "source-arrow-shape": "tee",
-    },
-  },
-  {
-    selector: "edge:loop",
-    css: {
-      "source-distance-from-node": 0,
-      "target-distance-from-node": 0,
-      "arrow-scale": 0.3,
-    },
-  },
-  ...EDGE_LABEL_STYLES,
-  ...FADED_STYLE,
-  ...ANNOTATION_STYLES,
-] as Stylesheet[];
+}));
+
+export const GRAPH_STYLES = [...NODE_STYLE, ...EDGE_STYLE, ...ELECTRICAL_STYLE, ...EDGE_LABEL_STYLES, ...FADED_STYLE, ...ANNOTATION_STYLES] as Stylesheet[];

@@ -1,7 +1,7 @@
 import { Box, Divider, IconButton, Typography } from "@mui/material";
 import type React from "react";
 import { type ColoringOptions, getColorMap, legendNodeNameMapping } from "../../../helpers/twoD/coloringHelper";
-import { LegendType, connectionsLegend, annotationLegend } from "../../../settings/twoDSettings";
+import { LegendType, annotationLegend, connectionsLegend } from "../../../settings/twoDSettings";
 import { vars } from "../../../theme/variables";
 
 const { gray100 } = vars;
@@ -93,8 +93,7 @@ const TwoDLegend: React.FC<LegendProps> = ({ coloringOption, setLegendHighlights
       sx={{
         padding: "1rem",
         borderRadius: "0.5rem",
-        backgroundColor: "rgba(245, 245, 244, 0.80)",
-        backdropFilter: "blur(20px)",
+        backgroundColor: "transparent",
       }}
     >
       {Object.entries(colorMap).map(([name, color]) => (
