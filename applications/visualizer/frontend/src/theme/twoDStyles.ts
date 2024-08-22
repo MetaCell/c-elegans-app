@@ -58,8 +58,8 @@ const ELECTRICAL_STYLE = {
   "curve-style": "segments",
   "target-arrow-color": "#666666",
   "source-arrow-color": "#666666",
-  "segment-distances": "0 -5 5 -5 5 0",
-  "segment-weights": [0.3, 0.4, 0.5, 0.6, 0.7],
+  "segment-distances": "0 -4 4 -4 4 0",
+  "segment-weights": [-2.0, -1.5, -0.5, 0.5, 1.5, 2.0],
   "target-arrow-shape": "none",
 };
 

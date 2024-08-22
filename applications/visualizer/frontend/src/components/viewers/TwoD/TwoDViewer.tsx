@@ -1,28 +1,29 @@
-import { useState, useEffect, useRef } from "react";
+import { Box } from "@mui/material";
 import cytoscape, { type Core, type EventHandler } from "cytoscape";
-import fcose from "cytoscape-fcose";
 import dagre from "cytoscape-dagre";
+import fcose from "cytoscape-fcose";
+import { debounce } from "lodash";
+import { useEffect, useRef, useState } from "react";
+import { ColoringOptions, getColor } from "../../../helpers/twoD/coloringHelper";
+import { computeGraphDifferences, updateHighlighted } from "../../../helpers/twoD/graphRendering.ts";
+import { applyLayout, refreshLayout, updateWorkspaceNeurons2DViewerData } from "../../../helpers/twoD/twoDHelpers";
+import { areSetsEqual } from "../../../helpers/utils.ts";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace";
 import { type Connection, ConnectivityService } from "../../../rest";
-import { GRAPH_STYLES } from "../../../theme/twoDStyles";
-import { applyLayout, refreshLayout, updateWorkspaceNeurons2DViewerData } from "../../../helpers/twoD/twoDHelpers";
 import {
   CHEMICAL_THRESHOLD,
   ELECTRICAL_THRESHOLD,
   GRAPH_LAYOUTS,
-  type LegendType,
   INCLUDE_ANNOTATIONS,
-  INCLUDE_NEIGHBORING_CELLS,
   INCLUDE_LABELS,
+  INCLUDE_NEIGHBORING_CELLS,
   INCLUDE_POST_EMBRYONIC,
+  type LegendType,
 } from "../../../settings/twoDSettings";
-import TwoDMenu from "./TwoDMenu";
-import TwoDLegend from "./TwoDLegend";
-import { Box } from "@mui/material";
-import { ColoringOptions, getColor } from "../../../helpers/twoD/coloringHelper";
+import { GRAPH_STYLES } from "../../../theme/twoDStyles";
 import ContextMenu from "./ContextMenu";
-import { computeGraphDifferences, updateHighlighted } from "../../../helpers/twoD/graphRendering.ts";
-import { areSetsEqual } from "../../../helpers/utils.ts";
+import TwoDLegend from "./TwoDLegend";
+import TwoDMenu from "./TwoDMenu";
 
 cytoscape.use(fcose);
 cytoscape.use(dagre);
@@ -146,6 +147,55 @@ const TwoDViewer = () => {
   useEffect(() => {
     updateLayout();
   }, [layout, connections]);
+
+  const correctGjSegments = (edgeSel = "[type=electrical]") => {
+    const cy = cyRef.current;
+    if (!cy) return;
+
+    const edges = cy.edges(edgeSel);
+    const disFactors = [-2.0, -1.5, -0.5, 0.5, 1.5, 2.0];
+
+    cy.startBatch();
+
+    edges.forEach((e) => {
+      const sourcePos = e.source().position();
+      const targetPos = e.target().position();
+
+      const length = Math.sqrt(Math.pow(targetPos["x"] - sourcePos["x"], 2) + Math.pow(targetPos["y"] - sourcePos["y"], 2));
+
+      const divider = (length > 60 ? 7 : length > 40 ? 5 : 3) / length;
+
+      const segweights = disFactors.map((d) => 0.5 + d * divider).join(" ");
+
+      if (e.style("segment-weights") !== segweights) {
+        e.style({ "segment-weights": segweights });
+      }
+    });
+
+    cy.endBatch();
+  };
+
+  useEffect(() => {
+    if (!cyRef.current) return;
+
+    const cy = cyRef.current;
+
+    // Create a debounced version of correctGjSegments
+    const debouncedCorrectGjSegments = debounce(() => {
+      correctGjSegments();
+    }, 100);
+
+    // Trigger the debounced function on relevant events
+    cy.on("position", "node", debouncedCorrectGjSegments);
+    cy.on("layoutstop", debouncedCorrectGjSegments);
+
+    // Clean up event listeners and debounced function on unmount
+    return () => {
+      cy.off("position", "node", debouncedCorrectGjSegments);
+      cy.off("layoutstop", debouncedCorrectGjSegments);
+      debouncedCorrectGjSegments.cancel(); // Cancel any pending debounced calls
+    };
+  }, []);
 
   // Add event listener for node clicks to toggle neuron selection and right-click context menu
   useEffect(() => {
