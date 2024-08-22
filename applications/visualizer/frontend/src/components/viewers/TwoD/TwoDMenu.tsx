@@ -22,6 +22,7 @@ import QuantityInput from "./NumberInput.tsx";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
 import { applyLayout } from "../../../helpers/twoD/twoDHelpers.ts";
 import { Visibility, ViewerType } from "../../../models";
+import {downloadConnectivityViewer} from "../../../helpers/twoD/downloadHelper.ts";
 
 const { gray500 } = vars;
 
@@ -90,23 +91,8 @@ const TwoDMenu = ({
     setSettingsAnchorEl(null);
   };
 
-  const handleDownloadClick = () => {
-    if (!cy) return;
-
-    const pngDataUrl = cy.png({
-      output: "base64uri",
-      bg: "white",
-      full: true,
-      scale: 2,
-    });
-
-    const link = document.createElement("a");
-    link.href = pngDataUrl;
-    link.download = `${workspace.name}.png`;
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownloadClick = async () => {
+    await downloadConnectivityViewer(cy, workspace.name)
   };
 
   const handleOpenVisibility = (event) => {

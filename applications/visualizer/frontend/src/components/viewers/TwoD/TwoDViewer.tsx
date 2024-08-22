@@ -38,7 +38,6 @@ const TwoDViewer = () => {
     const cyContainer = useRef(null);
     const cyRef = useRef<Core | null>(null);
     const [connections, setConnections] = useState<Connection[]>([]);
-    cytoscape
     const [layout, setLayout] = useState<string>(GRAPH_LAYOUTS.Concentric);
     const [coloringOption, setColoringOption] = useState<ColoringOptions>(ColoringOptions.CELL_TYPE);
     const [thresholdChemical, setThresholdChemical] = useState<number>(CHEMICAL_THRESHOLD);
@@ -399,7 +398,7 @@ const TwoDViewer = () => {
                 includePostEmbryonic={includePostEmbryonic}
                 setIncludePostEmbryonic={setIncludePostEmbryonic}
             />
-            <Box sx={{position: "absolute", top: 0, right: 0, zIndex: 1000}}>
+            <Box id='legend-container' sx={{position: "absolute", top: 0, right: 0, zIndex: 1000}}>
                 <TwoDLegend
                     coloringOption={coloringOption}
                     legendHighlights={legendHighlights}
