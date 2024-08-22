@@ -337,8 +337,18 @@ const shouldRemoveNode = (
         return true;
     }
 
-    // 3. Remove individual cells if showing class nodes and the node is not active and it's not a split exception
-    if (!includeNeighboringCellsAsIndividualCells && isCell && !isActive && !toSplit.has(neuron.nclass)) {
+    // 3. Remove individual cells if showing class nodes and the node is not active, it's not a split exception, and there's no active neuron in the same class
+    const isAnyNeuronInClassActive = !includeNeighboringCellsAsIndividualCells && isCell &&
+        workspace.getNeuronCellsByClass(neuron.nclass).some(cellId => workspace.activeNeurons.has(cellId));
+
+    if (!includeNeighboringCellsAsIndividualCells && isCell && !isActive && !toSplit.has(neuron.nclass) && !isAnyNeuronInClassActive) {
+        return true;
+    }
+
+    // 4. Remove class nodes if showing individual cells and there's an active cell in the same class
+    const hasActiveCellInClass = !includeNeighboringCellsAsIndividualCells && isClass && workspace.getNeuronCellsByClass(nodeId).some(cellId => workspace.activeNeurons.has(cellId));
+
+    if (!includeNeighboringCellsAsIndividualCells && isClass && hasActiveCellInClass) {
         return true;
     }
 
