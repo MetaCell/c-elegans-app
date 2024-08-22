@@ -41,6 +41,7 @@ const EDGE_STYLE = [
       "arrow-scale": 0.3,
       "source-distance-from-node": 1,
       "target-distance-from-node": 1,
+      width: "data(width)",
     },
   },
   {

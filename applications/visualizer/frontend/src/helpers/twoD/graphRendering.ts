@@ -1,9 +1,9 @@
-import type { Core, ElementDefinition, CollectionReturnValue } from "cytoscape";
-import { calculateMeanPosition, createEdge, createNode, extractNeuronAttributes, getEdgeId, getNclassSet, isNeuronCell, isNeuronClass } from "./twoDHelpers";
+import type { CollectionReturnValue, Core, ElementDefinition } from "cytoscape";
 import type { NeuronGroup, Workspace } from "../../models";
 import { ViewerType } from "../../models";
 import type { Connection } from "../../rest";
 import { LegendType } from "../../settings/twoDSettings.tsx";
+import { calculateMeanPosition, createEdge, createNode, extractNeuronAttributes, getEdgeId, getNclassSet, isNeuronCell, isNeuronClass } from "./twoDHelpers";
 
 export const computeGraphDifferences = (
   cy: Core,
@@ -112,8 +112,9 @@ export const computeGraphDifferences = (
   for (const edgeId of expectedEdges) {
     if (!currentEdges.has(edgeId)) {
       const conn = connectionMap.get(edgeId);
+      const width = Object.values(conn.synapses).length;
       if (conn) {
-        edgesToAdd.push(createEdge(edgeId, conn, workspace, includeAnnotations));
+        edgesToAdd.push(createEdge(edgeId, conn, workspace, includeAnnotations, width));
       }
     }
   }

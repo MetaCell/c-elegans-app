@@ -6,7 +6,7 @@ import type { Connection } from "../../rest";
 import { annotationLegend } from "../../settings/twoDSettings.tsx";
 import { cellConfig, neurotransmitterConfig } from "./coloringHelper.ts";
 
-export const createEdge = (id: string, conn: Connection, workspace: Workspace, includeAnnotations: boolean): ElementDefinition => {
+export const createEdge = (id: string, conn: Connection, workspace: Workspace, includeAnnotations: boolean, width: number): ElementDefinition => {
   const synapses = conn.synapses || {};
   const annotations = conn.annotations || [];
 
@@ -35,6 +35,7 @@ export const createEdge = (id: string, conn: Connection, workspace: Workspace, i
       label: label,
       longLabel: longLabel,
       type: conn.type,
+      width,
     },
     classes: classes,
   };
