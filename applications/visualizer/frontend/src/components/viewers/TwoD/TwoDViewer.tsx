@@ -9,6 +9,7 @@ import {
   applyLayout,
   getHiddenNeuronsIn2D,
   getVisibleActiveNeuronsIn2D,
+  isNeuronPartOfClosedGroup,
   refreshLayout,
   updateWorkspaceNeurons2DViewerData,
 } from "../../../helpers/twoD/twoDHelpers";
@@ -334,11 +335,12 @@ const TwoDViewer = () => {
   };
 
   const checkSplitNeuronsInGraph = () => {
-    const newMissingNeurons = new Set();
+    const newMissingNeurons = new Set<string>();
     splitJoinState.split.forEach((neuronId) => {
       const cells = workspace.getNeuronCellsByClass(neuronId);
       cells.forEach((cellId) => {
-        if (!cyRef.current.getElementById(cellId).length) {
+        // Check if the cell is part of a closed group, if not, check if it's missing
+        if (!isNeuronPartOfClosedGroup(cellId, workspace, openGroups) && !cyRef.current.getElementById(cellId).length) {
           newMissingNeurons.add(cellId);
         }
       });

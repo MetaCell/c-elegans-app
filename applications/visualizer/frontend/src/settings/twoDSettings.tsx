@@ -39,7 +39,6 @@ type ConcentricLayoutOptions = LayoutOptions & {
 
 type ExtendedLayoutOptions = FcoseLayoutOptions | DagreLayoutOptions | ConcentricLayoutOptions;
 
-
 export const LAYOUT_OPTIONS: Record<GRAPH_LAYOUTS, ExtendedLayoutOptions> = {
   [GRAPH_LAYOUTS.Force]: {
     name: "fcose",

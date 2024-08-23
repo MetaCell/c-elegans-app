@@ -253,3 +253,9 @@ export function getHiddenNeuronsIn2D(workspace: Workspace): Set<string> {
 
   return hiddenNeurons;
 }
+
+export function isNeuronPartOfClosedGroup(neuronId: string, workspace: Workspace, openGroups: Set<string>): boolean {
+  return Object.entries(workspace.neuronGroups).some(([groupId, group]) => {
+    return group.neurons.has(neuronId) && !openGroups.has(groupId);
+  });
+}
