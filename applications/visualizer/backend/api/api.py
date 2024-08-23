@@ -14,7 +14,7 @@ from .models import (
     Neuron as NeuronModel,
     Connection as ConnectionModel,
 )
-from .services.connectivity import query_connections
+from .services.connectivity import query_nematode_connections
 
 
 class ErrorMessage(Schema):
@@ -218,7 +218,7 @@ def get_connections(
     include_annotations: bool = False,
 ):
     """Gets the connections of a dedicated Dataset"""
-    return query_connections(
+    return query_nematode_connections(
         [c.strip() for c in cells.split(",")],
         [d.strip() for d in dataset_ids.split(",")],
         [d.strip() for d in dataset_type.split(",")],
