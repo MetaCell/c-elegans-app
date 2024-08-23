@@ -437,16 +437,13 @@ def test__invalid_data(data_fn: Callable[..., Data]):
         data_fn()
 
 
-@pytest.fixture
-def data_fixture(request: pytest.FixtureRequest) -> JSON:
-    FIXTURES_DIR = Path(request.fspath).parent / "fixtures" / "reference-data"  # type: ignore
-
+def load_data(data_dir: Path) -> JSON:
     def load_file(f: str) -> dict:
-        with (FIXTURES_DIR / f).open() as file:
+        with (data_dir / f).open() as file:
             return json.load(file)
 
     def load_dir(dir: str, *, trim_file_extension: bool = True) -> dict[str, Any]:
-        dir_path = FIXTURES_DIR / dir
+        dir_path = data_dir / dir
         files_data = {}
 
         for file_path in dir_path.glob("*.json"):
@@ -469,5 +466,22 @@ def data_fixture(request: pytest.FixtureRequest) -> JSON:
     }
 
 
+@pytest.fixture
+def data_fixture(request: pytest.FixtureRequest) -> JSON:
+    FIXTURES_DIR = Path(request.fspath).parent / "fixtures" / "reference-data"  # type: ignore
+    return load_data(FIXTURES_DIR)
+
+
 def test__data_fixtures(data_fixture: JSON):
     Data.model_validate(data_fixture)
+
+
+@pytest.fixture
+def invalid_data_fixture(request: pytest.FixtureRequest) -> JSON:
+    FIXTURES_DIR = Path(request.fspath).parent / "fixtures" / "invalid-data"  # type: ignore
+    return load_data(FIXTURES_DIR)
+
+
+def test__invalid_data_fixtures(invalid_data_fixture: JSON):
+    with pytest.raises(ValidationError):
+        Data.model_validate(invalid_data_fixture)

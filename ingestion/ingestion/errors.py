@@ -299,10 +299,13 @@ class DataErrorWriter:
         with open(file_path) as file:
             w.write(f"In {file_path}")
 
-            with w.block(before_start="", style=("", "")):
-                w.write("...")
-
+            with w.block(before_start="\n", style=("", "")):
                 i = read_from_line
+                if i is 0:
+                    w.linebreak()
+                else:
+                    w.write("...")
+
                 for line in islice(file, read_from_line, to_line):
                     s = str(i) + "\t"
                     s += line
@@ -320,18 +323,19 @@ class DataErrorWriter:
         w = ErrorWriter()
 
         if self._header is not None:
-            w.write(self._header, color=Colors.HEADER)
+            w.write(self._header, color=Colors.FAIL)
             w.linebreak()
 
         for k, errors in groupby(exc.errors(), lambda err: err["loc"][0]):
-            with w.block("--- " + str(k) + "-------------------", style=("", "")):
-                w.linebreak()
-                for error in errors:
-                    with w.color(Colors.BOLD):
-                        w.write("Error: " + error["msg"])
+            w.write("--- " + str(k) + "-------------------", color=Colors.HEADER)
 
-                    if self._loc_finder is not None:
-                        self.write_error_snippet(w, error)
-                w.linebreak()
+            w.linebreak()
+            for error in errors:
+                with w.color(Colors.BOLD):
+                    w.write("Error: " + error["msg"])
+
+                if self._loc_finder is not None:
+                    self.write_error_snippet(w, error)
+            w.linebreak()
 
         return w.error()
