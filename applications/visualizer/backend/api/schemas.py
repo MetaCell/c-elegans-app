@@ -56,7 +56,7 @@ class Dataset(ModelSchema, BilingualSchema):
 class Neuron(ModelSchema, BilingualSchema):
     name: str
     dataset_ids: list[str]
-    model3D_url: str
+    model3D_urls: list[str]
 
     class Meta:
         model = NeuronModel

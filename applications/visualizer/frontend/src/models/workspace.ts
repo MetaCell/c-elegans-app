@@ -175,13 +175,20 @@ export class Workspace {
       const datasetIds = Object.keys(updatedWorkspace.activeDatasets);
       const neuronArrays = await NeuronsService.searchCells({ datasetIds });
 
+      // Flatten and add neurons classes
       const uniqueNeurons = new Set<Neuron>();
+      const neuronsClass: Record<string, Neuron> = {};
+      for (const neuron of neuronArrays.flat()) {
+        uniqueNeurons.add(neuron);
 
-      // Flatten and deduplicate neurons
-      for (const neuronArray of neuronArrays.flat()) {
-        uniqueNeurons.add(neuronArray);
-        const classNeuron = { ...neuronArray, name: neuronArray.nclass };
-        uniqueNeurons.add(classNeuron);
+        const className = neuron.nclass;
+        if (!(className in neuronsClass)) {
+          const neuronClass = { ...neuron, name: className };
+          neuronsClass[className] = neuronClass;
+          uniqueNeurons.add(neuronClass);
+        } else {
+          neuronsClass[className].model3DUrls.push(...neuron.model3DUrls);
+        }
       }
 
       return produce(updatedWorkspace, (draft: Workspace) => {

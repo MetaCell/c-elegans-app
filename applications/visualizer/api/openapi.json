@@ -530,9 +530,12 @@
             "title": "Datasetids",
             "type": "array"
           },
-          "model3DUrl": {
-            "title": "Model3Durl",
-            "type": "string"
+          "model3DUrls": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Model3Durls",
+            "type": "array"
           },
           "nclass": {
             "maxLength": 30,
@@ -568,7 +571,7 @@
         "required": [
           "name",
           "datasetIds",
-          "model3DUrl",
+          "model3DUrls",
           "nclass",
           "neurotransmitter",
           "type"
