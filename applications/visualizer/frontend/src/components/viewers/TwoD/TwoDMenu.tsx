@@ -1,18 +1,7 @@
 import { GetAppOutlined, HomeOutlined, TuneOutlined, VisibilityOutlined } from "@mui/icons-material";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
-import {
-  Box,
-  Divider,
-  FormControlLabel,
-  FormGroup,
-  IconButton,
-  Popover,
-  Switch, ToggleButton,
-  ToggleButtonGroup,
-  Tooltip,
-  Typography
-} from "@mui/material";
+import { Box, Divider, FormControlLabel, FormGroup, IconButton, Popover, Switch, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from "@mui/material";
 import { useState } from "react";
 import { ColoringOptions } from "../../../helpers/twoD/coloringHelper.ts";
 import { GRAPH_LAYOUTS, ZOOM_DELTA } from "../../../settings/twoDSettings.tsx";
@@ -22,7 +11,7 @@ import QuantityInput from "./NumberInput.tsx";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
 import { applyLayout } from "../../../helpers/twoD/twoDHelpers.ts";
 import { Visibility, ViewerType } from "../../../models";
-import {downloadConnectivityViewer} from "../../../helpers/twoD/downloadHelper.ts";
+import { downloadConnectivityViewer } from "../../../helpers/twoD/downloadHelper.ts";
 
 const { gray500 } = vars;
 
@@ -92,7 +81,7 @@ const TwoDMenu = ({
   };
 
   const handleDownloadClick = async () => {
-    await downloadConnectivityViewer(cy, workspace.name)
+    await downloadConnectivityViewer(cy, workspace.name);
   };
 
   const handleOpenVisibility = (event) => {
@@ -108,9 +97,8 @@ const TwoDMenu = ({
       const neuron = draft.availableNeurons[neuronId];
       if (neuron) {
         const currentVisibility = neuron.viewerData[ViewerType.Graph]?.visibility;
-        neuron.viewerData[ViewerType.Graph].visibility =
-          currentVisibility === Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
-        draft.selectedNeurons.delete(neuronId)
+        neuron.viewerData[ViewerType.Graph].visibility = currentVisibility === Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
+        draft.selectedNeurons.delete(neuronId);
       }
     });
   };
@@ -122,11 +110,11 @@ const TwoDMenu = ({
   const visibilityId = openVisibility ? "visibility-popover" : undefined;
 
   const visibleNeurons = Object.keys(workspace.availableNeurons).filter(
-    (neuronId) => workspace.availableNeurons[neuronId]?.viewerData[ViewerType.Graph]?.visibility === Visibility.Visible
+    (neuronId) => workspace.availableNeurons[neuronId]?.viewerData[ViewerType.Graph]?.visibility === Visibility.Visible,
   );
 
   const hiddenNeurons = Object.keys(workspace.availableNeurons).filter(
-    (neuronId) => workspace.availableNeurons[neuronId]?.viewerData[ViewerType.Graph]?.visibility === Visibility.Hidden
+    (neuronId) => workspace.availableNeurons[neuronId]?.viewerData[ViewerType.Graph]?.visibility === Visibility.Hidden,
   );
 
   return (
@@ -286,13 +274,7 @@ const TwoDMenu = ({
             }}
           >
             <FormControlLabel
-              control={
-                <CustomSwitch
-                  checked={includeNeighboringCells}
-                  onChange={(e) => setIncludeNeighboringCells(e.target.checked)}
-                  showTooltip={false}
-                />
-              }
+              control={<CustomSwitch checked={includeNeighboringCells} onChange={(e) => setIncludeNeighboringCells(e.target.checked)} showTooltip={false} />}
               label="Connected cells"
             />
             <Tooltip title={!includeNeighboringCells ? "Enable 'Connected Cells' to use this switch" : ""}>

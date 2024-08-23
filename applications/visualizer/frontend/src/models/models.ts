@@ -64,16 +64,16 @@ export function getEMDataURL(dataset: Dataset, sliceIndex: number) {
 }
 
 export enum Alignment {
-    Left = "left",
-    Right = "right",
-    Top = "top",
-    Bottom = "bottom",
-    Horizontal = 'Horizontal',
-    Vertical = 'Vertical'
+  Left = "left",
+  Right = "right",
+  Top = "top",
+  Bottom = "bottom",
+  Horizontal = "Horizontal",
+  Vertical = "Vertical",
 }
 
 export enum Visibility {
-    Visible = "Visible",
-    Hidden = "Hidden",
-    Unset = "Unset",
+  Visible = "Visible",
+  Hidden = "Hidden",
+  Unset = "Unset",
 }
