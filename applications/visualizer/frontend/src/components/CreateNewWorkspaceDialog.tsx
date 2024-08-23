@@ -4,19 +4,19 @@ import { useCallback, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import { CaretIcon, CheckIcon, CloseIcon } from "../icons";
-import { type Dataset, type Neuron, NeuronsService } from "../rest";
+import { type Dataset, NeuronsService } from "../rest";
 import { vars as colors } from "../theme/variables.ts";
 import CustomAutocomplete from "./CustomAutocomplete.tsx";
 import CustomDialog from "./CustomDialog.tsx";
 
 const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceDialog, isCompareMode, title, subTitle, submitButtonText }) => {
-  const [neurons, setNeurons] = useState<Neuron[]>([]);
+  const [neuronNames, setNeuronsNames] = useState<string[]>([]);
   const { workspaces, datasets, createWorkspace, setSelectedWorkspacesIds } = useGlobalContext();
   const [searchedNeuron, setSearchedNeuron] = useState("");
   const [formValues, setFormValues] = useState<{
     workspaceName: string;
     selectedDatasets: Dataset[];
-    selectedNeurons: Neuron[];
+    selectedNeurons: string[];
   }>({
     workspaceName: "",
     selectedDatasets: [],
@@ -24,16 +24,24 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
   });
 
   const [errorMessage, setErrorMessage] = useState<string>("");
-
   const workspaceFieldName = "workspaceName";
+
   const fetchNeurons = async (name, datasetsIds) => {
     try {
       const Ids = datasetsIds.map((dataset) => dataset.id);
-      const response = await NeuronsService.searchCells({
+      const neuronArrays = await NeuronsService.searchCells({
         name: name,
         datasetIds: Ids,
       });
-      setNeurons(response);
+
+      // We add the neurons classes
+      const uniqueNeurons = new Set<string>();
+      for (const neuron of neuronArrays.flat()) {
+        uniqueNeurons.add(neuron.name);
+        uniqueNeurons.add(neuron.nclass);
+      }
+
+      setNeuronsNames([...uniqueNeurons]);
     } catch (error) {
       console.error("Failed to fetch datasets", error);
     }
@@ -78,7 +86,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
 
     const randomNumber = uuidv4().replace(/\D/g, "").substring(0, 13);
     const newWorkspaceId = `workspace-${randomNumber}`;
-    const activeNeurons = new Set(formValues.selectedNeurons.map((neuron) => neuron.name));
+    const activeNeurons = new Set(formValues.selectedNeurons);
     const activeDatasets = new Set(formValues.selectedDatasets.map((dataset) => dataset.id));
     createWorkspace(newWorkspaceId, formValues.workspaceName, activeDatasets, activeNeurons);
 
@@ -138,12 +146,11 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
         <Box>
           <FormLabel>Neurons</FormLabel>
           <CustomAutocomplete
-            options={neurons}
-            getOptionLabel={(option) => option.name}
+            options={neuronNames}
             renderOption={(props, option) => (
               <li {...props}>
                 <CheckIcon />
-                <Typography>{option.name}</Typography>
+                <Typography>{option}</Typography>
               </li>
             )}
             onInputChange={onSearchNeurons}
