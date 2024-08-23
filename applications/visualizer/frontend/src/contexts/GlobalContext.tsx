@@ -1,8 +1,12 @@
+import * as msgpack from "msgpack-lite";
+import pako from "pako";
 import type React from "react";
 import { type ReactNode, createContext, useContext, useEffect, useState } from "react";
+import * as YAML from "yaml";
 import { ViewMode } from "../models";
 import { Workspace } from "../models";
 import { type Dataset, DatasetsService } from "../rest";
+
 export interface GlobalContextType {
   workspaces: Record<string, Workspace>;
   currentWorkspaceId: string | undefined;
@@ -16,8 +20,8 @@ export interface GlobalContextType {
   getCurrentWorkspace: () => Workspace;
   setSelectedWorkspacesIds: (workspaceId: Set<string>) => void;
   datasets: Record<string, Dataset>;
-  fetchDatasets: () => void;
   setAllWorkspaces: (workspaces: Record<string, Workspace>) => void;
+  updateContextFromJSON: (jsonContext: string) => void;
 }
 
 interface GlobalContextProviderProps {
@@ -37,11 +41,11 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     // Convert the activeDatasetKeys into a Record<string, Dataset>
     const activeDatasets: Record<string, Dataset> = {};
 
-    activeDatasetKeys.forEach((key) => {
+    for (const key of activeDatasetKeys) {
       if (datasets[key]) {
-        activeDatasets[key] = datasets[key];
+        activeDatasetKeys[key] = datasets[key];
       }
-    });
+    }
 
     // Create a new workspace using the activeDatasets record
     const newWorkspace = new Workspace(id, name, activeDatasets, activeNeurons, updateWorkspace);
@@ -56,9 +60,9 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
   };
 
   const setAllWorkspaces = (workspaces: Record<string, Workspace>) => {
-    // New function implementation
     setWorkspaces(workspaces);
   };
+
   const removeWorkspace = (workspaceId: string) => {
     const updatedWorkspaces = { ...workspaces };
     delete updatedWorkspaces[workspaceId];
@@ -72,6 +76,47 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
   const getCurrentWorkspace = () => {
     return workspaces[currentWorkspaceId];
   };
+
+  useEffect(() => {
+    const fetchDatasets = async () => {
+      try {
+        const response = await DatasetsService.getDatasets({});
+        const datasetsRecord = response.reduce(
+          (acc, dataset) => {
+            acc[dataset.id] = dataset;
+            return acc;
+          },
+          {} as Record<string, Dataset>,
+        );
+
+        setDatasets(datasetsRecord);
+      } catch (error) {
+        console.error("Failed to fetch datasets", error);
+      }
+    };
+
+    fetchDatasets();
+  }, []);
+
+  const updateContextFromJSON = (jsonContext) => {
+    const customDeserializer = {
+      currentWorkspaceId: (value) => setCurrentWorkspaceId(value),
+      viewMode: (value) => setViewMode(value),
+      selectedWorkspacesIds: (value) => setSelectedWorkspacesIds(value),
+    };
+
+    // biome-ignore lint/suspicious/noExplicitAny: This signature is coming from JSON.parse(..., reviver)
+    function reviver(this: any, key: string, value: any) {
+      if (key.startsWith("workspace-")) {
+        createWorkspace(value.id, value.name, new Set(value.activeDatasets), new Set(value.activeNeurons));
+        return;
+      }
+      return customDeserializer[key]?.(value) || value;
+    }
+
+    JSON.parse(jsonContext, reviver);
+  };
+
   const getGlobalContext = () => ({
     workspaces,
     currentWorkspaceId,
@@ -84,30 +129,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     setViewMode,
     selectedWorkspacesIds,
     setSelectedWorkspacesIds,
-    fetchDatasets,
     datasets,
     setAllWorkspaces,
+    updateContextFromJSON,
   });
-  const fetchDatasets = async () => {
-    try {
-      const response = await DatasetsService.getDatasets({});
-      const datasetsRecord = response.reduce(
-        (acc, dataset) => {
-          acc[dataset.id] = dataset;
-          return acc;
-        },
-        {} as Record<string, Dataset>,
-      );
-
-      setDatasets(datasetsRecord);
-    } catch (error) {
-      console.error("Failed to fetch datasets", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchDatasets();
-  }, []);
 
   return <GlobalContext.Provider value={getGlobalContext()}>{children}</GlobalContext.Provider>;
 };
@@ -117,4 +142,56 @@ export const useGlobalContext = () => {
     throw new Error("useGlobalContext must be used within a GlobalContextProvider");
   }
   return context;
+};
+
+export const serializeGlobalContext = (context) => {
+  const serializableContext = Object.fromEntries(Object.entries(context).filter(([_, value]) => !(value instanceof Function)));
+  // const base64 = btoa(jsonContext);
+
+  const dedicatedSerializer = {
+    selectedWorkspacesIds: (value) => [...value],
+    activeNeurons: (value) => [...value],
+    activeDatasets: (value) => Object.keys(value),
+  };
+
+  const forbiddenKeys = ["_model", "layoutManager", "datasets", "availableNeurons", "store"];
+
+  function replacer() {
+    return (key, value) => {
+      if (forbiddenKeys.includes(key)) {
+        return undefined;
+      }
+      if (key === "") {
+        return value;
+      }
+      if (key in dedicatedSerializer) {
+        return dedicatedSerializer[key](value);
+      }
+      return value;
+    };
+  }
+  console.log("context", context);
+  const jsonContext = JSON.stringify(context, replacer());
+  const ctx = YAML.stringify(JSON.parse(jsonContext));
+
+  const geoJsonGz = pako.gzip(jsonContext);
+
+  console.log("json", jsonContext);
+  console.log("Parsed", JSON.parse(jsonContext));
+  console.log("BASE64", btoa(jsonContext));
+  console.log("YAML", ctx);
+  console.log("BASE64", btoa(ctx));
+  console.log("CMPR", geoJsonGz);
+  console.log("STR", String.fromCharCode.apply(null, geoJsonGz));
+
+  const b64encoded = btoa(String.fromCharCode.apply(null, geoJsonGz));
+
+  console.log("BASE64", b64encoded);
+
+  const xxx = msgpack.encode(JSON.parse(jsonContext));
+  console.log("MSGPACK", xxx);
+
+  console.log("COMPRESSED", pako.gzip(xxx));
+  console.log("BASE64", btoa(String.fromCharCode.apply(null, pako.gzip(xxx))));
+  return jsonContext;
 };

@@ -4,6 +4,7 @@ import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import { Box, Divider, IconButton, Popover, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { useState } from "react";
+import { serializeGlobalContext, useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { vars } from "../../../theme/variables.ts";
 import CustomFormControlLabel from "./CustomFormControlLabel.tsx";
 
@@ -11,6 +12,9 @@ const { gray500 } = vars;
 
 function SceneControls({ cameraControlRef, isWireframe, setIsWireframe }) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+
+  const context = useGlobalContext();
+  const [savedContext, setSavedContext] = useState(null);
 
   const open = Boolean(anchorEl);
   const id = open ? "settings-popover" : undefined;
@@ -131,6 +135,25 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe }) {
       <Tooltip title="Download graph" placement="right-start">
         <IconButton>
           <GetAppOutlined />
+        </IconButton>
+      </Tooltip>
+      <Divider />
+      <Tooltip title="Serialize" placement="right-start">
+        <IconButton
+          onClick={() => {
+            setSavedContext(serializeGlobalContext(context));
+          }}
+        >
+          <ZoomOutIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Reload" placement="right-start">
+        <IconButton
+          onClick={() => {
+            context.updateContextFromJSON(savedContext);
+          }}
+        >
+          <ZoomOutIcon />
         </IconButton>
       </Tooltip>
     </Box>

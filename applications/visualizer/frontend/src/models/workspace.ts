@@ -167,6 +167,7 @@ export class Workspace {
 
   async _initializeAvailableNeurons() {
     const updatedWithNeurons = await this._getAvailableNeurons(this);
+    this.availableNeurons = updatedWithNeurons.availableNeurons;
     this.updateContext(updatedWithNeurons);
   }
 
