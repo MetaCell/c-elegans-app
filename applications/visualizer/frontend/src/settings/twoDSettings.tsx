@@ -17,8 +17,30 @@ export enum GRAPH_LAYOUTS {
   Hierarchical = "dagre",
   Concentric = "concentric",
 }
+type FcoseLayoutOptions = LayoutOptions & {
+  nodeRepulsion: number;
+  idealEdgeLength: number;
+  numIter: number;
+  nestingFactor: number;
+  gravity: number;
+};
 
-export const LAYOUT_OPTIONS: Record<GRAPH_LAYOUTS, LayoutOptions> = {
+type DagreLayoutOptions = LayoutOptions & {
+  rankDir: string;
+  nodeSep: number;
+  rankSep: number;
+};
+
+type ConcentricLayoutOptions = LayoutOptions & {
+  concentric: (node: NodeSingular) => number;
+  levelWidth: (nodes: NodeCollection) => number;
+  spacingFactor: number;
+};
+
+type ExtendedLayoutOptions = FcoseLayoutOptions | DagreLayoutOptions | ConcentricLayoutOptions;
+
+
+export const LAYOUT_OPTIONS: Record<GRAPH_LAYOUTS, ExtendedLayoutOptions> = {
   [GRAPH_LAYOUTS.Force]: {
     name: "fcose",
     nodeRepulsion: 1500,
@@ -26,21 +48,17 @@ export const LAYOUT_OPTIONS: Record<GRAPH_LAYOUTS, LayoutOptions> = {
     numIter: 2500,
     nestingFactor: 0.1,
     gravity: 0.2,
-    animate: false,
-    padding: 30,
   },
   [GRAPH_LAYOUTS.Hierarchical]: {
     name: "dagre",
     rankDir: "TB",
     nodeSep: 10,
     rankSep: 100,
-    animate: false,
-    padding: 30,
   },
   [GRAPH_LAYOUTS.Concentric]: {
     name: "concentric",
-    concentric: (node: NodeSingular) => node.degree(),
-    levelWidth: (nodes: NodeCollection) => nodes.maxDegree() / 4,
+    concentric: (node: NodeSingular) => node.degree(true),
+    levelWidth: (nodes: NodeCollection) => nodes.maxDegree(true) / 4,
     animate: false,
     padding: 30,
     spacingFactor: 1.5,

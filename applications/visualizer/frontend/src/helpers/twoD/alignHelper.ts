@@ -1,4 +1,4 @@
-import { Workspace, ViewerType, Alignment } from "../../models";
+import { Alignment } from "../../models";
 import type { Core } from "cytoscape";
 
 export const alignNeurons = (alignment: Alignment, selectedNeurons: string[], cy: Core) => {

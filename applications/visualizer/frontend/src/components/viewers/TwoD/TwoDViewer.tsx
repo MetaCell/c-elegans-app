@@ -27,7 +27,7 @@ import {
 } from "../../../settings/twoDSettings";
 import TwoDMenu from "./TwoDMenu";
 import TwoDLegend from "./TwoDLegend";
-import { Alert, Box, Snackbar } from "@mui/material";
+import { Box, Snackbar } from "@mui/material";
 import { ColoringOptions, getColor } from "../../../helpers/twoD/coloringHelper";
 import ContextMenu from "./ContextMenu";
 import { computeGraphDifferences, updateHighlighted, updateParentNodes } from "../../../helpers/twoD/graphRendering.ts";
@@ -177,7 +177,7 @@ const TwoDViewer = () => {
 
   useEffect(() => {
     if (cyRef.current) {
-      updateHighlighted(cyRef.current, Array.from(visibleActiveNeurons), Array.from(workspace.selectedNeurons), legendHighlights, workspace.neuronGroups);
+      updateHighlighted(cyRef.current, Array.from(visibleActiveNeurons), Array.from(workspace.selectedNeurons), legendHighlights);
     }
   }, [legendHighlights, workspace.selectedNeurons, workspace.neuronGroups]);
 
@@ -329,7 +329,7 @@ const TwoDViewer = () => {
     });
 
     updateNodeColors();
-    updateHighlighted(cy, Array.from(visibleActiveNeurons), Array.from(workspace.selectedNeurons), legendHighlights, workspace.neuronGroups);
+    updateHighlighted(cy, Array.from(visibleActiveNeurons), Array.from(workspace.selectedNeurons), legendHighlights);
     checkSplitNeuronsInGraph();
   };
 

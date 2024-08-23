@@ -13,7 +13,7 @@ import {
 import type { NeuronGroup, Workspace } from "../../models";
 import { ViewerType } from "../../models";
 import type { Connection } from "../../rest";
-import { FADED_CLASS, LegendType, SELECTED_CLASS } from "../../settings/twoDSettings.tsx";
+import { FADED_CLASS, LegendType } from "../../settings/twoDSettings.tsx";
 
 export const computeGraphDifferences = (
   cy: Core,
@@ -368,7 +368,7 @@ const shouldRemoveEdge = (pre: string, post: string, expectedNodes: Set<string>)
   return !expectedNodes.has(pre) || !expectedNodes.has(post);
 };
 
-export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights, neuronGroups) => {
+export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights) => {
   // Remove all highlights and return if nothing is selected and no legend item activated.
   cy.elements().removeClass("faded");
   if (selectedIds.length === 0 && legendHighlights.size === 0) {
@@ -445,8 +445,9 @@ export const updateParentNodes = (cy: Core, workspace: Workspace, openGroups: Se
 
       if (groupIsOpen) {
         // If the group is open, the neuron should have the group as its parent
-        if (cyNode.parent().id() !== groupId) {
-          console.log(cyNode.id(), cyNode.parent());
+        const parentId = cyNode.parent().first().id();
+
+        if (parentId !== groupId) {
           cyNode.move({ parent: groupId });
         }
       }

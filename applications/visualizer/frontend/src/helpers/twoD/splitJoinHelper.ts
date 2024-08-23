@@ -1,7 +1,6 @@
 import { type GraphViewerData, Visibility } from "../../models/models.ts";
 import { type Workspace, ViewerType } from "../../models";
 import { calculateMeanPosition, calculateSplitPositions, isNeuronClass, isNeuronCell } from "./twoDHelpers.ts";
-import { Core } from "cytoscape";
 
 interface SplitJoinState {
   split: Set<string>;
