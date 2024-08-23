@@ -1,15 +1,32 @@
 from __future__ import annotations
 
+import logging
 from contextlib import contextmanager
+from dataclasses import dataclass
 from enum import Enum
-from itertools import groupby
+from functools import lru_cache
+from itertools import groupby, islice
 from pathlib import Path
-from typing import Callable
+from typing import Callable, NamedTuple, cast, get_args
 
-import json_source_map
+from json_source_map import calculate
+from json_source_map.types import Entry, TSourceMap
 from pydantic import ValidationError
+from pydantic_core import ErrorDetails
 
-from ingestion.schema import Data, DataContainer
+from ingestion.schema import (
+    Data,
+    DataAnnotationEntry,
+    DataCollectionEntry,
+    DataContainer,
+)
+
+logger = logging.getLogger(__name__)
+
+# end of format
+ENDC = "\033[0m"
+
+STYLE = (":", "")
 
 
 class Colors(str, Enum):
@@ -21,12 +38,6 @@ class Colors(str, Enum):
     FAIL = "\033[91m"
     BOLD = "\033[1m"
     UNDERLINE = "\033[4m"
-
-
-# end of format
-ENDC = "\033[0m"
-
-STYLE = (":", "")
 
 
 class ErrorWriter:
@@ -63,7 +74,7 @@ class ErrorWriter:
             indent = color + indent
 
         for line in text.splitlines():
-            self.w += indent + line.strip() + "\n"
+            self.w += indent + line + "\n"
 
         if color is not None:
             self.w += ENDC
@@ -123,6 +134,117 @@ class ErrorWriter:
         self.w += ENDC
 
 
+class DataErrorLoc(NamedTuple):
+    collection: DataCollectionEntry
+    path: Path
+    field: str
+    entry: Entry
+
+
+@dataclass
+class _DataErrorLocFinder:
+    source_files: DataContainer[Path]
+
+    @staticmethod
+    def data_collection(err: ErrorDetails) -> DataCollectionEntry:
+        loc = err["loc"]
+        if loc[0] not in get_args(DataCollectionEntry):
+            raise Exception(
+                f"unexpected data collection entry from pydantic error: '{loc[0]}'"
+            )
+        return cast(DataCollectionEntry, loc[0])
+
+    @staticmethod
+    @lru_cache  # TODO: find a better way to keep used source maps in memory
+    def load_source_map(p: Path) -> TSourceMap:
+        with open(p, "r") as f:
+            source_map = calculate(f.read())
+            logger.debug(f"computed json source map for {p}")
+            return source_map
+
+    def get_source_map(self, err: ErrorDetails) -> TSourceMap:
+        # only compute the source map that haven't yet been
+        match self.data_collection(err):
+            case "neurons":
+                return self.load_source_map(self.source_files.neurons)
+            case "datasets":
+                return self.load_source_map(self.source_files.datasets)
+            case "connections":
+                dataset_w_err = str(err["loc"][1])
+                return self.load_source_map(
+                    self.source_files.connections[dataset_w_err]
+                )
+            case "annotations":
+                annotation_w_err = err["loc"][1]
+
+                if annotation_w_err not in get_args(DataAnnotationEntry):
+                    raise DataErrorWriterError(
+                        f"unexpected annotation entry: '{annotation_w_err}'"
+                    )
+
+                annotation_entry = cast(DataAnnotationEntry, annotation_w_err)
+                return self.load_source_map(
+                    self.source_files.annotations[annotation_entry]
+                )
+
+    def find(self, err: ErrorDetails) -> DataErrorLoc:
+        source_map = self.get_source_map(err)
+        collection = self.data_collection(err)
+
+        def compute_field(loc: tuple[str | int, ...]) -> str:
+            return ".".join([str(l) for l in loc])
+
+        def compute_key(loc: tuple[str | int, ...]) -> str:
+            # filter loc for inexistent keys and other edge cases
+            if "[key]" in loc:
+                loc = loc[: len(loc) - 1]
+
+            key = "/" + "/".join([str(l) for l in loc])
+            return key
+
+        match collection:
+            case "neurons":
+                loc = err["loc"][1:]
+                return DataErrorLoc(
+                    collection=collection,
+                    path=self.source_files.neurons,
+                    field=compute_field(loc),
+                    entry=source_map[compute_key(loc)],
+                )
+            case "datasets":
+                loc = err["loc"][1:]
+                return DataErrorLoc(
+                    collection=collection,
+                    path=self.source_files.datasets,
+                    field=compute_field(loc),
+                    entry=source_map[compute_key(loc)],
+                )
+            case "connections":
+                dataset_name = str(err["loc"][1])
+                loc = err["loc"][2:]
+                return DataErrorLoc(
+                    collection=collection,
+                    path=self.source_files.connections[dataset_name],
+                    field=compute_field(loc),
+                    entry=source_map[compute_key(loc)],
+                )
+            case "annotations":
+                annotation_entry = str(err["loc"][1])
+                if annotation_entry not in get_args(DataAnnotationEntry):
+                    raise Exception(f"unknown annotation: '{annotation_entry}'")
+                annotation = cast(DataAnnotationEntry, annotation_entry)
+
+                loc = err["loc"][2:]
+                return DataErrorLoc(
+                    collection=collection,
+                    path=self.source_files.annotations[annotation],
+                    field=compute_field(loc),
+                    entry=source_map[compute_key(loc)],
+                )
+            case _:
+                raise DataErrorWriterError(f"unknown data entry: '{collection}'")
+
+
 DataErrorWriterOpt = Callable[
     ["DataErrorWriter"], None
 ]  # defines a DataErrorWriter configuration option
@@ -141,10 +263,12 @@ def with_file_loc(data_files: DataContainer[Path]) -> DataErrorWriterOpt:
     """Adds a file snippet with the error line of code error to the error message"""
 
     def fn(dew: DataErrorWriter):
-        dew._file_loc_enabled = True
-        dew._data_files = data_files
+        dew._loc_finder = _DataErrorLocFinder(data_files)
 
     return fn
+
+
+class DataErrorWriterError(Exception): ...
 
 
 class DataErrorWriter:
@@ -152,159 +276,62 @@ class DataErrorWriter:
         None  # show a custom head at the beginning of the error message
     )
 
-    _file_loc_enabled: bool = False
-    _data_files: DataContainer[Path] | None = None
-    _source_map: DataContainer | None = None
+    # used to find the errors location in the json file
+    _loc_finder: _DataErrorLocFinder | None = None
 
     def __init__(self, *opts: DataErrorWriterOpt) -> None:
         for opt in opts:
             opt(self)
 
-    def compute_source_map(self):
-        ...
-        # json_source_map.calculate()
+    def write_error_snippet(self, w: ErrorWriter, err: ErrorDetails, padding: int = 3):
+        if self._loc_finder is None:
+            return
+
+        _, file_path, _, entry = self._loc_finder.find(err)
+
+        read_from_line = entry.value_start.line - padding
+        if read_from_line < 0:
+            read_from_line = 0
+        to_line = (
+            entry.value_end.line + padding
+        )  # iter will stop early without exception
+
+        with open(file_path) as file:
+            w.write(f"In {file_path}")
+
+            with w.block(before_start="", style=("", "")):
+                w.write("...")
+
+                i = read_from_line
+                for line in islice(file, read_from_line, to_line):
+                    s = str(i) + "\t"
+                    s += line
+
+                    if i >= entry.value_start.line and i <= entry.value_end.line:
+                        with w.color(Colors.FAIL):
+                            w.write(s)
+                    else:
+                        w.write(s)
+                    i += 1
+
+                w.write("...")
 
     def humanize(self, exc: ValidationError) -> str:
         w = ErrorWriter()
 
-        if self._file_loc_enabled:
-            self.compute_source_map()
-
         if self._header is not None:
-            w.write(self._header, color=Colors.FAIL)
+            w.write(self._header, color=Colors.HEADER)
             w.linebreak()
 
         for k, errors in groupby(exc.errors(), lambda err: err["loc"][0]):
-            with w.block(str(k)):
+            with w.block("--- " + str(k) + "-------------------", style=("", "")):
+                w.linebreak()
                 for error in errors:
-                    w.write(
-                        " -> ".join([str(l) for l in error["loc"][1:]])
-                        + ": "
-                        + error["msg"]
-                    )
+                    with w.color(Colors.BOLD):
+                        w.write("Error: " + error["msg"])
+
+                    if self._loc_finder is not None:
+                        self.write_error_snippet(w, error)
+                w.linebreak()
 
         return w.error()
-
-
-if __name__ == "__main__":
-    bad_data = {
-        "neurons": [
-            {
-                "inhead": 0,
-                "name": 123,  # invalid name
-                "emb": 1,
-                "nt": "l",
-                "intail": 0,
-                "classes": "ADA",
-                "typ": "i",
-            },
-            {
-                "inhead": 2,  # not valid bool interpretation
-                "name": "ADAL",
-                "emb": 1,
-                "nt": "l",
-                "intail": 0,
-                "classes": "ADA",
-                "typ": "i",
-            },
-            {
-                "inhead": 0,
-                "name": "ADAL",
-                "emb": -1,  # not valid bool interpretation
-                "nt": "l",
-                "intail": 0,
-                "classes": "ADA",
-                "typ": "i",
-            },
-            {
-                "inhead": 0,
-                "name": "ADAL",
-                "emb": 1,
-                "nt": "l",
-                "intail": 1.2,  # not valid bool interpretation
-                "classes": "ADA",
-                "typ": "i",
-            },
-        ],
-        "datasets": [
-            {
-                "id": "white_1986_jse",
-                "name": "White et al., 1986, JSE (adult)",
-                "type": "taill",  # invalid dataset type
-                "time": 60,
-                "visualTime": 50,
-                "description": "Adult legacy tail with pre-anal ganglion",
-            }
-        ],
-        "connections": {
-            "white_1986_jse": [
-                {
-                    "ids": [9583833],
-                    "post": "ADAR",
-                    "post_tid": [9576727],
-                    "pre": "ADAL",
-                    "pre_tid": [9577831],
-                    "syn": [1],
-                    "typ": 1,  # invalid connection type
-                },
-                {
-                    "ids": [9583833, 9583834],
-                    "post": "ADAR",
-                    "post_tid": [9576727],
-                    "pre": "ADAL",
-                    "pre_tid": [9577831],  # should be the same length as ids
-                    "syn": [1],
-                    "typ": 2,
-                },
-                {
-                    "ids": [9583833],
-                    "post": "ADAR",
-                    "post_tid": [
-                        9576727,
-                        9583834,
-                        9583834,
-                    ],  # should be the same length as ids
-                    "pre": "ADAL",
-                    "pre_tid": [9577831],
-                    "syn": [1],
-                    "typ": 2,
-                },
-                {
-                    "ids": [9583833],
-                    "post": "ADAR",
-                    "post_tid": [9576727],
-                    "pre": "ADAL",
-                    "pre_tid": [9577831],
-                    "syn": [1, 1],  # should be the same length as ids
-                    "typ": 2,
-                },
-            ]
-        },
-        "annotations": {
-            "head": {
-                "inexistent": [["ADAL", "RIPL"]]
-            },  # inexistent is not an annotation type
-            "complete": {
-                "increase": [
-                    ["ADAL", "RIPL", "CEPDL"],  # not a tuple of only pre and post
-                    ["ADAR", "RIPR"],
-                ]
-            },
-            "taill": {  # taill is not valid annotation entry
-                "increase": [
-                    ["ADAL", "RIPL"],
-                    ["ADAR", "RIPR"],
-                    ["ADEL", "AVKR"],
-                ]
-            },
-        },
-    }
-
-    err_w = DataErrorWriter(
-        with_header("Woops! We found some inconsistencies in your data!")
-    )
-
-    try:
-        Data.model_validate(bad_data)
-    except ValidationError as e:
-        print(err_w.humanize(e))

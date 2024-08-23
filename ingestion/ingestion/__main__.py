@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import logging
+import sys
 
 from pydantic import ValidationError
 
+from ingestion.errors import DataErrorWriter, with_file_loc, with_header
 from ingestion.filesystem import find_data_files, load_data
 from ingestion.schema import Data
 
@@ -60,8 +62,25 @@ def main():
 
     data_files = find_data_files(args.ingestion_dir)
     json_data = load_data(data_files)
-    Data.model_validate(json_data)
-    print("OK")
+
+    err_header = (
+        "Seems like we found something unexpected with your data.\n"
+        "Bellow is an overview of what we think may be wrong.\n"
+        "If you think this is an error on our side, please reach out!\n"
+    )
+
+    err_w = DataErrorWriter(
+        with_header(err_header),
+        with_file_loc(data_files),
+    )
+
+    try:
+        Data.model_validate(json_data)
+    except (
+        ValidationError
+    ) as e:  # TODO: would prefer this try/except in __name__ == "__main__"
+        sys.stdout.write(err_w.humanize(e))
+        sys.exit(1)
 
 
 if __name__ == "__main__":
@@ -69,9 +88,8 @@ if __name__ == "__main__":
         import pydantic as _
     except ImportError:
         print('error: missing pydantic; try "pip install pydantic"')
+        sys.exit(1)
 
-    try:
-        main()
-    except ValidationError as e:
-        print(str(e))
-        raise
+    main()
+
+    print("OK")
