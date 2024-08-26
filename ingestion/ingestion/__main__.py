@@ -5,9 +5,11 @@ import sys
 
 from pydantic import ValidationError
 
-from ingestion.errors import DataErrorWriter, with_file_loc, with_header
+from ingestion.errors import DataValidationError
 from ingestion.filesystem import find_data_files, load_data
 from ingestion.schema import Data
+
+logger = logging.getLogger(__name__)
 
 
 def main():
@@ -69,18 +71,15 @@ def main():
         "If you think this is an error on our side, please reach out!\n"
     )
 
-    err_w = DataErrorWriter(
-        with_header(err_header),
-        with_file_loc(data_files),
-    )
-
     try:
         Data.model_validate(json_data)
-    except (
-        ValidationError
-    ) as e:  # TODO: would prefer this try/except in __name__ == "__main__"
-        sys.stdout.write(err_w.humanize(e))
+    except ValidationError as e:
+        sys.stdout.write(
+            DataValidationError(e).humazine(header=err_header, data_files=data_files)
+        )
         sys.exit(1)
+
+    print("OK")
 
 
 if __name__ == "__main__":
@@ -91,5 +90,3 @@ if __name__ == "__main__":
         sys.exit(1)
 
     main()
-
-    print("OK")

@@ -19,10 +19,14 @@ maintainers = [
 dependencies = [
     "pydantic==2.8.2",
     "json_source_map==1.0.5",
+    "colorama==0.4.6",
+    "google-cloud-storage==2.18.2",
+    "tqdm==4.66.5"
 ]
 
 [project.optional-dependencies]
 dev = [
+    "types-colorama~=0.4.15.20240311",
     "black>=24.8.0",
     "coverage>=7.6.1",
     "isort>=5.13.2",
@@ -30,6 +34,9 @@ dev = [
     "pytest>=8",
     "pytest-asyncio",
 ]
+
+[project.scripts]
+celegans-ingest = "ingestion.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["."]  # list of folders that contain the packages (["."] by default)
@@ -56,6 +63,8 @@ python_version = "3.10"
 [[tool.mypy.overrides]]
 module = [
     "json_source_map.*",
+    "google.cloud.*",
+    "tqdm.*",
 ]
 ignore_missing_imports = true
 

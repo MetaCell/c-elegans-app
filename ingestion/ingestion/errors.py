@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 import logging
+import platform
 from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import Enum
 from functools import lru_cache
 from itertools import groupby, islice
 from pathlib import Path
-from typing import Callable, NamedTuple, cast, get_args
+from typing import NamedTuple, cast, get_args
 
+from colorama import Back, Fore, Style, just_fix_windows_console
 from json_source_map import calculate
 from json_source_map.types import Entry, TSourceMap
 from pydantic import ValidationError
@@ -18,21 +20,11 @@ from ingestion.schema import DataAnnotationEntry, DataCollectionEntry, DataConta
 
 logger = logging.getLogger(__name__)
 
-# end of format
-ENDC = "\033[0m"
+BOLD = "\033[1m"
+BLOCK_STYLE = (":", "")
 
-STYLE = (":", "")
-
-
-class Colors(str, Enum):
-    HEADER = "\033[95m"
-    OKBLUE = "\033[94m"
-    OKCYAN = "\033[96m"
-    OKGREEN = "\033[92m"
-    WARNING = "\033[93m"
-    FAIL = "\033[91m"
-    BOLD = "\033[1m"
-    UNDERLINE = "\033[4m"
+if platform.system() == "Windows":  # fix ansi on windows
+    just_fix_windows_console()
 
 
 class ErrorWriter:
@@ -63,7 +55,7 @@ class ErrorWriter:
     def linebreak(self):
         self.w += "\n"
 
-    def write(self, text: str, pre: str = "", color: Colors | None = None):
+    def write(self, text: str, pre: str = "", color: str | None = None):
         indent = self.i * "\t" + pre
         if color is not None:
             indent = color + indent
@@ -72,7 +64,7 @@ class ErrorWriter:
             self.w += indent + line + "\n"
 
         if color is not None:
-            self.w += ENDC
+            self.w += Style.RESET_ALL
 
     def _indent(self):
         """Increase the indentation level for all subsequent output."""
@@ -94,7 +86,7 @@ class ErrorWriter:
     def block(
         self,
         before_start: str = "",
-        style: tuple[str, str] = STYLE,
+        style: tuple[str, str] = BLOCK_STYLE,
         after_end: str = "\n",
     ):
         """Returns a context within which writes are indented inside style.
@@ -122,11 +114,11 @@ class ErrorWriter:
         self.write(f"{style[1]}{after_end}")
 
     @contextmanager
-    def color(self, color: Colors):
+    def color(self, color: str):
         """Returns a context within which writes are colorized."""
         self.w += color
         yield
-        self.w += ENDC
+        self.w += Style.RESET_ALL
 
 
 class DataErrorLoc(NamedTuple):
@@ -134,6 +126,9 @@ class DataErrorLoc(NamedTuple):
     path: Path
     field: str
     entry: Entry
+
+
+class _DataErrorLocFinderError(Exception): ...
 
 
 @dataclass
@@ -173,7 +168,7 @@ class _DataErrorLocFinder:
                 annotation_w_err = err["loc"][1]
 
                 if annotation_w_err not in get_args(DataAnnotationEntry):
-                    raise DataErrorWriterError(
+                    raise _DataErrorLocFinderError(
                         f"unexpected annotation entry: '{annotation_w_err}'"
                     )
 
@@ -237,100 +232,77 @@ class _DataErrorLocFinder:
                     entry=source_map[compute_key(loc)],
                 )
             case _:
-                raise DataErrorWriterError(f"unknown data entry: '{collection}'")
+                raise _DataErrorLocFinderError(f"unknown data entry: '{collection}'")
 
 
-DataErrorWriterOpt = Callable[
-    ["DataErrorWriter"], None
-]  # defines a DataErrorWriter configuration option
+def _write_error_snippet(
+    w: ErrorWriter, err: ErrorDetails, finder: _DataErrorLocFinder, *, padding: int = 3
+):
+    _, file_path, _, entry = finder.find(err)
 
+    read_from_line = entry.value_start.line - padding
+    if read_from_line < 0:
+        read_from_line = 0
+    to_line = entry.value_end.line + padding  # iter will stop early without exception
 
-def with_header(header: str) -> DataErrorWriterOpt:
-    """Show a custom head at the beginning of the error message"""
+    with open(file_path) as file:
+        w.write(f"In {file_path}:{entry.value_start.line + 1}")
 
-    def fn(dew: DataErrorWriter):
-        dew._header = header
-
-    return fn
-
-
-def with_file_loc(data_files: DataContainer[Path]) -> DataErrorWriterOpt:
-    """Adds a file snippet with the error line of code error to the error message"""
-
-    def fn(dew: DataErrorWriter):
-        dew._loc_finder = _DataErrorLocFinder(data_files)
-
-    return fn
-
-
-class DataErrorWriterError(Exception): ...
-
-
-class DataErrorWriter:
-    _header: str | None = (
-        None  # show a custom head at the beginning of the error message
-    )
-
-    # used to find the errors location in the json file
-    _loc_finder: _DataErrorLocFinder | None = None
-
-    def __init__(self, *opts: DataErrorWriterOpt) -> None:
-        for opt in opts:
-            opt(self)
-
-    def write_error_snippet(self, w: ErrorWriter, err: ErrorDetails, padding: int = 3):
-        if self._loc_finder is None:
-            return
-
-        _, file_path, _, entry = self._loc_finder.find(err)
-
-        read_from_line = entry.value_start.line - padding
-        if read_from_line < 0:
-            read_from_line = 0
-        to_line = (
-            entry.value_end.line + padding
-        )  # iter will stop early without exception
-
-        with open(file_path) as file:
-            w.write(f"In {file_path}:{entry.value_start.line}")
-
-            with w.block(before_start="\n", style=("", "")):
-                i = read_from_line
-                if i == 0:
-                    w.linebreak()
-                else:
-                    w.write("...")
-
-                for line in islice(file, read_from_line, to_line):
-                    s = str(i) + "\t"
-                    s += line
-
-                    if i >= entry.value_start.line and i <= entry.value_end.line:
-                        with w.color(Colors.FAIL):
-                            w.write(s)
-                    else:
-                        w.write(s)
-                    i += 1
-
+        with w.block(before_start="\n", style=("", "")):
+            i = read_from_line
+            if i == 0:
+                w.linebreak()
+            else:
                 w.write("...")
 
-    def humanize(self, exc: ValidationError) -> str:
+            for line in islice(file, read_from_line, to_line):
+                s = str(i) + "\t"
+                s += line
+
+                if i >= entry.value_start.line and i <= entry.value_end.line:
+                    with w.color(Fore.RED):
+                        w.write(s)
+                else:
+                    w.write(s)
+                i += 1
+
+            w.write("...")
+
+
+class DataValidationError:
+    _exc: ValidationError
+
+    def __init__(self, exc: ValidationError) -> None:
+        self._exc = exc
+
+    def humazine(
+        self,
+        header: str | None = None,
+        data_files: DataContainer[Path] | None = None,
+    ) -> str:
+        """Returns a string with a humanized version of the validation error"""
         w = ErrorWriter()
 
-        if self._header is not None:
-            w.write(self._header, color=Colors.FAIL)
+        if header is not None:
+            w.write(header, color=Back.RED)
             w.linebreak()
 
-        for k, errors in groupby(exc.errors(), lambda err: err["loc"][0]):
-            w.write("--- " + str(k) + "-------------------", color=Colors.HEADER)
+        finder: _DataErrorLocFinder | None = None
+        if data_files is not None:
+            finder = _DataErrorLocFinder(data_files)
+
+        for k, errors in groupby(self._exc.errors(), lambda err: err["loc"][0]):
+            collection_rule = f"--- {str(k)} "
+            collection_rule += (88 - len(collection_rule)) * "-"
+            w.write(collection_rule, color=Fore.CYAN)
 
             w.linebreak()
             for error in errors:
-                with w.color(Colors.BOLD):
+                with w.color(BOLD):
                     w.write("Error: " + error["msg"])
 
-                if self._loc_finder is not None:
-                    self.write_error_snippet(w, error)
+                if finder is not None:
+                    _write_error_snippet(w, error, finder)
             w.linebreak()
 
         return w.error()
