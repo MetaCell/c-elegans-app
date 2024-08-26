@@ -14,12 +14,7 @@ from json_source_map.types import Entry, TSourceMap
 from pydantic import ValidationError
 from pydantic_core import ErrorDetails
 
-from ingestion.schema import (
-    Data,
-    DataAnnotationEntry,
-    DataCollectionEntry,
-    DataContainer,
-)
+from ingestion.schema import DataAnnotationEntry, DataCollectionEntry, DataContainer
 
 logger = logging.getLogger(__name__)
 
@@ -297,11 +292,11 @@ class DataErrorWriter:
         )  # iter will stop early without exception
 
         with open(file_path) as file:
-            w.write(f"In {file_path}")
+            w.write(f"In {file_path}:{entry.value_start.line}")
 
             with w.block(before_start="\n", style=("", "")):
                 i = read_from_line
-                if i is 0:
+                if i == 0:
                     w.linebreak()
                 else:
                     w.write("...")

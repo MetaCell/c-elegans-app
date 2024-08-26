@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
-from typing import Generic, Literal, TypeVar, cast, get_args
+from typing import Generic, Literal, TypeVar
 
 from pydantic import BaseModel, Field, RootModel, model_validator
 
