@@ -1,4 +1,4 @@
-import { FileDownloadOutlined, HomeOutlined, TextsmsOutlined } from "@mui/icons-material";
+import { FileDownloadOutlined, HomeOutlined } from "@mui/icons-material";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import { Box, Divider, IconButton } from "@mui/material";
@@ -45,12 +45,12 @@ function SceneControls({ onZoomIn, onResetView, onZoomOut, onPrint }: ScaleContr
         </IconButton>
       </Tooltip>
       <Divider />
-      <Tooltip title="Add comment" placement="right-start">
+      {/* <Tooltip title="Add comment" placement="right-start">
         <IconButton>
           <TextsmsOutlined />
         </IconButton>
       </Tooltip>
-      <Divider />
+      <Divider /> */}
       <Tooltip title="Download image" placement="right-start">
         <IconButton onClick={onPrint}>
           <FileDownloadOutlined />
