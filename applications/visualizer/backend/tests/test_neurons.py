@@ -51,35 +51,39 @@ neurons = [
     },
 ]
 
+datasets = [
+    {
+        "id": "ds1",
+        "name": "Dataset 1",
+    },
+    {
+        "id": "ds2",
+        "name": "Gamma Goblin",
+    },
+    {
+        "id": "ds3",
+        "name": "Dr. Seuss",
+    },
+]
+
 connections = [
     {
-        "dataset": {
-            "id": "ds1",
-            "name": "Dataset 1",
-        },
+        "dataset": datasets[0],
         "pre": "ADAL",
         "post": "ADAR",
     },
     {
-        "dataset": {
-            "id": "ds2",
-        },
+        "dataset": datasets[1],
         "pre": "ADEL",
         "post": "ADER",
     },
     {
-        "dataset": {
-            "id": "ds2",
-            "name": "Gamma Goblin",
-        },
+        "dataset": datasets[1],
         "pre": "ADAR",
         "post": "ADEL",
     },
     {
-        "dataset": {
-            "id": "ds3",
-            "name": "Dr. Seuss",
-        },
+        "dataset": datasets[2],
         "pre": "ADFR",
         "post": "ADAR",
     },
