@@ -5,7 +5,7 @@ import sys
 
 from pydantic import ValidationError
 
-from ingestion.errors import DataValidationError
+from ingestion.errors import DataValidationError, ErrorWriter
 from ingestion.filesystem import find_data_files, load_data
 from ingestion.schema import Data
 
@@ -75,7 +75,11 @@ def main():
         Data.model_validate(json_data)
     except ValidationError as e:
         sys.stdout.write(
-            DataValidationError(e).humazine(header=err_header, data_files=data_files)
+            DataValidationError(e).humanize(
+                w=ErrorWriter(),
+                header=err_header,
+                data_files=data_files,
+            )
         )
         sys.exit(1)
 

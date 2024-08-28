@@ -182,14 +182,15 @@ class _DataErrorLocFinder:
         collection = self.data_collection(err)
 
         def compute_field(loc: tuple[str | int, ...]) -> str:
-            return ".".join([str(l) for l in loc])
+            return ".".join(str(l) for l in loc)
 
         def compute_key(loc: tuple[str | int, ...]) -> str:
             # filter loc for inexistent keys and other edge cases
             if "[key]" in loc:
                 loc = loc[: len(loc) - 1]
 
-            key = "/" + "/".join([str(l) for l in loc])
+            key_fragment = "/".join(str(l) for l in loc)
+            key = f"/{key_fragment}"
             return key
 
         match collection:
@@ -275,13 +276,14 @@ class DataValidationError:
     def __init__(self, exc: ValidationError) -> None:
         self._exc = exc
 
-    def humazine(
+    def humanize(
         self,
+        w: ErrorWriter,
+        *,
         header: str | None = None,
         data_files: DataContainer[Path] | None = None,
     ) -> str:
         """Returns a string with a humanized version of the validation error"""
-        w = ErrorWriter()
 
         if header is not None:
             w.write(header, color=Back.RED)

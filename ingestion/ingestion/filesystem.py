@@ -9,10 +9,10 @@ from ingestion.schema import DataAnnotationEntry, DataContainer
 
 logger = logging.getLogger(__name__)
 
-_NEURONS_FILE = Path("neurons.json")
-_DATASETS_FILE = Path("datasets.json")
-_CONNECTIONS_DIR = Path("connections")
-_ANNOTATIONS_DIR = Path("annotations")
+_NEURONS_FILE = "neurons.json"
+_DATASETS_FILE = "datasets.json"
+_CONNECTIONS_DIR = "connections"
+_ANNOTATIONS_DIR = "annotations"
 
 
 def find_data_files(dir: Path) -> DataContainer[Path]:
