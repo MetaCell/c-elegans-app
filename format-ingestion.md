@@ -6,7 +6,7 @@ Different files are necessary:
 * `neurons.json` that encodes the information about the neurons in general
 * `datasets.json` that encodes the information about the different datasets
 * `connections/xxx.json` that encodes the different connections for dedicated datasets
-* `annotations/xxx.json` that encodes annotatinos for different zones of the anatomy
+* `annotations/xxx.json` that encodes annotations for different zones of the anatomy
 
 Those files are automatically exported from third-party tool and shouldn't be edited manually.
 
@@ -63,9 +63,9 @@ Each JSON object represents a specific dataset with this schema:
 {
     "id": string           // unique ID for the dataset
     "name": string         // display name of the dataset
-    "type": string         // type of dataset: "complete" or "head"
-    "time": int            // time of the dataset
-    "visualTime": int      // visualTime of the dataset
+    "type": string         // type of dataset: "complete", "head" or "tail"
+    "time": float          // time of the dataset
+    "visualTime": float    // visualTime of the dataset
     "description": string  // description of the dataset
     "axes": [              // OPTIONAL: different axes and their representation, not used but can appear in the file
         ...
@@ -89,11 +89,11 @@ The schema is the following:
     "pre": string,        // the name of a neuron as defined in "neurons.json"
     "pre_tid": [ ... ],   // a list of int where each int represents the ID of a pre synapse for a dedicated pre neuron
     "syn": [ ... ],       // a list of int where each int represents the weight of a post or pre synapses (indice matches the neuron in pre/post_tid)
-    "typ": int            // the type of connection ("electrical" or "chemical")
+    "typ": int            // the type of connection ("electrical" (0) or "chemical" (2))
 }
 ```
 
-For each of those objects: `ids`, `post_tid`, `pre_tid` and `syn` need to have the same number of elements.
+For each of those objects: `ids`, `post_tid`, `pre_tid` and `syn` need to have the same number of elements when `ids` is present.
 
 ## Format of `annotations/xxx.json`
 
