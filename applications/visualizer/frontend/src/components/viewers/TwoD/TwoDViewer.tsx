@@ -1,28 +1,29 @@
-import { useState, useEffect, useRef } from "react";
-import cytoscape, { type Core, type EventHandler } from "cytoscape";
-import fcose from "cytoscape-fcose";
+import {Box} from "@mui/material";
+import cytoscape, {type Core, type EventHandler} from "cytoscape";
 import dagre from "cytoscape-dagre";
-import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace";
-import { type Connection, ConnectivityService } from "../../../rest";
-import { GRAPH_STYLES } from "../../../theme/twoDStyles";
-import { applyLayout, refreshLayout, updateWorkspaceNeurons2DViewerData } from "../../../helpers/twoD/twoDHelpers";
+import fcose from "cytoscape-fcose";
+import {useEffect, useRef, useState} from "react";
+import {ColoringOptions, getColor} from "../../../helpers/twoD/coloringHelper";
+import {computeGraphDifferences, updateHighlighted} from "../../../helpers/twoD/graphRendering.ts";
+import {applyLayout, refreshLayout, updateWorkspaceNeurons2DViewerData} from "../../../helpers/twoD/twoDHelpers";
+import {areSetsEqual} from "../../../helpers/utils.ts";
+import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace";
+import {type Connection, ConnectivityService} from "../../../rest";
 import {
   CHEMICAL_THRESHOLD,
   ELECTRICAL_THRESHOLD,
   GRAPH_LAYOUTS,
-  type LegendType,
   INCLUDE_ANNOTATIONS,
-  INCLUDE_NEIGHBORING_CELLS,
   INCLUDE_LABELS,
+  INCLUDE_NEIGHBORING_CELLS,
   INCLUDE_POST_EMBRYONIC,
+  type LegendType,
 } from "../../../settings/twoDSettings";
-import TwoDMenu from "./TwoDMenu";
-import TwoDLegend from "./TwoDLegend";
-import { Box } from "@mui/material";
-import { ColoringOptions, getColor } from "../../../helpers/twoD/coloringHelper";
+import {GRAPH_STYLES} from "../../../theme/twoDStyles";
+import ErrorAlert from "../../ErrorAlert.tsx";
 import ContextMenu from "./ContextMenu";
-import { computeGraphDifferences, updateHighlighted } from "../../../helpers/twoD/graphRendering.ts";
-import { areSetsEqual } from "../../../helpers/utils.ts";
+import TwoDLegend from "./TwoDLegend";
+import TwoDMenu from "./TwoDMenu";
 
 cytoscape.use(fcose);
 cytoscape.use(dagre);
@@ -48,7 +49,8 @@ const TwoDViewer = () => {
   const [mousePosition, setMousePosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
   const [legendHighlights, setLegendHighlights] = useState<Map<LegendType, string>>(new Map());
   const [hiddenNodes, setHiddenNodes] = useState<Set<string>>(new Set());
-
+  const [openErrorAlert, setOpenErrorAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const handleContextMenuClose = () => {
     setMousePosition(null);
   };
@@ -109,9 +111,12 @@ const TwoDViewer = () => {
     })
       .then((connections) => {
         setConnections(connections);
+        setOpenErrorAlert(false);
+        setErrorMessage("");
       })
       .catch((error) => {
-        console.error("Failed to fetch connections:", error);
+        setOpenErrorAlert(true);
+        setErrorMessage(`"Failed to fetch connections", ${error}`);
       });
   }, [
     workspace.activeDatasets,
@@ -318,8 +323,7 @@ const TwoDViewer = () => {
         });
 
         // Ensure unique colors are used
-        const uniqueColors = [...new Set(colors)];
-        colors = uniqueColors;
+        colors = [...new Set(colors)];
       } else {
         const neuron = workspace.availableNeurons[nodeId];
         if (neuron == null) {
@@ -338,45 +342,48 @@ const TwoDViewer = () => {
   };
 
   return (
-    <Box sx={{ position: "relative", display: "flex", width: "100%", height: "100%" }}>
-      <TwoDMenu
-        cy={cyRef.current}
-        layout={layout}
-        onLayoutChange={setLayout}
-        coloringOption={coloringOption}
-        onColoringOptionChange={setColoringOption}
-        includeNeighboringCells={includeNeighboringCells}
-        setIncludeNeighboringCells={setIncludeNeighboringCells}
-        includeNeighboringCellsAsIndividualCells={includeNeighboringCellsAsIndividualCells}
-        setIncludeNeighboringCellsAsIndividualCells={setIncludeNeighboringCellsAsIndividualCells}
-        includeAnnotations={includeAnnotations}
-        setIncludeAnnotations={setIncludeAnnotations}
-        thresholdChemical={thresholdChemical}
-        setThresholdChemical={setThresholdChemical}
-        thresholdElectrical={thresholdElectrical}
-        setThresholdElectrical={setThresholdElectrical}
-        includeLabels={includeLabels}
-        setIncludeLabels={setIncludeLabels}
-        includePostEmbryonic={includePostEmbryonic}
-        setIncludePostEmbryonic={setIncludePostEmbryonic}
-      />
-      <Box sx={{ position: "absolute", top: 0, right: 0, zIndex: 1000 }}>
-        <TwoDLegend
+    <>
+      <Box sx={{ position: "relative", display: "flex", width: "100%", height: "100%" }}>
+        <TwoDMenu
+          cy={cyRef.current}
+          layout={layout}
+          onLayoutChange={setLayout}
           coloringOption={coloringOption}
-          legendHighlights={legendHighlights}
-          setLegendHighlights={setLegendHighlights}
+          onColoringOptionChange={setColoringOption}
+          includeNeighboringCells={includeNeighboringCells}
+          setIncludeNeighboringCells={setIncludeNeighboringCells}
+          includeNeighboringCellsAsIndividualCells={includeNeighboringCellsAsIndividualCells}
+          setIncludeNeighboringCellsAsIndividualCells={setIncludeNeighboringCellsAsIndividualCells}
           includeAnnotations={includeAnnotations}
+          setIncludeAnnotations={setIncludeAnnotations}
+          thresholdChemical={thresholdChemical}
+          setThresholdChemical={setThresholdChemical}
+          thresholdElectrical={thresholdElectrical}
+          setThresholdElectrical={setThresholdElectrical}
+          includeLabels={includeLabels}
+          setIncludeLabels={setIncludeLabels}
+          includePostEmbryonic={includePostEmbryonic}
+          setIncludePostEmbryonic={setIncludePostEmbryonic}
+        />
+        <Box sx={{ position: "absolute", top: 0, right: 0, zIndex: 1000 }}>
+          <TwoDLegend
+            coloringOption={coloringOption}
+            legendHighlights={legendHighlights}
+            setLegendHighlights={setLegendHighlights}
+            includeAnnotations={includeAnnotations}
+          />
+        </Box>
+        <div ref={cyContainer} style={{ width: "100%", height: "100%" }} />
+        <ContextMenu
+          open={Boolean(mousePosition)}
+          onClose={handleContextMenuClose}
+          position={mousePosition}
+          setSplitJoinState={setSplitJoinState}
+          setHiddenNodes={setHiddenNodes}
         />
       </Box>
-      <div ref={cyContainer} style={{ width: "100%", height: "100%" }} />
-      <ContextMenu
-        open={Boolean(mousePosition)}
-        onClose={handleContextMenuClose}
-        position={mousePosition}
-        setSplitJoinState={setSplitJoinState}
-        setHiddenNodes={setHiddenNodes}
-      />
-    </Box>
+      <ErrorAlert open={openErrorAlert} setOpen={setOpenErrorAlert} errorMessage={errorMessage} />
+    </>
   );
 };
 

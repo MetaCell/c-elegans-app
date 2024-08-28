@@ -18,13 +18,13 @@ import { useSelector } from "react-redux";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { CheckIcon, CloseIcon } from "../../../icons";
 import type { RootState } from "../../../layout-manager/layoutManagerFactory.ts";
+import type { Dataset } from "../../../rest";
 import { vars } from "../../../theme/variables.ts";
 import CustomAutocomplete from "../../CustomAutocomplete.tsx";
 import Gizmo from "./Gizmo.tsx";
 import Loader from "./Loader.tsx";
 import STLViewer from "./STLViewer.tsx";
 import SceneControls from "./SceneControls.tsx";
-import type { Dataset } from "../../../rest";
 
 const { gray100, gray600 } = vars;
 export interface Instance {

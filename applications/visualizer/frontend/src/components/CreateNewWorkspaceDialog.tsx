@@ -8,6 +8,7 @@ import { type Dataset, type Neuron, NeuronsService } from "../rest";
 import { vars as colors } from "../theme/variables.ts";
 import CustomAutocomplete from "./CustomAutocomplete.tsx";
 import CustomDialog from "./CustomDialog.tsx";
+import ErrorAlert from "./ErrorAlert.tsx";
 
 const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceDialog, isCompareMode, title, subTitle, submitButtonText }) => {
   const [neurons, setNeurons] = useState<Neuron[]>([]);
@@ -24,6 +25,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
   });
 
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [openErrorAlert, setOpenErrorAlert] = useState(false);
 
   const workspaceFieldName = "workspaceName";
   const fetchNeurons = async (name, datasetsIds) => {
@@ -34,8 +36,11 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
         datasetIds: Ids,
       });
       setNeurons(response);
+      setOpenErrorAlert(false);
+      setErrorMessage("");
     } catch (error) {
-      console.error("Failed to fetch datasets", error);
+      setOpenErrorAlert(true);
+      setErrorMessage(error);
     }
   };
 
@@ -170,6 +175,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
           {submitButtonText}
         </Button>
       </Box>
+      <ErrorAlert open={openErrorAlert} setOpen={setOpenErrorAlert} errorMessage={errorMessage} />
     </CustomDialog>
   );
 };

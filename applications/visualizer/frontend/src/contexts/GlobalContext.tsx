@@ -1,5 +1,6 @@
 import type React from "react";
 import { type ReactNode, createContext, useContext, useEffect, useState } from "react";
+import ErrorAlert from "../components/ErrorAlert.tsx";
 import { ViewMode } from "../models";
 import { Workspace } from "../models";
 import { type Dataset, DatasetsService } from "../rest";
@@ -32,7 +33,8 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
   const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.Default);
   const [selectedWorkspacesIds, setSelectedWorkspacesIds] = useState<Set<string>>(new Set<string>());
   const [datasets, setDatasets] = useState<Record<string, Dataset>>({});
-
+  const [openErrorAlert, setOpenErrorAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const createWorkspace = (id: string, name: string, activeDatasetKeys: Set<string>, activeNeurons: Set<string>) => {
     // Convert the activeDatasetKeys into a Record<string, Dataset>
     const activeDatasets: Record<string, Dataset> = {};
@@ -100,8 +102,11 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
       );
 
       setDatasets(datasetsRecord);
+      setOpenErrorAlert(false);
+      setErrorMessage("");
     } catch (error) {
-      console.error("Failed to fetch datasets", error);
+      setErrorMessage(`Failed to fetch datasets ${error}`);
+      setOpenErrorAlert(true);
     }
   };
 
@@ -109,7 +114,12 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     fetchDatasets();
   }, []);
 
-  return <GlobalContext.Provider value={getGlobalContext()}>{children}</GlobalContext.Provider>;
+  return (
+    <GlobalContext.Provider value={getGlobalContext()}>
+      {children}
+      <ErrorAlert open={openErrorAlert} setOpen={setOpenErrorAlert} errorMessage={errorMessage} />
+    </GlobalContext.Provider>
+  );
 };
 export const useGlobalContext = () => {
   const context = useContext(GlobalContext);

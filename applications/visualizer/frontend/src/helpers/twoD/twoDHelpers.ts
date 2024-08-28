@@ -1,7 +1,7 @@
 import type { Core, ElementDefinition, Position } from "cytoscape";
-import type { Connection } from "../../rest";
 import type { Workspace } from "../../models";
 import { ViewerType } from "../../models";
+import type { Connection } from "../../rest";
 
 import { annotationLegend } from "../../settings/twoDSettings.tsx";
 import { cellConfig, neurotransmitterConfig } from "./coloringHelper.ts";

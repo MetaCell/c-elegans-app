@@ -4,12 +4,13 @@ import Tooltip from "@mui/material/Tooltip";
 import { debounce } from "lodash";
 import { useCallback, useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
+import type { EnhancedNeuron } from "../../models/models.ts";
 import type { Neuron } from "../../rest";
 import { NeuronsService } from "../../rest";
 import { vars } from "../../theme/variables.ts";
+import ErrorAlert from "../ErrorAlert.tsx";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 import CustomListItem from "./CustomListItem.tsx";
-import type { EnhancedNeuron } from "../../models/models.ts";
 
 const { gray900, gray500 } = vars;
 const mapNeuronsToListItem = (neuron: string, isActive: boolean) => ({
@@ -29,9 +30,9 @@ const Neurons = ({ children }) => {
   const activeNeurons = currentWorkspace.activeNeurons;
   const recentNeurons = Object.values(currentWorkspace.availableNeurons).filter((neuron) => neuron.isInteractant);
   const availableNeurons = currentWorkspace.availableNeurons;
-
   const [neurons, setNeurons] = useState(availableNeurons);
-
+  const [openErrorAlert, setOpenErrorAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const handleSwitchChange = async (neuronId: string, checked: boolean) => {
     const neuron = availableNeurons[neuronId];
 
@@ -67,8 +68,11 @@ const Neurons = ({ children }) => {
       }, {});
 
       setNeurons(neuronsRecord);
+      setOpenErrorAlert(false);
+      setErrorMessage("");
     } catch (error) {
-      console.error("Failed to fetch datasets", error);
+      setOpenErrorAlert(true);
+      setErrorMessage(`"Failed to fetch Neurons", ${error}`);
     }
   };
 
@@ -80,71 +84,73 @@ const Neurons = ({ children }) => {
   };
 
   const autoCompleteOptions = Object.values(neurons).map((neuron: Neuron) => mapNeuronsAvailableNeuronsToOptions(neuron));
-
   return (
-    <Box
-      sx={{
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb="0">
-        <Typography variant="body1" component="p" color={gray900} fontWeight={500}>
-          Neurons
-        </Typography>
-
-        <Typography variant="body1" component="p" color={gray500}>
-          Search for the neurons and add it to your workspace. This will affect all viewers.
-        </Typography>
-      </Stack>
-      {children}
-      <CustomEntitiesDropdown
-        options={autoCompleteOptions}
-        activeNeurons={activeNeurons}
-        onNeuronClick={onNeuronClick}
-        onSearchNeurons={onSearchNeurons}
-        setNeurons={setNeurons}
-        availableNeurons={availableNeurons}
-      />
+    <>
       <Box
         sx={{
           height: "100%",
-          overflow: "auto",
-          flex: 1,
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        <Stack spacing=".5rem" p="0 .25rem" mt=".75rem">
-          <Box display="flex" alignItems="center" justifyContent="space-between" padding=".25rem .5rem">
-            <Typography color={gray500} variant="subtitle1">
-              All Neurons
-            </Typography>
-            <Tooltip title="Create new group">
-              <IconButton
-                sx={{
-                  padding: ".25rem",
-                  borderRadius: ".25rem",
-                }}
-              >
-                <AddIcon fontSize="medium" />
-              </IconButton>
-            </Tooltip>
-          </Box>
-          {Array.from(recentNeurons).map((neuron) => (
-            <CustomListItem
-              key={neuron.name}
-              data={mapNeuronsToListItem(neuron.name, activeNeurons.has(neuron.name))}
-              showTooltip={false}
-              showExtraActions={true}
-              listType="neurons"
-              onSwitchChange={handleSwitchChange}
-              onDelete={handleDeleteNeuron}
-              deleteTooltipTitle="Remove neuron from the workspace"
-            />
-          ))}
+        <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb="0">
+          <Typography variant="body1" component="p" color={gray900} fontWeight={500}>
+            Neurons
+          </Typography>
+
+          <Typography variant="body1" component="p" color={gray500}>
+            Search for the neurons and add it to your workspace. This will affect all viewers.
+          </Typography>
         </Stack>
+        {children}
+        <CustomEntitiesDropdown
+          options={autoCompleteOptions}
+          activeNeurons={activeNeurons}
+          onNeuronClick={onNeuronClick}
+          onSearchNeurons={onSearchNeurons}
+          setNeurons={setNeurons}
+          availableNeurons={availableNeurons}
+        />
+        <Box
+          sx={{
+            height: "100%",
+            overflow: "auto",
+            flex: 1,
+          }}
+        >
+          <Stack spacing=".5rem" p="0 .25rem" mt=".75rem">
+            <Box display="flex" alignItems="center" justifyContent="space-between" padding=".25rem .5rem">
+              <Typography color={gray500} variant="subtitle1">
+                All Neurons
+              </Typography>
+              <Tooltip title="Create new group">
+                <IconButton
+                  sx={{
+                    padding: ".25rem",
+                    borderRadius: ".25rem",
+                  }}
+                >
+                  <AddIcon fontSize="medium" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+            {Array.from(recentNeurons).map((neuron) => (
+              <CustomListItem
+                key={neuron.name}
+                data={mapNeuronsToListItem(neuron.name, activeNeurons.has(neuron.name))}
+                showTooltip={false}
+                showExtraActions={true}
+                listType="neurons"
+                onSwitchChange={handleSwitchChange}
+                onDelete={handleDeleteNeuron}
+                deleteTooltipTitle="Remove neuron from the workspace"
+              />
+            ))}
+          </Stack>
+        </Box>
       </Box>
-    </Box>
+      <ErrorAlert open={openErrorAlert} setOpen={setOpenErrorAlert} errorMessage={errorMessage} />
+    </>
   );
 };
 
