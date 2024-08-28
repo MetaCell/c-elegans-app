@@ -1,15 +1,12 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Box, IconButton, Stack, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
-import { debounce } from "lodash";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 import type { Neuron } from "../../rest";
-import { NeuronsService } from "../../rest";
 import { vars } from "../../theme/variables.ts";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 import CustomListItem from "./CustomListItem.tsx";
-import type { EnhancedNeuron } from "../../models/models.ts";
 
 const { gray900, gray500 } = vars;
 const mapNeuronsToListItem = (neuron: string, isActive: boolean) => ({
@@ -24,8 +21,9 @@ const mapNeuronsAvailableNeuronsToOptions = (neuron: Neuron) => ({
 });
 
 const Neurons = ({ children }) => {
-  const { workspaces, datasets, currentWorkspaceId } = useGlobalContext();
-  const currentWorkspace = workspaces[currentWorkspaceId];
+  const { getCurrentWorkspace } = useGlobalContext();
+  const currentWorkspace = getCurrentWorkspace();
+
   const activeNeurons = currentWorkspace.activeNeurons;
   const recentNeurons = Object.values(currentWorkspace.availableNeurons).filter((neuron) => neuron.isInteractant);
   const availableNeurons = currentWorkspace.availableNeurons;
@@ -55,28 +53,11 @@ const Neurons = ({ children }) => {
     currentWorkspace.deleteNeuron(neuronId);
   };
 
-  const fetchNeurons = async (name: string, datasetsIds: { id: string }[]) => {
-    try {
-      const ids = datasetsIds.map((dataset) => dataset.id);
-      const response = await NeuronsService.searchCells({ name: name, datasetIds: ids });
-
-      // Convert the object to a Record<string, Neuron>
-      const neuronsRecord = Object.entries(response).reduce((acc: Record<string, EnhancedNeuron>, [_, neuron]: [string, EnhancedNeuron]) => {
-        acc[neuron.name] = neuron;
-        return acc;
-      }, {});
-
-      setNeurons(neuronsRecord);
-    } catch (error) {
-      console.error("Failed to fetch datasets", error);
-    }
-  };
-
-  const debouncedFetchNeurons = useCallback(debounce(fetchNeurons, 300), []);
-
-  const onSearchNeurons = (value) => {
-    const datasetsIds = Object.keys(datasets);
-    debouncedFetchNeurons(value, datasetsIds);
+  const onSearchNeurons = (nameFragment) => {
+    const filteredNeurons = Object.fromEntries(
+      Object.entries(availableNeurons).filter(([_, neuron]) => neuron.name.toLowerCase().startsWith(nameFragment.toLowerCase())),
+    );
+    setNeurons(filteredNeurons);
   };
 
   const autoCompleteOptions = Object.values(neurons).map((neuron: Neuron) => mapNeuronsAvailableNeuronsToOptions(neuron));

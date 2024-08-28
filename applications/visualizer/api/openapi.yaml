@@ -142,9 +142,11 @@ components:
           default: false
           title: Intail
           type: boolean
-        model3DUrl:
-          title: Model3Durl
-          type: string
+        model3DUrls:
+          items:
+            type: string
+          title: Model3Durls
+          type: array
         name:
           title: Name
           type: string
@@ -163,7 +165,7 @@ components:
       required:
       - name
       - datasetIds
-      - model3DUrl
+      - model3DUrls
       - nclass
       - neurotransmitter
       - type

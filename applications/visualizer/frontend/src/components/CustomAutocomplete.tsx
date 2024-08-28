@@ -5,7 +5,7 @@ import type { SxProps } from "@mui/system";
 import type React from "react";
 interface CustomAutocompleteProps<T> {
   options: T[];
-  getOptionLabel: (option: T) => string;
+  getOptionLabel?: (option: T) => string;
   renderOption: (props: React.HTMLAttributes<HTMLLIElement>, option: T) => React.ReactNode;
   renderInput?: (params: AutocompleteRenderInputParams) => React.ReactNode;
   groupBy?: (option: T) => string;

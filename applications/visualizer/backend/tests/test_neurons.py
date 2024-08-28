@@ -4,7 +4,6 @@ import warnings
 from pytest_unordered import unordered
 
 from api.models import (
-    Dataset as DatasetModel,
     Neuron as NeuronModel,
     Connection as ConnectionModel,
 )
@@ -13,21 +12,6 @@ from .utils import generate_instance
 
 
 # Some test data
-datasets = [
-    {
-        "id": "ds1",
-        "name": "Dataset 1",
-    },
-    {
-        "id": "ds2",
-        "name": "Gamma Goblin",
-    },
-    {
-        "id": "ds3",
-        "name": "Dr. Seuss",
-    },
-]
-
 neurons = [
     {
         "name": "ADAL",
@@ -67,24 +51,35 @@ neurons = [
     },
 ]
 
-connections = lambda: [
+connections = [
     {
-        "dataset": DatasetModel.objects.get(id="ds1"),
+        "dataset": {
+            "id": "ds1",
+            "name": "Dataset 1",
+        },
         "pre": "ADAL",
         "post": "ADAR",
     },
     {
-        "dataset": DatasetModel.objects.get(id="ds2"),
+        "dataset": {
+            "id": "ds2",
+        },
         "pre": "ADEL",
         "post": "ADER",
     },
     {
-        "dataset": DatasetModel.objects.get(id="ds2"),
+        "dataset": {
+            "id": "ds2",
+            "name": "Gamma Goblin",
+        },
         "pre": "ADAR",
         "post": "ADEL",
     },
     {
-        "dataset": DatasetModel.objects.get(id="ds3"),
+        "dataset": {
+            "id": "ds3",
+            "name": "Dr. Seuss",
+        },
         "pre": "ADFR",
         "post": "ADAR",
     },
@@ -98,9 +93,8 @@ connections = lambda: [
 @pytest.fixture(scope="module")
 def django_db_setup(django_db_setup, django_db_blocker):
     with django_db_blocker.unblock():
-        generate_instance(DatasetModel, datasets)
         generate_instance(NeuronModel, neurons)
-        generate_instance(ConnectionModel, connections())
+        generate_instance(ConnectionModel, connections)
 
 
 # Fixture to access the test client in all test functions
@@ -125,6 +119,8 @@ def test__get_all_cells(api_client):
     assert response.status_code == 200
 
     neurons = response.json()["items"]
+    assert len(neurons) == len(expected_dataset_ids)
+
     for neuron in neurons:
         name = neuron["name"]
 
@@ -154,6 +150,9 @@ def test__get_all_cells_from_specific_datasets(api_client):
     assert response.status_code == 200
 
     neurons = response.json()["items"]
+
+    assert len(neurons) == len(expected_dataset_ids)
+
     for neuron in neurons:
         name = neuron["name"]
 
@@ -174,12 +173,11 @@ def test__search_cells(api_client):
         expected_neurons_names
     ), f"expected to query {len(expected_neurons_names)} and got {len(neurons)}"
 
-    for neuron in neurons:
-        assert neuron["name"] in expected_neurons_names
+    assert [n["name"] for n in neurons] == expected_neurons_names
 
 
 @pytest.mark.django_db  # required to access the DB
-def test__search_cells_in_datasets(api_client):
+def test__search_cells_in_datasets_without_match(api_client):
     search_query = "ade"
     dataset_ids = ["ds1", "ds3"]
 
@@ -193,22 +191,23 @@ def test__search_cells_in_datasets(api_client):
     neurons = response.json()
     assert len(neurons) == 0, f"expected datasets to not contain search matches"
 
+
+@pytest.mark.django_db  # required to access the DB
+def test__search_cells_in_datasets_with_match(api_client):
+    dataset_ids = ["ds1", "ds3", "ds2"]
+    search_query = "ade"
+
     # Search dataset with matching neurons
-    dataset_ids.append("ds2")
     expected_neurons_names = ["ADEL", "ADER"]
 
     query_params = f"?name={search_query}&" + "&".join(
         [f"dataset_ids={ds}" for ds in dataset_ids]
     )
-    print(query_params)
 
     response = api_client.get(f"/cells/search" + query_params)
     assert response.status_code == 200
 
     neurons = response.json()
-    assert len(neurons) == len(
-        expected_neurons_names
-    ), f"expected to query {len(expected_neurons_names)} and got {len(neurons)}"
+    assert len(neurons) == len(expected_neurons_names)
 
-    for neuron in neurons:
-        assert neuron["name"] in expected_neurons_names
+    assert [n["name"] for n in neurons] == expected_neurons_names
