@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import sys
+from pathlib import Path
 
 from pydantic import ValidationError
 
@@ -21,10 +22,10 @@ def main():
         "files and validate its content."
     )
 
-    def directory(raw_path):
+    def directory(raw_path: str) -> Path:
         if not os.path.isdir(raw_path):
             raise argparse.ArgumentTypeError(f"{raw_path} is not an existing directory")
-        return os.path.abspath(raw_path)
+        return Path(os.path.abspath(raw_path))
 
     parser.add_argument(
         "-i",
