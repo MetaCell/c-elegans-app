@@ -22,7 +22,7 @@ def main():
         "files and validate its content."
     )
 
-    def directory(raw_path) -> Path:
+    def directory(raw_path: str) -> Path:
         if not os.path.isdir(raw_path):
             raise argparse.ArgumentTypeError(f"{raw_path} is not an existing directory")
         return Path(os.path.abspath(raw_path))
