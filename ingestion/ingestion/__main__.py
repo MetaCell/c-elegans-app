@@ -4,7 +4,6 @@ import logging
 import os
 import sys
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, ArgumentTypeError
-from collections import namedtuple
 from itertools import islice
 from pathlib import Path
 from typing import Sequence
@@ -40,31 +39,7 @@ def ask(question: str) -> bool:
 def main(argv: Sequence[str] | None = None):
     parser = ArgumentParser(
         prog="celegans",
-        description="Tool for the c-elegans application.",
-        formatter_class=ArgumentDefaultsHelpFormatter,
-    )
-
-    # global command flags
-    parser.add_argument(
-        "--debug",
-        help="runs the ingestion with debug logs",
-        default=False,
-        action="store_true",
-    )
-
-    subparsers = parser.add_subparsers(dest="command")
-
-    # subcommand for the extraction of segmentation files
-    parser_extract = subparsers.add_parser(
-        name="extract",
-        help="Extracs segentations from the bitmap files.",
-        formatter_class=ArgumentDefaultsHelpFormatter,
-    )
-
-    # subcommand for the file ingestionsubparsers = parser.add_subparsers()
-    parser_ingest = subparsers.add_parser(
-        name="ingest",
-        help="Ingest files into the c-elegans deployment.",
+        description="tool for the c-elegans application",
         formatter_class=ArgumentDefaultsHelpFormatter,
     )
 
@@ -79,6 +54,55 @@ def main(argv: Sequence[str] | None = None):
         if not os.path.isfile(raw_path):
             raise ArgumentTypeError(f"{raw_path} is not a file")
         return Path(os.path.abspath(raw_path))
+
+    # global command flags
+    parser.add_argument(
+        "--debug",
+        help="runs with debug logs",
+        default=False,
+        action="store_true",
+    )
+
+    subparsers = parser.add_subparsers(dest="command")
+
+    # subcommand for the extraction of segmentation files
+    parser_extract = subparsers.add_parser(
+        name="extract",
+        help="extracs segentations from the bitmap files",
+        formatter_class=ArgumentDefaultsHelpFormatter,
+    )
+
+    parser_extract.add_argument(
+        "-i",
+        "--img-path",
+        type=type_directory,
+        help="path of a segmentation image or the folder containing the segmentation images",
+        required=True,
+    )
+
+    parser_extract.add_argument(
+        "-l",
+        "--lut",
+        type=type_file,
+        help="path towards the look-up table",
+        required=True,
+    )
+    parser_extract.add_argument(
+        "--no-json", help="disable JSON file output", action="store_true"
+    )
+    parser_extract.add_argument(
+        "--write-img", help="write the result in an img format", action="store_true"
+    )
+    parser_extract.add_argument(
+        "--overwrite", help="force JSON/img production", action="store_true"
+    )
+
+    # subcommand for the file ingestion
+    parser_ingest = subparsers.add_parser(
+        name="ingest",
+        help="ingest files into the c-elegans deployment",
+        formatter_class=ArgumentDefaultsHelpFormatter,
+    )
 
     parser_ingest.add_argument(
         "dir",
@@ -194,6 +218,8 @@ def main(argv: Sequence[str] | None = None):
         storage_client = storage.Client.from_service_account_json(args.gcp_credentials)
         bucket = storage_client.get_bucket(args.gcp_bucket)
 
+        # find segmentation files
+
         blobs = [
             blob
             for blob in tqdm(
@@ -222,7 +248,27 @@ def main(argv: Sequence[str] | None = None):
         print("OK")
 
     def extract(args):
-        print("Not Implemented")
+        from ingestion.segmentation.extraction import extract, parse_entries
+
+        args = vars(args)
+
+        metadata_path = Path(args["lut"])
+        segmentation_folder = Path(args["img_path"])
+        files = (
+            list(segmentation_folder.glob("*.png"))
+            if segmentation_folder.is_dir()
+            else [segmentation_folder]
+        )
+        for file in tqdm(files):
+            tqdm.write(f"Extracting segments from {file}")
+            extract(
+                file,
+                parse_entries(metadata_path),
+                overwrite=args["overwrite"],
+                write_img=args["write_img"],
+                write_json=not args["no_json"],
+                print=tqdm.write,
+            )
 
     match args.command:
         case "ingest":

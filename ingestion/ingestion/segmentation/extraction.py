@@ -1,14 +1,18 @@
-from argparse import ArgumentParser
-import diplib as dip
-from time import time
-from pathlib import Path
-import geojson
-from geojson import FeatureCollection, Feature, MultiPolygon
-from geojson_rewind import rewind
-import numpy as np
-from dataclasses import dataclass, fields as dataclass_fields
-from tqdm import tqdm
+# type: ignore
+from __future__ import annotations
 
+from argparse import ArgumentParser
+from dataclasses import dataclass
+from dataclasses import fields as dataclass_fields
+from pathlib import Path
+from time import time
+
+import diplib as dip
+import geojson
+import numpy as np
+from geojson import Feature, FeatureCollection, MultiPolygon
+from geojson_rewind import rewind
+from tqdm import tqdm
 
 # @dataclass
 # class Color(object):
