@@ -1,6 +1,17 @@
 import { Alert, AlertTitle, Box, Collapse } from "@mui/material";
+import { useEffect } from "react";
 
-const ErrorAlert = ({ open, setOpen, errorMessage }) => {
+const ErrorAlert = ({ open, setOpen, errorMessage, autoCloseDuration = 5000 }) => {
+  useEffect(() => {
+    if (open) {
+      const timer = setTimeout(() => {
+        setOpen(false);
+      }, autoCloseDuration);
+
+      return () => clearTimeout(timer);
+    }
+  }, [open, setOpen, autoCloseDuration]);
+
   return (
     <Collapse in={open}>
       <Box
