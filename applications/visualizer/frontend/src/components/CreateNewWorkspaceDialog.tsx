@@ -4,11 +4,11 @@ import { useCallback, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import { CaretIcon, CheckIcon, CloseIcon } from "../icons";
+import { GlobalError } from "../models/Error.ts";
 import { type Dataset, NeuronsService } from "../rest";
 import { vars as colors } from "../theme/variables.ts";
 import CustomAutocomplete from "./CustomAutocomplete.tsx";
 import CustomDialog from "./CustomDialog.tsx";
-import ErrorAlert from "./ErrorAlert.tsx";
 
 const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceDialog, isCompareMode, title, subTitle, submitButtonText }) => {
   const [neuronNames, setNeuronsNames] = useState<string[]>([]);
@@ -23,9 +23,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
     selectedDatasets: [],
     selectedNeurons: [],
   });
-
   const [errorMessage, setErrorMessage] = useState<string>("");
-  const [openErrorAlert, setOpenErrorAlert] = useState(false);
 
   const workspaceFieldName = "workspaceName";
 
@@ -45,11 +43,8 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
       }
 
       setNeuronsNames([...uniqueNeurons]);
-      setOpenErrorAlert(false);
-      setErrorMessage("");
     } catch (error) {
-      setOpenErrorAlert(true);
-      setErrorMessage(error);
+      throw new GlobalError(error.message);
     }
   };
 
@@ -183,7 +178,6 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
           {submitButtonText}
         </Button>
       </Box>
-      <ErrorAlert open={openErrorAlert} setOpen={setOpenErrorAlert} errorMessage={errorMessage} />
     </CustomDialog>
   );
 };

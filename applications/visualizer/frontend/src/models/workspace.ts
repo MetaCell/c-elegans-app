@@ -3,6 +3,7 @@ import type { configureStore } from "@reduxjs/toolkit";
 import { immerable, produce } from "immer";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
 import { type Dataset, type Neuron, NeuronsService } from "../rest";
+import { GlobalError } from "./Error.ts";
 import { type EnhancedNeuron, type NeuronGroup, ViewerSynchronizationPair, ViewerType } from "./models";
 
 export class Workspace {
@@ -214,8 +215,7 @@ export class Workspace {
         }
       });
     } catch (error) {
-      console.error("Failed to fetch neurons:", error);
-      return updatedWorkspace;
+      throw new GlobalError("Failed to fetch neurons:");
     }
   }
 

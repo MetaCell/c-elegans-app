@@ -8,6 +8,7 @@ import { computeGraphDifferences, updateHighlighted } from "../../../helpers/two
 import { applyLayout, refreshLayout, updateWorkspaceNeurons2DViewerData } from "../../../helpers/twoD/twoDHelpers";
 import { areSetsEqual } from "../../../helpers/utils.ts";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace";
+import { GlobalError } from "../../../models/Error.ts";
 import { type Connection, ConnectivityService } from "../../../rest";
 import {
   CHEMICAL_THRESHOLD,
@@ -20,7 +21,6 @@ import {
   type LegendType,
 } from "../../../settings/twoDSettings";
 import { GRAPH_STYLES } from "../../../theme/twoDStyles";
-import ErrorAlert from "../../ErrorAlert.tsx";
 import ContextMenu from "./ContextMenu";
 import TwoDLegend from "./TwoDLegend";
 import TwoDMenu from "./TwoDMenu";
@@ -49,8 +49,6 @@ const TwoDViewer = () => {
   const [mousePosition, setMousePosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
   const [legendHighlights, setLegendHighlights] = useState<Map<LegendType, string>>(new Map());
   const [hiddenNodes, setHiddenNodes] = useState<Set<string>>(new Set());
-  const [openErrorAlert, setOpenErrorAlert] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
   const handleContextMenuClose = () => {
     setMousePosition(null);
   };
@@ -111,12 +109,9 @@ const TwoDViewer = () => {
     })
       .then((connections) => {
         setConnections(connections);
-        setOpenErrorAlert(false);
-        setErrorMessage("");
       })
-      .catch((error) => {
-        setOpenErrorAlert(true);
-        setErrorMessage(`"Failed to fetch connections", ${error}`);
+      .catch(() => {
+        throw new GlobalError("Failed to fetch connections");
       });
   }, [
     workspace.activeDatasets,
@@ -382,7 +377,6 @@ const TwoDViewer = () => {
           setHiddenNodes={setHiddenNodes}
         />
       </Box>
-      <ErrorAlert open={openErrorAlert} setOpen={setOpenErrorAlert} errorMessage={errorMessage} />
     </>
   );
 };

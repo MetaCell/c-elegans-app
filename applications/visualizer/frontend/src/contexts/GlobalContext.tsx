@@ -1,8 +1,10 @@
 import type React from "react";
 import { type ReactNode, createContext, useContext, useEffect, useState } from "react";
 import ErrorAlert from "../components/ErrorAlert.tsx";
+import ErrorBoundary from "../components/ErrorBoundary.tsx";
 import { ViewMode } from "../models";
 import { Workspace } from "../models";
+import { GlobalError } from "../models/Error.ts";
 import { type Dataset, DatasetsService } from "../rest";
 export interface GlobalContextType {
   workspaces: Record<string, Workspace>;
@@ -74,6 +76,13 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
   const getCurrentWorkspace = () => {
     return workspaces[currentWorkspaceId];
   };
+
+  const handleErrors = (error: Error) => {
+    if (error instanceof GlobalError) {
+      setErrorMessage(error.message);
+      setOpenErrorAlert(true);
+    }
+  };
   const getGlobalContext = () => ({
     workspaces,
     currentWorkspaceId,
@@ -102,11 +111,9 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
       );
 
       setDatasets(datasetsRecord);
-      setOpenErrorAlert(false);
-      setErrorMessage("");
     } catch (error) {
-      setErrorMessage(`Failed to fetch datasets ${error}`);
       setOpenErrorAlert(true);
+      setErrorMessage("Failed to fetch datasets");
     }
   };
 
@@ -116,8 +123,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
 
   return (
     <GlobalContext.Provider value={getGlobalContext()}>
-      {children}
-      <ErrorAlert open={openErrorAlert} setOpen={setOpenErrorAlert} errorMessage={errorMessage} />
+      <ErrorBoundary onError={handleErrors}>
+        {children}
+        <ErrorAlert open={openErrorAlert} setOpen={setOpenErrorAlert} errorMessage={errorMessage} />
+      </ErrorBoundary>
     </GlobalContext.Provider>
   );
 };

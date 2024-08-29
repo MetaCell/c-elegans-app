@@ -4,11 +4,11 @@ import Tooltip from "@mui/material/Tooltip";
 import { debounce } from "lodash";
 import { useCallback, useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
+import { GlobalError } from "../../models/Error.ts";
 import type { EnhancedNeuron } from "../../models/models.ts";
 import type { Neuron } from "../../rest";
 import { NeuronsService } from "../../rest";
 import { vars } from "../../theme/variables.ts";
-import ErrorAlert from "../ErrorAlert.tsx";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 import CustomListItem from "./CustomListItem.tsx";
 
@@ -32,8 +32,6 @@ const Neurons = ({ children }) => {
   const recentNeurons = Object.values(currentWorkspace.availableNeurons).filter((neuron) => neuron.isInteractant);
   const availableNeurons = currentWorkspace.availableNeurons;
   const [neurons, setNeurons] = useState(availableNeurons);
-  const [openErrorAlert, setOpenErrorAlert] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
 
   const activeDatasets = currentWorkspace.activeDatasets;
   const handleSwitchChange = async (neuronId: string, checked: boolean) => {
@@ -67,13 +65,9 @@ const Neurons = ({ children }) => {
         acc[neuron.name] = neuron;
         return acc;
       }, {});
-
       setNeurons(neuronsRecord);
-      setOpenErrorAlert(false);
-      setErrorMessage("");
     } catch (error) {
-      setOpenErrorAlert(true);
-      setErrorMessage(`"Failed to fetch Neurons", ${error}`);
+      throw new GlobalError(`Failed to fetch Neurons, ${error}`);
     }
   };
 
@@ -150,7 +144,6 @@ const Neurons = ({ children }) => {
           </Stack>
         </Box>
       </Box>
-      <ErrorAlert open={openErrorAlert} setOpen={setOpenErrorAlert} errorMessage={errorMessage} />
     </>
   );
 };
