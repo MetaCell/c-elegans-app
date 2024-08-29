@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import { CaretIcon, CheckIcon, CloseIcon } from "../icons";
+import { GlobalError } from "../models/Error.ts";
 import { type Dataset, NeuronsService } from "../rest";
 import { vars as colors } from "../theme/variables.ts";
 import CustomAutocomplete from "./CustomAutocomplete.tsx";
@@ -11,7 +12,7 @@ import CustomDialog from "./CustomDialog.tsx";
 
 const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceDialog, isCompareMode, title, subTitle, submitButtonText }) => {
   const [neuronNames, setNeuronsNames] = useState<string[]>([]);
-  const { workspaces, datasets, createWorkspace, setSelectedWorkspacesIds } = useGlobalContext();
+  const { workspaces, datasets, createWorkspace, setSelectedWorkspacesIds, handleErrors } = useGlobalContext();
   const [searchedNeuron, setSearchedNeuron] = useState("");
   const [formValues, setFormValues] = useState<{
     workspaceName: string;
@@ -22,8 +23,8 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
     selectedDatasets: [],
     selectedNeurons: [],
   });
-
   const [errorMessage, setErrorMessage] = useState<string>("");
+
   const workspaceFieldName = "workspaceName";
 
   const fetchNeurons = async (name, datasetsIds) => {
@@ -43,7 +44,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
 
       setNeuronsNames([...uniqueNeurons]);
     } catch (error) {
-      console.error("Failed to fetch datasets", error);
+      handleErrors(new GlobalError(error.message));
     }
   };
 
