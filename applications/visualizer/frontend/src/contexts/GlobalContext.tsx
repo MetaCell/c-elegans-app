@@ -16,7 +16,6 @@ export interface GlobalContextType {
   getCurrentWorkspace: () => Workspace;
   setSelectedWorkspacesIds: (workspaceId: Set<string>) => void;
   datasets: Record<string, Dataset>;
-  fetchDatasets: () => void;
   setAllWorkspaces: (workspaces: Record<string, Workspace>) => void;
 }
 
@@ -37,11 +36,11 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     // Convert the activeDatasetKeys into a Record<string, Dataset>
     const activeDatasets: Record<string, Dataset> = {};
 
-    activeDatasetKeys.forEach((key) => {
+    for (const key of activeDatasetKeys) {
       if (datasets[key]) {
         activeDatasets[key] = datasets[key];
       }
-    });
+    }
 
     // Create a new workspace using the activeDatasets record
     const newWorkspace = new Workspace(id, name, activeDatasets, activeNeurons, updateWorkspace);
@@ -72,6 +71,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
   const getCurrentWorkspace = () => {
     return workspaces[currentWorkspaceId];
   };
+
   const getGlobalContext = () => ({
     workspaces,
     currentWorkspaceId,
@@ -84,28 +84,27 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     setViewMode,
     selectedWorkspacesIds,
     setSelectedWorkspacesIds,
-    fetchDatasets,
     datasets,
     setAllWorkspaces,
   });
-  const fetchDatasets = async () => {
-    try {
-      const response = await DatasetsService.getDatasets({});
-      const datasetsRecord = response.reduce(
-        (acc, dataset) => {
-          acc[dataset.id] = dataset;
-          return acc;
-        },
-        {} as Record<string, Dataset>,
-      );
-
-      setDatasets(datasetsRecord);
-    } catch (error) {
-      console.error("Failed to fetch datasets", error);
-    }
-  };
 
   useEffect(() => {
+    const fetchDatasets = async () => {
+      try {
+        const response = await DatasetsService.getDatasets({});
+        const datasetsRecord = response.reduce(
+          (acc, dataset) => {
+            acc[dataset.id] = dataset;
+            return acc;
+          },
+          {} as Record<string, Dataset>,
+        );
+
+        setDatasets(datasetsRecord);
+      } catch (error) {
+        console.error("Failed to fetch datasets", error);
+      }
+    };
     fetchDatasets();
   }, []);
 
