@@ -12,7 +12,7 @@ import CustomDialog from "./CustomDialog.tsx";
 
 const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceDialog, isCompareMode, title, subTitle, submitButtonText }) => {
   const [neuronNames, setNeuronsNames] = useState<string[]>([]);
-  const { workspaces, datasets, createWorkspace, setSelectedWorkspacesIds } = useGlobalContext();
+  const { workspaces, datasets, createWorkspace, setSelectedWorkspacesIds, handleErrors } = useGlobalContext();
   const [searchedNeuron, setSearchedNeuron] = useState("");
   const [formValues, setFormValues] = useState<{
     workspaceName: string;
@@ -44,7 +44,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
 
       setNeuronsNames([...uniqueNeurons]);
     } catch (error) {
-      throw new GlobalError(error.message);
+      handleErrors(new GlobalError(error.message));
     }
   };
 

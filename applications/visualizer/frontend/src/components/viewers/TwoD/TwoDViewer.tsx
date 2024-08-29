@@ -3,6 +3,7 @@ import cytoscape, { type Core, type EventHandler } from "cytoscape";
 import dagre from "cytoscape-dagre";
 import fcose from "cytoscape-fcose";
 import { useEffect, useRef, useState } from "react";
+import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { ColoringOptions, getColor } from "../../../helpers/twoD/coloringHelper";
 import { computeGraphDifferences, updateHighlighted } from "../../../helpers/twoD/graphRendering.ts";
 import { applyLayout, refreshLayout, updateWorkspaceNeurons2DViewerData } from "../../../helpers/twoD/twoDHelpers";
@@ -30,6 +31,7 @@ cytoscape.use(dagre);
 
 const TwoDViewer = () => {
   const workspace = useSelectedWorkspace();
+  const { handleErrors } = useGlobalContext();
   const cyContainer = useRef(null);
   const cyRef = useRef<Core | null>(null);
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -111,7 +113,7 @@ const TwoDViewer = () => {
         setConnections(connections);
       })
       .catch(() => {
-        throw new GlobalError("Failed to fetch connections");
+        handleErrors(new GlobalError("Failed to fetch connections"));
       });
   }, [
     workspace.activeDatasets,

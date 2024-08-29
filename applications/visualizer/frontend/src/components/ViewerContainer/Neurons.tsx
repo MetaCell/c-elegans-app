@@ -25,7 +25,7 @@ const mapNeuronsAvailableNeuronsToOptions = (neuron: Neuron) => ({
 });
 
 const Neurons = ({ children }) => {
-  const { getCurrentWorkspace } = useGlobalContext();
+  const { getCurrentWorkspace, handleErrors } = useGlobalContext();
   const currentWorkspace = getCurrentWorkspace();
 
   const activeNeurons = currentWorkspace.activeNeurons;
@@ -67,7 +67,7 @@ const Neurons = ({ children }) => {
       }, {});
       setNeurons(neuronsRecord);
     } catch (error) {
-      throw new GlobalError(`Failed to fetch Neurons, ${error}`);
+      handleErrors(new GlobalError(`Failed to fetch Neurons, ${error}`));
     }
   };
 

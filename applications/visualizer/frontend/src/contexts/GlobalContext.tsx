@@ -21,6 +21,7 @@ export interface GlobalContextType {
   datasets: Record<string, Dataset>;
   fetchDatasets: () => void;
   setAllWorkspaces: (workspaces: Record<string, Workspace>) => void;
+  handleErrors: (error: Error) => void;
 }
 
 interface GlobalContextProviderProps {
@@ -98,6 +99,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     fetchDatasets,
     datasets,
     setAllWorkspaces,
+    handleErrors,
   });
   const fetchDatasets = async () => {
     try {
