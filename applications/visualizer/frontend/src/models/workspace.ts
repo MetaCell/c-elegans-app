@@ -3,7 +3,8 @@ import type { configureStore } from "@reduxjs/toolkit";
 import { immerable, produce } from "immer";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
 import { type Dataset, type Neuron, NeuronsService } from "../rest";
-import { type EnhancedNeuron, type NeuronGroup, ViewerSynchronizationPair, ViewerType } from "./models";
+import { type EnhancedNeuron, type NeuronGroup, type ViewerSynchronizationPair, ViewerType } from "./models";
+import { SynchronizerOrchestrator } from "./synchronizer";
 
 export class Workspace {
   [immerable] = true;
@@ -18,11 +19,12 @@ export class Workspace {
   activeNeurons: Set<string>;
   selectedNeurons: Set<string>;
   viewers: Record<ViewerType, boolean>;
-  synchronizations: Record<ViewerSynchronizationPair, boolean>;
   neuronGroups: Record<string, NeuronGroup>;
 
   store: ReturnType<typeof configureStore>;
   layoutManager: LayoutManager;
+
+  syncOrchestrator: SynchronizerOrchestrator;
   updateContext: (workspace: Workspace) => void;
 
   constructor(id: string, name: string, activeDatasets: Record<string, Dataset>, activeNeurons: Set<string>, updateContext: (workspace: Workspace) => void) {
@@ -38,15 +40,12 @@ export class Workspace {
       [ViewerType.EM]: false,
       [ViewerType.InstanceDetails]: false,
     };
-    this.synchronizations = {
-      [ViewerSynchronizationPair.Graph_InstanceDetails]: true,
-      [ViewerSynchronizationPair.Graph_ThreeD]: true,
-      [ViewerSynchronizationPair.ThreeD_EM]: true,
-    };
     this.neuronGroups = {};
 
     const { layoutManager, store } = getLayoutManagerAndStore(id);
     this.layoutManager = layoutManager;
+    this.syncOrchestrator = SynchronizerOrchestrator.create(null);
+
     this.store = store;
     this.updateContext = updateContext;
 
@@ -129,7 +128,14 @@ export class Workspace {
 
   updateViewerSynchronizationStatus(pair: ViewerSynchronizationPair, isActive: boolean): void {
     const updated = produce(this, (draft: Workspace) => {
-      draft.synchronizations[pair] = isActive;
+      draft.syncOrchestrator.setActive(pair, isActive);
+    });
+    this.updateContext(updated);
+  }
+
+  switchViewerSynchronizationStatus(pair: ViewerSynchronizationPair): void {
+    const updated = produce(this, (draft: Workspace) => {
+      draft.syncOrchestrator.switchSynchronizer(pair);
     });
     this.updateContext(updated);
   }
@@ -222,5 +228,12 @@ export class Workspace {
   customUpdate(updateFunction: (draft: Workspace) => void): void {
     const updated = produce(this, updateFunction);
     this.updateContext(updated);
+  }
+
+  setSelection(selection: Array<string>, initiator: ViewerType) {
+    const selectedNeurons = Object.values(this.availableNeurons).filter((neuron) => selection.includes(neuron.name));
+    this.customUpdate((draft) => {
+      draft.syncOrchestrator.select(selectedNeurons, initiator);
+    });
   }
 }
