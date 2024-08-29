@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import { CloseIcon, LinkIcon } from "../icons";
 import { emDataViewerWidget, threeDViewerWidget, twoDViewerWidget } from "../layout-manager/widgets.ts";
-import { ViewerType } from "../models/models.ts";
+import { ViewerSynchronizationPair, ViewerType } from "../models/models.ts";
 import { vars } from "../theme/variables.ts";
 import CustomSwitch from "./ViewerContainer/CustomSwitch.tsx";
 
@@ -27,14 +27,17 @@ const SyncViewersData = [
   {
     primaryText: "Connectivity graph",
     secondaryText: "Instance details",
+    syncPair: ViewerSynchronizationPair.Graph_InstanceDetails,
   },
   {
     primaryText: "3D viewer",
     secondaryText: "EM viewer",
+    syncPair: ViewerSynchronizationPair.ThreeD_EM,
   },
   {
     primaryText: "Connectivity graph",
     secondaryText: "3D viewer",
+    syncPair: ViewerSynchronizationPair.Graph_ThreeD,
   },
 ];
 
@@ -65,8 +68,8 @@ const ViewerSettings = ({ open, toggleDrawer }) => {
       return;
     }
   };
-  const handleChangeSynchronizations = (_, index, status) => {
-    currentWorkspace.updateViewerSynchronizationStatus(index, !status);
+  const handleChangeSynchronizations = (_, syncPair) => {
+    currentWorkspace.switchViewerSynchronizationStatus(syncPair);
   };
 
   return (
@@ -164,13 +167,13 @@ const ViewerSettings = ({ open, toggleDrawer }) => {
           <Typography sx={{ ...secondaryTypographyStyles, marginBottom: "0.75rem" }}>Sync viewers</Typography>
 
           <Box display="flex" gap="0.25rem" flexDirection="column">
-            {SyncViewersData?.map((data, index) => (
-              <Box display="flex" alignItems="center" gap="0.75rem" py="0.25rem" key={data.primaryText}>
+            {SyncViewersData?.map((data) => (
+              <Box display="flex" alignItems="center" gap="0.75rem" py="0.25rem" key={data.syncPair}>
                 <Typography sx={textStyles}>{data.primaryText}</Typography>
                 <IconButton
-                  className={currentWorkspace?.synchronizations[index] ? "active" : ""}
+                  className={currentWorkspace?.syncOrchestrator.isActive(data.syncPair) ? "active" : ""}
                   sx={buttonStyle}
-                  onClick={(e) => handleChangeSynchronizations(e, index, currentWorkspace?.synchronizations[index])}
+                  onClick={(e) => handleChangeSynchronizations(e, data.syncPair)}
                 >
                   <LinkIcon />
                 </IconButton>
