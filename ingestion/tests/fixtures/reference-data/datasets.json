@@ -1,0 +1,35 @@
+[
+   {
+      "id":"white_1986_jsh",
+      "name":"White et al., 1986, JSH (L4)",
+      "type":"head",
+      "time":40,
+      "visualTime":40,
+      "description":"L4 legacy dataset<br />Muscles: <i>Zhen lab, 2020</i>"
+   },
+   {
+      "id":"witvliet_2020_1",
+      "name":"Witvliet et al., 2020, Dataset 1 (L1)",
+      "type":"head",
+      "time":0,
+      "visualTime":0.5,
+      "description":"~0 hours after birth",
+      "axes": [
+         {
+            "face": "right",
+            "axisIndex": 2,
+            "axisTransform": 1
+         },
+         {
+            "face": "dorsal",
+            "axisIndex": 1,
+            "axisTransform": -1
+         },
+         {
+            "face": "anterior",
+            "axisIndex": 0,
+            "axisTransform": 1
+         }
+      ]
+   }
+ ]

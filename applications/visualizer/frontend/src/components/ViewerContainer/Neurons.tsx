@@ -25,14 +25,17 @@ const mapNeuronsAvailableNeuronsToOptions = (neuron: Neuron) => ({
 });
 
 const Neurons = ({ children }) => {
-  const { workspaces, datasets, currentWorkspaceId } = useGlobalContext();
-  const currentWorkspace = workspaces[currentWorkspaceId];
+  const { getCurrentWorkspace } = useGlobalContext();
+  const currentWorkspace = getCurrentWorkspace();
+
   const activeNeurons = currentWorkspace.activeNeurons;
   const recentNeurons = Object.values(currentWorkspace.availableNeurons).filter((neuron) => neuron.isInteractant);
   const availableNeurons = currentWorkspace.availableNeurons;
   const [neurons, setNeurons] = useState(availableNeurons);
   const [openErrorAlert, setOpenErrorAlert] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  const activeDatasets = currentWorkspace.activeDatasets;
   const handleSwitchChange = async (neuronId: string, checked: boolean) => {
     const neuron = availableNeurons[neuronId];
 
@@ -56,11 +59,9 @@ const Neurons = ({ children }) => {
     currentWorkspace.deleteNeuron(neuronId);
   };
 
-  const fetchNeurons = async (name: string, datasetsIds: { id: string }[]) => {
+  const fetchNeurons = async (name: string, datasetIds: string[]) => {
     try {
-      const ids = datasetsIds.map((dataset) => dataset.id);
-      const response = await NeuronsService.searchCells({ name: name, datasetIds: ids });
-
+      const response = await NeuronsService.searchCells({ name, datasetIds });
       // Convert the object to a Record<string, Neuron>
       const neuronsRecord = Object.entries(response).reduce((acc: Record<string, EnhancedNeuron>, [_, neuron]: [string, EnhancedNeuron]) => {
         acc[neuron.name] = neuron;
@@ -79,7 +80,7 @@ const Neurons = ({ children }) => {
   const debouncedFetchNeurons = useCallback(debounce(fetchNeurons, 300), []);
 
   const onSearchNeurons = (value) => {
-    const datasetsIds = Object.keys(datasets);
+    const datasetsIds = Object.keys(activeDatasets);
     debouncedFetchNeurons(value, datasetsIds);
   };
 

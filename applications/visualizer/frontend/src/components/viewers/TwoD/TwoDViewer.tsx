@@ -1,14 +1,14 @@
-import {Box} from "@mui/material";
-import cytoscape, {type Core, type EventHandler} from "cytoscape";
+import { Box } from "@mui/material";
+import cytoscape, { type Core, type EventHandler } from "cytoscape";
 import dagre from "cytoscape-dagre";
 import fcose from "cytoscape-fcose";
-import {useEffect, useRef, useState} from "react";
-import {ColoringOptions, getColor} from "../../../helpers/twoD/coloringHelper";
-import {computeGraphDifferences, updateHighlighted} from "../../../helpers/twoD/graphRendering.ts";
-import {applyLayout, refreshLayout, updateWorkspaceNeurons2DViewerData} from "../../../helpers/twoD/twoDHelpers";
-import {areSetsEqual} from "../../../helpers/utils.ts";
-import {useSelectedWorkspace} from "../../../hooks/useSelectedWorkspace";
-import {type Connection, ConnectivityService} from "../../../rest";
+import { useEffect, useRef, useState } from "react";
+import { ColoringOptions, getColor } from "../../../helpers/twoD/coloringHelper";
+import { computeGraphDifferences, updateHighlighted } from "../../../helpers/twoD/graphRendering.ts";
+import { applyLayout, refreshLayout, updateWorkspaceNeurons2DViewerData } from "../../../helpers/twoD/twoDHelpers";
+import { areSetsEqual } from "../../../helpers/utils.ts";
+import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace";
+import { type Connection, ConnectivityService } from "../../../rest";
 import {
   CHEMICAL_THRESHOLD,
   ELECTRICAL_THRESHOLD,
@@ -19,7 +19,7 @@ import {
   INCLUDE_POST_EMBRYONIC,
   type LegendType,
 } from "../../../settings/twoDSettings";
-import {GRAPH_STYLES} from "../../../theme/twoDStyles";
+import { GRAPH_STYLES } from "../../../theme/twoDStyles";
 import ErrorAlert from "../../ErrorAlert.tsx";
 import ContextMenu from "./ContextMenu";
 import TwoDLegend from "./TwoDLegend";
