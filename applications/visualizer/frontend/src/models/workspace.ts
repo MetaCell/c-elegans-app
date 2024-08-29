@@ -44,7 +44,7 @@ export class Workspace {
 
     const { layoutManager, store } = getLayoutManagerAndStore(id);
     this.layoutManager = layoutManager;
-    this.syncOrchestrator = SynchronizerOrchestrator.create(null);
+    this.syncOrchestrator = SynchronizerOrchestrator.create();
 
     this.store = store;
     this.updateContext = updateContext;
