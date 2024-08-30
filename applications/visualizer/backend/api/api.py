@@ -132,7 +132,7 @@ def annotate_neurons(neurons: BaseManager[NeuronModel]) -> None:
     for neuron in neurons:
         name = neuron.name
         neuron.dataset_ids = neurons_dataset_ids[name]  # type: ignore
-        neuron.model3D_url = settings.NEURON_REPRESENTATION_3D_URL_FORMAT.format(name=name)  # type: ignore
+        neuron.model3D_urls = [settings.NEURON_REPRESENTATION_3D_URL_FORMAT.format(name=name)]  # type: ignore
 
 
 def neurons_from_datasets(

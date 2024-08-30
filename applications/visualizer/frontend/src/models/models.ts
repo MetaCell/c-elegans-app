@@ -47,19 +47,19 @@ const buildUrlFromFormat = (s: string, param: string) => {
   return s.replace(s.match("{[^}]+}")?.[0], param);
 };
 
-export function getNeuronUrlForDataset(neuron: Neuron, datasetId: string) {
-  return buildUrlFromFormat(neuron.model3DUrl, datasetId);
+export function getNeuronUrlForDataset(neuron: Neuron, datasetId: string): string[] {
+  return neuron.model3DUrls.map((url) => buildUrlFromFormat(url, datasetId));
 }
 
-export function getNeuronURL(dataset: Dataset, neuronName: string) {
+export function getNeuronURL(dataset: Dataset, neuronName: string): string {
   return buildUrlFromFormat(dataset.neuron3DUrl, neuronName);
 }
 
-export function getSegmentationURL(dataset: Dataset, sliceIndex: number) {
+export function getSegmentationURL(dataset: Dataset, sliceIndex: number): string {
   return buildUrlFromFormat(dataset.emData.segmentation_url, sliceIndex?.toString());
 }
 
-export function getEMDataURL(dataset: Dataset, sliceIndex: number) {
+export function getEMDataURL(dataset: Dataset, sliceIndex: number): string {
   return buildUrlFromFormat(dataset.emData.resource_url, sliceIndex?.toString());
 }
 

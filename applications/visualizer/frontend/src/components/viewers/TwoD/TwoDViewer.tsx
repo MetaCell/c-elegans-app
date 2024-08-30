@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { Box, Snackbar } from "@mui/material";
 import cytoscape, { type Core, type EventHandler } from "cytoscape";
-import fcose from "cytoscape-fcose";
 import dagre from "cytoscape-dagre";
-import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace";
-import { type Connection, ConnectivityService } from "../../../rest";
-import { GRAPH_STYLES } from "../../../theme/twoDStyles";
+import fcose from "cytoscape-fcose";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
+import { ColoringOptions, getColor } from "../../../helpers/twoD/coloringHelper";
+import { computeGraphDifferences, updateHighlighted, updateParentNodes } from "../../../helpers/twoD/graphRendering.ts";
 import {
   applyLayout,
   getHiddenNeuronsIn2D,
@@ -13,6 +14,10 @@ import {
   refreshLayout,
   updateWorkspaceNeurons2DViewerData,
 } from "../../../helpers/twoD/twoDHelpers";
+import { areSetsEqual } from "../../../helpers/utils.ts";
+import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace";
+import { GlobalError } from "../../../models/Error.ts";
+import { type Connection, ConnectivityService } from "../../../rest";
 import {
   CHEMICAL_THRESHOLD,
   ELECTRICAL_THRESHOLD,
@@ -26,13 +31,10 @@ import {
   HOVER_CLASS,
   FOCUS_CLASS,
 } from "../../../settings/twoDSettings";
-import TwoDMenu from "./TwoDMenu";
-import TwoDLegend from "./TwoDLegend";
-import { Box, Snackbar } from "@mui/material";
-import { ColoringOptions, getColor } from "../../../helpers/twoD/coloringHelper";
+import { GRAPH_STYLES } from "../../../theme/twoDStyles";
 import ContextMenu from "./ContextMenu";
-import { computeGraphDifferences, updateHighlighted, updateParentNodes } from "../../../helpers/twoD/graphRendering.ts";
-import { areSetsEqual } from "../../../helpers/utils.ts";
+import TwoDLegend from "./TwoDLegend";
+import TwoDMenu from "./TwoDMenu";
 import { ViewerType } from "../../../models";
 
 cytoscape.use(fcose);
@@ -40,6 +42,7 @@ cytoscape.use(dagre);
 
 const TwoDViewer = () => {
   const workspace = useSelectedWorkspace();
+  const { handleErrors } = useGlobalContext();
   const cyContainer = useRef(null);
   const cyRef = useRef<Core | null>(null);
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -150,8 +153,8 @@ const TwoDViewer = () => {
       .then((connections) => {
         setConnections(connections);
       })
-      .catch((error) => {
-        console.error("Failed to fetch connections:", error);
+      .catch(() => {
+        handleErrors(new GlobalError("Failed to fetch connections"));
       });
   }, [
     workspace.activeDatasets,
@@ -387,8 +390,7 @@ const TwoDViewer = () => {
         });
 
         // Ensure unique colors are used
-        const uniqueColors = [...new Set(colors)];
-        colors = uniqueColors;
+        colors = [...new Set(colors)];
       } else {
         const neuron = workspace.availableNeurons[nodeId];
         if (neuron == null) {

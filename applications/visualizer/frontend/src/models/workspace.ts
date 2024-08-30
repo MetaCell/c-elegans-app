@@ -3,6 +3,7 @@ import type { configureStore } from "@reduxjs/toolkit";
 import { immerable, produce } from "immer";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
 import { type Dataset, type Neuron, NeuronsService } from "../rest";
+import { GlobalError } from "./Error.ts";
 import { type EnhancedNeuron, type NeuronGroup, ViewerSynchronizationPair, ViewerType, Visibility } from "./models";
 
 export class Workspace {
@@ -181,13 +182,20 @@ export class Workspace {
       const datasetIds = Object.keys(updatedWorkspace.activeDatasets);
       const neuronArrays = await NeuronsService.searchCells({ datasetIds });
 
+      // Flatten and add neurons classes
       const uniqueNeurons = new Set<Neuron>();
+      const neuronsClass: Record<string, Neuron> = {};
+      for (const neuron of neuronArrays.flat()) {
+        uniqueNeurons.add(neuron);
 
-      // Flatten and deduplicate neurons
-      for (const neuronArray of neuronArrays.flat()) {
-        uniqueNeurons.add(neuronArray);
-        const classNeuron = { ...neuronArray, name: neuronArray.nclass };
-        uniqueNeurons.add(classNeuron);
+        const className = neuron.nclass;
+        if (!(className in neuronsClass)) {
+          const neuronClass = { ...neuron, name: className };
+          neuronsClass[className] = neuronClass;
+          uniqueNeurons.add(neuronClass);
+        } else {
+          neuronsClass[className].model3DUrls.push(...neuron.model3DUrls);
+        }
       }
 
       return produce(updatedWorkspace, (draft: Workspace) => {
@@ -218,8 +226,7 @@ export class Workspace {
         }
       });
     } catch (error) {
-      console.error("Failed to fetch neurons:", error);
-      return updatedWorkspace;
+      throw new GlobalError("Failed to fetch neurons:");
     }
   }
 
