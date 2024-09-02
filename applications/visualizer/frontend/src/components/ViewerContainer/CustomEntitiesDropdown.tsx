@@ -178,7 +178,7 @@ const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearc
                         >
                           <CheckIcon />
                         </Box>
-                        {option?.label?.length > 100 ? option?.label.slice(0, 100) + "..." : option?.label}
+                        {option?.label?.length > 100 ? `${option?.label.slice(0, 100)}...` : option?.label}
                       </Box>
                     </li>
                   ))}

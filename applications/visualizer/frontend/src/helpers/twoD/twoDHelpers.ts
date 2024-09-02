@@ -3,8 +3,9 @@ import type { Workspace } from "../../models";
 import { ViewerType } from "../../models";
 import type { Connection } from "../../rest";
 
-import { annotationLegend } from "../../settings/twoDSettings.tsx";
+import { annotationLegend, LAYOUT_OPTIONS } from "../../settings/twoDSettings.tsx";
 import { cellConfig, neurotransmitterConfig } from "./coloringHelper.ts";
+import { Visibility } from "../../models/models.ts";
 
 export const createEdge = (id: string, conn: Connection, workspace: Workspace, includeAnnotations: boolean): ElementDefinition => {
   const synapses = conn.synapses || {};
@@ -56,11 +57,23 @@ const createEdgeLongLabel = (workspace: Workspace, synapses: Record<string, numb
     .join("\n");
 };
 
-export const createNode = (nodeId: string, selected: boolean, attributes: string[], position?: Position): ElementDefinition => {
+export const createNode = (
+  nodeId: string,
+  selected: boolean,
+  attributes: string[],
+  position?: Position,
+  isGroupNode?: boolean,
+  parent?: string, // Optional parent node ID for compound nodes
+): ElementDefinition => {
   const node: ElementDefinition = {
     group: "nodes",
-    data: { id: nodeId, label: nodeId, ...attributes.reduce((acc, attr) => ({ ...acc, [attr]: true }), {}) },
-    classes: selected ? "selected" : "",
+    data: {
+      id: nodeId,
+      label: nodeId,
+      ...attributes.reduce((acc, attr) => ({ ...acc, [attr]: true }), {}),
+      parent: parent || undefined, // Set the parent if provided
+    },
+    classes: isGroupNode ? "groupNode" : selected ? "selected" : "",
   };
   if (position) {
     node.position = { x: position.x, y: position.y };
@@ -69,9 +82,7 @@ export const createNode = (nodeId: string, selected: boolean, attributes: string
 };
 
 export function applyLayout(cy: Core, layout: string) {
-  cy.layout({
-    name: layout,
-  }).run();
+  cy.layout(LAYOUT_OPTIONS[layout]).run();
 
   refreshLayout(cy);
 }
@@ -198,8 +209,53 @@ export const updateWorkspaceNeurons2DViewerData = (workspace: Workspace, cy: Cor
       const neuronId = node.id();
       if (draft.availableNeurons[neuronId]) {
         draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].defaultPosition = { ...node.position() };
-        draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].visibility = true;
+        draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].visibility = Visibility.Visible;
       }
     });
   });
 };
+
+export function getVisibleActiveNeuronsIn2D(workspace: Workspace): Set<string> {
+  const activeVisibleNeurons = Array.from(workspace.activeNeurons).filter((neuronId) => {
+    return workspace.availableNeurons[neuronId]?.viewerData[ViewerType.Graph]?.visibility === Visibility.Visible;
+  });
+
+  // Create a set to store the class neurons that are active and visible
+  const activeVisibleClasses = new Set(
+    activeVisibleNeurons.filter((neuronId) => {
+      const neuron = workspace.availableNeurons[neuronId];
+      return neuron && isNeuronClass(neuronId, workspace);
+    }),
+  );
+
+  // Filter out individual cells if their class neuron is active and visible
+  return new Set(
+    activeVisibleNeurons.filter((neuronId) => {
+      const neuron = workspace.availableNeurons[neuronId];
+      const isCellFilteredOut = neuron && neuron.name !== neuron.nclass && activeVisibleClasses.has(neuron.nclass);
+
+      return !isCellFilteredOut; // Return only those that should not be filtered out
+    }),
+  );
+}
+
+export function getHiddenNeuronsIn2D(workspace: Workspace): Set<string> {
+  const hiddenNeurons = new Set<string>();
+
+  Object.keys(workspace.availableNeurons).forEach((neuronId) => {
+    const neuron = workspace.availableNeurons[neuronId];
+    const visibility = neuron.viewerData[ViewerType.Graph]?.visibility;
+
+    if (visibility === Visibility.Hidden) {
+      hiddenNeurons.add(neuronId);
+    }
+  });
+
+  return hiddenNeurons;
+}
+
+export function isNeuronPartOfClosedGroup(neuronId: string, workspace: Workspace, openGroups: Set<string>): boolean {
+  return Object.entries(workspace.neuronGroups).some(([groupId, group]) => {
+    return group.neurons.has(neuronId) && !openGroups.has(groupId);
+  });
+}

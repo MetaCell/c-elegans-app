@@ -119,7 +119,7 @@ function WorkspaceComponent({ sidebarOpen }) {
     const workspaceKeys = Object.keys(workspaces);
     const workspaceIndex = workspaceKeys.indexOf(workspaceId);
 
-    let workspaceIdToView;
+    let workspaceIdToView: string;
 
     if (workspaceKeys.length === 2) {
       workspaceIdToView = workspaceKeys.find((id) => id !== workspaceId);
