@@ -175,7 +175,7 @@ const Header = ({
           <ButtonGroup variant="outlined" aria-label="Basic button group">
             {VIEW_OPTIONS.map((item, index) => {
               return (
-                <Tooltip placement={index === 0 ? "bottom-start" : "bottom"} title={item.description} key={index}>
+                <Tooltip placement={index === 0 ? "bottom-start" : "bottom"} title={item.description} key={item.label}>
                   <Button className={active === index ? "active" : ""} onClick={(e) => onClick(e, index)}>
                     {item.label}
                   </Button>

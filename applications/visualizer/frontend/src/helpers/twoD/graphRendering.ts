@@ -1,9 +1,19 @@
-import type { CollectionReturnValue, Core, ElementDefinition } from "cytoscape";
+import type { Core, ElementDefinition, CollectionReturnValue } from "cytoscape";
+import {
+  calculateMeanPosition,
+  createEdge,
+  createNode,
+  extractNeuronAttributes,
+  getEdgeId,
+  getNclassSet,
+  getVisibleActiveNeuronsIn2D,
+  isNeuronCell,
+  isNeuronClass,
+} from "./twoDHelpers";
 import type { NeuronGroup, Workspace } from "../../models";
 import { ViewerType } from "../../models";
 import type { Connection } from "../../rest";
-import { LegendType } from "../../settings/twoDSettings.tsx";
-import { calculateMeanPosition, createEdge, createNode, extractNeuronAttributes, getEdgeId, getNclassSet, isNeuronCell, isNeuronClass } from "./twoDHelpers";
+import { FADED_CLASS, LegendType } from "../../settings/twoDSettings.tsx";
 
 export const computeGraphDifferences = (
   cy: Core,
@@ -11,10 +21,13 @@ export const computeGraphDifferences = (
   workspace: Workspace,
   splitJoinState: { split: Set<string>; join: Set<string> },
   hiddenNodes: Set<string>,
+  openGroups: Set<string>,
   includeNeighboringCellsAsIndividualCells: boolean,
   includeAnnotations: boolean,
   includePostEmbryonic: boolean,
 ) => {
+  const visibleActiveNeurons = getVisibleActiveNeuronsIn2D(workspace);
+
   // Current nodes and edges in the Cytoscape instance
   const currentNodes = new Set(cy.nodes().map((node) => node.id()));
   const currentEdges = new Set(cy.edges().map((edge) => edge.id()));
@@ -35,8 +48,8 @@ export const computeGraphDifferences = (
     connectionMap.set(edgeId, conn);
   });
 
-  // Compute expected nodes based on workspace.activeNeurons and connections
-  const filteredActiveNeurons = Array.from(workspace.activeNeurons).filter((neuronId: string) => {
+  // Compute expected nodes based on visibleActiveNeurons and connections
+  const filteredActiveNeurons = Array.from(visibleActiveNeurons).filter((neuronId: string) => {
     const neuron = workspace.availableNeurons[neuronId];
     if (!neuron || hiddenNodes.has(neuronId)) {
       return false;
@@ -48,7 +61,7 @@ export const computeGraphDifferences = (
     if (neuronId === nclass) {
       return true;
     }
-    return !(workspace.activeNeurons.has(neuronId) && workspace.activeNeurons.has(nclass));
+    return !(visibleActiveNeurons.has(neuronId) && visibleActiveNeurons.has(nclass));
   });
 
   // Add active neurons to expected nodes
@@ -71,12 +84,19 @@ export const computeGraphDifferences = (
   }
 
   // Apply split and join rules to expected nodes and edges
-  expectedNodes = applySplitJoinRulesToNodes(expectedNodes, splitJoinState.split, splitJoinState.join, includeNeighboringCellsAsIndividualCells, workspace);
+  expectedNodes = applySplitJoinRulesToNodes(
+    expectedNodes,
+    splitJoinState.split,
+    splitJoinState.join,
+    includeNeighboringCellsAsIndividualCells,
+    workspace,
+    visibleActiveNeurons,
+  );
   expectedEdges = applySplitJoinRulesToEdges(expectedEdges, expectedNodes, connectionMap);
 
   // Replace individual neurons and edges with groups if necessary
-  expectedNodes = replaceNodesWithGroups(expectedNodes, workspace.neuronGroups, hiddenNodes);
-  replaceEdgesWithGroups(expectedEdges, workspace.neuronGroups, connectionMap, includeAnnotations);
+  expectedNodes = applyGroupingRulesToNodes(expectedNodes, workspace.neuronGroups, hiddenNodes, openGroups);
+  expectedEdges = applyGroupingRulesToEdges(expectedEdges, workspace.neuronGroups, connectionMap, includeAnnotations, openGroups);
 
   // Determine nodes to add and remove
   for (const nodeId of expectedNodes) {
@@ -94,10 +114,19 @@ export const computeGraphDifferences = (
         const groupPosition = calculateMeanPosition(groupNeurons, workspace);
         nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), Array.from(attributes), groupPosition, true));
       } else {
+        let parent = undefined;
+
+        // Check if the neuron belongs to an open group
+        for (const groupId of openGroups) {
+          if (workspace.neuronGroups[groupId]?.neurons.has(nodeId)) {
+            parent = groupId;
+            break;
+          }
+        }
         const neuron = workspace.availableNeurons[nodeId];
         const attributes = extractNeuronAttributes(neuron);
         const position = neuron.viewerData[ViewerType.Graph]?.defaultPosition ?? null;
-        nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), attributes, position));
+        nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), attributes, position, false, parent));
       }
     }
   }
@@ -130,33 +159,45 @@ export const computeGraphDifferences = (
 };
 
 // Replace individual neurons with group nodes
-const replaceNodesWithGroups = (expectedNodes: Set<string>, neuronGroups: Record<string, NeuronGroup>, hiddenNodes: Set<string>) => {
+const applyGroupingRulesToNodes = (
+  expectedNodes: Set<string>,
+  neuronGroups: Record<string, NeuronGroup>,
+  hiddenNodes: Set<string>,
+  openGroups: Set<string>,
+) => {
   const nodesToAdd = new Set<string>();
   const nodesToRemove = new Set<string>();
 
   expectedNodes.forEach((nodeId) => {
     for (const groupId in neuronGroups) {
       const group = neuronGroups[groupId];
+
       if (group.neurons.has(nodeId)) {
         if (!hiddenNodes.has(groupId)) {
           nodesToAdd.add(groupId);
         }
-        nodesToRemove.add(nodeId);
+        if (!openGroups.has(groupId)) {
+          nodesToRemove.add(nodeId);
+        }
       }
     }
   });
 
+  // Remove individual nodes if they are replaced by a closed group node
   nodesToRemove.forEach((nodeId) => expectedNodes.delete(nodeId));
+  // Add group nodes
   nodesToAdd.forEach((nodeId) => expectedNodes.add(nodeId));
+
   return expectedNodes;
 };
 
 // Replace edges involving individual neurons with edges involving group nodes
-const replaceEdgesWithGroups = (
+const applyGroupingRulesToEdges = (
   expectedEdges: Set<string>,
   neuronGroups: Record<string, NeuronGroup>,
   connectionMap: Map<string, Connection>,
   includeAnnotations: boolean,
+  openGroups: Set<string>,
 ) => {
   const edgesToAdd = new Set<string>();
   const edgesToRemove = new Set<string>();
@@ -169,13 +210,27 @@ const replaceEdgesWithGroups = (
     let newPre = conn.pre;
     let newPost = conn.post;
 
-    for (const groupId in neuronGroups) {
-      const group = neuronGroups[groupId];
-      if (group.neurons.has(conn.pre)) {
-        newPre = groupId;
+    // Skip grouping if either pre or post neuron is in an open group
+    const preInOpenGroup = Array.from(openGroups).some((groupId) => neuronGroups[groupId]?.neurons.has(conn.pre));
+    const postInOpenGroup = Array.from(openGroups).some((groupId) => neuronGroups[groupId]?.neurons.has(conn.post));
+
+    if (!preInOpenGroup) {
+      for (const groupId in neuronGroups) {
+        const group = neuronGroups[groupId];
+        if (group.neurons.has(conn.pre)) {
+          newPre = groupId;
+          break;
+        }
       }
-      if (group.neurons.has(conn.post)) {
-        newPost = groupId;
+    }
+
+    if (!postInOpenGroup) {
+      for (const groupId in neuronGroups) {
+        const group = neuronGroups[groupId];
+        if (group.neurons.has(conn.post)) {
+          newPost = groupId;
+          break;
+        }
       }
     }
 
@@ -209,6 +264,8 @@ const replaceEdgesWithGroups = (
 
   edgesToRemove.forEach((edgeId) => expectedEdges.delete(edgeId));
   edgesToAdd.forEach((edgeId) => expectedEdges.add(edgeId));
+
+  return expectedEdges;
 };
 
 const getSimpleEdgeId = (pre: string, post: string, type: string): string => {
@@ -222,11 +279,15 @@ const applySplitJoinRulesToNodes = (
   toJoin: Set<string>,
   includeNeighboringCellsAsIndividualCells: boolean,
   workspace: Workspace,
+  visibleActiveNeurons: Set<string>,
 ) => {
   const nodesToRemove = new Set<string>();
 
   expectedNodes.forEach((nodeId) => {
-    if (!workspace.activeNeurons.has(nodeId) && shouldRemoveNode(nodeId, toSplit, toJoin, includeNeighboringCellsAsIndividualCells, workspace)) {
+    if (
+      !visibleActiveNeurons.has(nodeId) &&
+      shouldRemoveNode(nodeId, toSplit, toJoin, includeNeighboringCellsAsIndividualCells, workspace, visibleActiveNeurons)
+    ) {
       nodesToRemove.add(nodeId);
     }
   });
@@ -264,8 +325,9 @@ const shouldRemoveNode = (
   toJoin: Set<string>,
   includeNeighboringCellsAsIndividualCells: boolean,
   workspace: Workspace,
+  visibleActiveNeurons: Set<string>,
 ): boolean => {
-  const isActive = workspace.activeNeurons.has(nodeId);
+  const isActive = visibleActiveNeurons.has(nodeId);
   const isClass = isNeuronClass(nodeId, workspace);
   const isCell = isNeuronCell(nodeId, workspace);
   const neuron = workspace.availableNeurons[nodeId];
@@ -282,8 +344,19 @@ const shouldRemoveNode = (
     return true;
   }
 
-  // 3. Remove individual cells if showing class nodes and the node is not active and it's not a split exception
-  if (!includeNeighboringCellsAsIndividualCells && isCell && !isActive && !toSplit.has(neuron.nclass)) {
+  // 3. Remove individual cells if showing class nodes and the node is not active, it's not a split exception, and there's no active neuron in the same class
+  const isAnyNeuronInClassActive =
+    !includeNeighboringCellsAsIndividualCells && isCell && workspace.getNeuronCellsByClass(neuron.nclass).some((cellId) => visibleActiveNeurons.has(cellId));
+
+  if (!includeNeighboringCellsAsIndividualCells && isCell && !isActive && !toSplit.has(neuron.nclass) && !isAnyNeuronInClassActive) {
+    return true;
+  }
+
+  // 4. Remove class nodes if showing individual cells and there's an active cell in the same class
+  const hasActiveCellInClass =
+    !includeNeighboringCellsAsIndividualCells && isClass && workspace.getNeuronCellsByClass(nodeId).some((cellId) => visibleActiveNeurons.has(cellId));
+
+  if (!includeNeighboringCellsAsIndividualCells && isClass && hasActiveCellInClass) {
     return true;
   }
 
@@ -296,7 +369,7 @@ const shouldRemoveEdge = (pre: string, post: string, expectedNodes: Set<string>)
   return !expectedNodes.has(pre) || !expectedNodes.has(post);
 };
 
-export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights, neuronGroups) => {
+export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights) => {
   // Remove all highlights and return if nothing is selected and no legend item activated.
   cy.elements().removeClass("faded");
   if (selectedIds.length === 0 && legendHighlights.size === 0) {
@@ -308,20 +381,13 @@ export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights, n
   let sourceNodes = cy.collection();
 
   sourceIds.forEach((id) => {
-    let node = cy.getElementById(id);
+    const node = cy.getElementById(id);
 
-    if (node.empty()) {
-      // If node is not found, search in neuron groups
-      for (const groupId in neuronGroups) {
-        const group = neuronGroups[groupId];
-        if (group.neurons.has(id)) {
-          node = cy.getElementById(groupId);
-          break;
-        }
-      }
+    if (node.isParent()) {
+      sourceNodes = sourceNodes.union(node.children());
+    } else {
+      sourceNodes = sourceNodes.union(node);
     }
-
-    sourceNodes = sourceNodes.union(node);
   });
 
   // Filter network by edges, as set by legend.
@@ -367,5 +433,25 @@ export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights, n
   let highlightedEdges = highlightedNodes.edgesWith(highlightedNodes);
   highlightedEdges = highlightedEdges.filter(edgeSel);
 
-  cy.elements().not(highlightedNodes).not(highlightedEdges).addClass("faded");
+  cy.elements().not(highlightedNodes).not(highlightedEdges).addClass(FADED_CLASS);
+};
+
+export const updateParentNodes = (cy: Core, workspace: Workspace, openGroups: Set<string>) => {
+  // Iterate through each neuron group in the workspace
+  Object.entries(workspace.neuronGroups).forEach(([groupId, group]) => {
+    const groupIsOpen = openGroups.has(groupId);
+
+    group.neurons.forEach((neuronId) => {
+      const cyNode = cy.getElementById(neuronId);
+
+      if (groupIsOpen) {
+        // If the group is open, the neuron should have the group as its parent
+        const parentId = cyNode.parent().first().id();
+
+        if (parentId !== groupId) {
+          cyNode.move({ parent: groupId });
+        }
+      }
+    });
+  });
 };

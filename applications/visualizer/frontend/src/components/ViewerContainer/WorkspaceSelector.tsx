@@ -2,6 +2,7 @@ import { Box, Button, Menu, MenuItem, Typography } from "@mui/material";
 import type React from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 import { CheckIcon, DownIcon } from "../../icons";
+import type { Workspace } from "../../models/workspace.ts";
 import { vars } from "../../theme/variables.ts";
 
 const { gray500, gray50, brand600 } = vars;
@@ -11,7 +12,7 @@ interface WorkspaceSelectorProps {
   openWorkspace: boolean;
   handleClickWorkspace: (event: React.MouseEvent<HTMLButtonElement>) => void;
   handleCloseWorkspace: () => void;
-  onClickWorkspace: (workspace: any) => void;
+  onClickWorkspace: (workspace: Workspace) => void;
 }
 
 const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({

@@ -8,22 +8,26 @@ const SELECTED_NODE_STYLE = {
 };
 
 const GROUP_NODE_STYLE = {
+  label: "Group",
   shape: "roundrectangle",
   "background-color": "#ECECE9",
-  "pie-size": "100%",
-  "font-size": 3,
+  "font-size": "10px",
   width: 20,
   height: 20,
   "background-opacity": 0.7,
   padding: "7px",
   "text-wrap": "wrap",
   "text-valign": "center",
-  "text-halign": "center",
+  "text-align": "center",
   color: "black",
   "border-width": 1,
   "border-color": "black",
   "font-weight": "semibold",
+  "background-image": "none",
+  'pie-size': '75%',
+  "border-opacity": 1,
 };
+
 const UNSELECTED_GROUP_NODE_STYLE = {
   ...GROUP_NODE_STYLE,
   "background-color": "#D3D3CF",
@@ -77,6 +81,31 @@ const ELECTRICAL_STYLE = [
     },
   },
 ];
+
+const OPEN_GROUP_STYLE = {
+  "background-image": "none",
+  "pie-size": "0%",
+  "text-valign": "top",
+  "text-halign": "center",
+  "text-background-opacity": 1,
+  "text-background-shape": "roundrectangle",
+  "text-border-width": 13,
+  "text-margin-y": "-6px",
+  "text-border-opacity": 1,
+  'background-color': '#eaeaea',
+  'border-color': '#d0d0d0',
+  'text-background-color': '#d0d0d0',
+  'text-border-color': '#d0d0d0',
+  "border-opacity": 1,
+  shape: "roundrectangle",
+  "font-size": "10px",
+  "background-opacity": 0.7,
+  "text-wrap": "wrap",
+  "text-align": "center",
+  color: "black",
+  "border-width": 3,
+  "font-weight": "semibold",
+};
 
 const FADED_STYLE = [
   {
@@ -176,6 +205,10 @@ const NODE_STYLE = [
     selector: ".chemical",
     style: CHEMICAL_STYLE,
   },
+  {
+    selector: ":parent",
+    style: OPEN_GROUP_STYLE,
+  }
 ];
 
 const ANNOTATION_STYLES = Object.entries(annotationLegend).map(([, { id, color }]) => ({

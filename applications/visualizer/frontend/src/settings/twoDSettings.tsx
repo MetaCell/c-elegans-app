@@ -1,5 +1,6 @@
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import type { NodeSingular, NodeCollection, LayoutOptions } from "cytoscape";
 import { ChemicalSynapseIcon, GapJunctionIcon } from "../icons";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 export const CHEMICAL_THRESHOLD = 3;
 export const ELECTRICAL_THRESHOLD = 2;
@@ -16,6 +17,52 @@ export enum GRAPH_LAYOUTS {
   Hierarchical = "dagre",
   Concentric = "concentric",
 }
+type FcoseLayoutOptions = LayoutOptions & {
+  nodeRepulsion: number;
+  idealEdgeLength: number;
+  numIter: number;
+  nestingFactor: number;
+  gravity: number;
+};
+
+type DagreLayoutOptions = LayoutOptions & {
+  rankDir: string;
+  nodeSep: number;
+  rankSep: number;
+};
+
+type ConcentricLayoutOptions = LayoutOptions & {
+  concentric: (node: NodeSingular) => number;
+  levelWidth: (nodes: NodeCollection) => number;
+  spacingFactor: number;
+};
+
+type ExtendedLayoutOptions = FcoseLayoutOptions | DagreLayoutOptions | ConcentricLayoutOptions;
+
+export const LAYOUT_OPTIONS: Record<GRAPH_LAYOUTS, ExtendedLayoutOptions> = {
+  [GRAPH_LAYOUTS.Force]: {
+    name: "fcose",
+    nodeRepulsion: 1500,
+    idealEdgeLength: 150,
+    numIter: 2500,
+    nestingFactor: 0.1,
+    gravity: 0.2,
+  },
+  [GRAPH_LAYOUTS.Hierarchical]: {
+    name: "dagre",
+    rankDir: "TB",
+    nodeSep: 10,
+    rankSep: 100,
+  },
+  [GRAPH_LAYOUTS.Concentric]: {
+    name: "concentric",
+    concentric: (node: NodeSingular) => node.degree(true),
+    levelWidth: (nodes: NodeCollection) => nodes.maxDegree(true) / 4,
+    animate: false,
+    padding: 30,
+    spacingFactor: 1.5,
+  },
+};
 
 export enum LegendType {
   Node = 0,
@@ -78,3 +125,8 @@ export const annotationLegend = {
     icon: <ArrowForwardIcon style={{ color: "#228B22" }} />,
   },
 };
+
+export const SELECTED_CLASS = "selected";
+export const FADED_CLASS = "faded";
+export const HOVER_CLASS = "hover";
+export const FOCUS_CLASS = "focus";
