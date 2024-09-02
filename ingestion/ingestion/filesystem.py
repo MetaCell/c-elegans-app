@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import json
 import logging
+import os
+import re
 from pathlib import Path
-from typing import Any, get_args
+from typing import Any, TypeAlias, get_args
 
 from ingestion.schema import DataAnnotationEntry, DataContainer
 
@@ -79,3 +81,35 @@ def load_data(files: DataContainer[Path]) -> dict:
         "connections": connections,
         "annotations": annotations,
     }
+
+
+Slice: TypeAlias = int
+
+
+def find_segmentation_files(dir: Path) -> list[tuple[Slice, Path]]:
+    def extract_slice(filepath: Path) -> int:
+        match = re.search(r"_s(\d+)\.json$", str(filepath))
+        if match:
+            return int(match.group(1))
+        raise Exception(
+            f"unable to extract slice number from segmentation file: {filepath}"
+        )
+
+    return [(extract_slice(f), f) for f in dir.glob("*.json")]
+
+
+TILE_GLOB = "*_*_*.jpg"
+
+
+def find_tiles(dir: Path) -> dict[Slice, list[Path]]:
+    tiles: dict[Slice, list[Path]] = {}
+
+    for e in os.listdir(dir):
+        entry = dir / e
+        if not entry.is_dir() or not e.isdigit():
+            logging.warn(f"tile finder: skipping entry '{entry}'")
+            continue
+
+        tiles[int(e)] = [f for f in entry.glob(TILE_GLOB)]
+
+    return tiles

@@ -22,15 +22,15 @@ class Crc32cCalculator(TextIOBase):
 
     def write(self, s: str) -> int:
         r = self._fileobj.write(s)
-        self._update(s)
+        self._update(s.encode())
         return r
 
     def read(self, size: int | None = None) -> str:
         r = self._fileobj.read(size)
-        self._update(r)
+        self._update(r.encode())
         return r
 
-    def _update(self, chunk):
+    def _update(self, chunk: bytes):
         """Given a chunk from the read in file, update the hexdigest"""
         self.digest = crc32(chunk, self.digest)
 
@@ -40,3 +40,4 @@ class Crc32cCalculator(TextIOBase):
         See https://cloud.google.com/storage/docs/hashes-etags
         """
         return base64.b64encode(struct.pack(">I", self.digest)).decode("utf-8")
+

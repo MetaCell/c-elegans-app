@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import logging
+import sys
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from pathlib import Path
-from typing import Sequence
+from typing import Callable, Sequence
 
 from tqdm import tqdm
 
@@ -57,11 +58,21 @@ def main(argv: Sequence[str] | None = None):
     else:
         logging.basicConfig(level=logging.INFO)
 
+    exec = lambda: ...  # command to run
     match args.command:
         case "ingest":
-            ingest_cmd(args, debug=args.debug)
+            exec = lambda: ingest_cmd(args, debug=args.debug)
         case "extract":
-            extract_cmd(args, debug=args.debug)
+            exec = lambda: extract_cmd(args, debug=args.debug)
+
+    try:
+        exec()
+    except Exception as e:
+        if args.debug:
+            raise
+        else:
+            print(e, file=sys.stderr)
+            sys.exit(1)
 
 
 if __name__ == "__main__":

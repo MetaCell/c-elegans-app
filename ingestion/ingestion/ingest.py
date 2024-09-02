@@ -2,9 +2,25 @@ from __future__ import annotations
 
 import logging
 import os
+import sys
 from argparse import ArgumentParser, Namespace
+from itertools import islice
+from pathlib import Path
 
-from ingestion.cli import type_directory, type_file
+from google.cloud import storage
+from pydantic import ValidationError
+from tqdm import tqdm
+
+from ingestion.cli import ask, type_directory, type_file
+from ingestion.errors import DataValidationError, ErrorWriter
+from ingestion.filesystem import (
+    find_data_files,
+    find_segmentation_files,
+    find_tiles,
+    load_data,
+)
+from ingestion.schema import Data
+from ingestion.storage.sqlite import SQLiteKVStore
 from ingestion.xdg import xdg_celegans_cache, xdg_gcloud_config
 
 logger = logging.getLogger(__name__)
@@ -27,7 +43,8 @@ def add_flags(parser: ArgumentParser):
             help=f"directory for {kind} data",
         )
 
-    add_in_dir("segmentation")
+    add_in_dir("segmentations")
+    add_in_dir("tiles")
 
     parser.add_argument(
         "--overwrite",
@@ -95,19 +112,6 @@ def add_flags(parser: ArgumentParser):
 def ingest_cmd(args: Namespace, *, debug: bool = False):
     """Runs the ingestion command."""
 
-    import sys
-    from itertools import islice
-
-    from google.cloud import storage
-    from pydantic import ValidationError
-    from tqdm import tqdm
-
-    from ingestion.cli import ask
-    from ingestion.errors import DataValidationError, ErrorWriter
-    from ingestion.filesystem import find_data_files, load_data
-    from ingestion.schema import Data
-    from ingestion.storage.sqlite import SQLiteKVStore
-
     data_files = find_data_files(args.dir)
     json_data = load_data(data_files)
 
@@ -134,17 +138,32 @@ def ingest_cmd(args: Namespace, *, debug: bool = False):
     bucket = storage_client.get_bucket(args.gcp_bucket)
 
     # find segmentation files
+    segmentation_path: Path = (
+        args.segmentations_dir or args.dir / "sem-adult" / "segmentation-mip0"
+    )  # TODO: generalize dir
+    if not segmentation_path.exists():
+        logger.warn(
+            f"segmentations directory '{segmentation_path}' does not exist. Skipping ..."
+        )
+    else:
+        segmentation_files = find_segmentation_files(segmentation_path)
 
-    # upload segmentation files
+        # TODO: upload segmentation files
 
     # find tile files
+    tiles_path: Path = args.tiles_dir or args.dir / "catmaid-tiles"
+    if not tiles_path.exists():
+        logger.warn(f"tiles directory '{tiles_path}' does not exist. Skipping ...")
+    else:
+        tiles = find_tiles(tiles_path)
 
-    # upload tile files
+        # TODO: understand were to send tile matrixes and piramid metadata
+        # TODO: upload tile files
 
     blobs = [
         blob
         for blob in tqdm(
-            islice(bucket.list_blobs(fields="items(name,crc32c),nextPageToken"), 0, 10)
+            islice(bucket.list_blobs(fields="items(name,crc32c,generation),nextPageToken"), 0, 10)
         )
     ]  # TODO: remove 10 blobs limit
 
