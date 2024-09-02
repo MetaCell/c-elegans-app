@@ -102,7 +102,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
 
   useEffect(() => {
     const fetchDatasets = async () => {
-    try {
+      try {
         const response = await DatasetsService.getDatasets({});
         const datasetsRecord = response.reduce(
           (acc, dataset) => {

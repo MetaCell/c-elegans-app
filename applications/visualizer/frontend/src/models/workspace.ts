@@ -7,7 +7,6 @@ import { GlobalError } from "./Error.ts";
 import { type EnhancedNeuron, type NeuronGroup, type ViewerSynchronizationPair, ViewerType } from "./models";
 import { SynchronizerOrchestrator } from "./synchronizer";
 
-
 export class Workspace {
   [immerable] = true;
 
