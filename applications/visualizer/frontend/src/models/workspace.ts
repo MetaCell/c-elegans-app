@@ -246,16 +246,17 @@ export class Workspace {
     this.customUpdate((draft) => {
       draft.syncOrchestrator.select(selectedNeurons, initiator);
     });
+  }
 
   getHiddenNeurons() {
     const hiddenNodes = new Set<string>();
 
-    this.activeNeurons.forEach((neuronId) => {
+    for (const neuronId of this.activeNeurons) {
       const neuron = this.availableNeurons[neuronId];
       if (neuron && !neuron.isVisible) {
         hiddenNodes.add(neuronId);
       }
-    });
+    }
 
     return hiddenNodes;
   }
