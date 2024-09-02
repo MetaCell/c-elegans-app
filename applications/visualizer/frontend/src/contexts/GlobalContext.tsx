@@ -1,7 +1,10 @@
 import type React from "react";
 import { type ReactNode, createContext, useContext, useEffect, useState } from "react";
+import ErrorAlert from "../components/ErrorAlert.tsx";
+import ErrorBoundary from "../components/ErrorBoundary.tsx";
 import { ViewMode } from "../models";
 import { Workspace } from "../models";
+import { GlobalError } from "../models/Error.ts";
 import { type Dataset, DatasetsService } from "../rest";
 export interface GlobalContextType {
   workspaces: Record<string, Workspace>;
@@ -17,6 +20,7 @@ export interface GlobalContextType {
   setSelectedWorkspacesIds: (workspaceId: Set<string>) => void;
   datasets: Record<string, Dataset>;
   setAllWorkspaces: (workspaces: Record<string, Workspace>) => void;
+  handleErrors: (error: Error) => void;
 }
 
 interface GlobalContextProviderProps {
@@ -31,7 +35,8 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
   const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.Default);
   const [selectedWorkspacesIds, setSelectedWorkspacesIds] = useState<Set<string>>(new Set<string>());
   const [datasets, setDatasets] = useState<Record<string, Dataset>>({});
-
+  const [openErrorAlert, setOpenErrorAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const createWorkspace = (id: string, name: string, activeDatasetKeys: Set<string>, activeNeurons: Set<string>) => {
     // Convert the activeDatasetKeys into a Record<string, Dataset>
     const activeDatasets: Record<string, Dataset> = {};
@@ -72,6 +77,12 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     return workspaces[currentWorkspaceId];
   };
 
+  const handleErrors = (error: Error) => {
+    if (error instanceof GlobalError) {
+      setErrorMessage(error.message);
+      setOpenErrorAlert(true);
+    }
+  };
   const getGlobalContext = () => ({
     workspaces,
     currentWorkspaceId,
@@ -86,11 +97,12 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     setSelectedWorkspacesIds,
     datasets,
     setAllWorkspaces,
+    handleErrors,
   });
 
   useEffect(() => {
     const fetchDatasets = async () => {
-      try {
+    try {
         const response = await DatasetsService.getDatasets({});
         const datasetsRecord = response.reduce(
           (acc, dataset) => {
@@ -102,13 +114,21 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
 
         setDatasets(datasetsRecord);
       } catch (error) {
-        console.error("Failed to fetch datasets", error);
+        setOpenErrorAlert(true);
+        setErrorMessage("Failed to fetch datasets");
       }
     };
     fetchDatasets();
   }, []);
 
-  return <GlobalContext.Provider value={getGlobalContext()}>{children}</GlobalContext.Provider>;
+  return (
+    <GlobalContext.Provider value={getGlobalContext()}>
+      <ErrorBoundary onError={handleErrors}>
+        {children}
+        <ErrorAlert open={openErrorAlert} setOpen={setOpenErrorAlert} errorMessage={errorMessage} />
+      </ErrorBoundary>
+    </GlobalContext.Provider>
+  );
 };
 export const useGlobalContext = () => {
   const context = useContext(GlobalContext);

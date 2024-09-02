@@ -1,10 +1,10 @@
+import { Menu, MenuItem } from "@mui/material";
+import type { Position } from "cytoscape";
 import type React from "react";
 import { useMemo } from "react";
-import { Menu, MenuItem } from "@mui/material";
-import { type NeuronGroup, ViewerType } from "../../../models";
 import { calculateMeanPosition, calculateSplitPositions, isNeuronClass } from "../../../helpers/twoD/twoDHelpers.ts";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
-import type { Position } from "cytoscape";
+import { type NeuronGroup, ViewerType } from "../../../models";
 import type { GraphViewerData } from "../../../models/models.ts";
 
 interface ContextMenuProps {
