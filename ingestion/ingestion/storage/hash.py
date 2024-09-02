@@ -40,4 +40,3 @@ class Crc32cCalculator(TextIOBase):
         See https://cloud.google.com/storage/docs/hashes-etags
         """
         return base64.b64encode(struct.pack(">I", self.digest)).decode("utf-8")
-

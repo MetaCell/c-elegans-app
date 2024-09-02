@@ -163,7 +163,11 @@ def ingest_cmd(args: Namespace, *, debug: bool = False):
     blobs = [
         blob
         for blob in tqdm(
-            islice(bucket.list_blobs(fields="items(name,crc32c,generation),nextPageToken"), 0, 10)
+            islice(
+                bucket.list_blobs(fields="items(name,crc32c,generation),nextPageToken"),
+                0,
+                10,
+            )
         )
     ]  # TODO: remove 10 blobs limit
 
