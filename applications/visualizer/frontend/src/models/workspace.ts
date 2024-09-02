@@ -4,7 +4,7 @@ import { immerable, produce } from "immer";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
 import { type Dataset, type Neuron, NeuronsService } from "../rest";
 import { GlobalError } from "./Error.ts";
-import { type EnhancedNeuron, type NeuronGroup, ViewerSynchronizationPair, ViewerType } from "./models";
+import { type EnhancedNeuron, type NeuronGroup, ViewerSynchronizationPair, ViewerType, Visibility } from "./models";
 
 export class Workspace {
   [immerable] = true;
@@ -34,8 +34,8 @@ export class Workspace {
     this.activeNeurons = activeNeurons || new Set();
     this.selectedNeurons = new Set();
     this.viewers = {
-      [ViewerType.Graph]: false,
-      [ViewerType.ThreeD]: true,
+      [ViewerType.Graph]: true,
+      [ViewerType.ThreeD]: false,
       [ViewerType.EM]: false,
       [ViewerType.InstanceDetails]: false,
     };
@@ -57,10 +57,6 @@ export class Workspace {
   activateNeuron(neuron: Neuron): void {
     const updated = produce(this, (draft: Workspace) => {
       draft.activeNeurons.add(neuron.name);
-      // Set isInteractant to true if the neuron exists in availableNeurons
-      if (draft.availableNeurons[neuron.name]) {
-        draft.availableNeurons[neuron.name].isInteractant = true;
-      }
     });
 
     this.updateContext(updated);
@@ -73,14 +69,24 @@ export class Workspace {
     this.updateContext(updated);
   }
 
-  deleteNeuron(neuronId: string): void {
+  hideNeuron(neuronId: string): void {
     const updated = produce(this, (draft: Workspace) => {
-      // Remove the neuron from activeNeurons
-      draft.activeNeurons.delete(neuronId);
-
-      // Set isInteractant to false if the neuron exists in availableNeurons
       if (draft.availableNeurons[neuronId]) {
-        draft.availableNeurons[neuronId].isInteractant = false;
+        draft.availableNeurons[neuronId].isVisible = false;
+        draft.selectedNeurons.delete(neuronId);
+        // todo: add actions for other viewers
+        draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].visibility = Visibility.Hidden;
+      }
+    });
+    this.updateContext(updated);
+  }
+
+  showNeuron(neuronId: string): void {
+    const updated = produce(this, (draft: Workspace) => {
+      if (draft.availableNeurons[neuronId]) {
+        draft.availableNeurons[neuronId].isVisible = true;
+        // todo: add actions for other viewers
+        draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].visibility = Visibility.Visible;
       }
     });
     this.updateContext(updated);
@@ -202,13 +208,18 @@ export class Workspace {
             viewerData: {
               [ViewerType.Graph]: {
                 defaultPosition: previousNeuron?.viewerData[ViewerType.Graph]?.defaultPosition || null,
-                visibility: previousNeuron?.viewerData[ViewerType.Graph]?.visibility || false,
+                visibility:
+                  previousNeuron?.viewerData[ViewerType.Graph]?.visibility !== undefined
+                    ? previousNeuron.viewerData[ViewerType.Graph].visibility
+                    : draft.activeNeurons.has(neuron.name)
+                      ? Visibility.Visible
+                      : Visibility.Unset,
               },
               [ViewerType.ThreeD]: previousNeuron?.viewerData[ViewerType.ThreeD] || {},
               [ViewerType.EM]: previousNeuron?.viewerData[ViewerType.EM] || {},
               [ViewerType.InstanceDetails]: previousNeuron?.viewerData[ViewerType.InstanceDetails] || {},
             },
-            isInteractant: previousNeuron?.isInteractant ?? draft.activeNeurons.has(neuron.name),
+            isVisible: previousNeuron?.isVisible ?? draft.activeNeurons.has(neuron.name),
           };
 
           draft.availableNeurons[neuron.name] = enhancedNeuron;
@@ -222,5 +233,24 @@ export class Workspace {
   customUpdate(updateFunction: (draft: Workspace) => void): void {
     const updated = produce(this, updateFunction);
     this.updateContext(updated);
+  }
+
+  getHiddenNeurons() {
+    const hiddenNodes = new Set<string>();
+
+    this.activeNeurons.forEach((neuronId) => {
+      const neuron = this.availableNeurons[neuronId];
+      if (neuron && !neuron.isVisible) {
+        hiddenNodes.add(neuronId);
+      }
+    });
+
+    return hiddenNodes;
+  }
+
+  getNeuronCellsByClass(neuronClassId: string): string[] {
+    return Object.values(this.availableNeurons)
+      .filter((neuron) => neuron.nclass === neuronClassId && neuron.nclass !== neuron.name)
+      .map((neuron) => neuron.name);
   }
 }

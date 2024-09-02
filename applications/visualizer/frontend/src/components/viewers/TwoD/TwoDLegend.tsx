@@ -50,6 +50,7 @@ const LegendConnection: React.FC<LegendConnectionProps> = ({ name, icon, onClick
     <IconButton
       size="small"
       sx={{
+        padding: 0,
         marginRight: 1,
         "&:hover": {
           backgroundColor: "transparent",

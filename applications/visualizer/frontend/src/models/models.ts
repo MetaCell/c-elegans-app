@@ -28,12 +28,12 @@ export interface NeuronGroup {
 
 export interface EnhancedNeuron extends Neuron {
   viewerData: ViewerData;
-  isInteractant: boolean;
+  isVisible: boolean;
 }
 
 export interface GraphViewerData {
   defaultPosition: Position | null;
-  visibility: boolean;
+  visibility: Visibility;
 }
 
 export interface ViewerData {
@@ -61,4 +61,19 @@ export function getSegmentationURL(dataset: Dataset, sliceIndex: number): string
 
 export function getEMDataURL(dataset: Dataset, sliceIndex: number): string {
   return buildUrlFromFormat(dataset.emData.resource_url, sliceIndex?.toString());
+}
+
+export enum Alignment {
+  Left = "left",
+  Right = "right",
+  Top = "top",
+  Bottom = "bottom",
+  Horizontal = "Horizontal",
+  Vertical = "Vertical",
+}
+
+export enum Visibility {
+  Visible = "Visible",
+  Hidden = "Hidden",
+  Unset = "Unset",
 }
