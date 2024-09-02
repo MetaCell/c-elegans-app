@@ -1,5 +1,5 @@
-import type { NeuronGroup, Workspace } from "../../models";
 import type { Core } from "cytoscape";
+import type { NeuronGroup, Workspace } from "../../models";
 import { SELECTED_CLASS } from "../../settings/twoDSettings.tsx";
 
 export const groupNeurons = (selectedNeurons: Set<string>, workspace: Workspace) => {

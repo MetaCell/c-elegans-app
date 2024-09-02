@@ -1,11 +1,8 @@
 import type { Core, ElementDefinition, Position } from "cytoscape";
-import type { Workspace } from "../../models";
-import { ViewerType } from "../../models";
+import { ViewerType, Visibility, type Workspace } from "../../models";
 import type { Connection } from "../../rest";
-
-import { annotationLegend, LAYOUT_OPTIONS } from "../../settings/twoDSettings.tsx";
+import { LAYOUT_OPTIONS, annotationLegend } from "../../settings/twoDSettings.tsx";
 import { cellConfig, neurotransmitterConfig } from "./coloringHelper.ts";
-import { Visibility } from "../../models/models.ts";
 
 export const createEdge = (id: string, conn: Connection, workspace: Workspace, includeAnnotations: boolean, width: number): ElementDefinition => {
   const synapses = conn.synapses || {};

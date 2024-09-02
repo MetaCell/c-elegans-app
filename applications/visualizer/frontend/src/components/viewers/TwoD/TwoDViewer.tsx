@@ -2,7 +2,8 @@ import { Box, Snackbar } from "@mui/material";
 import cytoscape, { type Core, type EventHandler } from "cytoscape";
 import dagre from "cytoscape-dagre";
 import fcose from "cytoscape-fcose";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { debounce } from "lodash";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { ColoringOptions, getColor } from "../../../helpers/twoD/coloringHelper";
 import { computeGraphDifferences, updateHighlighted, updateParentNodes } from "../../../helpers/twoD/graphRendering.ts";
@@ -16,27 +17,26 @@ import {
 } from "../../../helpers/twoD/twoDHelpers";
 import { areSetsEqual } from "../../../helpers/utils.ts";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace";
+import { ViewerType } from "../../../models";
 import { GlobalError } from "../../../models/Error.ts";
 import { type Connection, ConnectivityService } from "../../../rest";
 import {
   CHEMICAL_THRESHOLD,
   ELECTRICAL_THRESHOLD,
-  GRAPH_LAYOUTS,
-  type LegendType,
-  INCLUDE_ANNOTATIONS,
-  INCLUDE_NEIGHBORING_CELLS,
-  INCLUDE_LABELS,
-  INCLUDE_POST_EMBRYONIC,
-  SELECTED_CLASS,
-  HOVER_CLASS,
   FOCUS_CLASS,
+  GRAPH_LAYOUTS,
+  HOVER_CLASS,
+  INCLUDE_ANNOTATIONS,
+  INCLUDE_LABELS,
+  INCLUDE_NEIGHBORING_CELLS,
+  INCLUDE_POST_EMBRYONIC,
+  type LegendType,
+  SELECTED_CLASS,
 } from "../../../settings/twoDSettings";
 import { GRAPH_STYLES } from "../../../theme/twoDStyles";
 import ContextMenu from "./ContextMenu";
 import TwoDLegend from "./TwoDLegend";
 import TwoDMenu from "./TwoDMenu";
-import { ViewerType } from "../../../models";
-import { debounce } from "lodash";
 
 cytoscape.use(fcose);
 cytoscape.use(dagre);
@@ -449,12 +449,12 @@ const TwoDViewer = () => {
         }
         colors = getColor(neuron, coloringOption);
       }
-      
+
       colors.forEach((color, index) => {
         node.style(`pie-${index + 1}-background-color`, color);
         node.style(`pie-${index + 1}-background-size`, 100 / colors.length);
       });
-      
+
       // if (colors.length > 1 && node.style("shape") === "ellipse") {
       //   colors.forEach((color, index) => {
       //     node.style(`pie-${index + 1}-background-color`, color);

@@ -24,7 +24,7 @@ const GROUP_NODE_STYLE = {
   "border-color": "black",
   "font-weight": "semibold",
   "background-image": "none",
-  'pie-size': '75%',
+  "pie-size": "75%",
   "border-opacity": 1,
 };
 
@@ -92,10 +92,10 @@ const OPEN_GROUP_STYLE = {
   "text-border-width": 13,
   "text-margin-y": "-6px",
   "text-border-opacity": 1,
-  'background-color': '#eaeaea',
-  'border-color': '#d0d0d0',
-  'text-background-color': '#d0d0d0',
-  'text-border-color': '#d0d0d0',
+  "background-color": "#eaeaea",
+  "border-color": "#d0d0d0",
+  "text-background-color": "#d0d0d0",
+  "text-border-color": "#d0d0d0",
   "border-opacity": 1,
   shape: "roundrectangle",
   "font-size": "10px",
@@ -208,7 +208,7 @@ const NODE_STYLE = [
   {
     selector: ":parent",
     style: OPEN_GROUP_STYLE,
-  }
+  },
 ];
 
 const ANNOTATION_STYLES = Object.entries(annotationLegend).map(([, { id, color }]) => ({

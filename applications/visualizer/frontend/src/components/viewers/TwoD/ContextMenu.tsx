@@ -14,14 +14,13 @@ import { Box, Divider, Menu, MenuItem, Popover } from "@mui/material";
 import type { Core } from "cytoscape";
 import type React from "react";
 import { useMemo, useState } from "react";
+import { alignNeurons, distributeNeurons } from "../../../helpers/twoD/alignHelper.ts";
+import { groupNeurons, removeNodeFromGroup } from "../../../helpers/twoD/groupHelper.ts";
+import { processNeuronJoin, processNeuronSplit } from "../../../helpers/twoD/splitJoinHelper.ts";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
 import { AlignBottomIcon, AlignLeftIcon, AlignRightIcon, AlignTopIcon, DistributeHorizontallyIcon, DistributeVerticallyIcon } from "../../../icons";
-import { Alignment, ViewerType } from "../../../models";
-import { Visibility } from "../../../models/models.ts";
+import { Alignment, ViewerType, Visibility } from "../../../models";
 import { vars } from "../../../theme/variables.ts";
-import { alignNeurons, distributeNeurons } from "../../../helpers/twoD/alignHelper.ts";
-import { processNeuronJoin, processNeuronSplit } from "../../../helpers/twoD/splitJoinHelper.ts";
-import { groupNeurons, removeNodeFromGroup } from "../../../helpers/twoD/groupHelper.ts";
 
 const { gray700 } = vars;
 
@@ -38,13 +37,13 @@ interface ContextMenuProps {
 const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setSplitJoinState, openGroups, setOpenGroups, cy }) => {
   const workspace = useSelectedWorkspace();
   const [submenuAnchorEl, setSubmenuAnchorEl] = useState<null | HTMLElement>(null);
-  
+
   const submenuOpen = Boolean(submenuAnchorEl);
-  
+
   const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
     setSubmenuAnchorEl(event.currentTarget);
   };
-  
+
   const handlePopoverClose = () => {
     setSubmenuAnchorEl(null);
   };
@@ -342,7 +341,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
           Close Group
         </MenuItem>
       )}
-      <MenuItem  onMouseEnter={handlePopoverOpen}>
+      <MenuItem onMouseEnter={handlePopoverOpen}>
         <FormatAlignJustifyOutlined fontSize="small" />
         <Box width={1} display="flex" alignItems="center" justifyContent="space-between">
           Align

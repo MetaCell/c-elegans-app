@@ -1,5 +1,5 @@
-import { Alignment } from "../../models";
 import type { Core } from "cytoscape";
+import { Alignment } from "../../models";
 
 export const alignNeurons = (alignment: Alignment, selectedNeurons: string[], cy: Core) => {
   // Get Cytoscape elements for selected neurons
