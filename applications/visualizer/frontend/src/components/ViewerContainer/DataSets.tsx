@@ -110,10 +110,18 @@ const DataSets = ({ children }) => {
 
     const filteredActiveList = inputValue ? activeDatasetsList.filter((dataset) => dataset.name.toLowerCase().includes(inputValue)) : activeDatasetsList;
 
-    setFilteredDatasets(filteredCategories);
-    setFilterActiveDatasets(filteredActiveList);
+    if (filterGroupsValue === "All") {
+      setFilteredDatasets(filteredCategories);
+      setFilterActiveDatasets(filteredActiveList);
+    } else {
+      const activeGroup = filteredCategories[filterGroupsValue];
+      const updatedFilteredDatasets = { ...filteredActiveList, [filterGroupsValue]: activeGroup };
+      // @ts-ignore
+      setFilteredDatasets(updatedFilteredDatasets);
+      const updatedFilteredActiveDatasets = filteredActiveList.filter((dataset) => activeGroup.some((catDataset) => catDataset.id === dataset.id));
+      setFilterActiveDatasets(updatedFilteredActiveDatasets);
+    }
   };
-
   const onSelectGroupChange = (e) => {
     const selectedGroup = e.target.value;
     setFilterGroupsValue(selectedGroup);

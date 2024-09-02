@@ -9,7 +9,9 @@ import { computeGraphDifferences, updateHighlighted } from "../../../helpers/two
 import { applyLayout, refreshLayout, updateWorkspaceNeurons2DViewerData } from "../../../helpers/twoD/twoDHelpers";
 import { areSetsEqual } from "../../../helpers/utils.ts";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace";
+import { GlobalError } from "../../../models/Error.ts";
 import { type Connection, ConnectivityService } from "../../../rest";
+import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import {
   CHEMICAL_THRESHOLD,
   ELECTRICAL_THRESHOLD,
@@ -30,6 +32,7 @@ cytoscape.use(dagre);
 
 const TwoDViewer = () => {
   const workspace = useSelectedWorkspace();
+  const { handleErrors } = useGlobalContext();
   const cyContainer = useRef(null);
   const cyRef = useRef<Core | null>(null);
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -49,7 +52,6 @@ const TwoDViewer = () => {
   const [mousePosition, setMousePosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
   const [legendHighlights, setLegendHighlights] = useState<Map<LegendType, string>>(new Map());
   const [hiddenNodes, setHiddenNodes] = useState<Set<string>>(new Set());
-
   const handleContextMenuClose = () => {
     setMousePosition(null);
   };
@@ -111,8 +113,8 @@ const TwoDViewer = () => {
       .then((connections) => {
         setConnections(connections);
       })
-      .catch((error) => {
-        console.error("Failed to fetch connections:", error);
+      .catch(() => {
+        handleErrors(new GlobalError("Failed to fetch connections"));
       });
   }, [
     workspace.activeDatasets,
