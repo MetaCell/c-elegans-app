@@ -55,7 +55,7 @@ function ThreeDViewer() {
           id: "nerve_ring",
           url: "resources/nervering-SEM_adult.stl",
           color: "white",
-          opacity: 0.5,
+          opacity: 0.3,
         },
         {
           id: "adal_sem",
