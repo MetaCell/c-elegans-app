@@ -89,8 +89,9 @@ const OPEN_GROUP_STYLE = {
   "text-halign": "center",
   "text-background-opacity": 1,
   "text-background-shape": "roundrectangle",
-  "text-border-width": 13,
-  "text-margin-y": "-6px",
+  "text-border-width": 2,
+  "text-background-padding": "2px",
+  "text-margin-y": "-3px",
   "text-border-opacity": 1,
   "background-color": "#eaeaea",
   "border-color": "#d0d0d0",
@@ -105,6 +106,7 @@ const OPEN_GROUP_STYLE = {
   color: "black",
   "border-width": 3,
   "font-weight": "semibold",
+  "text-border-radius": "8px",
 };
 
 const FADED_STYLE = [
@@ -208,6 +210,15 @@ const NODE_STYLE = [
   {
     selector: ":parent",
     style: OPEN_GROUP_STYLE,
+  },
+  {
+    selector: ":parent.selected",
+    style: {
+      ...OPEN_GROUP_STYLE,
+      "font-weight": "bold",
+      padding: "9px",
+      "text-margin-y": "-4px",
+    },
   },
 ];
 

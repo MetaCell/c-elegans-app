@@ -13,7 +13,7 @@ import {
 import { Box, Divider, Menu, MenuItem, Popover } from "@mui/material";
 import type { Core } from "cytoscape";
 import type React from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { alignNeurons, distributeNeurons } from "../../../helpers/twoD/alignHelper.ts";
 import { groupNeurons, removeNodeFromGroup } from "../../../helpers/twoD/groupHelper.ts";
 import { processNeuronJoin, processNeuronSplit } from "../../../helpers/twoD/splitJoinHelper.ts";
@@ -46,6 +46,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
 
   const handlePopoverClose = () => {
     setSubmenuAnchorEl(null);
+  };
+
+  const handleContextMenuClose = () => {
+    onClose();
+    handlePopoverClose(); // Ensure the submenu is also closed when the context menu closes.
   };
 
   const handleAlignOption = (option: Alignment) => {
@@ -282,12 +287,18 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
     event.preventDefault(); // Prevent default context menu
   };
 
+  useEffect(() => {
+    if (open) {
+      setSubmenuAnchorEl(null);
+    }
+  }, [open]);
+
   return (
     <Menu
       anchorReference="anchorPosition"
       anchorPosition={position !== null ? { top: position.mouseY, left: position.mouseX } : undefined}
       open={open}
-      onClose={onClose}
+      onClose={handleContextMenuClose}
       onContextMenu={handleContextMenu}
       sx={{
         "& .MuiMenuItem-root": {
