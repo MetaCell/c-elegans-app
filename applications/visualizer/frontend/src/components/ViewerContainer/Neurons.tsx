@@ -34,14 +34,17 @@ const Neurons = ({ children }) => {
   const [neurons, setNeurons] = useState(availableNeurons);
 
   const activeDatasets = currentWorkspace.activeDatasets;
-  const handleSwitchChange = async (neuronId: string, checked: boolean) => {
+  const handleSwitchChange = (neuronId: string, checked: boolean) => {
     const neuron = availableNeurons[neuronId];
 
     if (!neuron) return;
     if (checked) {
-      await currentWorkspace.activateNeuron(neuron);
+      currentWorkspace.activateNeuron(neuron);
+      currentWorkspace.createNeuronGroup({ name: "ID1", color: "red", id: "ID1", neurons: new Set() });
+      currentWorkspace.clearSelectedNeurons();
+      currentWorkspace.toggleSelectedNeuron("ID1");
     } else {
-      await currentWorkspace.deactivateNeuron(neuronId);
+      currentWorkspace.deactivateNeuron(neuronId);
     }
   };
 

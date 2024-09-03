@@ -19,6 +19,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
     "typeRoots": ["./node_modules/@types", "./types"]
   },
   "include": ["src", "additional.d.ts", "types/**/*.d.ts"],

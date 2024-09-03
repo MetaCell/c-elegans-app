@@ -1,10 +1,37 @@
 import type { LayoutManager } from "@metacell/geppetto-meta-client/common/layout/LayoutManager";
 import type { configureStore } from "@reduxjs/toolkit";
-import { immerable, produce } from "immer";
+import { current, immerable, produce, produceWithPatches } from "immer";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
 import { type Dataset, type Neuron, NeuronsService } from "../rest";
 import { GlobalError } from "./Error.ts";
 import { type EnhancedNeuron, type NeuronGroup, ViewerSynchronizationPair, ViewerType } from "./models";
+
+function getCallerName(): string {
+  try {
+    throw new Error();
+  } catch (e) {
+    // matches this function, the caller and the parent
+    const allMatches = e.stack.match(/(\w+)@|at (\w+\.?\w+?) \(/g);
+    // match parent function name
+    const parentMatches = allMatches[2].match(/(\w+)@|at (\w+\.?\w+?) \(/);
+    // return only name
+    return parentMatches[1] || parentMatches[2];
+  }
+}
+
+function triggerUpdate<T extends Workspace>(_: any, key: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+
+  descriptor.value = function (this: T, ...args: any[]): T {
+    const updated = produce(this, (draft: any) => {
+      originalMethod.apply(draft, args);
+    });
+    this.updateContext(updated);
+    return updated;
+  };
+
+  return descriptor;
+}
 
 export class Workspace {
   [immerable] = true;
@@ -54,23 +81,44 @@ export class Workspace {
     this._initializeAvailableNeurons();
   }
 
-  activateNeuron(neuron: Neuron): void {
-    const updated = produce(this, (draft: Workspace) => {
-      draft.activeNeurons.add(neuron.name);
-      // Set isInteractant to true if the neuron exists in availableNeurons
-      if (draft.availableNeurons[neuron.name]) {
-        draft.availableNeurons[neuron.name].isInteractant = true;
-      }
-    });
+  // activateNeuron(neuron: Neuron): void {
+  //   const updated = produce(this, (draft: Workspace) => {
+  //     draft.activeNeurons.add(neuron.name);
+  //     // Set isInteractant to true if the neuron exists in availableNeurons
+  //     if (draft.availableNeurons[neuron.name]) {
+  //       draft.availableNeurons[neuron.name].isInteractant = true;
+  //     }
+  //   });
 
-    this.updateContext(updated);
+  //   this.updateContext(updated);
+  // }
+
+  // deactivateNeuron(neuronId: string): void {
+  //   const updated = produce(this, (draft: Workspace) => {
+  //     draft.activeNeurons.delete(neuronId);
+  //   });
+  //   this.updateContext(updated);
+  // }
+
+  @triggerUpdate
+  activateNeuron(neuron: Neuron): void {
+    this.activeNeurons.add(neuron.name);
+    console.log("STATUS ACT", this);
+
+    this.deactivateNeuron(neuron.name);
+    this.activeNeurons.add(neuron.name);
+    console.log("STATUS ACT", this);
+
+    // Set isInteractant to true if the neuron exists in availableNeurons
+    if (this.availableNeurons[neuron.name]) {
+      this.availableNeurons[neuron.name].isInteractant = true;
+    }
   }
 
+  @triggerUpdate
   deactivateNeuron(neuronId: string): void {
-    const updated = produce(this, (draft: Workspace) => {
-      draft.activeNeurons.delete(neuronId);
-    });
-    this.updateContext(updated);
+    console.log("STATUS DEACT", this);
+    this.activeNeurons.delete(neuronId);
   }
 
   deleteNeuron(neuronId: string): void {
@@ -103,15 +151,14 @@ export class Workspace {
     this.updateContext(updatedWithNeurons);
   }
 
-  toggleSelectedNeuron(neuronId: string): void {
-    const updated = produce(this, (draft: Workspace) => {
-      if (draft.selectedNeurons.has(neuronId)) {
-        draft.selectedNeurons.delete(neuronId);
-      } else {
-        draft.selectedNeurons.add(neuronId);
-      }
-    });
-    this.updateContext(updated);
+  @triggerUpdate
+  toggleSelectedNeuron(neuronId: string) {
+    if (this.selectedNeurons.has(neuronId)) {
+      this.selectedNeurons.delete(neuronId);
+    } else {
+      this.selectedNeurons.add(neuronId);
+    }
+    return this;
   }
 
   setActiveNeurons(newActiveNeurons: Set<string>): void {
@@ -121,11 +168,10 @@ export class Workspace {
     this.updateContext(updated);
   }
 
-  clearSelectedNeurons(): void {
-    const updated = produce(this, (draft: Workspace) => {
-      draft.selectedNeurons.clear();
-    });
-    this.updateContext(updated);
+  @triggerUpdate
+  clearSelectedNeurons() {
+    this.selectedNeurons.clear();
+    return this;
   }
 
   updateViewerSynchronizationStatus(pair: ViewerSynchronizationPair, isActive: boolean): void {
@@ -149,11 +195,10 @@ export class Workspace {
     this.updateContext(updated);
   }
 
-  createNeuronGroup(neuronGroup: NeuronGroup): void {
-    const updated = produce(this, (draft: Workspace) => {
-      draft.neuronGroups[neuronGroup.id] = neuronGroup;
-    });
-    this.updateContext(updated);
+  @triggerUpdate
+  createNeuronGroup(neuronGroup: NeuronGroup) {
+    this.neuronGroups[neuronGroup.id] = neuronGroup;
+    return this;
   }
 
   changeViewerVisibility(viewerId: ViewerType, isVisible: boolean): void {
