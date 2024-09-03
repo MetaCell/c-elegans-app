@@ -1,6 +1,6 @@
-import type { NodeSingular, NodeCollection, LayoutOptions } from "cytoscape";
-import { ChemicalSynapseIcon, GapJunctionIcon } from "../icons";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import type { LayoutOptions, NodeCollection, NodeSingular } from "cytoscape";
+import { ChemicalSynapseIcon, GapJunctionIcon } from "../icons";
 
 export const CHEMICAL_THRESHOLD = 3;
 export const ELECTRICAL_THRESHOLD = 2;

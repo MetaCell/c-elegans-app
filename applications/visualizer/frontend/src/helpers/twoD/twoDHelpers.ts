@@ -1,13 +1,10 @@
 import type { Core, ElementDefinition, Position } from "cytoscape";
-import type { Workspace } from "../../models";
-import { ViewerType } from "../../models";
+import { ViewerType, Visibility, type Workspace } from "../../models";
 import type { Connection } from "../../rest";
-
-import { annotationLegend, LAYOUT_OPTIONS } from "../../settings/twoDSettings.tsx";
+import { LAYOUT_OPTIONS, annotationLegend } from "../../settings/twoDSettings.tsx";
 import { cellConfig, neurotransmitterConfig } from "./coloringHelper.ts";
-import { Visibility } from "../../models/models.ts";
 
-export const createEdge = (id: string, conn: Connection, workspace: Workspace, includeAnnotations: boolean): ElementDefinition => {
+export const createEdge = (id: string, conn: Connection, workspace: Workspace, includeAnnotations: boolean, width: number): ElementDefinition => {
   const synapses = conn.synapses || {};
   const annotations = conn.annotations || [];
 
@@ -26,7 +23,6 @@ export const createEdge = (id: string, conn: Connection, workspace: Workspace, i
   }
 
   const classes = annotationClasses.join(" ");
-
   return {
     group: "edges",
     data: {
@@ -36,6 +32,7 @@ export const createEdge = (id: string, conn: Connection, workspace: Workspace, i
       label: label,
       longLabel: longLabel,
       type: conn.type,
+      width,
     },
     classes: classes,
   };
@@ -65,6 +62,10 @@ export const createNode = (
   isGroupNode?: boolean,
   parent?: string, // Optional parent node ID for compound nodes
 ): ElementDefinition => {
+  let classes = "";
+  if (isGroupNode) classes += "groupNode ";
+  if (selected) classes += "selected ";
+
   const node: ElementDefinition = {
     group: "nodes",
     data: {
@@ -73,7 +74,7 @@ export const createNode = (
       ...attributes.reduce((acc, attr) => ({ ...acc, [attr]: true }), {}),
       parent: parent || undefined, // Set the parent if provided
     },
-    classes: isGroupNode ? "groupNode" : selected ? "selected" : "",
+    classes: classes,
   };
   if (position) {
     node.position = { x: position.x, y: position.y };

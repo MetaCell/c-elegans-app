@@ -93,8 +93,7 @@ const TwoDLegend: React.FC<LegendProps> = ({ coloringOption, setLegendHighlights
       sx={{
         padding: "1rem",
         borderRadius: "0.5rem",
-        backgroundColor: "rgba(245, 245, 244, 0.80)",
-        backdropFilter: "blur(20px)",
+        backgroundColor: "transparent",
       }}
     >
       {Object.entries(colorMap).map(([name, color]) => (

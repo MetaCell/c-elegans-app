@@ -2,7 +2,8 @@ import { Box, Snackbar } from "@mui/material";
 import cytoscape, { type Core, type EventHandler } from "cytoscape";
 import dagre from "cytoscape-dagre";
 import fcose from "cytoscape-fcose";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { debounce } from "lodash";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { ColoringOptions, getColor } from "../../../helpers/twoD/coloringHelper";
 import { computeGraphDifferences, updateHighlighted, updateParentNodes } from "../../../helpers/twoD/graphRendering.ts";
@@ -16,26 +17,26 @@ import {
 } from "../../../helpers/twoD/twoDHelpers";
 import { areSetsEqual } from "../../../helpers/utils.ts";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace";
+import { ViewerType } from "../../../models";
 import { GlobalError } from "../../../models/Error.ts";
 import { type Connection, ConnectivityService } from "../../../rest";
 import {
   CHEMICAL_THRESHOLD,
   ELECTRICAL_THRESHOLD,
-  GRAPH_LAYOUTS,
-  type LegendType,
-  INCLUDE_ANNOTATIONS,
-  INCLUDE_NEIGHBORING_CELLS,
-  INCLUDE_LABELS,
-  INCLUDE_POST_EMBRYONIC,
-  SELECTED_CLASS,
-  HOVER_CLASS,
   FOCUS_CLASS,
+  GRAPH_LAYOUTS,
+  HOVER_CLASS,
+  INCLUDE_ANNOTATIONS,
+  INCLUDE_LABELS,
+  INCLUDE_NEIGHBORING_CELLS,
+  INCLUDE_POST_EMBRYONIC,
+  type LegendType,
+  SELECTED_CLASS,
 } from "../../../settings/twoDSettings";
 import { GRAPH_STYLES } from "../../../theme/twoDStyles";
 import ContextMenu from "./ContextMenu";
 import TwoDLegend from "./TwoDLegend";
 import TwoDMenu from "./TwoDMenu";
-import { ViewerType } from "../../../models";
 
 cytoscape.use(fcose);
 cytoscape.use(dagre);
@@ -189,6 +190,52 @@ const TwoDViewer = () => {
   useEffect(() => {
     updateLayout();
   }, [layout, connections]);
+
+  const correctGjSegments = (edgeSel = "[type=electrical]") => {
+    const cy = cyRef.current;
+    if (!cy) return;
+
+    const edges = cy.edges(edgeSel);
+    const disFactors = [-2.0, -1.5, -0.5, 0.5, 1.5, 2.0];
+
+    cy.startBatch();
+
+    edges.forEach((e) => {
+      const sourcePos = e.source().position();
+      const targetPos = e.target().position();
+
+      const length = Math.sqrt(Math.pow(targetPos["x"] - sourcePos["x"], 2) + Math.pow(targetPos["y"] - sourcePos["y"], 2));
+
+      const divider = (length > 60 ? 7 : length > 40 ? 5 : 3) / length;
+
+      const segweights = disFactors.map((d) => 0.5 + d * divider).join(" ");
+
+      if (e.style("segment-weights") !== segweights) {
+        e.style({ "segment-weights": segweights });
+      }
+    });
+
+    cy.endBatch();
+  };
+
+  useEffect(() => {
+    if (!cyRef.current) return;
+
+    const cy = cyRef.current;
+
+    const debouncedCorrectGjSegments = debounce(() => {
+      correctGjSegments();
+    }, 100);
+
+    cy.on("position", "node", debouncedCorrectGjSegments);
+    cy.on("layoutstop", debouncedCorrectGjSegments);
+
+    return () => {
+      cy.off("position", "node", debouncedCorrectGjSegments);
+      cy.off("layoutstop", debouncedCorrectGjSegments);
+      debouncedCorrectGjSegments.cancel();
+    };
+  }, []);
 
   // Add event listener for node clicks to toggle neuron selection and right-click context menu
   useEffect(() => {
@@ -375,6 +422,9 @@ const TwoDViewer = () => {
       return;
     }
     cyRef.current.nodes().forEach((node) => {
+      if (node.hasClass("groupNode")) {
+        return;
+      }
       const nodeId = node.id();
       const group = workspace.neuronGroups[nodeId];
 
@@ -399,11 +449,15 @@ const TwoDViewer = () => {
         }
         colors = getColor(neuron, coloringOption);
       }
-
-      colors.forEach((color, index) => {
-        node.style(`pie-${index + 1}-background-color`, color);
-        node.style(`pie-${index + 1}-background-size`, 100 / colors.length); // Equal size for each slice
-      });
+      if (colors.length > 1 && node.style("shape") === "ellipse") {
+        colors.forEach((color, index) => {
+          node.style(`pie-${index + 1}-background-color`, color);
+          node.style(`pie-${index + 1}-background-size`, 100 / colors.length);
+        });
+        node.style("pie-background-opacity", 1);
+      } else {
+        node.style("background-color", colors[0]);
+      }
     });
   };
 
@@ -451,7 +505,7 @@ const TwoDViewer = () => {
       <Snackbar
         open={missingNeuronsState.unreportedNeurons.size > 0}
         onClose={handleCloseSnackbar}
-        message={`Warning: The following neurons are missing from the graph due to the threshold filters: 
+        message={`Warning: The following neurons are missing from the graph due to the threshold filters:
                 ${Array.from(missingNeuronsState.unreportedNeurons).join(", ")}`}
         autoHideDuration={6000}
       />

@@ -10,18 +10,17 @@ import {
   VisibilityOutlined,
   WorkspacesOutlined,
 } from "@mui/icons-material";
-import { Box, Divider, Menu, MenuItem } from "@mui/material";
+import { Box, Divider, Menu, MenuItem, Popover } from "@mui/material";
 import type { Core } from "cytoscape";
 import type React from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { alignNeurons, distributeNeurons } from "../../../helpers/twoD/alignHelper.ts";
+import { groupNeurons, removeNodeFromGroup } from "../../../helpers/twoD/groupHelper.ts";
+import { processNeuronJoin, processNeuronSplit } from "../../../helpers/twoD/splitJoinHelper.ts";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
 import { AlignBottomIcon, AlignLeftIcon, AlignRightIcon, AlignTopIcon, DistributeHorizontallyIcon, DistributeVerticallyIcon } from "../../../icons";
-import { Alignment, ViewerType } from "../../../models";
-import { Visibility } from "../../../models/models.ts";
+import { Alignment, ViewerType, Visibility } from "../../../models";
 import { vars } from "../../../theme/variables.ts";
-import { alignNeurons, distributeNeurons } from "../../../helpers/twoD/alignHelper.ts";
-import { processNeuronJoin, processNeuronSplit } from "../../../helpers/twoD/splitJoinHelper.ts";
-import { groupNeurons, removeNodeFromGroup } from "../../../helpers/twoD/groupHelper.ts";
 
 const { gray700 } = vars;
 
@@ -37,28 +36,33 @@ interface ContextMenuProps {
 
 const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setSplitJoinState, openGroups, setOpenGroups, cy }) => {
   const workspace = useSelectedWorkspace();
-  const [submenuOpen, setSubmenuOpen] = useState(false);
   const [submenuAnchorEl, setSubmenuAnchorEl] = useState<null | HTMLElement>(null);
 
-  const handleAlignClick = (event: React.MouseEvent<HTMLElement>) => {
+  const submenuOpen = Boolean(submenuAnchorEl);
+
+  const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
     setSubmenuAnchorEl(event.currentTarget);
-    setSubmenuOpen(true);
   };
 
-  const handleSubmenuClose = () => {
+  const handlePopoverClose = () => {
     setSubmenuAnchorEl(null);
-    setSubmenuOpen(false);
+  };
+
+  const handleContextMenuClose = () => {
+    onClose();
+    handlePopoverClose(); // Ensure the submenu is also closed when the context menu closes.
   };
 
   const handleAlignOption = (option: Alignment) => {
     alignNeurons(option, Array.from(workspace.selectedNeurons), cy);
-    handleSubmenuClose();
+    setSubmenuAnchorEl(null);
     onClose();
+    setSubmenuAnchorEl(null);
   };
 
   const handleDistributeOption = (option: Alignment) => {
     distributeNeurons(option, Array.from(workspace.selectedNeurons), cy);
-    handleSubmenuClose();
+    setSubmenuAnchorEl(null);
     onClose();
   };
   const handleHide = () => {
@@ -283,12 +287,18 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
     event.preventDefault(); // Prevent default context menu
   };
 
+  useEffect(() => {
+    if (open) {
+      setSubmenuAnchorEl(null);
+    }
+  }, [open]);
+
   return (
     <Menu
       anchorReference="anchorPosition"
       anchorPosition={position !== null ? { top: position.mouseY, left: position.mouseX } : undefined}
       open={open}
-      onClose={onClose}
+      onClose={handleContextMenuClose}
       onContextMenu={handleContextMenu}
       sx={{
         "& .MuiMenuItem-root": {
@@ -342,20 +352,36 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
           Close Group
         </MenuItem>
       )}
-      <MenuItem onClick={handleAlignClick}>
+      <MenuItem onMouseEnter={handlePopoverOpen}>
         <FormatAlignJustifyOutlined fontSize="small" />
         <Box width={1} display="flex" alignItems="center" justifyContent="space-between">
           Align
           <ArrowRightOutlined />
         </Box>
       </MenuItem>
-      <Menu
-        anchorEl={submenuAnchorEl}
+      <Popover
+        id="mouse-over-popover"
+        sx={{
+          "& .MuiMenuItem-root": {
+            color: gray700,
+          },
+          "& .MuiPopover-paper": {
+            padding: "0.5rem",
+            borderRadius: "0.5rem",
+          },
+        }}
         open={submenuOpen}
-        onClose={handleSubmenuClose}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
-        MenuListProps={{ onMouseLeave: handleSubmenuClose }}
+        anchorEl={submenuAnchorEl}
+        anchorOrigin={{
+          vertical: "center",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+        onClose={handlePopoverClose}
+        disableRestoreFocus
       >
         <MenuItem onClick={() => handleAlignOption(Alignment.Left)}>
           <AlignLeftIcon />
@@ -382,7 +408,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
           <DistributeVerticallyIcon />
           Distribute vertically
         </MenuItem>
-      </Menu>
+      </Popover>
     </Menu>
   );
 };
