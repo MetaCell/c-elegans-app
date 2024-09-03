@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from ingestion.filesystem import _CONNECTIONS_DIR, find_data_files, load_data
 from ingestion.schema import DataContainer
+from ingestion.storage.filesystem import _CONNECTIONS_DIR, find_data_files, load_data
 
 
 def create_json_file(file_path: Path, content: dict | list[dict]):

@@ -3,15 +3,13 @@ from __future__ import annotations
 import logging
 import sys
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
-from pathlib import Path
-from typing import Callable, Sequence
-
-from tqdm import tqdm
+from typing import Sequence
 
 from ingestion.extract import add_flags as add_extract_flags
 from ingestion.extract import extract_cmd
 from ingestion.ingest import add_flags as add_ingest_flags
 from ingestion.ingest import ingest_cmd
+from ingestion.logging import setup_logger
 
 logger = logging.getLogger(__name__)
 
@@ -19,17 +17,19 @@ logger = logging.getLogger(__name__)
 def main(argv: Sequence[str] | None = None):
     parser = ArgumentParser(
         prog="celegans",
-        description="tool for the c-elegans application",
+        description="Support tool for the C-Elegans application",
         formatter_class=ArgumentDefaultsHelpFormatter,
     )
 
-    # global command flags
-    parser.add_argument(
-        "--debug",
-        help="runs with debug logs",
-        default=False,
-        action="store_true",
-    )
+    def add_debug_flag(parser: ArgumentParser):
+        parser.add_argument(
+            "--debug",
+            help="runs with debug logs",
+            default=False,
+            action="store_true",
+        )
+
+    add_debug_flag(parser)
 
     subparsers = parser.add_subparsers(dest="command")
 
@@ -41,22 +41,21 @@ def main(argv: Sequence[str] | None = None):
     )
 
     add_extract_flags(parser_extract)
+    add_debug_flag(parser_extract)
 
     # subcommand for the file ingestion
     parser_ingest = subparsers.add_parser(
         name="ingest",
-        help="ingest files into the c-elegans deployment",
+        help="ingest files into the C-Elegans deployment",
         formatter_class=ArgumentDefaultsHelpFormatter,
     )
 
     add_ingest_flags(parser_ingest)
+    add_debug_flag(parser_ingest)
 
     args = parser.parse_args(argv)
 
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
+    setup_logger(args.debug)
 
     exec = lambda: ...  # command to run
     match args.command:

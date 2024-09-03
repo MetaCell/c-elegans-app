@@ -4,7 +4,6 @@ import logging
 import platform
 from contextlib import contextmanager
 from dataclasses import dataclass
-from enum import Enum
 from functools import lru_cache
 from itertools import groupby, islice
 from pathlib import Path

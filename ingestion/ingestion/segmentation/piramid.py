@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import json
 from argparse import ArgumentParser
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from itertools import chain
 from pathlib import Path
 

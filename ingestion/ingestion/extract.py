@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from argparse import ArgumentParser, Namespace
 
 from ingestion.cli import type_directory, type_file
@@ -60,6 +59,8 @@ def extract_cmd(args: Namespace, *, debug: bool = False):
 if __name__ == "__main__":
     from argparse import ArgumentDefaultsHelpFormatter
 
+    from ingestion.logging import setup_logger
+
     parser = ArgumentParser(
         prog="extract",
         description="extracs segentations from the bitmap files",
@@ -77,9 +78,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
+    setup_logger(args.debug)
 
     extract_cmd(args, debug=args.debug)
