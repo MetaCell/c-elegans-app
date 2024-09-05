@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import base64
 import struct
-from io import TextIOBase
+from io import BufferedIOBase
 
 from crc32c import crc32
 
 
-class Crc32cCalculator(TextIOBase):
+class Crc32cCalculator(BufferedIOBase):
     """The Google Python client doesn't provide a way to stream a file being
     written, so we can wrap the file object in an additional class to
     do custom handling. This is so we don't need to download the file
@@ -16,18 +16,18 @@ class Crc32cCalculator(TextIOBase):
     Based on: https://vsoch.github.io/2020/crc32c-validation-google-storage/
     """
 
-    def __init__(self, fileobj: TextIOBase):
+    def __init__(self, fileobj: BufferedIOBase):
         self._fileobj = fileobj
         self.digest = 0
 
-    def write(self, s: str) -> int:
-        r = self._fileobj.write(s)
-        self._update(s.encode())
+    def write(self, b) -> int:
+        r = self._fileobj.write(b)
+        self._update(b)
         return r
 
-    def read(self, size: int | None = None) -> str:
+    def read(self, size: int | None = None) -> bytes:
         r = self._fileobj.read(size)
-        self._update(r.encode())
+        self._update(r)
         return r
 
     def _update(self, chunk: bytes):

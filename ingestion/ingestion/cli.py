@@ -13,7 +13,7 @@ def ask(question: str) -> bool:
         match input().lower().strip():
             case "y" | "yes":
                 return True
-            case "n" | "no" | "":  # abort on no consent by default
+            case "n" | "no":
                 return False
             case _:
                 print("Please enter Y or N")

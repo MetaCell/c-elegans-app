@@ -4,10 +4,12 @@ import json
 import logging
 import os
 import re
+from itertools import groupby
 from pathlib import Path
-from typing import Any, TypeAlias, get_args
+from typing import Any, Generator, TypeAlias, get_args
 
 from ingestion.schema import DataAnnotationEntry, DataContainer
+from ingestion.segmentation.piramid import Tile
 
 logger = logging.getLogger(__name__)
 
@@ -85,31 +87,58 @@ def load_data(files: DataContainer[Path]) -> dict:
 
 Slice: TypeAlias = int
 
+SEGMENTATION_REGEX = r".*_s(\d+)\.json$"
 
-def find_segmentation_files(dir: Path) -> list[tuple[Slice, Path]]:
+
+def find_segmentation_files(paths: list[Path]) -> Generator[tuple[Slice, Path]]:
     def extract_slice(filepath: Path) -> int:
-        match = re.search(r"_s(\d+)\.json$", str(filepath))
+        match = re.search(SEGMENTATION_REGEX, str(filepath))
         if match:
             return int(match.group(1))
         raise Exception(
             f"unable to extract slice number from segmentation file: {filepath}"
         )
 
-    return [(extract_slice(f), f) for f in dir.glob("*.json")]
+    if len(paths) == 1 and paths[0].is_dir():
+        return ((extract_slice(f), f) for f in paths[0].rglob("*.json"))
+
+    return (
+        (extract_slice(path), path)
+        for path in paths
+        if re.search(SEGMENTATION_REGEX, str(path))
+    )
+
+
+def extract_tile_metadata(f: Path) -> Tile:
+    """Extracts the tile metadata from the file with path f"""
+    # expected format is **/<slice>/<y>_<x>_<z>.jpg
+
+    if f.suffix not in (".jpg"):  # TODO: understand which format we support
+        raise Exception("unsupported EM tile image format (supported: .jpg)")
+
+    s = f.stem.split("_")
+    if len(s) < 3:
+        raise Exception(f"unexpected file name: {f.name}")
+
+    x = int(s[1])
+    y = int(s[0])
+    zoom = int(s[2])
+
+    if not f.parent.stem.isdigit():
+        logger.warn(f"could not extract slice information from: {f}")
+        slice = None
+    else:
+        slice = int(f.parent.stem)
+
+    return Tile(position=(x, y), zoom=zoom, path=f, slice=slice)
 
 
 TILE_GLOB = "*_*_*.jpg"
 
 
-def find_tiles(dir: Path) -> dict[Slice, list[Path]]:
-    tiles: dict[Slice, list[Path]] = {}
+def load_tiles(paths: list[Path]) -> Generator[Tile]:
+    # handle path being a single directory
+    if len(paths) == 1 and paths[0].is_dir():
+        paths = [f for f in paths[0].rglob(TILE_GLOB)]
 
-    for e in os.listdir(dir):
-        entry = dir / e
-        if not entry.is_dir() or not e.isdigit():
-            logging.warn(f"tile finder: skipping entry '{entry}'")
-            continue
-
-        tiles[int(e)] = [f for f in entry.glob(TILE_GLOB)]
-
-    return tiles
+    return (extract_tile_metadata(path) for path in paths)

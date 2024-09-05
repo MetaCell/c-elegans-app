@@ -6,79 +6,49 @@ from pathlib import Path
 from google.cloud.storage import Bucket, Client
 
 from ingestion.hash import Crc32cCalculator
-from ingestion.storage.sqlite import SQLiteKVStore
-from ingestion.xdg import xdg_celegans_cache
-
-_DEFAULT_SEGMENTATION_CACHE = xdg_celegans_cache() / "segmentation-cache.db"
 
 logger = logging.getLogger(__name__)
 
 
-class Uploader:
+class RemoteStorage:
     """Abstracts uploading files to GCP blob storage."""
 
     bucket: Bucket
 
-    # TODO: add cache support
-    cache_enabled: bool
-    cache: SQLiteKVStore
-
     def __init__(
         self,
         bucket: Bucket,
-        *,
-        enable_cache: bool = False,
-        cache_location: Path | None = None,
     ) -> None:
         self.bucket = bucket
-        self.cache_enabled = enable_cache
-
-        if enable_cache:
-            cache_location = cache_location or _DEFAULT_SEGMENTATION_CACHE
-            self.cache = SQLiteKVStore(cache_location)
 
     def upload(self, source_file: Path, blob_name: str, *, overwrite: bool = False):
-        blob = self.bucket.blob(blob_name)
+        with open(source_file, "rb") as f:
+            calc = Crc32cCalculator(f)
+            content = calc.read()
 
-        if not overwrite and self.bucket.get_blob(blob_name):
-            logger.debug(f"skipping {blob_name}")
-            return
+        blob = self.bucket.get_blob(blob_name)
 
-        blob.upload_from_filename(source_file)
+        if blob is None:
+            blob = self.bucket.blob(blob_name)
+            blob.upload_from_string(content)
+            blob.reload()
+        else:
+            if calc.hexdigest() == blob.crc32c or not overwrite:
+                logger.debug(f"skipping {blob_name}: already in the bucket")
+                return
 
+            blob.upload_from_string(content)
+            blob.reload()
 
-# TODO: verify blob integrity
-
-# blob = self.bucket.get_blob(name)
-# if blob is not None:
-#     with open(source_file) as f:
-#         crc32c_calc = Crc32cCalculator(f)
-#         crc32c_calc.read()
-#         print(crc32c_calc.hexdigest())
-
-# generation_match_precondition = None
-# blob = self.bucket.blob(name)
-# blob.upload_from_file(source_file, if_generation_match=generation_match_precondition)
-
-# blobs = [
-#     blob
-#     for blob in tqdm(
-#         islice(
-#             bucket.list_blobs(fields="items(name,crc32c,generation),nextPageToken"),
-#             0,
-#             10,
-#         )
-#     )
-# ]  # TODO: remove 10 blobs limit
-
-# blobs_hash = SQLiteKVStore(args.cache_path / "blobs-hash-cache.db")
-# for blob in blobs:
-#     blobs_hash.set(blob.name, blob.crc32c)
-#     print(blob.name, blob.crc32c)
-# blobs_hash.close()  # commit changes
+        if not calc.hexdigest() == blob.crc32c:
+            logger.error(
+                f"wrong integrity for blob '{blob.name}', you may want to retry upload {source_file}"
+            )
 
 
 if __name__ == "__main__":
+    # NOTE: test program to iterate on the code above (TO REMOVE)
+
     import sys
     from argparse import ArgumentParser
 
@@ -111,11 +81,8 @@ if __name__ == "__main__":
         sys.exit()
 
     # calc crc32c
-    with open(file_path) as f:
+    with open(file_path, "rb") as f:
         crc32c_calc = Crc32cCalculator(f)
         content = crc32c_calc.read()
 
     print(blob.crc32c, crc32c_calc.hexdigest(), blob.generation)
-
-
-# https://storage.googleapis.com/celegans/sem-adult/catmaid-tiles/487/12_31_0.jpg

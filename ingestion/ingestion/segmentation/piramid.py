@@ -1,37 +1,23 @@
 from __future__ import annotations
 
-from argparse import ArgumentParser
 from dataclasses import dataclass
-from itertools import chain
+from functools import lru_cache
 from pathlib import Path
 
 from PIL import Image
-
-TILE_GLOB = "*_*_*.jpg"
 
 
 @dataclass(frozen=True)
 class Tile:
     position: tuple[int, int]
     zoom: int
-    size: tuple[int, int]
     path: Path
+    slice: int | None = None
 
-
-def extract_tile_metadata(f: Path) -> Tile:
-    """Extracts the tile metadata from the file with path f"""
-    s = f.name.split("_")
-    if len(s) < 3:
-        raise Exception(f"unexpected file name: {f.name}")
-
-    x = int(s[1])
-    y = int(s[0])
-    zoom = int(s[2].split(".")[0])
-
-    with Image.open(f) as img:
-        size = img.size
-
-    return Tile(position=(x, y), zoom=zoom, path=f, size=size)
+    @lru_cache(1)
+    def size(self) -> tuple[int, int]:
+        with Image.open(self.path) as img:
+            return img.size
 
 
 def unique_levels(tiles: list[Tile]) -> set[int]:
@@ -79,7 +65,7 @@ class TileMatrix:
         assert self._are_tiles_size_eq(tiles)
 
         self.zoom = tiles[0].zoom
-        tile_size = tiles[0].size
+        tile_size = tiles[0].size()
         self.resolution = (tile_size[0] * self.size[0], tile_size[1] * self.size[1])
 
         # create tile matrix
@@ -115,25 +101,3 @@ class Piramid:
         levels: list[TileMatrix] = [TileMatrix(tile_set) for tile_set in tiles_by_lvl]
 
         return cls(levels)
-
-
-if __name__ == "__main__":
-    parser = ArgumentParser(description="Build a tile grid from the segmentation tiles")
-    parser.add_argument(
-        "-i",
-        "--img-path",
-        help="Path of a segmentation image or the folder containing the segmentation images",
-        required=True,
-    )
-
-    args = vars(parser.parse_args())
-
-    dir = Path(args["img_path"])
-
-    tiles = [extract_tile_metadata(f) for f in dir.glob(TILE_GLOB)]
-
-    piramid = Piramid.build(tiles)
-
-    print("z", "col,row", "resolution")
-    for lvl in piramid.levels:
-        print(lvl.zoom, lvl.size, lvl.resolution)

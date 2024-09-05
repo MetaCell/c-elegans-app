@@ -60,18 +60,23 @@ def main(argv: Sequence[str] | None = None):
     exec = lambda: ...  # command to run
     match args.command:
         case "ingest":
-            exec = lambda: ingest_cmd(args, debug=args.debug)
+            exec = lambda: ingest_cmd(args)
         case "extract":
             exec = lambda: extract_cmd(args, debug=args.debug)
 
     try:
         exec()
+    except KeyboardInterrupt as e:
+        if args.debug:
+            raise
+        logger.error(
+            "execution interrupted, some resources may have not uploaded properly!"
+        )
     except Exception as e:
         if args.debug:
             raise
-        else:
-            print(e, file=sys.stderr)
-            sys.exit(1)
+        print(e)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
