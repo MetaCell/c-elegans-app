@@ -1,13 +1,9 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Box, IconButton, Stack, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
-import { debounce } from "lodash";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
-import { GlobalError } from "../../models/Error.ts";
-import type { EnhancedNeuron } from "../../models/models.ts";
 import type { Neuron } from "../../rest";
-import { NeuronsService } from "../../rest";
 import { vars } from "../../theme/variables.ts";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 import CustomListItem from "./CustomListItem.tsx";
@@ -25,7 +21,7 @@ const mapNeuronsAvailableNeuronsToOptions = (neuron: Neuron) => ({
 });
 
 const Neurons = ({ children }) => {
-  const { getCurrentWorkspace, handleErrors } = useGlobalContext();
+  const { getCurrentWorkspace } = useGlobalContext();
   const currentWorkspace = getCurrentWorkspace();
 
   const activeNeurons = currentWorkspace.activeNeurons;
