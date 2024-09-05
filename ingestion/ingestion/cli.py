@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sys
 from argparse import ArgumentTypeError
 from pathlib import Path
 
@@ -8,7 +9,7 @@ from pathlib import Path
 def ask(question: str) -> bool:
     """Ask for confirmation from user."""
 
-    print(question + " [Y/n]")
+    print(question + " [Y/n]", file=sys.stderr)
     while True:
         match input().lower().strip():
             case "y" | "yes":
@@ -16,7 +17,7 @@ def ask(question: str) -> bool:
             case "n" | "no":
                 return False
             case _:
-                print("Please enter Y or N")
+                print("Please enter Y or N", file=sys.stderr)
                 continue
 
 

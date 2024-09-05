@@ -14,6 +14,10 @@ from ingestion.logging import setup_logger
 logger = logging.getLogger(__name__)
 
 
+def _done_message() -> str:
+    return "Done! 🎉"
+
+
 def main(argv: Sequence[str] | None = None):
     parser = ArgumentParser(
         prog="celegans",
@@ -75,8 +79,10 @@ def main(argv: Sequence[str] | None = None):
     except Exception as e:
         if args.debug:
             raise
-        print(e)
+        print(f"{type(e).__name__}: {e}", file=sys.stderr)
         sys.exit(1)
+
+    print(_done_message())
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ from google.cloud import storage
 from pydantic import ValidationError
 from tqdm import tqdm
 
-from ingestion.cli import ask, type_file, type_directory
+from ingestion.cli import ask, type_directory, type_file
 from ingestion.errors import DataValidationError, ErrorWriter
 from ingestion.schema import Data
 from ingestion.segmentation.piramid import Tile
@@ -120,7 +120,7 @@ def validate_data(dir: Path):
             "If you think this is an error on our side, please reach out!\n"
         )
 
-        sys.stdout.write(
+        sys.stderr.write(
             DataValidationError(e).humanize(
                 w=ErrorWriter(),
                 header=err_header,
@@ -129,7 +129,7 @@ def validate_data(dir: Path):
         )
 
         sys.exit(1)
-    
+
     logger.info(f"data in {dir} is valid!")
 
 
@@ -147,7 +147,7 @@ def prune_bucket(bucket: storage.Bucket):
         if not has_blobs:
             break
 
-        print(f"bucket '{bucket.name}' is not yet empty. waiting...")
+        logger.info(f"bucket '{bucket.name}' is not yet empty. waiting...")
         sleep(sleep_interval)
 
     logger.info(f"bucket '{bucket.name}' was pruned successfully!")
@@ -170,7 +170,7 @@ def upload_segmentations(
         segmentation_files
     )  # list cast to have a progression bar (it sucks)
     if len(seg_files) == 0:
-        logger.warn("skipping segmentation upload: no files matched")
+        logger.warning("skipping segmentation upload: no files matched")
         return
 
     pbar = tqdm(seg_files)
@@ -204,7 +204,7 @@ def upload_em_tiles(
 
     tile_files = list(tiles)  # list cast to have a progression bar (it sucks)
     if len(tile_files) == 0:
-        logger.warn("skipping EM tiles upload: no files matched")
+        logger.warning("skipping EM tiles upload: no files matched")
         return
 
     pbar = tqdm(tile_files)
@@ -220,7 +220,7 @@ def ingest_cmd(args: Namespace):
     if args.data:
         validate_data(args.data)
     else:
-        logger.warn(f"skipping data validation: flag not set")
+        logger.warning(f"skipping data validation: flag not set")
 
     storage_client = storage.Client.from_service_account_json(args.gcp_credentials)
     bucket = storage_client.get_bucket(args.gcp_bucket)
@@ -232,7 +232,7 @@ def ingest_cmd(args: Namespace):
         )
 
         if prune:
-            logger.warn(f"prunning all files from {bucket.name=}...")
+            logger.warning(f"prunning all files from {bucket.name=}...")
             prune_bucket(bucket)
         else:
             logger.info(f"skipped prunning files from the bucket")
@@ -240,14 +240,12 @@ def ingest_cmd(args: Namespace):
     if args.segmentations:
         upload_segmentations(args.segmentations, rs, overwrite=args.overwrite)
     else:
-        logger.warn("skipping segmentation upload: flag not set")
+        logger.warning("skipping segmentation upload: flag not set")
 
     if args.em:
         upload_em_tiles(args.em, rs, overwrite=args.overwrite)
     else:
-        logger.warn("skipping EM tiles upload: flag not set")
-
-    print("Done! 🎉")
+        logger.warning("skipping EM tiles upload: flag not set")
 
 
 if __name__ == "__main__":

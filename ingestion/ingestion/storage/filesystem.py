@@ -125,7 +125,7 @@ def extract_tile_metadata(f: Path) -> Tile:
     zoom = int(s[2])
 
     if not f.parent.stem.isdigit():
-        logger.warn(f"could not extract slice information from: {f}")
+        logger.warning(f"could not extract slice information from: {f}")
         slice = None
     else:
         slice = int(f.parent.stem)
