@@ -11,7 +11,7 @@ from google.cloud import storage
 from pydantic import ValidationError
 from tqdm import tqdm
 
-from ingestion.cli import ask, type_file
+from ingestion.cli import ask, type_file, type_directory
 from ingestion.errors import DataValidationError, ErrorWriter
 from ingestion.schema import Data
 from ingestion.segmentation.piramid import Tile
@@ -37,6 +37,15 @@ def add_flags(parser: ArgumentParser):
         parser.add_argument(
             f"-{kind.lower()[0]}",
             f"--{kind.lower()}",
+            default=None,
+            type=type_directory,
+            help=f"directory for {kind} data",
+        )
+
+    def add_in_paths(parser: ArgumentParser, kind: str):
+        parser.add_argument(
+            f"-{kind.lower()[0]}",
+            f"--{kind.lower()}",
             nargs="+",
             type=Path,
             help=f"directory, files or glob match for {kind} data",
@@ -55,8 +64,8 @@ def add_flags(parser: ArgumentParser):
         )
 
     add_in_dir(parser, "data")
-    add_in_dir(parser, "segmentations")
-    add_in_dir(parser, "EM")
+    add_in_paths(parser, "segmentations")
+    add_in_paths(parser, "EM")
 
     add_flag(parser, "overwrite", "overwrite files in the bucket")
 
@@ -120,6 +129,8 @@ def validate_data(dir: Path):
         )
 
         sys.exit(1)
+    
+    logger.info(f"data in {dir} is valid!")
 
 
 def prune_bucket(bucket: storage.Bucket):
