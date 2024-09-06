@@ -54,7 +54,7 @@ const EDGE_STYLE = [
       "target-arrow-color": "#63625F",
       "target-arrow-shape": "triangle",
       "curve-style": "bezier",
-      "arrow-scale": 0.3,
+      "arrow-scale": .6,
       "source-distance-from-node": 1,
       "target-distance-from-node": 1,
       width: "data(width)",
@@ -65,7 +65,7 @@ const EDGE_STYLE = [
     css: {
       "source-distance-from-node": 0,
       "target-distance-from-node": 0,
-      "arrow-scale": 0.3,
+      "arrow-scale": .6,
     },
   },
 ];
