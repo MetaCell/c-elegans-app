@@ -57,7 +57,10 @@ const Neurons = ({ children }) => {
     setNeurons(filteredNeurons);
   };
 
-  const autoCompleteOptions = Object.values(neurons).map((neuron: Neuron) => mapNeuronsAvailableNeuronsToOptions(neuron));
+  const autoCompleteOptions = Object.values(neurons)
+    .map((neuron: Neuron) => mapNeuronsAvailableNeuronsToOptions(neuron))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
   return (
     <Box
       sx={{
