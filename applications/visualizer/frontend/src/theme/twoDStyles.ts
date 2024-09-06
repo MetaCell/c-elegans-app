@@ -70,13 +70,13 @@ const EDGE_STYLE = [
   },
 ];
 
-const CHEMICAL_STYLE = { "line-color": "#63625F", width: 0.5 };
+const CHEMICAL_STYLE = { "line-color": "#63625F",  width: "data(width)", };
 const ELECTRICAL_STYLE = [
   {
     selector: ".electrical",
     style: {
       "line-color": "#63625F",
-      width: 0.5,
+      width: "data(width)",
       "curve-style": "segments",
       "target-arrow-color": "#666666",
       "source-arrow-color": "#666666",
