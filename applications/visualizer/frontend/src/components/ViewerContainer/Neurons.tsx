@@ -38,10 +38,11 @@ const Neurons = ({ children }) => {
     }
   };
 
-  const onNeuronClick = (option) => {
+  const onNeuronClick = async (option) => {
     const neuron = availableNeurons[option.id];
+
     if (neuron && !activeNeurons.has(option.id)) {
-      currentWorkspace.activateNeuron(neuron);
+      currentWorkspace.activateNeuron(neuron).showNeuron(neuron.name);
     } else {
       currentWorkspace.deactivateNeuron(option.id);
     }
