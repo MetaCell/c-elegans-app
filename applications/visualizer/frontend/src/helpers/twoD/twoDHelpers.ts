@@ -61,10 +61,12 @@ export const createNode = (
   position?: Position,
   isGroupNode?: boolean,
   parent?: string, // Optional parent node ID for compound nodes
+  activeNeuron?: boolean,
 ): ElementDefinition => {
   let classes = "";
   if (isGroupNode) classes += "groupNode ";
   if (selected) classes += "selected ";
+  if (activeNeuron) classes += "searchedfor ";
 
   const node: ElementDefinition = {
     group: "nodes",

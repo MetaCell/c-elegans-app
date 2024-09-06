@@ -1,10 +1,22 @@
 import type { Stylesheet } from "cytoscape";
 import { annotationLegend } from "../settings/twoDSettings.tsx";
 
+const searchedforNeuronBackground =
+  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NSIgaGVpZ2h0PSI2NSIgdmlld0JveD0iMCAwIDY1IDY1Ij48ZWxsaXBzZSByeT0iMTkuODkiIHJ4PSIuOTc1IiBjeT0iLS4wMTkiIGN4PSIyNC45NDgiIHRyYW5zZm9ybT0icm90YXRlKDQ1KSIvPjxlbGxpcHNlIHJ5PSIyOS4wNTUiIHJ4PSIuOTc1IiBjeT0iLjA0NiIgY3g9IjQ2LjAwOCIgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIi8+PGVsbGlwc2Ugcnk9IjEyLjE1NSIgcng9Ii45NzUiIGN5PSItLjAxOSIgY3g9IjcyLjMzMyIgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIi8+PGVsbGlwc2Ugcnk9IjEyLjE1NSIgcng9Ii45NzUiIGN5PSItLjAxOSIgY3g9IjE5LjY4MyIgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIi8+PGVsbGlwc2Ugcnk9IjI0LjIxMiIgcng9Ii45NzUiIGN5PSItLjAxOSIgY3g9IjYxLjgwMyIgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIi8+PGVsbGlwc2Ugcnk9IjI2LjkxIiByeD0iLjk3NSIgY3k9Ii0uMDE5IiBjeD0iNTYuNTM4IiB0cmFuc2Zvcm09InJvdGF0ZSg0NSkiLz48ZWxsaXBzZSByeT0iMjguNTY3IiByeD0iLjk3NSIgY3k9Ii0uMDE5IiBjeD0iNTEuMjczIiB0cmFuc2Zvcm09InJvdGF0ZSg0NSkiLz48ZWxsaXBzZSByeT0iMjQuMjEyIiByeD0iLjk3NSIgY3k9Ii0uMDE5IiBjeD0iMzAuMjEzIiB0cmFuc2Zvcm09InJvdGF0ZSg0NSkiLz48ZWxsaXBzZSByeT0iMjYuOTEiIHJ4PSIuOTc1IiBjeT0iLS4wMTkiIGN4PSIzNS40NzgiIHRyYW5zZm9ybT0icm90YXRlKDQ1KSIvPjxlbGxpcHNlIHJ5PSIyOC41NjciIHJ4PSIuOTc1IiBjeT0iLS4wMTkiIGN4PSI0MC43NDMiIHRyYW5zZm9ybT0icm90YXRlKDQ1KSIvPjxlbGxpcHNlIHJ5PSIxOS44OSIgcng9Ii45NzUiIGN5PSItLjAxOSIgY3g9IjY3LjA2OCIgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIi8+PC9zdmc+"; // original: image/node_background_neuron.svg
+
 const SELECTED_NODE_STYLE = {
   "border-width": 2,
   "border-color": "black",
   "border-opacity": 1,
+};
+
+const SEARCHED_FOR_NODE_STYLE = {
+  "background-image": searchedforNeuronBackground,
+  "background-image-opacity": ".2",
+  "z-index": 0,
+  "background-repeat": "no-repeat",
+  "background-height": 22,
+  "background-width": 22,
 };
 
 const GROUP_NODE_STYLE = {
@@ -202,6 +214,10 @@ const NODE_STYLE = [
   {
     selector: "node.selected",
     style: SELECTED_NODE_STYLE,
+  },
+  {
+    selector: "node.searchedfor",
+    style: SEARCHED_FOR_NODE_STYLE,
   },
   {
     selector: ".chemical",

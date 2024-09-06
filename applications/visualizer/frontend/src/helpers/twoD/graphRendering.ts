@@ -112,7 +112,17 @@ export const computeGraphDifferences = (
           extractNeuronAttributes(neuron).forEach((attr) => attributes.add(attr));
         });
         const groupPosition = calculateMeanPosition(groupNeurons, workspace);
-        nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), Array.from(attributes), groupPosition, true));
+        nodesToAdd.push(
+          createNode(
+            nodeId,
+            workspace.selectedNeurons.has(nodeId),
+            Array.from(attributes),
+            groupPosition,
+            true,
+            undefined,
+            workspace.activeNeurons.has(nodeId),
+          ),
+        );
       } else {
         let parent = undefined;
 
@@ -126,7 +136,7 @@ export const computeGraphDifferences = (
         const neuron = workspace.availableNeurons[nodeId];
         const attributes = extractNeuronAttributes(neuron);
         const position = neuron.viewerData[ViewerType.Graph]?.defaultPosition ?? null;
-        nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), attributes, position, false, parent));
+        nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), attributes, position, false, parent, workspace.activeNeurons.has(nodeId)));
       }
     }
   }
