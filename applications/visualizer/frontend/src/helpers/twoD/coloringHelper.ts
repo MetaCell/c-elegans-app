@@ -20,12 +20,12 @@ interface CellDesign {
 }
 
 export const cellConfig: { [key: string]: CellDesign } = {
-  b: { type: CellType.Muscle, color: "#A8F5A2" },
-  u: { type: CellType.Others, color: "#D9D9D9" },
   s: { type: CellType.Sensory, color: "#F9CEF9" },
   i: { type: CellType.Inter, color: "#FF887A" },
   m: { type: CellType.Motor, color: "#B7DAF5" },
   n: { type: CellType.Neurosecretory, color: "#F9D77B" },
+  b: { type: CellType.Muscle, color: "#A8F5A2" },
+  u: { type: CellType.Others, color: "#D9D9D9" },
 };
 
 enum NeurotransmitterType {
