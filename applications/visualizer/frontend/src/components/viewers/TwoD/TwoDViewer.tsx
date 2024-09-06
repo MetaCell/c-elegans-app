@@ -32,6 +32,7 @@ import {
   INCLUDE_POST_EMBRYONIC,
   type LegendType,
   SELECTED_CLASS,
+  SHOW_EDGE_LABEL_CLASS,
 } from "../../../settings/twoDSettings";
 import { GRAPH_STYLES } from "../../../theme/twoDStyles";
 import ContextMenu from "./ContextMenu";
@@ -290,7 +291,8 @@ const TwoDViewer = () => {
     };
 
     const handleEdgeFocus = (event) => {
-      event.target.addClass(FOCUS_CLASS);
+      event.target.toggleClass(SHOW_EDGE_LABEL_CLASS);
+      event.target.toggleClass(FOCUS_CLASS);
     };
 
     cy.on("tap", "node", handleNodeClick);
