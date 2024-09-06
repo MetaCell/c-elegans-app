@@ -38,7 +38,7 @@ const Neurons = ({ children }) => {
     }
   };
 
-  const onNeuronClick = async (option) => {
+  const onNeuronClick = (option) => {
     const neuron = availableNeurons[option.id];
 
     if (neuron && !activeNeurons.has(option.id)) {
