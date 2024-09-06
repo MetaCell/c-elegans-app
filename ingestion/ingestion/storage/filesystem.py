@@ -87,7 +87,7 @@ def load_data(files: DataContainer[Path]) -> dict:
 
 Slice: TypeAlias = int
 
-SEGMENTATION_REGEX = r".*_s(\d+)\.json$"
+SEGMENTATION_REGEX = r".*s(\d+)\.json$"
 
 
 def find_segmentation_files(paths: list[Path]) -> Generator[tuple[Slice, Path]]:

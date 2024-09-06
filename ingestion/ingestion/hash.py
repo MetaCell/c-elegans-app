@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import base64
 import struct
+from functools import singledispatchmethod
 from io import BufferedIOBase
 
-from crc32c import crc32
+from crc32c import crc32c
 
 
 class Crc32cCalculator(BufferedIOBase):
@@ -16,7 +17,7 @@ class Crc32cCalculator(BufferedIOBase):
     Based on: https://vsoch.github.io/2020/crc32c-validation-google-storage/
     """
 
-    def __init__(self, fileobj: BufferedIOBase):
+    def __init__(self, fileobj):
         self._fileobj = fileobj
         self.digest = 0
 
@@ -25,14 +26,23 @@ class Crc32cCalculator(BufferedIOBase):
         self._update(b)
         return r
 
-    def read(self, size: int | None = None) -> bytes:
+    def read(self, size: int | None = None):
         r = self._fileobj.read(size)
         self._update(r)
         return r
 
-    def _update(self, chunk: bytes):
+    @singledispatchmethod
+    def _update(self, chunk):
         """Given a chunk from the read in file, update the hexdigest"""
-        self.digest = crc32(chunk, self.digest)
+        raise TypeError(f"Unsupported type for _update: {type(chunk)}")
+
+    @_update.register  # type: ignore
+    def _(self, chunk: bytes):
+        self.digest = crc32c(chunk, self.digest)
+
+    @_update.register  # type: ignore
+    def _(self, chunk: str):
+        self.digest = crc32c(chunk.encode("utf-8"), self.digest)
 
     def hexdigest(self) -> str:
         """Return the hexdigest of the hasher.

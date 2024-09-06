@@ -31,14 +31,12 @@ class RemoteStorage:
         if blob is None:
             blob = self.bucket.blob(blob_name)
             blob.upload_from_string(content)
-            blob.reload()
         else:
             if calc.hexdigest() == blob.crc32c or not overwrite:
                 logger.debug(f"skipping {blob_name}: already in the bucket")
                 return
 
             blob.upload_from_string(content)
-            blob.reload()
 
         if not calc.hexdigest() == blob.crc32c:
             logger.error(
