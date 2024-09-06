@@ -221,7 +221,6 @@ const NODE_STYLE = [
     css: {
       "font-size": 8,
       shape: "roundrectangle",
-      // 'text-margin-y': '2px',
       width: "label",
       height: "10px",
       padding: "8px",
@@ -232,7 +231,6 @@ const NODE_STYLE = [
     selector: "node.searchedfor[?none], node.searchedfor[?muscle], node.searchedfor[?others]",
     css: {
       "background-image": searchedforMuscleBackground,
-      // "background-position-y": "4px",
       "background-repeat": "repeat-x",
       "background-image-opacity": "0.1",
     },
