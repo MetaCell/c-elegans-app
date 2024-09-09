@@ -1,4 +1,38 @@
-# Format of data ingested in the database
+# Data ingest specification
+
+This document describes the requirements and expectations of all the data ingested in to the C-Elegans application.
+
+- [Dataset Identifier](#dataset-identifier)
+- [EM data](#em-data)
+- [3D data](#3d-data)
+- [Format of data ingested in the database](#format-of-data-ingested-in-the-database)
+  - [Format of `neurons.json`](#format-of-neuronsjson)
+  - [Format of `datasets.json`](#format-of-datasetsjson)
+  - [Format of `connections/xxx.json`](#format-of-connectionsxxxjson)
+  - [Format of `annotations/xxx.json`](#format-of-annotationsxxxjson)
+- [Bucket Storage](#bucket-storage)
+
+## Dataset Identifier
+
+All ingested data should be contextualized within a dataset identifier.
+The identifier will segregate the data saved in the GCP bucket, ensuring that the data is easily indexed and manageable in the long run.
+
+## EM data
+
+Electromagnetic data must follow the file path namming scheme: `**/<slice>/<y>_<x>_<z>.jpg`, where `slice`, `x`, `y` and `z` are positive integers.
+
+Files must be `jpg` images with the same width and height dimentions.
+These images are tiled by zoom level at double the resolution of the previous zoom.
+The resolution to which these images are aquired should be 2nm voxels.
+
+## 3D data
+
+3D data are STL files following a format of `<neuron name>-*.stl`, like in <https://github.com/zhenlab-ltri/catmaid-data-explorer/tree/3d-viewer/server/3d-models>.
+
+> [!NOTE]  
+> Synapsys are not currently being uploaded.
+
+## Format of data ingested in the database
 
 The management script is able to ingest data represented in a JSON format.
 Different files are necessary:
@@ -10,7 +44,11 @@ Different files are necessary:
 
 Those files are automatically exported from third-party tool and shouldn't be edited manually.
 
-## Format of `neurons.json`
+> [!NOTE]  
+> The existing repository contains a `trajectories` folder with a set of JSON files.
+> Those files are not ingested anymore, they are part of a legacy system.
+
+### Format of `neurons.json`
 
 This file defines a list of JSON object as root structure:
 
@@ -41,7 +79,7 @@ Each JSON object represents a neuron with this schema:
 ```
 
 
-## Format of `datasets.json`
+### Format of `datasets.json`
 
 This file defines a list of JSON object as root structure.
 
@@ -73,7 +111,7 @@ Each JSON object represents a specific dataset with this schema:
 }
 ```
 
-## Format of `connections/xxx.json`
+### Format of `connections/xxx.json`
 
 The `connections` directory encodes the information about the different connections by dataset.
 Each file in this directory is named after the `id` of a dataset present in the `datasets.json` file, e.g.: a dataset defined using the `id` `white_1986_jsh` will defines each of the connections of the dataset in the file `connections/white_1986_jsh.json`.
@@ -95,7 +133,7 @@ The schema is the following:
 
 For each of those objects: `ids`, `post_tid`, `pre_tid` and `syn` need to have the same number of elements when `ids` is present.
 
-## Format of `annotations/xxx.json`
+### Format of `annotations/xxx.json`
 
 The `annotations` directory encodes annotations about the different part (`head` or `complete`) following the naming convention `part.annotations.json`, e.g.: the annotations for the `head` are located in `annotations/head.annotations.json`.
 
@@ -115,7 +153,39 @@ Here is the schema for the `head.annotations.json` file (the `complete.annotatio
 
 The types of annotations can be `increase`, `variable`, `postembryonic`, `decrease` or `stable`
 
-### Note:
+## Bucket Storage
 
-The existing repository contains a `trajectories` folder with a set of JSON files.
-Those files are not ingested anymore, they are part of a legacy system.
+The cloud storage of the ingested files will be organized in the following pattern:
+
+```console
+.
+├── dataset-1
+│   ├── 3d
+│   │   ├── nervering.stl
+│   │   ├── ADAL.stl
+│   │   ├── ADAR.stl
+│   │   ├── ADEL.stl
+│   │   │   ...
+│   ├── em
+│   │   ├── ...
+│   │   ├── 13
+│   │   │   ├── 0_0_5.jpg
+│   │   │   ├── 0_1_4.jpg
+│   │   │   ├── 0_1_5.jpg
+│   │   │   ...
+│   │   ├── ...
+│   │   └── metadata.json
+│   └── segmentations
+│       ├── s000.json
+│       └── s001.json
+│       └── ...
+├── dataset-2
+├── dataset-3
+...
+```
+
+Each dataset will have its own base directory with the name being the dataset identifier converted to kebab-case. Inside each dataset directory we will find 3 subdirectories:
+
+- `3d`: containing the 3D models for the neurons with the file name following `<neuron name>.stl`, with the exception of `nervering.stl`.
+- `em`: storing each slice tileset in its own subdirectory and a `metadata.json` file with information required to represent the tiles in the frontend application _(TODO: define `metadata.json` format)_.
+- `segmentations`: stores all the segmentation geojson files following the namming schema `s<slice>.json`.
