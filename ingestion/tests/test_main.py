@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 
 import pytest
@@ -126,7 +127,7 @@ def test__main_ingest_segmentations(
                 "--gcp-bucket",
                 "celegans",
                 "--segmentations",
-                str(local_dir),  # parent just cause its easy
+                str(local_dir),
                 "--debug",
             ]
         )
@@ -139,6 +140,72 @@ def test__main_ingest_segmentations(
     assert out == _done_message() + "\n"
     for log in [
         "skipping data validation: flag not set",
+        "skipping 3D files upload: flag not set",
+        "skipping EM tiles upload: flag not set",
+    ]:
+        assert log in caplog.text
+
+
+def test__main_ingest_3d(
+    tmp_path: Path, capsys: pytest.CaptureFixture, caplog: pytest.LogCaptureFixture
+):
+    gcp_creds_path = tmp_path / "secret.json"
+    gcp_creds_path.write_text("{}")
+
+    local_dir = tmp_path / "local"
+    local_dir.mkdir()
+
+    celegans_dir = tmp_path / "celegans"
+    celegans_dir.mkdir()
+
+    neuron_names = [
+        "BAGR",
+        "BDUL",
+        "BWM-DL01",
+        "BWM-DL02",
+        "Fragment1",
+        "Fragment11",
+    ]
+    expected_neurons_blob_names = [
+        "BAGR.stl",
+        "BDUL.stl",
+        "BWM-DL01.stl",
+        "BWM-DL02.stl",
+        "Fragment1.stl",
+        "Fragment11.stl",
+    ]
+
+    # create a bunch of 3d files
+    for neuron in neuron_names:
+        (local_dir / f"{neuron}-SEM_adult.stl").touch()
+
+    with (
+        gcs_patch([Mount("celegans", celegans_dir, readable=True, writable=True)]),
+        caplog.at_level(logging.INFO),
+    ):
+        main(
+            [
+                "ingest",
+                "dataset8",
+                "--gcp-credentials",
+                str(gcp_creds_path),
+                "--gcp-bucket",
+                "celegans",
+                "--3d",
+                str(local_dir),  # parent just cause its easy
+                "--debug",
+            ]
+        )
+
+    remote_files = os.listdir(local_dir)
+
+    assert remote_files.sort() == expected_neurons_blob_names.sort()
+
+    out, _ = capsys.readouterr()
+    assert out == _done_message() + "\n"
+    for log in [
+        "skipping data validation: flag not set",
+        "skipping segmentation upload: flag not set",
         "skipping EM tiles upload: flag not set",
     ]:
         assert log in caplog.text

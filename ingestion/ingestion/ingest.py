@@ -16,6 +16,7 @@ from ingestion.errors import DataValidationError, ErrorWriter
 from ingestion.schema import Data
 from ingestion.segmentation.piramid import Tile
 from ingestion.storage.filesystem import (
+    find_3d_files,
     find_data_files,
     find_segmentation_files,
     load_data,
@@ -65,6 +66,7 @@ def add_flags(parser: ArgumentParser):
 
     add_in_dir(parser, "data")
     add_in_paths(parser, "segmentations")
+    add_in_paths(parser, "3D")
     add_in_paths(parser, "EM")
 
     add_flag(parser, "overwrite", "overwrite files in the bucket")
@@ -183,6 +185,25 @@ def upload_segmentations(
         )
 
 
+def upload_3d(paths: list[Path], rs: RemoteStorage, *, overwrite: bool = False):
+    logger.info(f"uploading 3D files...")
+
+    paths_3d = find_3d_files(paths)
+
+    def fs_to_blob_name(f: Path) -> str:  # TODO: generalize to other datasets
+        return f"{f.name.replace('-SEM_adult', '')}"
+
+    files_3d = list(paths_3d)  # list cast to have a progression bar (it sucks)
+    if len(files_3d) == 0:
+        logger.warning("skipping 3D files upload: no files matched")
+        return
+
+    pbar = tqdm(files_3d)
+    for f3d in pbar:
+        pbar.set_description(str(f3d))
+        rs.upload(f3d, fs_to_blob_name(f3d), overwrite=overwrite)
+
+
 def upload_em_tiles(
     tile_paths: list[Path], rs: RemoteStorage, *, overwrite: bool = False
 ):
@@ -241,6 +262,11 @@ def ingest_cmd(args: Namespace):
         upload_segmentations(args.segmentations, rs, overwrite=args.overwrite)
     else:
         logger.warning("skipping segmentation upload: flag not set")
+
+    if paths := vars(args)["3d"]:
+        upload_3d(paths, rs, overwrite=args.overwrite)
+    else:
+        logger.warning("skipping 3D files upload: flag not set")
 
     if args.em:
         upload_em_tiles(args.em, rs, overwrite=args.overwrite)

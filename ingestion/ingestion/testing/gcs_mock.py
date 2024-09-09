@@ -1,7 +1,7 @@
 # type: ignore
 #
 # Mocks some of google.cloud.storage objects and methods
-# Code adapter from https://github.com/odashi/cloud-storage-mocker
+# Code adapted from https://github.com/odashi/cloud-storage-mocker
 #
 # Added for this project:
 # - Client.get_bucket method

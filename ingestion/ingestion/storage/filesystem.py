@@ -109,6 +109,13 @@ def find_segmentation_files(paths: list[Path]) -> Generator[tuple[Slice, Path]]:
     )
 
 
+def find_3d_files(paths: list[Path]) -> Generator[Path]:
+    if len(paths) == 1 and paths[0].is_dir():
+        return (f for f in paths[0].rglob("*.stl"))
+
+    return (path for path in paths if path.suffix == ".stl")
+
+
 def extract_tile_metadata(f: Path) -> Tile:
     """Extracts the tile metadata from the file with path f"""
     # expected format is **/<slice>/<y>_<x>_<z>.jpg
