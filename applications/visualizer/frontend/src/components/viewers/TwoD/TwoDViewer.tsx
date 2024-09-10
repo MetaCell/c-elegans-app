@@ -191,7 +191,7 @@ const TwoDViewer = () => {
     updateLayout();
   }, [layout, connections]);
 
-  const correctGjSegments = (edgeSel = "[type=electrical]") => {
+  const correctGjSegments = (edgeSel = '[type="electrical"]') => {
     const cy = cyRef.current;
     if (!cy) return;
 

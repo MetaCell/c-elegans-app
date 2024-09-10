@@ -69,7 +69,13 @@ const ELECTRICAL_STYLE = [
       "target-arrow-color": "#666666",
       "source-arrow-color": "#666666",
       "segment-distances": "0 -4 4 -4 4 0",
-      "segment-weights": [-2.0, -1.5, -0.5, 0.5, 1.5, 2.0],
+      "segment-weights": (ele) => {
+        const sourcePos = ele.source().position();
+        const targetPos = ele.target().position();
+        const length = Math.sqrt(Math.pow(targetPos.x - sourcePos.x, 2) + Math.pow(targetPos.y - sourcePos.y, 2));
+        const divider = (length > 60 ? 7 : length > 40 ? 5 : 3) / length;
+        return [-2.0, -1.5, -0.5, 0.5, 1.5, 2.0].map(d => 0.5 + d * divider).join(" ");
+      },
       "target-arrow-shape": "none",
     },
   },
