@@ -132,9 +132,7 @@ def test__main_ingest_segmentations(
             ]
         )
 
-    assert compare_directories(
-        local_dir, celegans_dir / "sem-adult" / "segmentation-mip0"
-    )
+    assert compare_directories(local_dir, celegans_dir / "dataset8" / "segmentations")
 
     out, _ = capsys.readouterr()
     assert out == _done_message() + "\n"

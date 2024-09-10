@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from google.cloud.storage import Bucket, Client
+from google.cloud.storage import Bucket
 
 from ingestion.hash import Crc32cCalculator
 

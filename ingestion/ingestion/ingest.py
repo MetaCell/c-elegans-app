@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import operator
 import os
+import re
 import sys
 from argparse import ArgumentParser, Namespace
 from itertools import groupby
@@ -16,6 +17,11 @@ from ingestion.cli import ask, type_directory, type_file
 from ingestion.em_metadata import Piramid, Tile
 from ingestion.errors import DataValidationError, ErrorWriter
 from ingestion.schema import Data
+from ingestion.storage.blob import (
+    fs_3d_blob_name,
+    fs_em_tile_blob_name,
+    fs_segmentation_blob_name,
+)
 from ingestion.storage.filesystem import (
     find_3d_files,
     find_data_files,
@@ -109,7 +115,7 @@ def add_flags(parser: ArgumentParser):
 
 
 def validate_data(dir: Path):
-    # TODO: do something with dataset_id
+    # TODO: do something with dataset_id, like check if present in datasets.json
 
     data_files = find_data_files(dir)
     json_data = load_data(data_files)
@@ -160,14 +166,11 @@ def prune_bucket(bucket: storage.Bucket):
 
 
 def upload_segmentations(
-    seg_paths: list[Path], rs: RemoteStorage, *, overwrite: bool = False
+    dataset_id: str, seg_paths: list[Path], rs: RemoteStorage, *, overwrite: bool = False
 ):
     logger.info(f"uploading segmentation...")
 
     segmentation_files = find_segmentation_files(seg_paths)
-
-    def fs_to_blob_name(f: Path) -> str:
-        return f"sem-adult/segmentation-mip0/{f.name}"
 
     seg_files = list(
         segmentation_files
@@ -178,21 +181,18 @@ def upload_segmentations(
 
     pbar = tqdm(seg_files)
     for _, segmentation_file in pbar:
-        pbar.set_description(segmentation_file.name)
+        pbar.set_description(str(segmentation_file))
         rs.upload(
             segmentation_file,
-            fs_to_blob_name(segmentation_file),
+            fs_segmentation_blob_name(dataset_id, segmentation_file),
             overwrite=overwrite,
         )
 
 
-def upload_3d(paths: list[Path], rs: RemoteStorage, *, overwrite: bool = False):
+def upload_3d(dataset_id: str, paths: list[Path], rs: RemoteStorage, *, overwrite: bool = False):
     logger.info(f"uploading 3D files...")
 
     paths_3d = find_3d_files(paths)
-
-    def fs_to_blob_name(f: Path) -> str:  # TODO: generalize to other datasets
-        return f"{f.name.replace('-SEM_adult', '')}"
 
     files_3d = list(paths_3d)  # list cast to have a progression bar (it sucks)
     if len(files_3d) == 0:
@@ -202,7 +202,7 @@ def upload_3d(paths: list[Path], rs: RemoteStorage, *, overwrite: bool = False):
     pbar = tqdm(files_3d)
     for f3d in pbar:
         pbar.set_description(str(f3d))
-        rs.upload(f3d, fs_to_blob_name(f3d), overwrite=overwrite)
+        rs.upload(f3d, fs_3d_blob_name(dataset_id, f3d), overwrite=overwrite)
 
 
 class PiramidMetadata(BaseModel):
@@ -250,14 +250,10 @@ def upload_tileset_metadata(
 
 
 def upload_em_tiles(
-    tile_paths: list[Path], rs: RemoteStorage, *, overwrite: bool = False
+    dataset_id: str, tile_paths: list[Path], rs: RemoteStorage, *, overwrite: bool = False
 ):
     # list cast to have a progression bar (it sucks)
     tiles = list(tqdm(load_tiles(tile_paths), desc="loading EM tiles"))
-
-    def fs_to_blob_name(tile: Tile) -> str:
-        # sem-adult/catmaid-tiles/<slice>/<y>_<x>_<z>.jpg
-        return f"sem-adult/catmaid-tiles/{tile.slice}/{tile.path.name}"
 
     upload_tileset_metadata(tiles, rs, overwrite=overwrite)
 
@@ -270,7 +266,9 @@ def upload_em_tiles(
     pbar = tqdm(tiles)
     for tile in pbar:
         pbar.set_description(str(tile.path))
-        rs.upload(tile.path, fs_to_blob_name(tile), overwrite=overwrite)
+        rs.upload(
+            tile.path, fs_em_tile_blob_name(dataset_id, tile), overwrite=overwrite
+        )
         # TODO: the amount of files is a bit overwelming and takes a lot of time
 
 
@@ -298,17 +296,17 @@ def ingest_cmd(args: Namespace):
             logger.info(f"skipped prunning files from the bucket")
 
     if args.segmentations:
-        upload_segmentations(args.segmentations, rs, overwrite=args.overwrite)
+        upload_segmentations(args.dataset_id, args.segmentations, rs, overwrite=args.overwrite)
     else:
         logger.warning("skipping segmentation upload: flag not set")
 
     if paths := vars(args)["3d"]:
-        upload_3d(paths, rs, overwrite=args.overwrite)
+        upload_3d(args.dataset_id, paths, rs, overwrite=args.overwrite)
     else:
         logger.warning("skipping 3D files upload: flag not set")
 
     if args.em:
-        upload_em_tiles(args.em, rs, overwrite=args.overwrite)
+        upload_em_tiles(args.dataset_id, args.em, rs, overwrite=args.overwrite)
     else:
         logger.warning("skipping EM tiles upload: flag not set")
 
