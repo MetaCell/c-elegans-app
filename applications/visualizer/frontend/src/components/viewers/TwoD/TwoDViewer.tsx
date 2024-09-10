@@ -6,7 +6,7 @@ import { debounce } from "lodash";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { ColoringOptions, getColor } from "../../../helpers/twoD/coloringHelper";
-import { computeGraphDifferences, updateHighlighted, updateParentNodes } from "../../../helpers/twoD/graphRendering.ts";
+import { computeGraphDifferences, updateHighlighted, updateParallelEdges, updateParentNodes } from "../../../helpers/twoD/graphRendering.ts";
 import {
   applyLayout,
   getHiddenNeuronsIn2D,
@@ -65,8 +65,8 @@ const TwoDViewer = () => {
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
 
   const [missingNeuronsState, setMissingNeuronsState] = useState({
-    reportedNeurons: new Set(),
-    unreportedNeurons: new Set(),
+    reportedNeurons: new Set<string>(),
+    unreportedNeurons: new Set<string>(),
   });
   const visibleActiveNeurons = useMemo(() => {
     return getVisibleActiveNeuronsIn2D(workspace);
@@ -377,11 +377,7 @@ const TwoDViewer = () => {
       updateParentNodes(cy, workspace, openGroups);
       cy.remove(nodesToRemove);
       cy.remove(edgesToRemove);
-      // Remove 'parallel' class from all edges
-      cy.edges().removeClass("parallel");
-
-      // Add 'parallel' class to parallel edges
-      cy.edges('[type = "electrical"]').parallelEdges().filter('[type = "chemical"]').addClass("parallel");
+      updateParallelEdges(cy);
     });
 
     updateNodeColors();
@@ -405,12 +401,24 @@ const TwoDViewer = () => {
 
     // Find the newly missing neurons that haven't been reported yet
     const unreportedNeurons = new Set([...newMissingNeurons].filter((neuron) => !reportedNeurons.has(neuron)));
+    
+    // Remove neurons from reportedNeurons that are no longer part of the splitJoinState.split
+    const updatedReportedNeurons = new Set(
+      [...reportedNeurons].filter((neuron) => {
+        const nclass = workspace.getNeuronClass(neuron);
+        return splitJoinState.split.has(nclass);
+      })
+    );
 
-    if (unreportedNeurons.size > 0) {
-      setMissingNeuronsState((prevState) => ({
-        ...prevState,
+    // Check if there are any changes
+    if (
+      !areSetsEqual(missingNeuronsState.unreportedNeurons, unreportedNeurons) ||
+      !areSetsEqual(missingNeuronsState.reportedNeurons, updatedReportedNeurons)
+    ) {
+      setMissingNeuronsState({
         unreportedNeurons: unreportedNeurons,
-      }));
+        reportedNeurons: updatedReportedNeurons,
+      });
     }
   };
 
