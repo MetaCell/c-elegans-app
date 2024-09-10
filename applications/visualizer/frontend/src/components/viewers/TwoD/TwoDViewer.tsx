@@ -377,6 +377,14 @@ const TwoDViewer = () => {
       updateParentNodes(cy, workspace, openGroups);
       cy.remove(nodesToRemove);
       cy.remove(edgesToRemove);
+      // Remove 'parallel' class from all edges
+      cy.edges().removeClass('parallel');
+
+      // Add 'parallel' class to parallel edges
+      cy.edges('[type = "electrical"]')
+      .parallelEdges()
+      .filter('[type = "chemical"]')
+      .addClass('parallel');
     });
 
     updateNodeColors();

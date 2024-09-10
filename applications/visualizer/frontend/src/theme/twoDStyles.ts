@@ -58,7 +58,22 @@ const EDGE_STYLE = [
   },
 ];
 
-const CHEMICAL_STYLE = { "line-color": "#63625F", width: 0.5 };
+
+const CHEMICAL_STYLE = [
+  { 
+    selector: ".chemical",
+    style: {"line-color": "#63625F", width: 0.5 }
+  },
+  {
+    selector: "edge.chemical.parallel",
+    style: {
+      "curve-style": "unbundled-bezier",
+      "control-point-distances": 40,
+      "control-point-weights": 0.5,
+    }
+  }
+];
+
 const ELECTRICAL_STYLE = [
   {
     selector: ".electrical",
@@ -236,4 +251,4 @@ const ANNOTATION_STYLES = Object.entries(annotationLegend).map(([, { id, color }
   },
 }));
 
-export const GRAPH_STYLES = [...NODE_STYLE, ...EDGE_STYLE, ...ELECTRICAL_STYLE, ...EDGE_LABEL_STYLES, ...FADED_STYLE, ...ANNOTATION_STYLES] as Stylesheet[];
+export const GRAPH_STYLES = [...NODE_STYLE, ...EDGE_STYLE, ...ELECTRICAL_STYLE, ...CHEMICAL_STYLE, ...EDGE_LABEL_STYLES, ...FADED_STYLE, ...ANNOTATION_STYLES] as Stylesheet[];
