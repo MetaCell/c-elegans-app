@@ -420,7 +420,7 @@ const TwoDViewer = () => {
   const updateLayout = () => {
     if (cyRef.current) {
       const cy = cyRef.current;
-      applyLayout(cy, layout);
+      applyLayout(cy, layout as GRAPH_LAYOUTS);
       updateWorkspaceNeurons2DViewerData(workspace, cy);
     }
   };

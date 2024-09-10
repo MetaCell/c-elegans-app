@@ -55,12 +55,12 @@ export const LAYOUT_OPTIONS: Record<GRAPH_LAYOUTS, ExtendedLayoutOptions> = {
     rankSep: 100,
   },
   [GRAPH_LAYOUTS.Concentric]: {
-    name: "concentric",
+    name: "preset",
     concentric: (node: NodeSingular) => node.degree(true),
     levelWidth: (nodes: NodeCollection) => nodes.maxDegree(true) / 4,
     animate: false,
     padding: 30,
-    spacingFactor: 1.5,
+    spacingFactor: 1,
   },
 };
 
