@@ -5,7 +5,7 @@ import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
 import { type Dataset, type Neuron, NeuronsService } from "../rest";
 import { GlobalError } from "./Error.ts";
 import { type EnhancedNeuron, type NeuronGroup, type ViewerSynchronizationPair, ViewerType, Visibility } from "./models";
-import { SynchronizerOrchestrator } from "./synchronizer";
+import { type SynchronizerContext, SynchronizerOrchestrator } from "./synchronizer";
 
 export class Workspace {
   [immerable] = true;
@@ -28,7 +28,15 @@ export class Workspace {
   syncOrchestrator: SynchronizerOrchestrator;
   updateContext: (workspace: Workspace) => void;
 
-  constructor(id: string, name: string, activeDatasets: Record<string, Dataset>, activeNeurons: Set<string>, updateContext: (workspace: Workspace) => void) {
+  constructor(
+    id: string,
+    name: string,
+    activeDatasets: Record<string, Dataset>,
+    activeNeurons: Set<string>,
+    updateContext: (workspace: Workspace) => void,
+    activeSynchronizers?: Record<ViewerSynchronizationPair, boolean>,
+    contexts?: Record<ViewerType, SynchronizerContext>,
+  ) {
     this.id = id;
     this.name = name;
     this.activeDatasets = activeDatasets;
@@ -45,7 +53,7 @@ export class Workspace {
 
     const { layoutManager, store } = getLayoutManagerAndStore(id);
     this.layoutManager = layoutManager;
-    this.syncOrchestrator = SynchronizerOrchestrator.create();
+    this.syncOrchestrator = SynchronizerOrchestrator.create(activeSynchronizers, contexts);
 
     this.store = store;
     this.updateContext = updateContext;
