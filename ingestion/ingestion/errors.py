@@ -292,6 +292,7 @@ class DataValidationError:
         if data_files is not None:
             finder = _DataErrorLocFinder(data_files)
 
+        # TODO: self._exc.errors() may have to be sorted
         for k, errors in groupby(self._exc.errors(), lambda err: err["loc"][0]):
             collection_rule = f"--- {str(k)} "
             collection_rule += (88 - len(collection_rule)) * "-"

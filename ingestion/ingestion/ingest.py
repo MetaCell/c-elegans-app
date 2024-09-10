@@ -1,20 +1,21 @@
 from __future__ import annotations
 
 import logging
+import operator
 import os
 import sys
 from argparse import ArgumentParser, Namespace
-from itertools import islice
+from itertools import groupby
 from pathlib import Path
 
 from google.cloud import storage
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from tqdm import tqdm
 
 from ingestion.cli import ask, type_directory, type_file
+from ingestion.em_metadata import Piramid, Tile
 from ingestion.errors import DataValidationError, ErrorWriter
 from ingestion.schema import Data
-from ingestion.segmentation.piramid import Tile
 from ingestion.storage.filesystem import (
     find_3d_files,
     find_data_files,
@@ -204,31 +205,69 @@ def upload_3d(paths: list[Path], rs: RemoteStorage, *, overwrite: bool = False):
         rs.upload(f3d, fs_to_blob_name(f3d), overwrite=overwrite)
 
 
+class PiramidMetadata(BaseModel):
+    slice: int
+    zooms: list[int]
+    extent: tuple[int, int, int, int]
+    resolutions: list[tuple[int, int]]
+    sizes: list[tuple[int, int]]
+
+
+class Metadata(BaseModel):
+    nslices: int
+    slices: list[PiramidMetadata]
+
+
+def upload_tileset_metadata(
+    tiles: list[Tile], rs: RemoteStorage, *, overwrite: bool = False
+):
+    logger.info("calculating EM tiles metadata...")
+
+    metadata: list[PiramidMetadata] = []
+
+    tiles.sort(key=operator.attrgetter("slice"))  # groupby expects things sorted
+    pbar = tqdm(tiles)
+    for slice, stiles in groupby(pbar, lambda t: t.slice):
+        pbar.set_description(str(slice))
+        piramid = Piramid.build(list(stiles))
+
+        metadata.append(
+            PiramidMetadata(
+                slice=slice,
+                zooms=piramid.zooms,
+                extent=piramid.extent,
+                resolutions=[zoom.resolution for zoom in piramid.levels.values()],
+                sizes=[zoom.size for zoom in piramid.levels.values()],
+            )
+        )
+
+    # TODO: upload to bucket
+    logger.info("uploading EM tiles metadata...")
+    with open("/tmp/metadata.json", "w") as f:
+        f.write(
+            Metadata(nslices=len(metadata), slices=metadata).model_dump_json(indent=2)
+        )
+
+
 def upload_em_tiles(
     tile_paths: list[Path], rs: RemoteStorage, *, overwrite: bool = False
 ):
-    logger.info("uploading EM tiles...")
-
-    tiles = load_tiles(tile_paths)
+    # list cast to have a progression bar (it sucks)
+    tiles = list(tqdm(load_tiles(tile_paths), desc="loading EM tiles"))
 
     def fs_to_blob_name(tile: Tile) -> str:
         # sem-adult/catmaid-tiles/<slice>/<y>_<x>_<z>.jpg
         return f"sem-adult/catmaid-tiles/{tile.slice}/{tile.path.name}"
 
-    # TODO: understand where to send tile matrixes and piramid metadata
-    # store at the root of the dataset 'dir'
+    upload_tileset_metadata(tiles, rs, overwrite=overwrite)
 
-    # NOTE: alternative iterator to group by slice
-    # pbar = tqdm(
-    #     [(slice, tile) for slice, tiles in groupby(tiles, lambda t: t.slice) for tile in tiles]
-    # )
-
-    tile_files = list(tiles)  # list cast to have a progression bar (it sucks)
-    if len(tile_files) == 0:
+    if len(tiles) == 0:
         logger.warning("skipping EM tiles upload: no files matched")
         return
 
-    pbar = tqdm(tile_files)
+    logger.info("uploading EM tiles...")
+
+    pbar = tqdm(tiles)
     for tile in pbar:
         pbar.set_description(str(tile.path))
         rs.upload(tile.path, fs_to_blob_name(tile), overwrite=overwrite)

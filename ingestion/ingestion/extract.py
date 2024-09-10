@@ -35,7 +35,7 @@ def add_flags(parser: ArgumentParser):
 def extract_cmd(args: Namespace, *, debug: bool = False):
     from tqdm import tqdm
 
-    from ingestion.segmentation.extraction import extract, parse_entries  # type: ignore
+    from ingestion.seg_extraction import extract, parse_entries  # type: ignore
 
     metadata_path = args.lut
     segmentation_folder = args.img_path

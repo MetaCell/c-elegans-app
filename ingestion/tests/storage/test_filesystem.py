@@ -3,8 +3,16 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
+from ingestion.em_metadata import Tile
 from ingestion.schema import DataContainer
-from ingestion.storage.filesystem import _CONNECTIONS_DIR, find_data_files, load_data
+from ingestion.storage.filesystem import (
+    _CONNECTIONS_DIR,
+    extract_tile_metadata,
+    find_data_files,
+    load_data,
+)
 
 
 def create_json_file(file_path: Path, content: dict | list[dict]):
@@ -60,3 +68,19 @@ def test__find_and_load_unknown_annotation(tmp_path: Path):
         "connections": {},
         "annotations": {},
     }
+
+
+@pytest.fixture
+def slice_em_fixture(request: pytest.FixtureRequest) -> Path:
+    return Path(request.fspath).parent.parent / "fixtures" / "em-tiles" / "209"  # type: ignore
+
+
+def test__extract_tile_metadata(slice_em_fixture: Path):
+    test_tile_path = slice_em_fixture / "0_0_5.jpg"
+    assert test_tile_path.exists() and test_tile_path.is_file()
+
+    expected = Tile(position=(0, 0), zoom=5, path=test_tile_path, slice=209)
+
+    got = extract_tile_metadata(test_tile_path)
+
+    assert got == expected

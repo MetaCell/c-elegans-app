@@ -2,14 +2,12 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import re
-from itertools import groupby
 from pathlib import Path
 from typing import Any, Generator, TypeAlias, get_args
 
+from ingestion.em_metadata import Tile
 from ingestion.schema import DataAnnotationEntry, DataContainer
-from ingestion.segmentation.piramid import Tile
 
 logger = logging.getLogger(__name__)
 
@@ -132,10 +130,9 @@ def extract_tile_metadata(f: Path) -> Tile:
     zoom = int(s[2])
 
     if not f.parent.stem.isdigit():
-        logger.warning(f"could not extract slice information from: {f}")
-        slice = None
-    else:
-        slice = int(f.parent.stem)
+        raise Exception(f"could not extract slice information from: {f}")
+
+    slice = int(f.parent.stem)
 
     return Tile(position=(x, y), zoom=zoom, path=f, slice=slice)
 
