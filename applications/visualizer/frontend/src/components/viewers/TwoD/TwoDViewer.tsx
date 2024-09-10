@@ -401,20 +401,17 @@ const TwoDViewer = () => {
 
     // Find the newly missing neurons that haven't been reported yet
     const unreportedNeurons = new Set([...newMissingNeurons].filter((neuron) => !reportedNeurons.has(neuron)));
-    
+
     // Remove neurons from reportedNeurons that are no longer part of the splitJoinState.split
     const updatedReportedNeurons = new Set(
       [...reportedNeurons].filter((neuron) => {
         const nclass = workspace.getNeuronClass(neuron);
         return splitJoinState.split.has(nclass);
-      })
+      }),
     );
 
     // Check if there are any changes
-    if (
-      !areSetsEqual(missingNeuronsState.unreportedNeurons, unreportedNeurons) ||
-      !areSetsEqual(missingNeuronsState.reportedNeurons, updatedReportedNeurons)
-    ) {
+    if (!areSetsEqual(missingNeuronsState.unreportedNeurons, unreportedNeurons) || !areSetsEqual(missingNeuronsState.reportedNeurons, updatedReportedNeurons)) {
       setMissingNeuronsState({
         unreportedNeurons: unreportedNeurons,
         reportedNeurons: updatedReportedNeurons,
