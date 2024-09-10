@@ -14,20 +14,31 @@ This document describes the requirements and expectations of all the data ingest
 
 ## Dataset Identifier
 
-All ingested data should be contextualized within a dataset identifier.
-The identifier will segregate the data saved in the GCP bucket, ensuring that the data is easily indexed and manageable in the long run.
+All ingested data is contextualized within a dataset identifier.
+The identifier will segregate the data in the database and in the GCP bucket, ensuring that the data is easily indexed and managed.
+
+It is important to note that the dataset identifier is related to all data in the databse, so it has to match that of the ids in those files.
+
+> [!WARNING]  
+> The dataset identifier should not contain spaces or special characters.
+
+## Segmentations
+
+Segmentation files are json files that encode positions on neuron labels.
+They MUST follow the file path naming scheme: `**/*s<slice>.json`, where slice is a positive integer.
 
 ## EM data
 
-Electromagnetic data must follow the file path namming scheme: `**/<slice>/<y>_<x>_<z>.jpg`, where `slice`, `x`, `y` and `z` are positive integers.
+Electromagnetic data MUST follow the file path namming scheme: `**/<slice>/<y>_<x>_<z>.jpg`, where `slice`, `x`, `y` and `z` are positive integers.
 
-Files must be `jpg` images with the same width and height dimentions.
+Files MUST be `jpg` images with the same width and height dimentions.
 These images are tiled by zoom level at double the resolution of the previous zoom.
-The resolution to which these images are aquired should be 2nm voxels.
+
+<!-- TODO: understand the impact of varying metersPerUnit (e.g 2nm voxels) in the map projection -->
 
 ## 3D data
 
-3D data are STL files following a format of `<neuron name>-*.stl`, like in <https://github.com/zhenlab-ltri/catmaid-data-explorer/tree/3d-viewer/server/3d-models>.
+For the 3D data, we upload all STL files following a format of `<neuron name>-*.stl`, like in <https://github.com/zhenlab-ltri/catmaid-data-explorer/tree/3d-viewer/server/3d-models>.
 
 > [!NOTE]  
 > Synapsys are not currently being uploaded.
@@ -43,10 +54,6 @@ Different files are necessary:
 * `annotations/xxx.json` that encodes annotations for different zones of the anatomy
 
 Those files are automatically exported from third-party tool and shouldn't be edited manually.
-
-> [!NOTE]  
-> The existing repository contains a `trajectories` folder with a set of JSON files.
-> Those files are not ingested anymore, they are part of a legacy system.
 
 ### Format of `neurons.json`
 
@@ -110,6 +117,9 @@ Each JSON object represents a specific dataset with this schema:
     ]
 }
 ```
+
+> [!WARNING]  
+> It is important to note that the datasets `id` defined in `datasets.json` MUST match with the [Dataset Identifier](#dataset-identifier) specified through the ingestion process so data can be correlated.
 
 ### Format of `connections/xxx.json`
 
@@ -184,8 +194,8 @@ The cloud storage of the ingested files will be organized in the following patte
 ...
 ```
 
-Each dataset will have its own base directory with the name being the dataset identifier converted to kebab-case. Inside each dataset directory we will find 3 subdirectories:
+Each dataset will have its own base directory with the name being the dataset identifier. Inside each dataset directory we will find 3 subdirectories:
 
 - `3d`: containing the 3D models for the neurons with the file name following `<neuron name>.stl`, with the exception of `nervering.stl`.
 - `em`: storing each slice tileset in its own subdirectory and a `metadata.json` file with information required to represent the tiles in the frontend application _(TODO: define `metadata.json` format)_.
-- `segmentations`: stores all the segmentation geojson files following the namming schema `s<slice>.json`.
+- `segmentations`: stores all the segmentation json files following the namming schema `s<slice>.json`, where `slice` is a positive integer (can contain left padding zeros).
