@@ -131,7 +131,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
           syncOrchestrator: undefined,
           activeDatasets: Object.keys(workspace.activeDatasets),
           contexts: workspace.syncOrchestrator.contexts,
-          activeSynchronizers: Object.fromEntries(workspace.syncOrchestrator.synchronizers.map((sync) => [sync.pair, sync.active])),
+          activeSyncs: Object.fromEntries(workspace.syncOrchestrator.synchronizers.map((sync) => [sync.pair, sync.active])),
         };
         simpleWorkspace[key] = copy;
       }

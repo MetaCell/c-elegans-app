@@ -5,22 +5,17 @@ import { useGlobalContext } from "./GlobalContext";
 const GlobalContextReloader = () => {
   const { code } = useParams();
   const navigate = useNavigate();
-  const { restoreGlobalContextFromBase64 } = useGlobalContext();
+  const { restoreGlobalContextFromBase64, datasets } = useGlobalContext();
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: navigate and restoreGlobalContextFromBase64 are function from global context
   useEffect(() => {
-    if (code) {
-      console.log("Processing base 64 code:", code);
-
+    if (code && datasets && Object.keys(datasets).length > 0) {
       restoreGlobalContextFromBase64(code);
-
       navigate("/");
-      //   setTimeout(() => {
-      //     navigate("/"); // Navigate back to the main app
-      //   }, 2000); // Adjust timing as necessary
     }
-  }, [code, navigate, restoreGlobalContextFromBase64]);
+  }, [datasets, code]);
 
-  return <div>Processing share code: {code}</div>;
+  return <div>Loading datasets</div>;
 };
 
 export default GlobalContextReloader;
