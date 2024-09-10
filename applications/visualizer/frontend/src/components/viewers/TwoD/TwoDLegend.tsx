@@ -11,6 +11,7 @@ interface LegendNodeProps {
   color: string;
   onClick: () => void;
   highlighted: boolean;
+  shape: string;
 }
 
 interface LegendConnectionProps {
@@ -20,7 +21,7 @@ interface LegendConnectionProps {
   highlighted: boolean;
 }
 
-const LegendNode: React.FC<LegendNodeProps> = ({ name, color, onClick, highlighted }) => (
+const LegendNode: React.FC<LegendNodeProps> = ({ name, color, onClick, highlighted, shape }) => (
   <Box
     sx={{
       display: "flex",
@@ -31,7 +32,15 @@ const LegendNode: React.FC<LegendNodeProps> = ({ name, color, onClick, highlight
     }}
     onClick={onClick}
   >
-    <Box sx={{ width: 16, height: 16, borderRadius: "50%", backgroundColor: color, marginRight: 1 }} />
+    <Box
+      sx={{
+        width: shape === "rectangle" ? 20 : 16,
+        height: shape === "rectangle" ? 12 : 16,
+        borderRadius: shape === "rectangle" ? "3px" : "50%",
+        backgroundColor: color,
+        marginRight: 1,
+      }}
+    />
     <Typography variant="body2">{name}</Typography>
   </Box>
 );
@@ -103,6 +112,7 @@ const TwoDLegend: React.FC<LegendProps> = ({ coloringOption, setLegendHighlights
           color={color}
           onClick={() => handleLegendClick(LegendType.Node, name)}
           highlighted={!nodeHighlight || legendHighlights.get(LegendType.Node) === name}
+          shape={name === "muscle" || name === "others" ? "rectangle" : "circle"}
         />
       ))}
       <Divider sx={{ my: 1, borderColor: gray100 }} />
