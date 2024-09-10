@@ -10,6 +10,18 @@ import { GlobalError } from "../models/Error.ts";
 import { type Dataset, DatasetsService } from "../rest";
 import type { SerializedGlobalContext } from "./SerializedContext.tsx";
 
+function b64Tob64Url(buffer: string): string {
+  return buffer.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function b64UrlTo64(value: string): string {
+  const m = value.length % 4;
+  return value
+    .replace(/-/g, "+")
+    .replace(/_/g, "/")
+    .padEnd(value.length + (m === 0 ? 0 : 4 - m), "=");
+}
+
 export interface GlobalContextType {
   workspaces: Record<string, Workspace>;
   currentWorkspaceId: string | undefined;
@@ -81,7 +93,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
   };
 
   const getCurrentWorkspace = () => {
-    return workspaces[currentWorkspaceId];
+    return workspaces?.[currentWorkspaceId];
   };
 
   const handleErrors = (error: Error) => {
@@ -129,8 +141,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     const jsonContext = JSON.stringify(updatedSubContext, (_key, value) => (value instanceof Set ? [...value] : value));
     const gzipContext = pako.gzip(jsonContext);
     const base64UrlFragment = btoa(String.fromCharCode.apply(null, gzipContext));
-
-    return base64UrlFragment;
+    return b64Tob64Url(base64UrlFragment);
   };
 
   const restoreGlobalContext = (context: SerializedGlobalContext) => {
@@ -154,7 +165,8 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     setWorkspaces(reconstructedWorkspaces);
   };
 
-  const restoreGlobalContextFromBase64 = (base64Context: string) => {
+  const restoreGlobalContextFromBase64 = (base64UrlContext: string) => {
+    const base64Context = b64UrlTo64(base64UrlContext);
     const gzipedContext = Uint8Array.from(atob(base64Context), (c) => c.charCodeAt(0));
     const serializedContext = pako.ungzip(gzipedContext);
     const jsonContext = new TextDecoder().decode(serializedContext);

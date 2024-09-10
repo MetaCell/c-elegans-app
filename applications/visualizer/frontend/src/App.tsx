@@ -4,12 +4,14 @@ import { Provider } from "react-redux";
 import theme from "./theme/index.tsx";
 import "./App.css";
 import React from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import AppLauncher from "./components/AppLauncher.tsx";
 import Layout from "./components/ViewerContainer/Layout.tsx";
 import WorkspaceComponent from "./components/WorkspaceComponent.tsx";
 import CompareWrapper from "./components/wrappers/Compare.tsx";
 import DefaultWrapper from "./components/wrappers/Default.tsx";
 import { useGlobalContext } from "./contexts/GlobalContext.tsx";
+import GlobalContextReloader from "./contexts/GlobalContextReloader.tsx";
 import { ViewMode } from "./models";
 
 function App() {
@@ -44,19 +46,27 @@ function App() {
   };
 
   return (
-    <>
+    <BrowserRouter>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        {hasLaunched ? (
-          <Box className={"layout-manager-container"}>
-            <Layout sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-            {renderWorkspaces()}
-          </Box>
-        ) : (
-          <AppLauncher />
-        )}
+        <Routes>
+          <Route
+            path="/"
+            element={
+              hasLaunched ? (
+                <Box className={"layout-manager-container"}>
+                  <Layout sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+                  {renderWorkspaces()}
+                </Box>
+              ) : (
+                <AppLauncher />
+              )
+            }
+          />
+          <Route path="/share/:code" element={<GlobalContextReloader />} />
+        </Routes>
       </ThemeProvider>
-    </>
+    </BrowserRouter>
   );
 }
 
