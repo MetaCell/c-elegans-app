@@ -58,11 +58,10 @@ const EDGE_STYLE = [
   },
 ];
 
-
 const CHEMICAL_STYLE = [
-  { 
+  {
     selector: ".chemical",
-    style: {"line-color": "#63625F", width: 0.5 }
+    style: { "line-color": "#63625F", width: 0.5 },
   },
   {
     selector: "edge.chemical.parallel",
@@ -70,8 +69,8 @@ const CHEMICAL_STYLE = [
       "curve-style": "unbundled-bezier",
       "control-point-distances": 40,
       "control-point-weights": 0.5,
-    }
-  }
+    },
+  },
 ];
 
 const ELECTRICAL_STYLE = [
@@ -89,7 +88,7 @@ const ELECTRICAL_STYLE = [
         const targetPos = ele.target().position();
         const length = Math.sqrt(Math.pow(targetPos.x - sourcePos.x, 2) + Math.pow(targetPos.y - sourcePos.y, 2));
         const divider = (length > 60 ? 7 : length > 40 ? 5 : 3) / length;
-        return [-2.0, -1.5, -0.5, 0.5, 1.5, 2.0].map(d => 0.5 + d * divider).join(" ");
+        return [-2.0, -1.5, -0.5, 0.5, 1.5, 2.0].map((d) => 0.5 + d * divider).join(" ");
       },
       "target-arrow-shape": "none",
     },
@@ -251,4 +250,12 @@ const ANNOTATION_STYLES = Object.entries(annotationLegend).map(([, { id, color }
   },
 }));
 
-export const GRAPH_STYLES = [...NODE_STYLE, ...EDGE_STYLE, ...ELECTRICAL_STYLE, ...CHEMICAL_STYLE, ...EDGE_LABEL_STYLES, ...FADED_STYLE, ...ANNOTATION_STYLES] as Stylesheet[];
+export const GRAPH_STYLES = [
+  ...NODE_STYLE,
+  ...EDGE_STYLE,
+  ...ELECTRICAL_STYLE,
+  ...CHEMICAL_STYLE,
+  ...EDGE_LABEL_STYLES,
+  ...FADED_STYLE,
+  ...ANNOTATION_STYLES,
+] as Stylesheet[];

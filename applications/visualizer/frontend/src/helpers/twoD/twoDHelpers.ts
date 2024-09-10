@@ -69,7 +69,6 @@ export const createNode = (
   if (selected) classes += "selected ";
   if (activeNeuron) classes += "searchedfor ";
 
-
   const node: ElementDefinition = {
     group: "nodes",
     data: {
@@ -95,14 +94,14 @@ export function applyLayout(cy: Core, layout: GRAPH_LAYOUTS) {
 
 function getLayoutOptions(cy: Core, layout: GRAPH_LAYOUTS) {
   const baseOptions = LAYOUT_OPTIONS[layout];
-  
+
   if (layout === GRAPH_LAYOUTS.Concentric) {
     return {
       ...baseOptions,
       positions: getConcentricLayoutPositions(cy),
     };
   }
-  
+
   return baseOptions;
 }
 
