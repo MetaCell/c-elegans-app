@@ -42,6 +42,7 @@ const Neurons = ({ children }) => {
     const neuron = availableNeurons[option.id];
     if (neuron && !activeNeurons.has(option.id)) {
       currentWorkspace.activateNeuron(neuron);
+      currentWorkspace.showNeuron(neuron.name);
     } else {
       currentWorkspace.deactivateNeuron(option.id);
     }

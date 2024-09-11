@@ -7,6 +7,39 @@ import { GlobalError } from "./Error.ts";
 import { type EnhancedNeuron, type NeuronGroup, type ViewerSynchronizationPair, ViewerType, Visibility } from "./models";
 import { SynchronizerOrchestrator } from "./synchronizer";
 
+function getCallerName(): string {
+  try {
+    throw new Error();
+  } catch (e) {
+    // matches this function, the caller and the parent
+    const allMatches = e.stack.match(/(\w+)@|at (\w+\.?\w+?) \(/g);
+    // match parent function name
+    const parentMatches = allMatches[2].match(/(\w+)@|at (\w+\.?\w+?) \(/);
+    // return only name
+    return parentMatches[1] || parentMatches[2];
+  }
+}
+
+function triggerUpdate<T extends Workspace>(_prototype: any, _key: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+
+  descriptor.value = function (this: T, ...args: any[]): T {
+    const callerName = getCallerName();
+    if (callerName.startsWith("Proxy.")) {
+      originalMethod.apply(this, args);
+      return this;
+    }
+    const updated = produce(this, (draft: any) => {
+      originalMethod.apply(draft, args);
+    });
+    this.updateContext(updated);
+    originalMethod.apply(this, args);
+    return updated;
+  };
+
+  return descriptor;
+}
+
 export class Workspace {
   [immerable] = true;
 
@@ -53,12 +86,9 @@ export class Workspace {
     this._initializeAvailableNeurons();
   }
 
+  @triggerUpdate
   activateNeuron(neuron: Neuron): void {
-    const updated = produce(this, (draft: Workspace) => {
-      draft.activeNeurons.add(neuron.name);
-    });
-
-    this.updateContext(updated);
+    this.activeNeurons.add(neuron.name);
   }
 
   deactivateNeuron(neuronId: string): void {
@@ -80,15 +110,13 @@ export class Workspace {
     this.updateContext(updated);
   }
 
+  @triggerUpdate
   showNeuron(neuronId: string): void {
-    const updated = produce(this, (draft: Workspace) => {
-      if (draft.availableNeurons[neuronId]) {
-        draft.availableNeurons[neuronId].isVisible = true;
-        // todo: add actions for other viewers
-        draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].visibility = Visibility.Visible;
-      }
-    });
-    this.updateContext(updated);
+    if (this.availableNeurons[neuronId]) {
+      this.availableNeurons[neuronId].isVisible = true;
+      // todo: add actions for other viewers
+      this.availableNeurons[neuronId].viewerData[ViewerType.Graph].visibility = Visibility.Visible;
+    }
   }
 
   async activateDataset(dataset: Dataset): Promise<void> {
