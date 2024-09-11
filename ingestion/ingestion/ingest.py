@@ -249,12 +249,11 @@ def upload_tileset_metadata(
             )
         )
 
-    # TODO: upload to bucket
     logger.info("uploading EM tiles metadata...")
-    with open("/tmp/metadata.json", "w") as f:
-        f.write(
-            Metadata(nslices=len(metadata), slices=metadata).model_dump_json(indent=2)
-        )
+    
+    # TODO: this will overwrite all the metadata in the bucket (a file by slice?)
+    json_content = Metadata(nslices=len(metadata), slices=metadata).model_dump_json(indent=2)
+    rs.upload_from_string(json_content, "metadata-dev-test.json", overwrite=overwrite)
 
 
 def upload_em_tiles(

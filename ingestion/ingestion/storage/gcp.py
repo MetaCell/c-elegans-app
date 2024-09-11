@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import logging
 from pathlib import Path
 
@@ -41,4 +42,25 @@ class RemoteStorage:
         if not calc.hexdigest() == blob.crc32c:
             logger.error(
                 f"wrong integrity for blob '{blob.name}', you may want to retry upload {source_file}"
+            )
+
+    def upload_from_string(self, content: str, blob_name: str, *, overwrite: bool = False):
+        buf = Crc32cCalculator(io.StringIO(content))
+        content = buf.read()
+
+        blob = self.bucket.get_blob(blob_name)
+
+        if blob is None:
+            blob = self.bucket.blob(blob_name)
+            blob.upload_from_string(content)
+        else:
+            if buf.hexdigest() == blob.crc32c or not overwrite:
+                logger.debug(f"skipping {blob_name}: already in the bucket")
+                return
+
+            blob.upload_from_string(content)
+
+        if not buf.hexdigest() == blob.crc32c:
+            logger.error(
+                f"wrong integrity for blob '{blob.name}', you may want to retry upload"
             )
