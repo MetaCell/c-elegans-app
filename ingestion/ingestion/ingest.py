@@ -179,9 +179,8 @@ def upload_segmentations(
 
     segmentation_files = find_segmentation_files(seg_paths)
 
-    seg_files = list(
-        segmentation_files
-    )  # list cast to have a progression bar (it sucks)
+    # list cast to have a progression bar (it sucks)
+    seg_files = list(segmentation_files)
     if len(seg_files) == 0:
         logger.warning("skipping segmentation upload: no files matched")
         return
@@ -265,14 +264,13 @@ def upload_em_tiles(
     *,
     overwrite: bool = False,
 ):
-    # list cast to have a progression bar (it sucks)
-    tiles = list(tqdm(load_tiles(tile_paths), desc="loading EM tiles"))
-
-    upload_tileset_metadata(tiles, rs, overwrite=overwrite)
-
+    # list cast to have a progression bar, which takes a lot of time (it sucks)
+    tiles = list(load_tiles(tile_paths))
     if len(tiles) == 0:
         logger.warning("skipping EM tiles upload: no files matched")
         return
+
+    upload_tileset_metadata(tiles, rs, overwrite=overwrite)
 
     logger.info("uploading EM tiles...")
 

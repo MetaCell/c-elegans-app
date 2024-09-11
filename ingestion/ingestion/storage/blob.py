@@ -16,7 +16,9 @@ def fs_segmentation_blob_name(dataset_id: str, p: Path) -> str:
 
 
 def fs_3d_blob_name(dataset_id: str, p: Path) -> str:
-    name = re.sub(r"-[^-]+\.stl", "", p.name) + ".stl"
+    name = p.name
+    if re.search(r"-[^-]+\.stl", p.name):
+        name = re.sub(r"-[^-]+\.stl", "", p.name) + ".stl"
     return f"{dataset_id}/3d/{name}"
 
 

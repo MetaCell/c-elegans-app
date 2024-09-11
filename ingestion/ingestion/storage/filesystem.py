@@ -98,7 +98,11 @@ def find_segmentation_files(paths: list[Path]) -> Generator[tuple[Slice, Path]]:
         )
 
     if len(paths) == 1 and paths[0].is_dir():
-        return ((extract_slice(f), f) for f in paths[0].rglob("*.json"))
+        return (
+            (extract_slice(f), f)
+            for f in paths[0].rglob("*.json")
+            if re.search(SEGMENTATION_REGEX, str(f))
+        )
 
     return (
         (extract_slice(path), path)

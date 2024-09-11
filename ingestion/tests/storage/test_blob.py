@@ -46,6 +46,11 @@ def test__fs_segmentation_blob_name(dataset_id: str, file_path: Path, blob_name:
             Path("./../hhh/Fragment11-SEM_adult.stl"),
             "PopCorn/3d/Fragment11.stl",
         ),
+        (
+            "witvliet_2020_1",
+            Path("../data/the-3d-files/SDQR.stl"),  # no SEM_adult
+            "witvliet_2020_1/3d/SDQR.stl",
+        ),
     ],
 )
 def test__fs_3d_blob_name(dataset_id: str, file_path: Path, blob_name: str):
