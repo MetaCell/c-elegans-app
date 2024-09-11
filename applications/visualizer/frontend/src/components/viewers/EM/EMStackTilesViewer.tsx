@@ -130,8 +130,8 @@ const EMStackViewer = () => {
   const currSegLayer = useRef<VectorLayer<Feature> | null>(null);
   const clickedFeature = useRef<Feature | null>(null);
 
-  let ringEM: SlidingRing<TileLayer<XYZ>>
-  let ringSeg: SlidingRing<VectorLayer<Feature>>
+  let ringEM: SlidingRing<TileLayer<XYZ>>;
+  let ringSeg: SlidingRing<VectorLayer<Feature>>;
 
   // const debugLayer = new TileLayer({
   // 	source: new TileDebug({

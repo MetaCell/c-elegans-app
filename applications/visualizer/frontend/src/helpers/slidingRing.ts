@@ -76,7 +76,7 @@ export class SlidingRing<T> {
       onEvict: options.onEvict,
     };
 
-    this.initRing(options.startAt)
+    this.initRing(options.startAt);
   }
 
   private initRing(at: number) {
@@ -176,7 +176,7 @@ export class SlidingRing<T> {
     for (const item of this.ring) {
       this.cb.onEvict(item.n, item.o);
     }
-    this.initRing(n)
+    this.initRing(n);
   }
 
   debug() {
