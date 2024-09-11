@@ -8,6 +8,7 @@ import sys
 from argparse import ArgumentParser, Namespace
 from itertools import groupby
 from pathlib import Path
+from time import sleep
 
 from google.cloud import storage
 from pydantic import BaseModel, ValidationError
@@ -143,30 +144,36 @@ def validate_data(dir: Path):
 
 
 def prune_bucket(bucket: storage.Bucket):
+    """Prune the bucket and waits until the bucket is empty by checking it periodically."""
+
     bucket.lifecycle_rules = [{"action": {"type": "Delete"}, "condition": {"age": 0}}]
     bucket.patch()
 
-    """Wait until the bucket is empty by checking periodically."""
+    try:
+        sleep_interval = 10
+        while True:
+            has_blobs = len(list(bucket.list_blobs(max_results=1))) != 0
+            if not has_blobs:
+                break
 
-    from time import sleep
-
-    sleep_interval = 10
-    while True:
-        has_blobs = len(list(bucket.list_blobs(max_results=1))) != 0
-        if not has_blobs:
-            break
-
-        logger.info(f"bucket '{bucket.name}' is not yet empty. waiting...")
-        sleep(sleep_interval)
+            logger.info(f"bucket '{bucket.name}' is not yet empty. waiting...")
+            sleep(sleep_interval)
+    except Exception as e:
+        raise
+    finally:
+        # ensure that the lifecycle rule is removed
+        bucket.lifecycle_rules = []
+        bucket.patch()
 
     logger.info(f"bucket '{bucket.name}' was pruned successfully!")
 
-    bucket.lifecycle_rules = []
-    bucket.patch()
-
 
 def upload_segmentations(
-    dataset_id: str, seg_paths: list[Path], rs: RemoteStorage, *, overwrite: bool = False
+    dataset_id: str,
+    seg_paths: list[Path],
+    rs: RemoteStorage,
+    *,
+    overwrite: bool = False,
 ):
     logger.info(f"uploading segmentation...")
 
@@ -189,7 +196,9 @@ def upload_segmentations(
         )
 
 
-def upload_3d(dataset_id: str, paths: list[Path], rs: RemoteStorage, *, overwrite: bool = False):
+def upload_3d(
+    dataset_id: str, paths: list[Path], rs: RemoteStorage, *, overwrite: bool = False
+):
     logger.info(f"uploading 3D files...")
 
     paths_3d = find_3d_files(paths)
@@ -250,7 +259,11 @@ def upload_tileset_metadata(
 
 
 def upload_em_tiles(
-    dataset_id: str, tile_paths: list[Path], rs: RemoteStorage, *, overwrite: bool = False
+    dataset_id: str,
+    tile_paths: list[Path],
+    rs: RemoteStorage,
+    *,
+    overwrite: bool = False,
 ):
     # list cast to have a progression bar (it sucks)
     tiles = list(tqdm(load_tiles(tile_paths), desc="loading EM tiles"))
@@ -296,7 +309,9 @@ def ingest_cmd(args: Namespace):
             logger.info(f"skipped prunning files from the bucket")
 
     if args.segmentations:
-        upload_segmentations(args.dataset_id, args.segmentations, rs, overwrite=args.overwrite)
+        upload_segmentations(
+            args.dataset_id, args.segmentations, rs, overwrite=args.overwrite
+        )
     else:
         logger.warning("skipping segmentation upload: flag not set")
 
