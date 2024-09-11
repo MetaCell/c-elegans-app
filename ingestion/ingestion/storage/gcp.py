@@ -44,7 +44,9 @@ class RemoteStorage:
                 f"wrong integrity for blob '{blob.name}', you may want to retry upload {source_file}"
             )
 
-    def upload_from_string(self, content: str, blob_name: str, *, overwrite: bool = False):
+    def upload_from_string(
+        self, content: str, blob_name: str, *, overwrite: bool = False
+    ):
         buf = Crc32cCalculator(io.StringIO(content))
         content = buf.read()
 
