@@ -98,6 +98,7 @@ const newEMLayer = (dataset: Dataset, slice: number): TileLayer<XYZ> => {
       // url: `emdata/${slice}/{x}_{y}_{z}.jpg`,
       url: getEMDataURL(dataset, slice),
       projection: projection,
+      crossOrigin: "anonymous",
     }),
     zIndex: 0,
   });
