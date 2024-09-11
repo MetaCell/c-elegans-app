@@ -40,8 +40,9 @@ const Neurons = ({ children }) => {
 
   const onNeuronClick = (option) => {
     const neuron = availableNeurons[option.id];
+
     if (neuron && !activeNeurons.has(option.id)) {
-      currentWorkspace.activateNeuron(neuron);
+      currentWorkspace.activateNeuron(neuron).showNeuron(neuron.name);
     } else {
       currentWorkspace.deactivateNeuron(option.id);
     }
@@ -57,7 +58,10 @@ const Neurons = ({ children }) => {
     setNeurons(filteredNeurons);
   };
 
-  const autoCompleteOptions = Object.values(neurons).map((neuron: Neuron) => mapNeuronsAvailableNeuronsToOptions(neuron));
+  const autoCompleteOptions = Object.values(neurons)
+    .map((neuron: Neuron) => mapNeuronsAvailableNeuronsToOptions(neuron))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
   return (
     <Box
       sx={{

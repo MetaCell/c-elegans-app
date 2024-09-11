@@ -53,12 +53,12 @@ export class Workspace {
     this._initializeAvailableNeurons();
   }
 
-  activateNeuron(neuron: Neuron): void {
+  activateNeuron(neuron: Neuron): Workspace {
     const updated = produce(this, (draft: Workspace) => {
       draft.activeNeurons.add(neuron.name);
     });
-
     this.updateContext(updated);
+    return updated;
   }
 
   deactivateNeuron(neuronId: string): void {
@@ -90,7 +90,6 @@ export class Workspace {
     });
     this.updateContext(updated);
   }
-
   async activateDataset(dataset: Dataset): Promise<void> {
     const updated: Workspace = produce(this, (draft: Workspace) => {
       draft.activeDatasets[dataset.id] = dataset;
