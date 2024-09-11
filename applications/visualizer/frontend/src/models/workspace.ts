@@ -1,31 +1,30 @@
 import type { LayoutManager } from "@metacell/geppetto-meta-client/common/layout/LayoutManager";
 import type { configureStore } from "@reduxjs/toolkit";
-import { immerable, produce } from "immer";
+import { immerable, isDraft, produce } from "immer";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
 import { type Dataset, type Neuron, NeuronsService } from "../rest";
 import { GlobalError } from "./Error.ts";
 import { type EnhancedNeuron, type NeuronGroup, type ViewerSynchronizationPair, ViewerType, Visibility } from "./models";
 import { SynchronizerOrchestrator } from "./synchronizer";
 
-function getCallerName(): string {
-  try {
-    throw new Error();
-  } catch (e) {
-    // matches this function, the caller and the parent
-    const allMatches = e.stack.match(/(\w+)@|at (\w+\.?\w+?) \(/g);
-    // match parent function name
-    const parentMatches = allMatches[2].match(/(\w+)@|at (\w+\.?\w+?) \(/);
-    // return only name
-    return parentMatches[1] || parentMatches[2];
-  }
-}
+// function getCallerName(): string {
+//   try {
+//     throw new Error();
+//   } catch (e) {
+//     // matches this function, the caller and the parent
+//     const allMatches = e.stack.match(/(\w+)@|at (\w+\.?\w+?) \(/g);
+//     // match parent function name
+//     const parentMatches = allMatches[2].match(/(\w+)@|at (\w+\.?\w+?) \(/);
+//     // return only name
+//     return parentMatches[1] || parentMatches[2];
+//   }
+// }
 
 function triggerUpdate<T extends Workspace>(_prototype: any, _key: string, descriptor: PropertyDescriptor) {
   const originalMethod = descriptor.value;
 
   descriptor.value = function (this: T, ...args: any[]): T {
-    const callerName = getCallerName();
-    if (callerName.startsWith("Proxy.")) {
+    if (isDraft(this)) {
       originalMethod.apply(this, args);
       return this;
     }
