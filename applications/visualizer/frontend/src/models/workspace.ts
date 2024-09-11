@@ -23,10 +23,16 @@ function triggerUpdate<T extends Workspace>(_: any, key: string, descriptor: Pro
   const originalMethod = descriptor.value;
 
   descriptor.value = function (this: T, ...args: any[]): T {
+    const callerName = getCallerName();
+    if (callerName.startsWith("Proxy.")) {
+      originalMethod.apply(this, args);
+      return this;
+    }
     const updated = produce(this, (draft: any) => {
       originalMethod.apply(draft, args);
     });
     this.updateContext(updated);
+    originalMethod.apply(this, args);
     return updated;
   };
 
@@ -103,12 +109,10 @@ export class Workspace {
   @triggerUpdate
   activateNeuron(neuron: Neuron): void {
     this.activeNeurons.add(neuron.name);
-    console.log("STATUS ACT", this);
+  }
 
-    this.deactivateNeuron(neuron.name);
-    this.activeNeurons.add(neuron.name);
-    console.log("STATUS ACT", this);
-
+  @triggerUpdate
+  showNeuron(neuron: Neuron) {
     // Set isInteractant to true if the neuron exists in availableNeurons
     if (this.availableNeurons[neuron.name]) {
       this.availableNeurons[neuron.name].isInteractant = true;
@@ -117,7 +121,6 @@ export class Workspace {
 
   @triggerUpdate
   deactivateNeuron(neuronId: string): void {
-    console.log("STATUS DEACT", this);
     this.activeNeurons.delete(neuronId);
   }
 
