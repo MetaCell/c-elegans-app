@@ -465,3 +465,11 @@ export const updateParentNodes = (cy: Core, workspace: Workspace, openGroups: Se
     });
   });
 };
+
+export const updateParallelEdges = (cy: Core) => {
+  // Remove 'parallel' class from all edges
+  cy.edges().removeClass("parallel");
+
+  // Add 'parallel' class to parallel edges
+  cy.edges('[type = "electrical"]').parallelEdges().filter('[type = "chemical"]').addClass("parallel");
+};

@@ -1,8 +1,9 @@
 import type { Core, ElementDefinition, Position } from "cytoscape";
 import { ViewerType, Visibility, type Workspace } from "../../models";
 import type { Connection } from "../../rest";
-import { LAYOUT_OPTIONS, annotationLegend } from "../../settings/twoDSettings.tsx";
+import { GRAPH_LAYOUTS, LAYOUT_OPTIONS, annotationLegend } from "../../settings/twoDSettings.tsx";
 import { cellConfig, neurotransmitterConfig } from "./coloringHelper.ts";
+import { getConcentricLayoutPositions } from "./concentricLayoutHelper.ts";
 
 export const createEdge = (id: string, conn: Connection, workspace: Workspace, includeAnnotations: boolean, width: number): ElementDefinition => {
   const synapses = conn.synapses || {};
@@ -84,10 +85,24 @@ export const createNode = (
   return node;
 };
 
-export function applyLayout(cy: Core, layout: string) {
-  cy.layout(LAYOUT_OPTIONS[layout]).run();
+export function applyLayout(cy: Core, layout: GRAPH_LAYOUTS) {
+  const options = getLayoutOptions(cy, layout);
+  cy.makeLayout(options).run();
 
   refreshLayout(cy);
+}
+
+function getLayoutOptions(cy: Core, layout: GRAPH_LAYOUTS) {
+  const baseOptions = LAYOUT_OPTIONS[layout];
+
+  if (layout === GRAPH_LAYOUTS.Concentric) {
+    return {
+      ...baseOptions,
+      positions: getConcentricLayoutPositions(cy),
+    };
+  }
+
+  return baseOptions;
 }
 
 export function refreshLayout(cy: Core) {

@@ -73,7 +73,21 @@ const EDGE_STYLE = [
   },
 ];
 
-const CHEMICAL_STYLE = { "line-color": "#63625F", width: "data(width)" };
+const CHEMICAL_STYLE = [
+  {
+    selector: ".chemical",
+    style: { "line-color": "#63625F", width: "data(width)" },
+  },
+  {
+    selector: "edge.chemical.parallel",
+    style: {
+      "curve-style": "unbundled-bezier",
+      "control-point-distances": 40,
+      "control-point-weights": 0.5,
+    },
+  },
+];
+
 const ELECTRICAL_STYLE = [
   {
     selector: ".electrical",
@@ -84,7 +98,13 @@ const ELECTRICAL_STYLE = [
       "target-arrow-color": "#666666",
       "source-arrow-color": "#666666",
       "segment-distances": "0 -4 4 -4 4 0",
-      "segment-weights": [-2.0, -1.5, -0.5, 0.5, 1.5, 2.0],
+      "segment-weights": (ele) => {
+        const sourcePos = ele.source().position();
+        const targetPos = ele.target().position();
+        const length = Math.sqrt(Math.pow(targetPos.x - sourcePos.x, 2) + Math.pow(targetPos.y - sourcePos.y, 2));
+        const divider = (length > 60 ? 7 : length > 40 ? 5 : 3) / length;
+        return [-2.0, -1.5, -0.5, 0.5, 1.5, 2.0].map((d) => 0.5 + d * divider).join(" ");
+      },
       "target-arrow-shape": "none",
     },
   },
@@ -200,10 +220,6 @@ const NODE_STYLE = [
     style: SEARCHED_FOR_NODE_STYLE,
   },
   {
-    selector: ".chemical",
-    style: CHEMICAL_STYLE,
-  },
-  {
     selector: ":parent",
     style: OPEN_GROUP_STYLE,
   },
@@ -245,4 +261,12 @@ const ANNOTATION_STYLES = Object.entries(annotationLegend).map(([, { id, color }
   },
 }));
 
-export const GRAPH_STYLES = [...NODE_STYLE, ...EDGE_STYLE, ...ELECTRICAL_STYLE, ...EDGE_LABEL_STYLES, ...FADED_STYLE, ...ANNOTATION_STYLES] as Stylesheet[];
+export const GRAPH_STYLES = [
+  ...NODE_STYLE,
+  ...EDGE_STYLE,
+  ...ELECTRICAL_STYLE,
+  ...CHEMICAL_STYLE,
+  ...EDGE_LABEL_STYLES,
+  ...FADED_STYLE,
+  ...ANNOTATION_STYLES,
+] as Stylesheet[];
