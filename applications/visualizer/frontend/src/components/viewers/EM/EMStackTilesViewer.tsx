@@ -98,6 +98,7 @@ const newEMLayer = (dataset: Dataset, slice: number): TileLayer<XYZ> => {
       // url: `emdata/${slice}/{x}_{y}_{z}.jpg`,
       url: getEMDataURL(dataset, slice),
       projection: projection,
+      crossOrigin: "anonymous",
     }),
     zIndex: 0,
   });
@@ -129,6 +130,9 @@ const EMStackViewer = () => {
   const mapRef = useRef<OLMap | null>(null);
   const currSegLayer = useRef<VectorLayer<Feature> | null>(null);
   const clickedFeature = useRef<Feature | null>(null);
+
+  let ringEM: SlidingRing<TileLayer<XYZ>>;
+  let ringSeg: SlidingRing<VectorLayer<Feature>>;
 
   // const debugLayer = new TileLayer({
   // 	source: new TileDebug({
@@ -171,7 +175,7 @@ const EMStackViewer = () => {
     const minZoomAvailable = tilegrid.getMinZoom();
     map.getView().setZoom(minZoomAvailable);
 
-    const ringEM = new SlidingRing({
+    ringEM = new SlidingRing({
       cacheSize: ringSize,
       startAt: startSlice,
       extent: [minSlice, maxSlice],
@@ -192,7 +196,7 @@ const EMStackViewer = () => {
       },
     });
 
-    const ringSeg = new SlidingRing({
+    ringSeg = new SlidingRing({
       cacheSize: ringSize,
       startAt: startSlice,
       extent: [minSlice, maxSlice],
@@ -269,6 +273,10 @@ const EMStackViewer = () => {
   };
 
   const onResetView = () => {
+    // reset sliding window
+    ringEM.goto(startSlice);
+    ringSeg.goto(startSlice);
+
     if (!mapRef.current) return;
     const view = mapRef.current.getView();
 
