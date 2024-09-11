@@ -151,7 +151,14 @@ export const computeGraphDifferences = (
   for (const edgeId of expectedEdges) {
     if (!currentEdges.has(edgeId)) {
       const conn = connectionMap.get(edgeId);
-      const width = Object.values(conn.synapses).length;
+      const syns = Object.values(conn.synapses).reduce((acc, num) => acc + num, 0);
+      const meanSyn = syns / Object.values(conn.synapses).length;
+      let width;
+      if (conn.type === "chemical") {
+        width = Math.max(1, 2 * Math.pow(meanSyn, 1 / 4) - 2);
+      } else {
+        width = Math.min(3, meanSyn * 1.5);
+      }
       if (conn) {
         edgesToAdd.push(createEdge(edgeId, conn, workspace, includeAnnotations, width));
       }
