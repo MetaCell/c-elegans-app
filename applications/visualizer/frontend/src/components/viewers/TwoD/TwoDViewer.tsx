@@ -246,18 +246,19 @@ const TwoDViewer = () => {
     const handleNodeClick = (event) => {
       const neuronId = event.target.id();
       const isSelected = workspace.selectedNeurons.has(neuronId);
-      workspace.toggleSelectedNeuron(neuronId);
 
       if (isSelected) {
+        workspace.removeSelectedNeuron(neuronId).removeSelection(neuronId, ViewerType.Graph);
         event.target.removeClass(SELECTED_CLASS);
       } else {
+        workspace.addSelectedNeuron(neuronId).addSelection(neuronId, ViewerType.Graph);
         event.target.addClass(SELECTED_CLASS);
       }
     };
 
     const handleBackgroundClick = (event) => {
       if (event.target === cy) {
-        workspace.clearSelectedNeurons();
+        workspace.clearSelectedNeurons().clearSelection(ViewerType.Graph);
         cy.nodes(`.${SELECTED_CLASS}`).removeClass(SELECTED_CLASS);
 
         setLegendHighlights(new Map()); // Reset legend highlights
