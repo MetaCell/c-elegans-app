@@ -55,22 +55,6 @@ class Synchronizer {
       contexts[viewer] = [...new Set([...contexts[viewer], selection.name])];
     }
   }
-
-  clear(initiator: ViewerType, contexts: Record<ViewerType, SynchronizerContext>) {
-    if (!this.canHandle(initiator)) {
-      return;
-    }
-
-    if (!this.active) {
-      contexts[initiator] = [];
-      return;
-    }
-
-    for (const viewer of this.viewers) {
-      contexts[viewer] = [];
-    }
-  }
-
   unSelect(selection: EnhancedNeuron, initiator: ViewerType, contexts: Record<ViewerType, SynchronizerContext>) {
     if (!this.canHandle(initiator)) {
       return;
@@ -85,6 +69,21 @@ class Synchronizer {
     for (const viewer of this.viewers) {
       const storedNodes = [...contexts[viewer]];
       contexts[viewer] = storedNodes.filter((n) => n !== selection.name);
+    }
+  }
+
+  clear(initiator: ViewerType, contexts: Record<ViewerType, SynchronizerContext>) {
+    if (!this.canHandle(initiator)) {
+      return;
+    }
+
+    if (!this.active) {
+      contexts[initiator] = [];
+      return;
+    }
+
+    for (const viewer of this.viewers) {
+      contexts[viewer] = [];
     }
   }
 
@@ -117,12 +116,6 @@ export class SynchronizerOrchestrator {
     return new SynchronizerOrchestrator(synchronizers);
   }
 
-  public clearSelection(initiator: ViewerType) {
-    for (const synchronizer of this.synchronizers) {
-      synchronizer.clear(initiator, this.contexts);
-    }
-  }
-
   public select(selection: Selection, initiator: ViewerType) {
     for (const synchronizer of this.synchronizers) {
       synchronizer.sync(selection, initiator, this.contexts);
@@ -138,6 +131,12 @@ export class SynchronizerOrchestrator {
   public unSelectNeuron(selection: EnhancedNeuron, initiator: ViewerType) {
     for (const synchronizer of this.synchronizers) {
       synchronizer.unSelect(selection, initiator, this.contexts);
+    }
+  }
+
+  public clearSelection(initiator: ViewerType) {
+    for (const synchronizer of this.synchronizers) {
+      synchronizer.clear(initiator, this.contexts);
     }
   }
 
