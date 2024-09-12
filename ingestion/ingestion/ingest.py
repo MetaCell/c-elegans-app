@@ -36,30 +36,11 @@ from ingestion.xdg import xdg_gcloud_config
 logger = logging.getLogger(__name__)
 
 
+def _done_message(dataset_name: str) -> str:
+    return f"Done uploading dataset '{dataset_name}'! ✨"
+
+
 def add_flags(parser: ArgumentParser):
-    parser.add_argument(
-        "dataset_id",
-        help="dataset identifier for the ingested files",
-    )
-
-    def add_in_dir(parser: ArgumentParser, kind: str):
-        parser.add_argument(
-            f"-{kind.lower()[0]}",
-            f"--{kind.lower()}",
-            default=None,
-            type=type_directory,
-            help=f"directory for {kind} data",
-        )
-
-    def add_in_paths(parser: ArgumentParser, kind: str):
-        parser.add_argument(
-            f"-{kind.lower()[0]}",
-            f"--{kind.lower()}",
-            nargs="+",
-            type=Path,
-            help=f"directory, files or glob match for {kind} data",
-        )
-
     def add_flag(parser: ArgumentParser, name: str, help: str):
         group = parser.add_mutually_exclusive_group()
         group.add_argument(
@@ -71,11 +52,6 @@ def add_flags(parser: ArgumentParser):
         group.add_argument(
             f"--no-{name}", dest=name, action="store_false", help=f"don't {help}"
         )
-
-    add_in_dir(parser, "data")
-    add_in_paths(parser, "segmentations")
-    add_in_paths(parser, "3D")
-    add_in_paths(parser, "EM")
 
     add_flag(parser, "overwrite", "overwrite files in the bucket")
 
@@ -113,6 +89,36 @@ def add_flags(parser: ArgumentParser):
             str(xdg_gcloud_config() / "application_default_credentials.json"),
         ),
     )
+
+
+def add_add_dataset_flags(parser: ArgumentParser):
+    parser.add_argument(
+        "dataset_id",
+        help="dataset identifier for the ingested files",
+    )
+
+    def add_in_dir(parser: ArgumentParser, kind: str):
+        parser.add_argument(
+            f"-{kind.lower()[0]}",
+            f"--{kind.lower()}",
+            default=None,
+            type=type_directory,
+            help=f"directory for {kind} data",
+        )
+
+    def add_in_paths(parser: ArgumentParser, kind: str):
+        parser.add_argument(
+            f"-{kind.lower()[0]}",
+            f"--{kind.lower()}",
+            nargs="+",
+            type=Path,
+            help=f"directory, files or glob match for {kind} data",
+        )
+
+    add_in_dir(parser, "data")
+    add_in_paths(parser, "segmentations")
+    add_in_paths(parser, "3D")
+    add_in_paths(parser, "EM")
 
 
 def validate_data(dir: Path):
@@ -323,6 +329,8 @@ def ingest_cmd(args: Namespace):
         upload_em_tiles(args.dataset_id, args.em, rs, overwrite=args.overwrite)
     else:
         logger.warning("skipping EM tiles upload: flag not set")
+
+    print(_done_message(args.dataset_id))
 
 
 if __name__ == "__main__":

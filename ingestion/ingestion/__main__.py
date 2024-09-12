@@ -7,6 +7,7 @@ from typing import Sequence
 
 from ingestion.extract import add_flags as add_extract_flags
 from ingestion.extract import extract_cmd
+from ingestion.ingest import add_add_dataset_flags as add_ingest_add_dataset_flags
 from ingestion.ingest import add_flags as add_ingest_flags
 from ingestion.ingest import ingest_cmd
 from ingestion.logging import setup_logger
@@ -14,11 +15,24 @@ from ingestion.logging import setup_logger
 logger = logging.getLogger(__name__)
 
 
-def _done_message() -> str:
-    return "Done! 🎉"
+def split_argv(argv: list[str], delimiter: str) -> list[list[str]]:
+    out: list[list[str]] = []
+    temp: list[str] = []
+
+    for arg in argv:
+        if arg == delimiter:
+            out.append(temp)
+            temp = [arg]
+            continue
+        temp.append(arg)
+
+    if temp:
+        out.append(temp)
+
+    return out
 
 
-def main(argv: Sequence[str] | None = None):
+def _main(argv: Sequence[str] | None = None):
     parser = ArgumentParser(
         prog="celegans",
         description="Support tool for the C-Elegans application",
@@ -57,6 +71,16 @@ def main(argv: Sequence[str] | None = None):
     add_ingest_flags(parser_ingest)
     add_debug_flag(parser_ingest)
 
+    subparsers_ingest = parser_ingest.add_subparsers(dest="ingest_subcommand")
+
+    parser_ingest_add_dataset = subparsers_ingest.add_parser(
+        name="add-dataset",
+        help="ingests a dataset data",
+        formatter_class=ArgumentDefaultsHelpFormatter,
+    )
+
+    add_ingest_add_dataset_flags(parser_ingest_add_dataset)
+
     args = parser.parse_args(argv)
 
     setup_logger(args.debug)
@@ -82,7 +106,19 @@ def main(argv: Sequence[str] | None = None):
         print(f"{type(e).__name__}: {e}", file=sys.stderr)
         sys.exit(1)
 
-    print(_done_message())
+
+def main(argv: Sequence[str] | None = None):
+    """Calls main but is inspects argv and splits accordingly"""
+
+    if argv is None:
+        argv = sys.argv
+
+    if len(argv) > 2 and "ingest" in argv and "add-dataset" in argv:
+        argvl = split_argv(list(argv), "add-dataset")
+        for add_dataset_args in argvl[1:]:
+            _main(argvl[0] + add_dataset_args)
+    else:
+        _main(argv)
 
 
 if __name__ == "__main__":
