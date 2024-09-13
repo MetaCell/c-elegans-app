@@ -26,17 +26,10 @@ export interface NeuronGroup {
   neurons: Set<string>;
 }
 
-export interface EnhancedNeuron extends Neuron {
-  viewerData: ViewerData;
-  isVisible: boolean;
-}
-
 export interface GraphViewerData {
   defaultPosition: Position | null;
   visibility: Visibility;
 }
-
-export type ActiveNeuron = Record<string, ViewerData>;
 
 export function emptyViewerData(visibility?: Visibility): ViewerData {
   return {

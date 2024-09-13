@@ -221,30 +221,6 @@ export class Workspace {
 
       return produce(updatedWorkspace, (draft: Workspace) => {
         draft.availableNeurons = Object.fromEntries([...uniqueNeurons].map((n) => [n.name, n]));
-        // for (const neuron of uniqueNeurons) {
-        //   const previousNeuron = draft.availableNeurons[neuron.name];
-
-        //   const enhancedNeuron: EnhancedNeuron = {
-        //     ...neuron,
-        //     viewerData: {
-        //       [ViewerType.Graph]: {
-        //         defaultPosition: previousNeuron?.viewerData[ViewerType.Graph]?.defaultPosition || null,
-        //         visibility:
-        //           previousNeuron?.viewerData[ViewerType.Graph]?.visibility !== undefined
-        //             ? previousNeuron.viewerData[ViewerType.Graph].visibility
-        //             : draft.activeNeurons.has(neuron.name)
-        //               ? Visibility.Visible
-        //               : Visibility.Unset,
-        //       },
-        //       [ViewerType.ThreeD]: previousNeuron?.viewerData[ViewerType.ThreeD] || {},
-        //       [ViewerType.EM]: previousNeuron?.viewerData[ViewerType.EM] || {},
-        //       [ViewerType.InstanceDetails]: previousNeuron?.viewerData[ViewerType.InstanceDetails] || {},
-        //     },
-        //     isVisible: previousNeuron?.isVisible ?? draft.activeNeurons.has(neuron.name),
-        //   };
-
-        // draft.availableNeurons[neuron.name] = enhancedNeuron;
-        // }
       });
     } catch (error) {
       throw new GlobalError("Failed to fetch neurons:");
@@ -262,19 +238,6 @@ export class Workspace {
       draft.syncOrchestrator.select(selectedNeurons, initiator);
     });
   }
-
-  // getHiddenNeurons() {
-  //   const hiddenNodes = new Set<string>();
-
-  //   // for (const neuronId of this.activeNeurons) {
-  //   //   const neuron = this.availableNeurons[neuronId];
-  //   //   if (neuron && !neuron.isVisible) {
-  //   //     hiddenNodes.add(neuronId);
-  //   //   }
-  //   // }
-
-  //   return new Set(Object.entries(this.activeNeurons).filter(([name, data]) => data.isVisible));
-  // }
 
   getNeuronCellsByClass(neuronClassId: string): string[] {
     return Object.values(this.availableNeurons)
