@@ -116,7 +116,7 @@ const ELECTRICAL_STYLE = [
     },
   },
   {
-    selector: ".not_classified:loop",
+    selector: ".electrical.not_classified:loop",
     css: {
       "target-arrow-shape": "tee",
       "source-arrow-shape": "tee",
