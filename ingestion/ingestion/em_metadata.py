@@ -3,15 +3,16 @@ from __future__ import annotations
 import operator
 from dataclasses import dataclass
 from functools import lru_cache
-from itertools import groupby
+from itertools import chain, groupby
 from pathlib import Path
 
 from PIL import Image
+from pydantic import BaseModel
 
 
 @dataclass(frozen=True)
 class Tile:
-    position: tuple[int, int]
+    position: tuple[int, int]  # (width, height)
     zoom: int
     path: Path
     slice: int
@@ -23,23 +24,13 @@ class Tile:
             return img.size
 
 
-def unique_levels(tiles: list[Tile]) -> set[int]:
-    """Returns a set with all levels available in the tile list"""
-    levels: set[int] = set()
-    for tile in tiles:
-        if tile.zoom not in levels:
-            levels.add(tile.zoom)
-    return levels
-
-
 @dataclass
 class TileGrid:
     """A matrix of tiles representing a zoom layer."""
 
     zoom: int
     size: tuple[int, int]  # rows and columns
-    resolution: tuple[int, int]  # in pixels
-    _matrix: list[list[Tile | None]]  # rows x colums tile matrix
+    matrix: list[list[Tile | None]]  # tiles organized in a matrix
 
     @staticmethod
     def _matrix_size(tiles: list[Tile]) -> tuple[int, int]:
@@ -63,6 +54,27 @@ class TileGrid:
                 return False
         return True
 
+    def _first_tile_non_none(self) -> Tile | None:
+        return next((item for item in chain(*self.matrix) if item is not None), None)
+
+    @property
+    def tile_dimensions(self) -> tuple[int, int]:
+        """
+        Returns the dimensions of a tile.
+        It assumes that all the tiles have the same size.
+        """
+        tile = self._first_tile_non_none()
+        if tile is None:  # no tiles in the matrix
+            return (0, 0)
+        return tile.size
+
+    @property
+    def resolution(self) -> tuple[int, int]:
+        """Resolution of the grid in pixels"""
+        n_rows, n_cols = self.size
+        width, height = self.tile_dimensions
+        return (height * n_rows, width * n_cols)
+
     @classmethod
     def from_tiles(cls, tiles: list[Tile]) -> TileGrid:
         if len(tiles) == 0:
@@ -72,15 +84,13 @@ class TileGrid:
         assert cls._are_tiles_size_eq(tiles)
 
         zoom = tiles[0].zoom
-        tile_size = tiles[0].size
-        resolution = (tile_size[0] * size[0], tile_size[1] * size[1])
 
         matrix: list[list[Tile | None]] = [[None] * size[1] for _ in range(size[0])]
         for tile in tiles:
             x, y = tile.position
             matrix[x][y] = tile
 
-        return cls(zoom=zoom, size=size, resolution=resolution, _matrix=matrix)
+        return cls(zoom=zoom, size=size, matrix=matrix)
 
 
 @dataclass
@@ -110,11 +120,21 @@ class Piramid:
 
     @property
     def minzoom(self) -> int:
+        """Minimum zoom value that exits in the piramid"""
         return min(self.zooms)
 
     @property
     def maxzoom(self) -> int:
+        """Maximum zoom value that exits in the piramid"""
         return max(self.zooms)
+
+    @property
+    def tile_dimensions(self) -> tuple[int, int]:
+        # it assumes that tile size is the same across zoom levels
+        zooms = self.zooms
+        if zooms == 0:
+            return (0, 0)  # no data
+        return self.levels[zooms[0]].tile_dimensions
 
     @classmethod
     def build(cls, tiles: list[Tile]) -> Piramid:
@@ -125,3 +145,69 @@ class Piramid:
             levels[zoom] = TileGrid.from_tiles(list(ztiles))
 
         return cls(levels)
+
+
+class SliceMetadata(BaseModel):
+    slice: int
+    zooms: list[int]
+    minzoom: int  # tiles available at > minzoom
+    maxzoom: int  # tiles available at <= maxzoom
+    tile_size: tuple[int, int]
+
+
+class EMMetadata(BaseModel):
+    number_slices: int
+    slice_range: tuple[int, int]
+    slices: list[SliceMetadata]
+
+    @classmethod
+    def from_tiles(cls, tiles: list[Tile]) -> EMMetadata:
+        metadata: list[SliceMetadata] = []
+        available_slices: list[int] = []
+
+        tiles.sort(key=operator.attrgetter("slice"))  # groupby expects things sorted
+        for slice, stiles in groupby(tiles, lambda t: t.slice):
+            piramid = Piramid.build(list(stiles))
+
+            available_slices.append(slice)
+            metadata.append(
+                SliceMetadata(
+                    slice=slice,
+                    zooms=piramid.zooms,
+                    minzoom=piramid.minzoom + 1,
+                    maxzoom=piramid.maxzoom,
+                    tile_size=piramid.tile_dimensions,
+                )
+            )
+
+        return cls(
+            number_slices=len(metadata),
+            slice_range=(min(available_slices), max(available_slices)),
+            slices=metadata,
+        )
+
+
+if __name__ == "__main__":
+    import sys
+    from argparse import ArgumentParser
+
+    from ingestion.storage.filesystem import load_tiles
+
+    parser = ArgumentParser(description="computed EM tiles metadata")
+    parser.add_argument(
+        "em_paths",
+        nargs="+",
+        type=Path,
+        help=f"directory, files or glob match for EM data",
+    )
+    parser.add_argument(
+        "--indent",
+        type=int,
+        help="indentation to use in the JSON output.",
+        default=None,
+    )
+
+    args = parser.parse_args()
+    tiles = load_tiles(args.em_paths)
+    metadata = EMMetadata.from_tiles(list(tiles))
+    print(metadata.model_dump_json(indent=args.indent), file=sys.stdout)

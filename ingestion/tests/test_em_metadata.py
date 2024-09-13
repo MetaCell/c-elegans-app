@@ -13,14 +13,16 @@ def slices_dir_fixture(request: pytest.FixtureRequest) -> Path:
     return Path(request.fspath).parent / "fixtures" / "em-tiles"  # type: ignore
 
 
+SLICE209_TILEGRID_ZOOM5_RESOLUTION = (1024, 1024)
+
+
 @pytest.fixture
 def slice209_tilegrid_zoom5(slices_dir_fixture: Path) -> TileGrid:
     dir_path = slices_dir_fixture / "209"
     return TileGrid(
         zoom=5,
         size=(2, 2),
-        resolution=(1024, 1024),
-        _matrix=[
+        matrix=[
             [
                 Tile(
                     position=(0, 0),
@@ -53,14 +55,16 @@ def slice209_tilegrid_zoom5(slices_dir_fixture: Path) -> TileGrid:
     )
 
 
+SLICE209_TILEGRID_ZOOM4_RESOLUTION = (2048, 1536)
+
+
 @pytest.fixture
 def slice209_tilegrid_zoom4(slices_dir_fixture: Path) -> TileGrid:
     dir_path = slices_dir_fixture / "209"
     return TileGrid(
         zoom=4,
         size=(4, 3),
-        resolution=(2048, 1536),
-        _matrix=[
+        matrix=[
             [None, None, None],
             [
                 Tile(
@@ -157,8 +161,7 @@ def test__tile_matrix_with_holes(slices_dir_fixture: Path):
     expected_matrix_zoom_5 = TileGrid(
         zoom=5,
         size=(2, 2),
-        resolution=(1024, 1024),
-        _matrix=[
+        matrix=[
             [
                 Tile(
                     position=(0, 0),
@@ -195,7 +198,11 @@ def test__tile_matrix_with_holes(slices_dir_fixture: Path):
         )
     )
 
-    assert TileGrid.from_tiles(tiles) == expected_matrix_zoom_5
+    grid = TileGrid.from_tiles(tiles)
+    assert grid == expected_matrix_zoom_5
+    assert (
+        grid.resolution == SLICE209_TILEGRID_ZOOM5_RESOLUTION
+    )  # keeps the same resolution
 
 
 def test__tile_matrix_missing_row(slices_dir_fixture: Path):
@@ -203,8 +210,7 @@ def test__tile_matrix_missing_row(slices_dir_fixture: Path):
     expected_matrix_zoom_5 = TileGrid(
         zoom=5,
         size=(2, 1),
-        resolution=(1024, 512),
-        _matrix=[
+        matrix=[
             [
                 Tile(
                     position=(0, 0),
@@ -234,7 +240,9 @@ def test__tile_matrix_missing_row(slices_dir_fixture: Path):
         )
     )
 
-    assert TileGrid.from_tiles(tiles) == expected_matrix_zoom_5
+    grid = TileGrid.from_tiles(tiles)
+    assert grid == expected_matrix_zoom_5
+    assert grid.resolution == (1024, 512)
 
 
 def test__tile_matrix_missing_column(slices_dir_fixture: Path):
@@ -242,8 +250,7 @@ def test__tile_matrix_missing_column(slices_dir_fixture: Path):
     expected_matrix_zoom_5 = TileGrid(
         zoom=5,
         size=(1, 2),
-        resolution=(512, 1024),
-        _matrix=[
+        matrix=[
             [
                 Tile(
                     position=(0, 0),
@@ -271,7 +278,9 @@ def test__tile_matrix_missing_column(slices_dir_fixture: Path):
         )
     )
 
-    assert TileGrid.from_tiles(tiles) == expected_matrix_zoom_5
+    grid = TileGrid.from_tiles(tiles)
+    assert grid == expected_matrix_zoom_5
+    assert grid.resolution == (512, 1024)
 
 
 def test__piramid(
@@ -294,3 +303,7 @@ def test__piramid(
     piramid = Piramid.build(tiles)
 
     assert piramid == expected_piramid
+    assert piramid.extent == expected_piramid.extent
+    assert piramid.minzoom == expected_piramid.minzoom
+    assert piramid.maxzoom == expected_piramid.maxzoom
+    assert piramid.tile_dimensions == expected_piramid.tile_dimensions

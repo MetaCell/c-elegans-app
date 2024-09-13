@@ -25,3 +25,7 @@ def fs_3d_blob_name(dataset_id: str, p: Path) -> str:
 def fs_em_tile_blob_name(dataset_id: str, tile: Tile) -> str:
     # <dataset_id>/em/<slice>/<y>_<x>_<z>.jpg
     return f"{dataset_id}/em/{tile.slice}/{tile.path.name}"
+
+
+def em_metadata_blob_name(dataset_id: str) -> str:
+    return f"{dataset_id}/em/metadata.json"

@@ -10,14 +10,15 @@ from pathlib import Path
 from time import sleep
 
 from google.cloud import storage
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
 from tqdm import tqdm
 
 from ingestion.cli import ask, type_directory, type_file
-from ingestion.em_metadata import Piramid, Tile
+from ingestion.em_metadata import EMMetadata, Tile
 from ingestion.errors import DataValidationError, ErrorWriter
 from ingestion.schema import Data
 from ingestion.storage.blob import (
+    em_metadata_blob_name,
     fs_3d_blob_name,
     fs_em_tile_blob_name,
     fs_segmentation_blob_name,
@@ -221,49 +222,17 @@ def upload_3d(
         rs.upload(f3d, fs_3d_blob_name(dataset_id, f3d), overwrite=overwrite)
 
 
-class PiramidMetadata(BaseModel):
-    slice: int
-    zooms: list[int]
-    extent: tuple[int, int, int, int]
-    resolutions: list[tuple[int, int]]
-    sizes: list[tuple[int, int]]
-
-
-class Metadata(BaseModel):
-    nslices: int
-    slices: list[PiramidMetadata]
-
-
 def upload_tileset_metadata(
-    tiles: list[Tile], rs: RemoteStorage, *, overwrite: bool = False
+    dataset_id: str, tiles: list[Tile], rs: RemoteStorage, *, overwrite: bool = False
 ):
     logger.info("calculating EM tiles metadata...")
 
-    metadata: list[PiramidMetadata] = []
+    metadata = EMMetadata.from_tiles(tiles)
+    json_content = metadata.model_dump_json()
 
-    tiles.sort(key=operator.attrgetter("slice"))  # groupby expects things sorted
-    pbar = tqdm(tiles)
-    for slice, stiles in groupby(pbar, lambda t: t.slice):
-        pbar.set_description(str(slice))
-        piramid = Piramid.build(list(stiles))
-
-        metadata.append(
-            PiramidMetadata(
-                slice=slice,
-                zooms=piramid.zooms,
-                extent=piramid.extent,
-                resolutions=[zoom.resolution for zoom in piramid.levels.values()],
-                sizes=[zoom.size for zoom in piramid.levels.values()],
-            )
-        )
-
-    logger.info("uploading EM tiles metadata...")
-
-    # TODO: this will overwrite all the metadata in the bucket (a file by slice?)
-    json_content = Metadata(nslices=len(metadata), slices=metadata).model_dump_json(
-        indent=2
+    rs.upload_from_string(
+        json_content, em_metadata_blob_name(dataset_id), overwrite=overwrite
     )
-    rs.upload_from_string(json_content, "metadata-dev-test.json", overwrite=overwrite)
 
 
 def upload_em_tiles(
@@ -279,7 +248,7 @@ def upload_em_tiles(
         logger.warning("skipping EM tiles upload: no files matched")
         return
 
-    upload_tileset_metadata(tiles, rs, overwrite=overwrite)
+    upload_tileset_metadata(dataset_id, tiles, rs, overwrite=overwrite)
 
     logger.info("uploading EM tiles...")
 

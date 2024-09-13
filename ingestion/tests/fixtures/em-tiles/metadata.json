@@ -1,0 +1,22 @@
+{
+  "number_slices": 1,
+  "slice_range": [
+    209,
+    209
+  ],
+  "slices": [
+    {
+      "slice": 209,
+      "zooms": [
+        4,
+        5
+      ],
+      "minzoom": 5,
+      "maxzoom": 5,
+      "tile_size": [
+        512,
+        512
+      ]
+    }
+  ]
+}
