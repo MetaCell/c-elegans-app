@@ -6,7 +6,7 @@ import { debounce } from "lodash";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { ColoringOptions, getColor } from "../../../helpers/twoD/coloringHelper";
-import { computeGraphDifferences, updateHighlighted, updateParentNodes } from "../../../helpers/twoD/graphRendering.ts";
+import { computeGraphDifferences, updateHighlighted, updateParallelEdges, updateParentNodes } from "../../../helpers/twoD/graphRendering.ts";
 import {
   applyLayout,
   getHiddenNeuronsIn2D,
@@ -32,6 +32,7 @@ import {
   INCLUDE_POST_EMBRYONIC,
   type LegendType,
   SELECTED_CLASS,
+  SHOW_EDGE_LABEL_CLASS,
 } from "../../../settings/twoDSettings";
 import { GRAPH_STYLES } from "../../../theme/twoDStyles";
 import ContextMenu from "./ContextMenu";
@@ -65,8 +66,8 @@ const TwoDViewer = () => {
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
 
   const [missingNeuronsState, setMissingNeuronsState] = useState({
-    reportedNeurons: new Set(),
-    unreportedNeurons: new Set(),
+    reportedNeurons: new Set<string>(),
+    unreportedNeurons: new Set<string>(),
   });
   const visibleActiveNeurons = useMemo(() => {
     return getVisibleActiveNeuronsIn2D(workspace);
@@ -191,7 +192,7 @@ const TwoDViewer = () => {
     updateLayout();
   }, [layout, connections]);
 
-  const correctGjSegments = (edgeSel = "[type=electrical]") => {
+  const correctGjSegments = (edgeSel = '[type="electrical"]') => {
     const cy = cyRef.current;
     if (!cy) return;
 
@@ -290,7 +291,8 @@ const TwoDViewer = () => {
     };
 
     const handleEdgeFocus = (event) => {
-      event.target.addClass(FOCUS_CLASS);
+      event.target.toggleClass(SHOW_EDGE_LABEL_CLASS);
+      event.target.toggleClass(FOCUS_CLASS);
     };
 
     cy.on("tap", "node", handleNodeClick);
@@ -377,6 +379,7 @@ const TwoDViewer = () => {
       updateParentNodes(cy, workspace, openGroups);
       cy.remove(nodesToRemove);
       cy.remove(edgesToRemove);
+      updateParallelEdges(cy);
     });
 
     updateNodeColors();
@@ -401,18 +404,27 @@ const TwoDViewer = () => {
     // Find the newly missing neurons that haven't been reported yet
     const unreportedNeurons = new Set([...newMissingNeurons].filter((neuron) => !reportedNeurons.has(neuron)));
 
-    if (unreportedNeurons.size > 0) {
-      setMissingNeuronsState((prevState) => ({
-        ...prevState,
+    // Remove neurons from reportedNeurons that are no longer part of the splitJoinState.split
+    const updatedReportedNeurons = new Set(
+      [...reportedNeurons].filter((neuron) => {
+        const nclass = workspace.getNeuronClass(neuron);
+        return splitJoinState.split.has(nclass);
+      }),
+    );
+
+    // Check if there are any changes
+    if (!areSetsEqual(missingNeuronsState.unreportedNeurons, unreportedNeurons) || !areSetsEqual(missingNeuronsState.reportedNeurons, updatedReportedNeurons)) {
+      setMissingNeuronsState({
         unreportedNeurons: unreportedNeurons,
-      }));
+        reportedNeurons: updatedReportedNeurons,
+      });
     }
   };
 
   const updateLayout = () => {
     if (cyRef.current) {
       const cy = cyRef.current;
-      applyLayout(cy, layout);
+      applyLayout(cy, layout as GRAPH_LAYOUTS);
       updateWorkspaceNeurons2DViewerData(workspace, cy);
     }
   };
