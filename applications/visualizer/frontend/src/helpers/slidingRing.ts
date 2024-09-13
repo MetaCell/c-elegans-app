@@ -76,13 +76,18 @@ export class SlidingRing<T> {
       onEvict: options.onEvict,
     };
 
+    this.initRing(options.startAt);
+  }
+
+  private initRing(at: number) {
     // initialize ring
     const halfSize = Math.floor(this.ring.length / 2);
-    let tailN = options.startAt - halfSize;
-    let headN = options.startAt + halfSize;
+    let tailN = at - halfSize;
+    let headN = at + halfSize;
 
     // the ring may start near the extent
     // this account for that adjustment
+    const [min, max] = this.extent;
     if (tailN < min) tailN = min;
     if (headN > max) {
       headN = max;
@@ -97,11 +102,11 @@ export class SlidingRing<T> {
       this.ring[i] = { n, o };
     }
 
-    this.pos = options.startAt - tailN;
+    this.pos = at - tailN;
     this.tail = 0;
     this.head = this.ring.length - 1;
 
-    this.cb.onSelected(options.startAt, this.ring[this.pos].o);
+    this.cb.onSelected(at, this.ring[this.pos].o);
   }
 
   next() {
@@ -164,6 +169,14 @@ export class SlidingRing<T> {
     }
 
     this.pos = prevPos;
+  }
+
+  goto(n: number) {
+    this.cb.onUnselected(this.ring[this.pos].n, this.ring[this.pos].o);
+    for (const item of this.ring) {
+      this.cb.onEvict(item.n, item.o);
+    }
+    this.initRing(n);
   }
 
   debug() {

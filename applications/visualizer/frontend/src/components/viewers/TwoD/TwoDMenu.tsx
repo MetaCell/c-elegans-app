@@ -69,7 +69,7 @@ const TwoDMenu = ({
     if (!cy) {
       return;
     }
-    applyLayout(cy, layout);
+    applyLayout(cy, layout as GRAPH_LAYOUTS);
   };
 
   const handleOpenSettings = (event) => {

@@ -66,13 +66,13 @@ export class Workspace {
     this._initializeAvailableNeurons();
   }
 
-  activateNeuron(neuron: Neuron): void {
+  activateNeuron(neuron: Neuron): Workspace {
     const updated = produce(this, (draft: Workspace) => {
       draft.activeNeurons.add(neuron.name);
       draft.visibilities[neuron.name] = emptyViewerData();
     });
-
     this.updateContext(updated);
+    return updated;
   }
 
   deactivateNeuron(neuronId: string): void {
@@ -105,7 +105,6 @@ export class Workspace {
 
     this.updateContext(updated);
   }
-
   async activateDataset(dataset: Dataset): Promise<void> {
     const updated: Workspace = produce(this, (draft: Workspace) => {
       draft.activeDatasets[dataset.id] = dataset;
@@ -243,5 +242,10 @@ export class Workspace {
     return Object.values(this.availableNeurons)
       .filter((neuron) => neuron.nclass === neuronClassId && neuron.nclass !== neuron.name)
       .map((neuron) => neuron.name);
+  }
+
+  getNeuronClass(neuronId: string): string {
+    const neuron = this.availableNeurons[neuronId];
+    return neuron.nclass;
   }
 }

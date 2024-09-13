@@ -114,7 +114,17 @@ export const computeGraphDifferences = (
           }
         }
         const groupPosition = calculateMeanPosition(groupNeurons, workspace);
-        nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), Array.from(attributes), groupPosition, true));
+        nodesToAdd.push(
+          createNode(
+            nodeId,
+            workspace.selectedNeurons.has(nodeId),
+            Array.from(attributes),
+            groupPosition,
+            true,
+            undefined,
+            workspace.activeNeurons.has(nodeId),
+          ),
+        );
       } else {
         let parent = undefined;
 
@@ -128,7 +138,7 @@ export const computeGraphDifferences = (
         const attributes = extractNeuronAttributes(workspace.availableNeurons[nodeId]);
         const neuronVisibility = workspace.visibilities[nodeId];
         const position = neuronVisibility?.[ViewerType.Graph]?.defaultPosition ?? null;
-        nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), attributes, position, false, parent));
+        nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), attributes, position, false, parent, workspace.activeNeurons.has(nodeId)));
         if (!(nodeId in workspace.visibilities)) {
           workspace.showNeuron(nodeId);
         }
@@ -146,7 +156,14 @@ export const computeGraphDifferences = (
   for (const edgeId of expectedEdges) {
     if (!currentEdges.has(edgeId)) {
       const conn = connectionMap.get(edgeId);
-      const width = Object.values(conn.synapses).length;
+      const syns = Object.values(conn.synapses).reduce((acc, num) => acc + num, 0);
+      const meanSyn = syns / Object.values(conn.synapses).length;
+      let width;
+      if (conn.type === "chemical") {
+        width = Math.max(1, 2 * Math.pow(meanSyn, 1 / 4) - 2);
+      } else {
+        width = Math.min(3, meanSyn * 1.5);
+      }
       if (conn) {
         edgesToAdd.push(createEdge(edgeId, conn, workspace, includeAnnotations, width));
       }
@@ -471,4 +488,12 @@ export const updateParentNodes = (cy: Core, workspace: Workspace, openGroups: Se
       }
     }
   }
+};
+
+export const updateParallelEdges = (cy: Core) => {
+  // Remove 'parallel' class from all edges
+  cy.edges().removeClass("parallel");
+
+  // Add 'parallel' class to parallel edges
+  cy.edges('[type = "electrical"]').parallelEdges().filter('[type = "chemical"]').addClass("parallel");
 };
