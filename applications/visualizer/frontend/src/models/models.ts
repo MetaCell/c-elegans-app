@@ -36,6 +36,17 @@ export interface GraphViewerData {
   visibility: Visibility;
 }
 
+export type ActiveNeuron = Record<string, ViewerData>;
+
+export function emptyViewerData(visibility?: Visibility): ViewerData {
+  return {
+    [ViewerType.Graph]: {
+      defaultPosition: null,
+      visibility: visibility ?? Visibility.Hidden,
+    },
+  };
+}
+
 export interface ViewerData {
   [ViewerType.Graph]?: GraphViewerData;
   [ViewerType.ThreeD]?: any; // Define specific data for 3D viewer if needed
