@@ -244,15 +244,6 @@ export function getVisibleActiveNeuronsIn2D(workspace: Workspace): Set<string> {
 }
 
 export function getHiddenNeuronsIn2D(workspace: Workspace): Set<string> {
-  // const hiddenNeurons = new Set<string>();
-
-  // for (const neuronId of Object.keys(workspace.availableNeurons)) {
-  //   const neuron = workspace.visibilities[neuronId];
-  //   const visibility = neuron.viewerData[ViewerType.Graph]?.visibility;
-
-  //   if (visibility === Visibility.Hidden) {
-  //     hiddenNeurons.add(neuronId);
-  //   }
   return new Set(
     Object.entries(workspace.visibilities)
       .filter(([_, data]) => data[ViewerType.Graph].visibility === Visibility.Hidden)

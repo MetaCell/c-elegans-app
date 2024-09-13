@@ -193,17 +193,12 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
         const group = workspace.neuronGroups[neuronId];
         if (group) {
           for (const groupedNeuronId of group.neurons) {
+            draft.activeNeurons.add(groupedNeuronId);
             draft.visibilities[groupedNeuronId] = emptyViewerData(Visibility.Visible);
-            // if (draft.visibilities[groupedNeuronId]) {
-            //   draft.visibilities[groupedNeuronId].isVisible = true;
-            // }
           }
         } else {
+          draft.activeNeurons.add(neuronId);
           draft.visibilities[neuronId] = emptyViewerData(Visibility.Visible);
-          // draft.activeNeurons.add(neuronId);
-          // if (draft.availableNeurons[neuronId]) {
-          //   draft.availableNeurons[neuronId].isVisible = true;
-          // }
         }
       }
     });
