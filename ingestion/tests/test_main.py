@@ -241,7 +241,7 @@ def compare_directories(dir1: Path, dir2: Path):
         file2 = dir2 / relative_path
 
         if file1.read_bytes() != file2.read_bytes():
-            return Exception(f"content differs: {file1} != {file2}")
+            raise Exception(f"content differs: {file1} != {file2}")
 
     return True
 
