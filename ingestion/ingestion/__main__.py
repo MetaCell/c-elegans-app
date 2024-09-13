@@ -111,10 +111,13 @@ def main(argv: Sequence[str] | None = None):
     """Calls main but is inspects argv and splits accordingly"""
 
     if argv is None:
-        argv = sys.argv
+        argv = sys.argv[1:]
 
-    if len(argv) > 2 and "ingest" in argv and "add-dataset" in argv:
+    if "ingest" in argv and "add-dataset" in argv:
         argvl = split_argv(list(argv), "add-dataset")
+
+        # TODO: print help of missing "add-dataset" if repeated flags are detected
+
         for add_dataset_args in argvl[1:]:
             _main(argvl[0] + add_dataset_args)
     else:

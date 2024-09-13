@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 
 
 def _done_message(dataset_name: str) -> str:
-    return f"Done uploading dataset '{dataset_name}'! ✨"
+    return f"==> Done uploading dataset '{dataset_name}'! ✨"
 
 
 def add_flags(parser: ArgumentParser):
@@ -331,30 +331,3 @@ def ingest_cmd(args: Namespace):
         logger.warning("skipping EM tiles upload: flag not set")
 
     print(_done_message(args.dataset_id))
-
-
-if __name__ == "__main__":
-    from argparse import ArgumentDefaultsHelpFormatter
-
-    from ingestion.logging import setup_logger
-
-    parser = ArgumentParser(
-        prog="ingest",
-        description="ingest files into the c-elegans deployment",
-        formatter_class=ArgumentDefaultsHelpFormatter,
-    )
-
-    parser.add_argument(
-        "--debug",
-        help="runs with debug logs",
-        default=False,
-        action="store_true",
-    )
-
-    add_flags(parser)
-
-    args = parser.parse_args()
-
-    setup_logger(args.debug)
-
-    ingest_cmd(args)
