@@ -115,6 +115,15 @@ const ELECTRICAL_STYLE = [
       "source-arrow-shape": "tee",
     },
   },
+  {
+    selector: ".not_classified:loop",
+    css: {
+      "target-arrow-shape": "tee",
+      "source-arrow-shape": "tee",
+      "source-arrow-color": "#228B22",
+      "target-arrow-color": "#228B22",
+    },
+  },
 ];
 
 const OPEN_GROUP_STYLE = {
@@ -258,6 +267,7 @@ const ANNOTATION_STYLES = Object.entries(annotationLegend).map(([, { id, color }
   style: {
     "line-color": color,
     "target-arrow-color": color,
+    "sources-arrow-color": color,
   },
 }));
 
