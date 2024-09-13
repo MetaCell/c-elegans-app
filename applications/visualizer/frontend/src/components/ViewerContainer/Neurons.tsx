@@ -13,7 +13,7 @@ const { gray900, gray500 } = vars;
 const mapNeuronsToListItem = (neuron: string, visibility: ViewerData) => ({
   id: neuron,
   label: neuron,
-  checked: Object.values(visibility).every(e => e === undefined || e.visibility === Visibility.Visible),
+  checked: Object.values(visibility).every((e) => e === undefined || e.visibility === Visibility.Visible),
 });
 const mapNeuronsAvailableNeuronsToOptions = (neuron: Neuron) => ({
   id: neuron.name,
