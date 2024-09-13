@@ -149,14 +149,14 @@ def test__main_ingest_valid_data(
         [
             "ingest",
             "add-dataset",
-            "dataset8",
+            "white_1986_jsh",
             "--data",
             str(data_dir),
         ]
     )
 
     out, err = capsys.readouterr()
-    assert _done_message("dataset8") in out
+    assert _done_message("white_1986_jsh") in out
     assert err == ""
 
 
@@ -170,7 +170,7 @@ def test__main_ingest_invalid_data(
             [
                 "ingest",
                 "add-dataset",
-                "dataset8",
+                "white_1986_jsh",
                 "--data",
                 str(data_dir),
             ]
@@ -182,6 +182,21 @@ def test__main_ingest_invalid_data(
 
     assert out == ""
     assert err != ""
+
+
+def test__main_ingest_valid_data_for_unknown_dataset_id(request: pytest.FixtureRequest):
+    data_dir = Path(request.fspath).parent / "fixtures" / "reference-data"  # type: ignore
+    with pytest.raises(Exception):
+        main(
+            [
+                "ingest",
+                "--debug",  # to bubble up the exception
+                "add-dataset",
+                "unknown_dataset_id",
+                "--data",
+                str(data_dir),
+            ]
+        )
 
 
 def test__main_ingest_bad_data_dir_schema(

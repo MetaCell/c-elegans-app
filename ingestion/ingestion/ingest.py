@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 import operator
 import os
-import re
 import sys
 from argparse import ArgumentParser, Namespace
 from itertools import groupby
@@ -121,14 +120,12 @@ def add_add_dataset_flags(parser: ArgumentParser):
     add_in_paths(parser, "EM")
 
 
-def validate_data(dir: Path):
-    # TODO: do something with dataset_id, like check if present in datasets.json
-
+def validate_data(dataset_id: str, dir: Path):
     data_files = find_data_files(dir)
     json_data = load_data(data_files)
 
     try:
-        Data.model_validate(json_data)
+        data = Data.model_validate(json_data)
     except ValidationError as e:
         err_header = (
             "Seems like we found something unexpected with your data.\n"
@@ -145,6 +142,11 @@ def validate_data(dir: Path):
         )
 
         sys.exit(1)
+
+    if dataset_id not in (ds.id for ds in data.datasets):
+        raise Exception(
+            f"specified dataset '{dataset_id}' was not found in datasets.json"
+        )
 
     logger.info(f"data in {dir} is valid!")
 
@@ -294,7 +296,7 @@ def ingest_cmd(args: Namespace):
     """Runs the ingestion command."""
 
     if args.data:
-        validate_data(args.data)
+        validate_data(args.dataset_id, args.data)
     else:
         logger.warning(f"skipping data validation: flag not set")
 
