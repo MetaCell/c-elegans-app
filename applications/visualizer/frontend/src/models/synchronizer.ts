@@ -1,7 +1,8 @@
-import { type EnhancedNeuron, ViewerSynchronizationPair, ViewerType } from "./models";
+import type { Neuron } from "../rest";
+import { ViewerSynchronizationPair, ViewerType } from "./models";
 
 export type SynchronizerContext = Array<string>;
-export type Selection = Array<EnhancedNeuron>;
+export type Selection = Array<Neuron>;
 
 const syncViewerDefs: Record<ViewerSynchronizationPair, [ViewerType, ViewerType]> = {
   [ViewerSynchronizationPair.Graph_InstanceDetails]: [ViewerType.Graph, ViewerType.InstanceDetails],

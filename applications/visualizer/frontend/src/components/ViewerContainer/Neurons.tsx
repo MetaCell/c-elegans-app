@@ -7,12 +7,13 @@ import type { Neuron } from "../../rest";
 import { vars } from "../../theme/variables.ts";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 import CustomListItem from "./CustomListItem.tsx";
+import { Visibility, type ViewerData } from "../../models/models.ts";
 
 const { gray900, gray500 } = vars;
-const mapNeuronsToListItem = (neuron: string, isActive: boolean) => ({
+const mapNeuronsToListItem = (neuron: string, visibility: ViewerData) => ({
   id: neuron,
   label: neuron,
-  checked: isActive,
+  checked: Object.values(visibility).every((e) => e === undefined || e.visibility === Visibility.Visible),
 });
 const mapNeuronsAvailableNeuronsToOptions = (neuron: Neuron) => ({
   id: neuron.name,
@@ -110,7 +111,7 @@ const Neurons = ({ children }) => {
           {Array.from(activeNeurons).map((neuronId) => (
             <CustomListItem
               key={neuronId}
-              data={mapNeuronsToListItem(neuronId, currentWorkspace.availableNeurons[neuronId].isVisible)}
+              data={mapNeuronsToListItem(neuronId, currentWorkspace.visibilities[neuronId])}
               showTooltip={false}
               showExtraActions={true}
               listType="neurons"
@@ -137,7 +138,7 @@ const Neurons = ({ children }) => {
           {Array.from(Object.keys(groups)).map((groupId) => (
             <CustomListItem
               key={groupId}
-              data={mapNeuronsToListItem(groupId, activeNeurons.has(groupId))}
+              data={mapNeuronsToListItem(groupId, currentWorkspace.visibilities[groupId])}
               showTooltip={false}
               showExtraActions={true}
               listType="groups"

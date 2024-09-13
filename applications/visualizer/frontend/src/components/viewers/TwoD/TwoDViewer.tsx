@@ -72,7 +72,7 @@ const TwoDViewer = () => {
     return getVisibleActiveNeuronsIn2D(workspace);
   }, [
     Array.from(workspace.activeNeurons)
-      .map((neuronId) => workspace.availableNeurons[neuronId]?.viewerData[ViewerType.Graph]?.visibility || "")
+      .map((neuronId) => workspace.visibilities[neuronId]?.[ViewerType.Graph]?.visibility || "")
       .join(","),
   ]);
 
@@ -80,7 +80,7 @@ const TwoDViewer = () => {
     return getHiddenNeuronsIn2D(workspace);
   }, [
     Object.keys(workspace.availableNeurons)
-      .map((neuronId) => workspace.availableNeurons[neuronId]?.viewerData[ViewerType.Graph]?.visibility || "")
+      .map((neuronId) => workspace.visibilities[neuronId]?.[ViewerType.Graph]?.visibility || "")
       .join(","),
   ]);
 
@@ -200,11 +200,11 @@ const TwoDViewer = () => {
 
     cy.startBatch();
 
-    edges.forEach((e) => {
+    for (const e of edges) {
       const sourcePos = e.source().position();
       const targetPos = e.target().position();
 
-      const length = Math.sqrt(Math.pow(targetPos["x"] - sourcePos["x"], 2) + Math.pow(targetPos["y"] - sourcePos["y"], 2));
+      const length = Math.sqrt((targetPos.x - sourcePos.x) ** 2 + (targetPos.y - sourcePos.y) ** 2);
 
       const divider = (length > 60 ? 7 : length > 40 ? 5 : 3) / length;
 
@@ -213,7 +213,7 @@ const TwoDViewer = () => {
       if (e.style("segment-weights") !== segweights) {
         e.style({ "segment-weights": segweights });
       }
-    });
+    }
 
     cy.endBatch();
   };
@@ -314,29 +314,29 @@ const TwoDViewer = () => {
   useEffect(() => {
     const nextActiveNeurons = new Set(workspace.activeNeurons);
 
-    splitJoinState.split.forEach((neuronId) => {
+    for (const neuronId of splitJoinState.split) {
       if (workspace.activeNeurons.has(neuronId)) {
         nextActiveNeurons.delete(neuronId);
-        Object.values(workspace.availableNeurons).forEach((neuron) => {
+        for (const neuron of Object.values(workspace.availableNeurons)) {
           if (neuron.nclass === neuronId && neuron.name !== neuron.nclass) {
             nextActiveNeurons.add(neuron.name);
           }
-        });
+        }
       }
-    });
+    }
 
-    splitJoinState.join.forEach((neuronId) => {
+    for (const neuronId of splitJoinState.join) {
       const neuronClass = workspace.availableNeurons[neuronId].nclass;
       if (workspace.activeNeurons.has(neuronId)) {
         nextActiveNeurons.delete(neuronId);
-        Object.values(workspace.availableNeurons).forEach((neuron) => {
+        for (const neuron of Object.values(workspace.availableNeurons)) {
           if (neuron.nclass === neuronClass) {
             nextActiveNeurons.delete(neuron.name);
           }
-        });
+        }
         nextActiveNeurons.add(neuronClass);
       }
-    });
+    }
 
     if (!areSetsEqual(nextActiveNeurons, workspace.activeNeurons)) {
       workspace.setActiveNeurons(nextActiveNeurons);
@@ -348,13 +348,13 @@ const TwoDViewer = () => {
     if (!cyRef.current) return;
 
     cyRef.current.batch(() => {
-      cyRef.current.edges().forEach((edge) => {
+      for (const edge of cyRef.current.edges()) {
         if (includeLabels) {
           edge.addClass("showEdgeLabel");
         } else {
           edge.removeClass("showEdgeLabel");
         }
-      });
+      }
     });
   }, [includeLabels]);
 
@@ -386,15 +386,15 @@ const TwoDViewer = () => {
 
   const checkSplitNeuronsInGraph = () => {
     const newMissingNeurons = new Set<string>();
-    splitJoinState.split.forEach((neuronId) => {
+    for (const neuronId of splitJoinState.split) {
       const cells = workspace.getNeuronCellsByClass(neuronId);
-      cells.forEach((cellId) => {
+      for (const cellId of cells) {
         // Check if the cell is part of a closed group, if not, check if it's missing
         if (!isNeuronPartOfClosedGroup(cellId, workspace, openGroups) && !cyRef.current.getElementById(cellId).length) {
           newMissingNeurons.add(cellId);
         }
-      });
-    });
+      }
+    }
 
     const { reportedNeurons } = missingNeuronsState;
 
@@ -421,7 +421,7 @@ const TwoDViewer = () => {
     if (!cyRef.current) {
       return;
     }
-    cyRef.current.nodes().forEach((node) => {
+    for (const node of cyRef.current.nodes()) {
       if (node.hasClass("groupNode")) {
         return;
       }
@@ -432,12 +432,12 @@ const TwoDViewer = () => {
 
       if (group) {
         // If the node is a group, collect colors from all neurons in the group
-        group.neurons.forEach((neuronId) => {
+        for (const neuronId of group.neurons) {
           const neuron = workspace.availableNeurons[neuronId];
           if (neuron) {
             colors = colors.concat(getColor(neuron, coloringOption));
           }
-        });
+        }
 
         // Ensure unique colors are used
         colors = [...new Set(colors)];
@@ -458,7 +458,7 @@ const TwoDViewer = () => {
       } else {
         node.style("background-color", colors[0]);
       }
-    });
+    }
   };
 
   return (
