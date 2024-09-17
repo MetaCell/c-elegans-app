@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from ingestion.em_metadata import Piramid, Tile, TileGrid
+from ingestion.em_metadata import EMMetadata, Piramid, SliceMetadata, Tile, TileGrid
 from ingestion.storage.filesystem import TILE_GLOB, extract_tile_metadata
 
 
@@ -307,3 +307,108 @@ def test__piramid(
     assert piramid.minzoom == expected_piramid.minzoom
     assert piramid.maxzoom == expected_piramid.maxzoom
     assert piramid.tile_dimensions == expected_piramid.tile_dimensions
+
+
+def test__em_metadata_merge():
+    mt1 = EMMetadata(
+        number_slices=3,
+        slice_range=(1, 3),
+        slices=[
+            SliceMetadata(
+                slice=1,
+                zooms=[1, 2, 3, 4, 5],
+                minzoom=1,
+                maxzoom=5,
+                tile_size=(512, 512),
+            ),
+            SliceMetadata(
+                slice=2,
+                zooms=[1, 2, 3, 4, 5],
+                minzoom=1,
+                maxzoom=5,
+                tile_size=(512, 512),
+            ),
+            SliceMetadata(
+                slice=3,
+                zooms=[1, 2, 3, 4, 5],
+                minzoom=1,
+                maxzoom=5,
+                tile_size=(512, 512),
+            ),
+        ],
+    )
+    mt2 = EMMetadata(
+        number_slices=4,
+        slice_range=(0, 4),
+        slices=[
+            SliceMetadata(  # new slice 0
+                slice=0,
+                zooms=[1, 2, 3, 4, 5],
+                minzoom=1,
+                maxzoom=5,
+                tile_size=(512, 512),
+            ),
+            SliceMetadata(  # same slice as in t1
+                slice=1,
+                zooms=[1, 2, 3, 4, 5],
+                minzoom=1,
+                maxzoom=5,
+                tile_size=(512, 512),
+            ),
+            # slice = 2 is not present
+            SliceMetadata(
+                slice=3,
+                zooms=[1, 5, 6],  # changed zooms
+                minzoom=1,
+                maxzoom=6,
+                tile_size=(512, 512),
+            ),
+            SliceMetadata(  # new slice 4
+                slice=4,
+                zooms=[1, 2, 3, 4, 5],
+                minzoom=1,
+                maxzoom=5,
+                tile_size=(512, 512),
+            ),
+        ],
+    )
+
+    expected_merge = EMMetadata(
+        number_slices=5,
+        slice_range=(0, 4),
+        slices=[
+            SliceMetadata(
+                slice=0,
+                zooms=[1, 2, 3, 4, 5],
+                minzoom=1,
+                maxzoom=5,
+                tile_size=(512, 512),
+            ),
+            SliceMetadata(
+                slice=1,
+                zooms=[1, 2, 3, 4, 5],
+                minzoom=1,
+                maxzoom=5,
+                tile_size=(512, 512),
+            ),
+            SliceMetadata(
+                slice=2,
+                zooms=[1, 2, 3, 4, 5],
+                minzoom=1,
+                maxzoom=5,
+                tile_size=(512, 512),
+            ),
+            SliceMetadata(
+                slice=3, zooms=[1, 5, 6], minzoom=1, maxzoom=6, tile_size=(512, 512)
+            ),
+            SliceMetadata(  # new slice 4
+                slice=4,
+                zooms=[1, 2, 3, 4, 5],
+                minzoom=1,
+                maxzoom=5,
+                tile_size=(512, 512),
+            ),
+        ],
+    )
+
+    assert mt1.merge(mt2) == expected_merge

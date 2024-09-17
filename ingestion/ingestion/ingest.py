@@ -1,11 +1,10 @@
 from __future__ import annotations
 
+import json
 import logging
-import operator
 import os
 import sys
 from argparse import ArgumentParser, Namespace
-from itertools import groupby
 from pathlib import Path
 from time import sleep
 
@@ -31,7 +30,7 @@ from ingestion.storage.filesystem import (
     load_tiles,
 )
 from ingestion.storage.gcp import RemoteStorage
-from ingestion.xdg import xdg_gcloud_config
+from ingestion.xdg import xdg_config_celegans, xdg_gcloud_config
 
 logger = logging.getLogger(__name__)
 
@@ -222,17 +221,63 @@ def upload_3d(
         rs.upload(f3d, fs_3d_blob_name(dataset_id, f3d), overwrite=overwrite)
 
 
+def _tiles_root_path(tiles: list[Tile]) -> Path:
+    if len(tiles) == 0:
+        return xdg_config_celegans()
+
+    def root(tile: Tile) -> Path:
+        return tile.path.parent.parent
+
+    root_parent = root(tiles[0])
+    for tile in tiles[1:]:
+        nr = root(tile)
+        if nr != root_parent:
+            xdg = xdg_config_celegans()
+            logger.warning(
+                f"found multiple root parents of the EM tiles, will save metadata in {xdg}"
+            )
+            return xdg
+
+    return root_parent
+
+
 def upload_tileset_metadata(
     dataset_id: str, tiles: list[Tile], rs: RemoteStorage, *, overwrite: bool = False
 ):
     logger.info("calculating EM tiles metadata...")
 
+    metadata_blob_name = em_metadata_blob_name(dataset_id)
+    remote_metadata_blob = rs.get_blob(metadata_blob_name)
+
     metadata = EMMetadata.from_tiles(tiles)
+
+    if remote_metadata_blob is not None:
+        # merge remote metadata with local
+        remote_json_metadata = json.loads(remote_metadata_blob.download_as_string())
+        try:
+            remote_metadata = EMMetadata(**remote_json_metadata)
+            metadata = remote_metadata.merge(metadata)
+            # TODO: we do not account for new data on a existing slice
+            # so this can be improved further (e.g merge slice metadata)
+        except ValidationError:
+            logger.error(
+                "remote EM tiles metadata is malformed and will be overwritten"
+            )
+
+    local_metadata_dir = _tiles_root_path(tiles)
+    local_metadata_dir.mkdir(parents=True, exist_ok=True)
+    local_metadata_path = local_metadata_dir / Path(metadata_blob_name).name
+
+    logger.info(f"saving EM tiles metadata in {local_metadata_path}...")
+
     json_content = metadata.model_dump_json()
 
-    rs.upload_from_string(
-        json_content, em_metadata_blob_name(dataset_id), overwrite=overwrite
-    )
+    with open(local_metadata_path, "w") as f:
+        f.write(json_content)
+
+    rs.upload_from_string(json_content, metadata_blob_name, overwrite=overwrite)
+
+    logger.info("uploaded EM tiles metadata!")
 
 
 def upload_em_tiles(

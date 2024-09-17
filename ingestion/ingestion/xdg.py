@@ -14,5 +14,9 @@ def xdg_config_home() -> Path:
     return _path_from_env("XDG_CONFIG_HOME", Path.home() / ".config")
 
 
+def xdg_config_celegans() -> Path:
+    return _path_from_env("XDG_CONFIG_HOME", Path.home() / ".config" / "celegans")
+
+
 def xdg_gcloud_config() -> Path:
     return xdg_config_home() / "gcloud"

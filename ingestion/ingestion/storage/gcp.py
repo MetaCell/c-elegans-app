@@ -4,7 +4,7 @@ import io
 import logging
 from pathlib import Path
 
-from google.cloud.storage import Bucket
+from google.cloud.storage import Blob, Bucket
 
 from ingestion.hash import Crc32cCalculator
 
@@ -66,3 +66,6 @@ class RemoteStorage:
             logger.error(
                 f"wrong integrity for blob '{blob.name}', you may want to retry upload"
             )
+
+    def get_blob(self, blob_name: str) -> Blob | None:
+        return self.bucket.get_blob(blob_name)

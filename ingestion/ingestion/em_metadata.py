@@ -150,8 +150,8 @@ class Piramid:
 class SliceMetadata(BaseModel):
     slice: int
     zooms: list[int]
-    minzoom: int  # tiles available at > minzoom
-    maxzoom: int  # tiles available at <= maxzoom
+    minzoom: int
+    maxzoom: int
     tile_size: tuple[int, int]
 
 
@@ -174,7 +174,7 @@ class EMMetadata(BaseModel):
                 SliceMetadata(
                     slice=slice,
                     zooms=piramid.zooms,
-                    minzoom=piramid.minzoom + 1,
+                    minzoom=piramid.minzoom,
                     maxzoom=piramid.maxzoom,
                     tile_size=piramid.tile_dimensions,
                 )
@@ -184,6 +184,27 @@ class EMMetadata(BaseModel):
             number_slices=len(metadata),
             slice_range=(min(available_slices), max(available_slices)),
             slices=metadata,
+        )
+
+    def merge(self, emm2: EMMetadata) -> EMMetadata:
+        slices_dict = {s.slice: s for s in self.slices}
+
+        for emm2s in emm2.slices:
+            s = slices_dict.get(emm2s.slice)
+            if s is None or s != emm2s:
+                slices_dict[emm2s.slice] = emm2s
+
+        slices_metadata = [s for s in slices_dict.values()]
+        slices_metadata.sort(key=operator.attrgetter("slice"))
+        slice_range = (
+            min(s.slice for s in slices_metadata),
+            max(s.slice for s in slices_metadata),
+        )
+
+        return EMMetadata(
+            number_slices=len(slices_metadata),
+            slice_range=slice_range,
+            slices=slices_metadata,
         )
 
 
