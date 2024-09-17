@@ -14,6 +14,12 @@ const mapNeuronsToListItem = (neuron: string, isActive: boolean) => ({
   label: neuron,
   checked: isActive,
 });
+
+const mapGroupsToListItem = (group: string, isActive: boolean) => ({
+  id: group,
+  label: group,
+  checked: isActive,
+});
 const mapNeuronsAvailableNeuronsToOptions = (neuron: Neuron) => ({
   id: neuron.name,
   label: neuron.name,
@@ -62,6 +68,9 @@ const Neurons = ({ children }) => {
     .map((neuron: Neuron) => mapNeuronsAvailableNeuronsToOptions(neuron))
     .sort((a, b) => a.label.localeCompare(b.label));
 
+  const handleUpdateNeuronGroupVisibility = (_, group) => {
+    currentWorkspace.updateNeuronGroupVisibility(group.id, group.visible);
+  };
   return (
     <Box
       sx={{
@@ -141,11 +150,11 @@ const Neurons = ({ children }) => {
           {Array.from(Object.keys(groups)).map((groupId) => (
             <CustomListItem
               key={groupId}
-              data={mapNeuronsToListItem(groupId, activeNeurons.has(groupId))}
+              data={mapGroupsToListItem(groupId, groups[groupId].visible)}
               showTooltip={false}
               showExtraActions={true}
               listType="groups"
-              onSwitchChange={() => console.log("switch")}
+              onSwitchChange={(e) => handleUpdateNeuronGroupVisibility(e, groups[groupId])}
               onDelete={() => console.log("delete")}
               deleteTooltipTitle="Remove group from the workspace"
             />

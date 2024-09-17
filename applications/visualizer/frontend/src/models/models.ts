@@ -24,6 +24,7 @@ export interface NeuronGroup {
   name: string;
   color: string;
   neurons: Set<string>;
+  visible: boolean;
 }
 
 export interface EnhancedNeuron extends Neuron {

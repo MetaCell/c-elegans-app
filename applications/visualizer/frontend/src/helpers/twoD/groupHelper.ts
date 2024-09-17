@@ -48,6 +48,7 @@ export const groupNeurons = (selectedNeurons: Set<string>, workspace: Workspace)
     name: originalGroupName || newGroupId,
     color: originalGroupColor,
     neurons: newGroupNeurons,
+    visible: true,
   };
 
   return { newGroupId, newGroup, groupsToDelete };

@@ -71,6 +71,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
         const neuron = draft.availableNeurons[neuronId];
         if (neuron && neuron.viewerData[ViewerType.Graph]) {
           neuron.viewerData[ViewerType.Graph].visibility = Visibility.Hidden;
+          neuron.isVisible = false;
+          draft.selectedNeurons.delete(neuronId);
         }
       });
       draft.selectedNeurons.clear();

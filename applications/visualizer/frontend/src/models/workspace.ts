@@ -67,7 +67,6 @@ export class Workspace {
     });
     this.updateContext(updated);
   }
-
   hideNeuron(neuronId: string): void {
     const updated = produce(this, (draft: Workspace) => {
       if (draft.availableNeurons[neuronId]) {
@@ -163,6 +162,17 @@ export class Workspace {
   createNeuronGroup(neuronGroup: NeuronGroup): void {
     const updated = produce(this, (draft: Workspace) => {
       draft.neuronGroups[neuronGroup.id] = neuronGroup;
+    });
+    this.updateContext(updated);
+  }
+
+  updateNeuronGroupVisibility(groupId: string, isVisible: boolean): void {
+    const updated = produce(this, (draft: Workspace) => {
+      if (draft.neuronGroups[groupId]) {
+        draft.neuronGroups[groupId].visible = !isVisible;
+      } else {
+        throw new Error("Neuron group not found");
+      }
     });
     this.updateContext(updated);
   }
