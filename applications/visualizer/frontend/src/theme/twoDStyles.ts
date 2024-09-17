@@ -258,7 +258,7 @@ const ANNOTATION_STYLES = Object.entries(annotationLegend).map(([, { id, color }
   style: {
     "line-color": color,
     "target-arrow-color": color,
-    "sources-arrow-color": color,
+    "source-arrow-color": color,
   },
 }));
 
