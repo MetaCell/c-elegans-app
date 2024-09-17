@@ -44,6 +44,52 @@ class Synchronizer {
     }
   }
 
+  select(selection: EnhancedNeuron, initiator: ViewerType, contexts: Record<ViewerType, SynchronizerContext>) {
+    if (!this.canHandle(initiator)) {
+      return;
+    }
+
+    if (!this.active) {
+      contexts[initiator] = [...new Set([...contexts[initiator], selection.name])];
+      return;
+    }
+
+    for (const viewer of this.viewers) {
+      contexts[viewer] = [...new Set([...contexts[viewer], selection.name])];
+    }
+  }
+  unSelect(selection: EnhancedNeuron, initiator: ViewerType, contexts: Record<ViewerType, SynchronizerContext>) {
+    if (!this.canHandle(initiator)) {
+      return;
+    }
+
+    if (!this.active) {
+      const storedNodes = [...contexts[initiator]];
+      contexts[initiator] = storedNodes.filter((n) => n !== selection.name);
+      return;
+    }
+
+    for (const viewer of this.viewers) {
+      const storedNodes = [...contexts[viewer]];
+      contexts[viewer] = storedNodes.filter((n) => n !== selection.name);
+    }
+  }
+
+  clear(initiator: ViewerType, contexts: Record<ViewerType, SynchronizerContext>) {
+    if (!this.canHandle(initiator)) {
+      return;
+    }
+
+    if (!this.active) {
+      contexts[initiator] = [];
+      return;
+    }
+
+    for (const viewer of this.viewers) {
+      contexts[viewer] = [];
+    }
+  }
+
   setActive(isActive: boolean) {
     this.active = isActive;
   }
@@ -80,6 +126,24 @@ export class SynchronizerOrchestrator {
   public select(selection: Selection, initiator: ViewerType) {
     for (const synchronizer of this.synchronizers) {
       synchronizer.sync(selection, initiator, this.contexts);
+    }
+  }
+
+  public selectNeuron(selection: EnhancedNeuron, initiator: ViewerType) {
+    for (const synchronizer of this.synchronizers) {
+      synchronizer.select(selection, initiator, this.contexts);
+    }
+  }
+
+  public unSelectNeuron(selection: EnhancedNeuron, initiator: ViewerType) {
+    for (const synchronizer of this.synchronizers) {
+      synchronizer.unSelect(selection, initiator, this.contexts);
+    }
+  }
+
+  public clearSelection(initiator: ViewerType) {
+    for (const synchronizer of this.synchronizers) {
+      synchronizer.clear(initiator, this.contexts);
     }
   }
 

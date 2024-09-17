@@ -121,16 +121,24 @@ export class Workspace {
     const updatedWithNeurons = await this._getAvailableNeurons(updated);
     this.updateContext(updatedWithNeurons);
   }
-
-  toggleSelectedNeuron(neuronId: string): void {
-    const updated = produce(this, (draft: Workspace) => {
-      if (draft.selectedNeurons.has(neuronId)) {
-        draft.selectedNeurons.delete(neuronId);
-      } else {
+  addSelectedNeuron(neuronId: string): Workspace {
+    const update = produce(this, (draft: Workspace) => {
+      if (!draft.selectedNeurons.has(neuronId)) {
         draft.selectedNeurons.add(neuronId);
       }
     });
-    this.updateContext(updated);
+    this.updateContext(update);
+    return update;
+  }
+
+  removeSelectedNeuron(neuronId: string): Workspace {
+    const update = produce(this, (draft: Workspace) => {
+      if (draft.selectedNeurons.has(neuronId)) {
+        draft.selectedNeurons.delete(neuronId);
+      }
+    });
+    this.updateContext(update);
+    return update;
   }
 
   setActiveNeurons(newActiveNeurons: Set<string>): void {
@@ -140,11 +148,12 @@ export class Workspace {
     this.updateContext(updated);
   }
 
-  clearSelectedNeurons(): void {
+  clearSelectedNeurons(): Workspace {
     const updated = produce(this, (draft: Workspace) => {
       draft.selectedNeurons.clear();
     });
     this.updateContext(updated);
+    return updated;
   }
 
   updateViewerSynchronizationStatus(pair: ViewerSynchronizationPair, isActive: boolean): void {
@@ -235,6 +244,25 @@ export class Workspace {
     const selectedNeurons = Object.values(this.availableNeurons).filter((neuron) => selection.includes(neuron.name));
     this.customUpdate((draft) => {
       draft.syncOrchestrator.select(selectedNeurons, initiator);
+    });
+  }
+  clearSelection(initiator: ViewerType) {
+    this.customUpdate((draft) => {
+      draft.syncOrchestrator.clearSelection(initiator);
+    });
+  }
+
+  addSelection(selection: string, initiator: ViewerType) {
+    const selectedNeurons = this.availableNeurons[selection];
+    this.customUpdate((draft) => {
+      draft.syncOrchestrator.selectNeuron(selectedNeurons, initiator);
+    });
+  }
+
+  removeSelection(selection: string, initiator: ViewerType) {
+    const selectedNeurons = this.availableNeurons[selection];
+    this.customUpdate((draft) => {
+      draft.syncOrchestrator.unSelectNeuron(selectedNeurons, initiator);
     });
   }
 
