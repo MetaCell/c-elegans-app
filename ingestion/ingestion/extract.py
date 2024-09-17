@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import logging
 from argparse import ArgumentParser, Namespace
 
+from pydantic import BaseModel
+
 from ingestion.cli import type_directory, type_file
+
+logger = logging.getLogger(__name__)
 
 
 def add_flags(parser: ArgumentParser):
@@ -32,10 +37,18 @@ def add_flags(parser: ArgumentParser):
     )
 
 
+class Metadata(BaseModel):
+    resolution: tuple[int, int]
+
+
 def extract_cmd(args: Namespace, *, debug: bool = False):
     from tqdm import tqdm
 
-    from ingestion.seg_extraction import extract, parse_entries  # type: ignore
+    from ingestion.seg_extraction import (  # type: ignore
+        extract,
+        extract_slice_number,
+        parse_entries,
+    )
 
     metadata_path = args.lut
     segmentation_folder = args.img_path
@@ -44,9 +57,12 @@ def extract_cmd(args: Namespace, *, debug: bool = False):
         if segmentation_folder.is_dir()
         else [segmentation_folder]
     )
+
+    resolutions_dict: dict[int, tuple[int, int]] = {}
+
     for file in tqdm(files):
         tqdm.write(f"Extracting segments from {file}")
-        extract(
+        resolution = extract(
             file,
             parse_entries(metadata_path),
             overwrite=args.overwrite,
@@ -54,6 +70,24 @@ def extract_cmd(args: Namespace, *, debug: bool = False):
             write_json=not args.no_json,
             print=tqdm.write,
         )
+
+        if resolution is not None:
+            slice = extract_slice_number(file)
+            resolutions_dict[slice] = resolution
+
+    resolutions = [res for res in resolutions_dict.values()]
+    are_same = [resolutions[0] == res for res in resolutions[1:]]
+    if not are_same:
+        logger.warning(
+            "skipping resolution metadata upload: multiple resolutions found for same dataset"
+        )
+        return
+
+    resolution = resolutions[0]
+
+    metadata_path = segmentation_folder / "metadata.json"
+    with open(metadata_path, "w") as f:
+        f.write(Metadata(resolution=resolution).model_dump_json())
 
 
 if __name__ == "__main__":

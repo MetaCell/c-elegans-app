@@ -15,6 +15,10 @@ def fs_segmentation_blob_name(dataset_id: str, p: Path) -> str:
     return f"{dataset_id}/segmentations/s{match.group(1)}.json"
 
 
+def fs_resolutions_metadata_blob_name(dataset_id: str) -> str:
+    return f"{dataset_id}/segmentations/metadata.json"
+
+
 def fs_3d_blob_name(dataset_id: str, p: Path) -> str:
     name = p.name
     if re.search(r"-[^-]+\.stl", p.name):

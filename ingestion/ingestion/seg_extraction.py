@@ -1,6 +1,7 @@
 # type: ignore
 from __future__ import annotations
 
+import re
 from argparse import ArgumentParser
 from dataclasses import dataclass
 from dataclasses import fields as dataclass_fields
@@ -78,6 +79,18 @@ def parse_entry(line, fields):
     return LUTEntry(**{k: v for k, v in preformat.items() if k in dc_fields})
 
 
+SEGMENTATION_REGEX = r".*s(\d+)\.png$"
+
+
+def extract_slice_number(filepath: Path) -> int:
+    match = re.search(SEGMENTATION_REGEX, str(filepath))
+    if match:
+        return int(match.group(1))
+    raise Exception(
+        f"unable to extract slice number from segmentation file: {filepath}"
+    )
+
+
 def extract(
     img_path,
     metadata_entries,
@@ -85,7 +98,7 @@ def extract(
     write_json=True,
     write_img=False,
     print=print,
-):
+) -> tuple[int, int] | None:
     result_json_path = img_path.parent / f"{img_path.stem}.json"
     if not overwrite and result_json_path.exists():
         print(f"JSON position {result_json_path} already exist, skipping")
@@ -139,7 +152,7 @@ def extract(
         i += 1
     print(f"  * Labels polygon extraction: {time() - t}s")
 
-    shape = dimg.Size(0), dimg.Size(1)
+    shape: tuple[int, int] = dimg.Size(0), dimg.Size(1)
     if write_img:
         from PIL import Image
 
@@ -176,6 +189,7 @@ def extract(
 
         result_json_path.write_text(rewind(geojson.dumps(fc)))
         print(f"  ** JSON saved as {result_json_path}\n")
+    return shape
 
 
 if __name__ == "__main__":

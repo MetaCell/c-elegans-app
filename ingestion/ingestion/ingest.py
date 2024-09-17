@@ -20,12 +20,14 @@ from ingestion.storage.blob import (
     em_metadata_blob_name,
     fs_3d_blob_name,
     fs_em_tile_blob_name,
+    fs_resolutions_metadata_blob_name,
     fs_segmentation_blob_name,
 )
 from ingestion.storage.filesystem import (
     find_3d_files,
     find_data_files,
     find_segmentation_files,
+    find_segmentation_resolution_metadata_file,
     load_data,
     load_tiles,
 )
@@ -201,6 +203,20 @@ def upload_segmentations(
             fs_segmentation_blob_name(dataset_id, segmentation_file),
             overwrite=overwrite,
         )
+
+    # upload segmentation images resolution metadata
+    resolutions_metadata = find_segmentation_resolution_metadata_file(seg_paths)
+    if resolutions_metadata is None:
+        logger.warning(
+            "skipping segmentation resolutions metadata upload: file not found"
+        )
+        return
+
+    rs.upload(
+        resolutions_metadata,
+        fs_resolutions_metadata_blob_name(dataset_id),
+        overwrite=overwrite,
+    )
 
 
 def upload_3d(

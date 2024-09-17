@@ -111,6 +111,22 @@ def find_segmentation_files(paths: list[Path]) -> Generator[tuple[Slice, Path]]:
     )
 
 
+def find_segmentation_resolution_metadata_file(paths: list[Path]) -> Path | None:
+    if len(paths) == 0:
+        return None
+
+    if len(paths) == 1 and paths[0].is_dir():
+        metadata_path = paths[0] / "metadata.json"
+        if metadata_path.exists() and metadata_path.is_file():
+            return metadata_path
+        return None
+
+    metadata_path = paths[0].parent / "metadata.json"
+    if not metadata_path.exists():
+        return None
+    return metadata_path
+
+
 def find_3d_files(paths: list[Path]) -> Generator[Path]:
     if len(paths) == 1 and paths[0].is_dir():
         return (f for f in paths[0].rglob("*.stl"))
