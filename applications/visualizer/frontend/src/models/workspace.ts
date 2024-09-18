@@ -4,7 +4,7 @@ import { immerable, produce } from "immer";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
 import { type Dataset, type Neuron, NeuronsService } from "../rest";
 import { GlobalError } from "./Error.ts";
-import { emptyViewerData, type NeuronGroup, type ViewerData, type ViewerSynchronizationPair, ViewerType, Visibility } from "./models";
+import { type NeuronGroup, type ViewerData, type ViewerSynchronizationPair, ViewerType, Visibility, emptyViewerData } from "./models";
 import { type SynchronizerContext, SynchronizerOrchestrator } from "./synchronizer";
 
 export class Workspace {
@@ -240,18 +240,6 @@ export class Workspace {
 
   getViewerSelecedNeurons(viewerType: ViewerType): string[] {
     return this.syncOrchestrator.getSelection(viewerType);
-  }
-  getHiddenNeurons() {
-    const hiddenNodes = new Set<string>();
-
-    for (const neuronId of this.activeNeurons) {
-      const neuron = this.availableNeurons[neuronId];
-      if (neuron && !neuron.isVisible) {
-        hiddenNodes.add(neuronId);
-      }
-    }
-
-    return hiddenNodes;
   }
 
   getNeuronCellsByClass(neuronClassId: string): string[] {

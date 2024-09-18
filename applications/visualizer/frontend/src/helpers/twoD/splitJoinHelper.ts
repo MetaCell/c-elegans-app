@@ -17,7 +17,7 @@ export const processNeuronSplit = (workspace: Workspace, splitJoinState: SplitJo
 
   const groupModifications: Record<string, Set<string>> = {};
   const groupsToDelete = new Set<string>();
-  
+
   for (const neuronId of selectedNeurons) {
     if (!isNeuronClass(neuronId, workspace)) {
       return;
@@ -90,7 +90,7 @@ export const processNeuronJoin = (workspace: Workspace, splitJoinState: SplitJoi
 
   const groupModifications: Record<string, Set<string>> = {};
   const groupsToDelete = new Set<string>();
-  
+
   for (const neuronId of selectedNeurons) {
     if (!isNeuronCell(neuronId, workspace)) {
       return;

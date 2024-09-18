@@ -20,8 +20,8 @@ import { processNeuronJoin, processNeuronSplit } from "../../../helpers/twoD/spl
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
 import { AlignBottomIcon, AlignLeftIcon, AlignRightIcon, AlignTopIcon, DistributeHorizontallyIcon, DistributeVerticallyIcon } from "../../../icons";
 import { Alignment, ViewerType, Visibility } from "../../../models";
-import { vars } from "../../../theme/variables.ts";
 import { emptyViewerData } from "../../../models/models.ts";
+import { vars } from "../../../theme/variables.ts";
 
 const { gray700 } = vars;
 
@@ -69,7 +69,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
   };
   const handleHide = () => {
     workspace.customUpdate((draft) => {
-      for (const neuronId of workspace.selectedNeurons) {
+      for (const neuronId of selectedNeurons) {
         if (!(neuronId in draft.visibilities)) {
           draft.visibilities[neuronId] = emptyViewerData(Visibility.Hidden);
         } else {
