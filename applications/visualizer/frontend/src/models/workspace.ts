@@ -255,16 +255,14 @@ export class Workspace {
   }
 
   addSelection(selection: string, initiator: ViewerType) {
-    const selectedNeurons = this.availableNeurons[selection];
     this.customUpdate((draft) => {
-      draft.syncOrchestrator.selectNeuron(selectedNeurons, initiator);
+      draft.syncOrchestrator.selectNeuron(selection, initiator);
     });
   }
 
   removeSelection(selection: string, initiator: ViewerType) {
-    const selectedNeurons = this.availableNeurons[selection];
     this.customUpdate((draft) => {
-      draft.syncOrchestrator.unSelectNeuron(selectedNeurons, initiator);
+      draft.syncOrchestrator.unSelectNeuron(selection, initiator);
     });
   }
 
