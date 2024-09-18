@@ -1,4 +1,9 @@
+import { CameraControls, PerspectiveCamera } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
+import { ViewerType, getNeuronUrlForDataset } from "../../../models/models.ts";
+import { type Dataset, OpenAPI } from "../../../rest";
 import {
   CAMERA_FAR,
   CAMERA_FOV,
@@ -9,17 +14,11 @@ import {
   LIGHT_2_POSITION,
   SCENE_BACKGROUND,
 } from "../../../settings/threeDSettings.ts";
-import { CameraControls, PerspectiveCamera } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
-import { OpenAPI, type Dataset } from "../../../rest";
+import DatasetPicker from "./DatasetPicker.tsx";
 import Gizmo from "./Gizmo.tsx";
 import Loader from "./Loader.tsx";
 import STLViewer from "./STLViewer.tsx";
 import SceneControls from "./SceneControls.tsx";
-import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
-import DatasetPicker from "./DatasetPicker.tsx";
-import { getVisibleNeuronsInThreeD } from "../../../helpers/threeD/threeDHelpers.ts";
-import { getNeuronUrlForDataset, ViewerType } from "../../../models/models.ts";
 
 export interface Instance {
   id: string;
