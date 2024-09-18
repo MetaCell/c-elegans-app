@@ -48,7 +48,7 @@ function ThreeDViewer() {
   useEffect(() => {
     if (!selectedDataset) return;
 
-    const visibleNeurons = getVisibleNeuronsInThreeD(workspace);
+    const visibleNeurons = workspace.getVisibleNeuronsInThreeD();
     const newInstances: Instance[] = visibleNeurons.flatMap((neuronId) => {
       const neuron = workspace.availableNeurons[neuronId];
       const viewerData = workspace.visibilities[neuronId]?.[ViewerType.ThreeD];

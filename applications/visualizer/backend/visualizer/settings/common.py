@@ -154,7 +154,7 @@ NINJA_PAGINATION_PER_PAGE = 100
 
 
 NEURON_REPRESENTATION_3D_URL_FORMAT = "resources/{{dataset}}/3d/{name}.stl"
-DATASET_NEURON_REPRESENTATION_3D_URL_FORMAT = "resources/{dataset}/3d/{{name}}"
+DATASET_NEURON_REPRESENTATION_3D_URL_FORMAT = "resources/{dataset}/3d/{{name}}.stl"
 # DATASET_EMDATA_URL_FORMAT = (
 #     f"resources/sem-adult/catmaid-tiles/{{index}}/{{x}}_{{y}}_{{z}}.jpg"
 # )

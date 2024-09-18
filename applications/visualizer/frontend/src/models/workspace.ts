@@ -276,4 +276,8 @@ export class Workspace {
     const neuron = this.availableNeurons[neuronId];
     return neuron.nclass;
   }
+   
+  getVisibleNeuronsInThreeD(): string[] {
+    return Array.from(this.activeNeurons).filter((neuronId) => this.visibilities[neuronId]?.[ViewerType.ThreeD]?.visibility === Visibility.Visible);
+  }
 }
