@@ -12,6 +12,7 @@ interface Props {
 }
 
 const STLViewer: FC<Props> = ({ instances, isWireframe }) => {
+
   // TODO: Check if useLoader caches or do we need to do it ourselves
   // @ts-expect-error Argument type STLLoader is not assignable to parameter type LoaderProto<T>
   const stlObjects = useLoader<STLLoader, BufferGeometry[]>(

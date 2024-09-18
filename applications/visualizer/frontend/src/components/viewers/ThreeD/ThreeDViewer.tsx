@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   CAMERA_FAR,
   CAMERA_FOV,
@@ -9,24 +9,18 @@ import {
   LIGHT_2_POSITION,
   SCENE_BACKGROUND,
 } from "../../../settings/threeDSettings.ts";
-
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { IconButton, Typography } from "@mui/material";
 import { CameraControls, PerspectiveCamera } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { useSelector } from "react-redux";
-import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
-import { CheckIcon, CloseIcon } from "../../../icons";
-import type { RootState } from "../../../layout-manager/layoutManagerFactory.ts";
-import type { Dataset } from "../../../rest";
-import { vars } from "../../../theme/variables.ts";
-import CustomAutocomplete from "../../CustomAutocomplete.tsx";
+import { OpenAPI, type Dataset } from "../../../rest";
 import Gizmo from "./Gizmo.tsx";
 import Loader from "./Loader.tsx";
 import STLViewer from "./STLViewer.tsx";
 import SceneControls from "./SceneControls.tsx";
+import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
+import DatasetPicker from "./DatasetPicker.tsx";
+import { getVisibleNeuronsInThreeD } from "../../../helpers/threeD/threeDHelpers.ts";
+import { getNeuronUrlForDataset, ViewerType } from "../../../models/models.ts";
 
-const { gray100, gray600 } = vars;
 export interface Instance {
   id: string;
   url: string;
@@ -35,99 +29,50 @@ export interface Instance {
 }
 
 function ThreeDViewer() {
+
+  const workspace = useSelectedWorkspace();
+  const dataSets = useMemo(() => Object.values(workspace.activeDatasets), [workspace.activeDatasets]);
+
+  const [selectedDataset, setSelectedDataset] = useState<Dataset>(dataSets[0]);
+  const [instances, setInstances] = useState<Instance[]>([]);
+  const [isWireframe, setIsWireframe] = useState<boolean>(false);
+
+  const cameraControlRef = useRef<CameraControls | null>(null);
+
   // @ts-expect-error 'setShowNeurons' is declared but its value is never read.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showNeurons, setShowNeurons] = useState<boolean>(true);
   // @ts-expect-error 'setShowSynapses' is declared but its value is never read.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showSynapses, setShowSynapses] = useState<boolean>(true);
-  const [instances, setInstances] = useState<Instance[]>([]);
-  const [isWireframe, setIsWireframe] = useState<boolean>(false);
-  const currentWorkspaceId = useSelector((state: RootState) => state.workspaceId);
-  const { workspaces } = useGlobalContext();
-  const currentWorkspace = workspaces[currentWorkspaceId];
-  const cameraControlRef = useRef<CameraControls | null>(null);
+
 
   useEffect(() => {
-    if (showNeurons) {
-      setInstances([
-        {
-          id: "nerve_ring",
-          url: "resources/nervering-SEM_adult.stl",
-          color: "white",
-          opacity: 0.3,
-        },
-        {
-          id: "adal_sem",
-          url: "resources/ADAL-SEM_adult.stl",
-          color: "blue",
-          opacity: 1,
-        },
-      ]);
-    }
-  }, [showNeurons, showSynapses]);
-
-  const dataSets = Object.values(currentWorkspace.activeDatasets);
+    if (!selectedDataset) return;
+  
+    const visibleNeurons = getVisibleNeuronsInThreeD(workspace);
+    const newInstances: Instance[] = visibleNeurons.flatMap(neuronId => {
+      const neuron = workspace.availableNeurons[neuronId];
+      const viewerData = workspace.visibilities[neuronId]?.[ViewerType.ThreeD];
+      const urls = getNeuronUrlForDataset(neuron, selectedDataset.id);
+      
+      return urls.map((url, index) => ({
+        id: `${neuronId}-${index}`,
+        url: `${OpenAPI.BASE}/${url}`,
+        color: viewerData?.color || "#FFFFFF",
+        opacity: 1,
+      }));
+    });
+    
+    setInstances(newInstances);
+  }, [selectedDataset, workspace.availableNeurons, workspace.visibilities]);
 
   return (
     <>
-      <CustomAutocomplete
-        multiple={false}
-        options={dataSets}
-        onChange={(e) => console.log(e)}
-        getOptionLabel={(option: Dataset) => option.name}
-        renderOption={(props, option) => (
-          <li {...props}>
-            <CheckIcon />
-            <Typography>{option.name}</Typography>
-          </li>
-        )}
-        placeholder="Start typing to search"
-        className="secondary"
-        id="tags-standard"
-        popupIcon={<KeyboardArrowDownIcon />}
-        ChipProps={{
-          deleteIcon: (
-            <IconButton sx={{ p: "0 !important", margin: "0 !important" }}>
-              <CloseIcon />
-            </IconButton>
-          ),
-        }}
-        sx={{
-          position: "absolute",
-          top: ".5rem",
-          right: ".5rem",
-          zIndex: 1,
-          minWidth: "17.5rem",
-          "& .MuiInputBase-root": {
-            padding: "0.5rem 2rem 0.5rem 0.75rem !important",
-            backgroundColor: gray100,
-            boxShadow: "0px 1px 2px 0px rgba(16, 24, 40, 0.05)",
-            "&.Mui-focused": {
-              "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: gray100,
-                boxShadow: "none",
-              },
-            },
-            "& .MuiInputBase-input": {
-              color: gray600,
-              fontWeight: 500,
-            },
-          },
-        }}
-        componentsProps={{
-          paper: {
-            sx: {
-              "& .MuiAutocomplete-listbox": {
-                "& .MuiAutocomplete-option": {
-                  '&[aria-selected="true"]': {
-                    backgroundColor: "transparent !important",
-                  },
-                },
-              },
-            },
-          },
-        }}
+      <DatasetPicker
+        datasets={dataSets}
+        selectedDataset={selectedDataset}
+        onDatasetChange={setSelectedDataset}
       />
       <Canvas style={{ backgroundColor: SCENE_BACKGROUND }} frameloop={"demand"}>
         <Suspense fallback={<Loader />}>

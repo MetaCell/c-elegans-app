@@ -20,8 +20,8 @@ interface CustomAutocompleteProps<T> {
   ChipProps?: ChipProps;
   sx?: SxProps;
   componentsProps?: AutocompleteProps<T, boolean, boolean, boolean>["componentsProps"];
-  value?: T[];
-  onChange: (v: T | T[]) => void;
+  value?: T;
+  onChange: (v: T ) => void;
   disabled?: boolean;
   onInputChange?: (v: string) => void;
 }

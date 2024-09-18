@@ -4,7 +4,7 @@ import { immerable, produce } from "immer";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
 import { type Dataset, type Neuron, NeuronsService } from "../rest";
 import { GlobalError } from "./Error.ts";
-import { emptyViewerData, type NeuronGroup, type ViewerData, type ViewerSynchronizationPair, ViewerType, Visibility } from "./models";
+import { getDefaultViewerData, type NeuronGroup, type ViewerData, type ViewerSynchronizationPair, ViewerType, Visibility } from "./models";
 import { type SynchronizerContext, SynchronizerOrchestrator } from "./synchronizer";
 
 export class Workspace {
@@ -58,7 +58,7 @@ export class Workspace {
     this.layoutManager = layoutManager;
     this.syncOrchestrator = SynchronizerOrchestrator.create(activeSynchronizers, contexts);
 
-    this.visibilities = visibilities || Object.fromEntries([...activeNeurons].map((n) => [n, emptyViewerData(Visibility.Visible)]));
+    this.visibilities = visibilities || Object.fromEntries([...activeNeurons].map((n) => [n, getDefaultViewerData(Visibility.Visible)]));
 
     this.store = store;
     this.updateContext = updateContext;
@@ -69,7 +69,7 @@ export class Workspace {
   activateNeuron(neuron: Neuron): Workspace {
     const updated = produce(this, (draft: Workspace) => {
       draft.activeNeurons.add(neuron.name);
-      draft.visibilities[neuron.name] = emptyViewerData();
+      draft.visibilities[neuron.name] = getDefaultViewerData();
     });
     this.updateContext(updated);
     return updated;
@@ -86,10 +86,11 @@ export class Workspace {
   hideNeuron(neuronId: string): void {
     const updated = produce(this, (draft: Workspace) => {
       if (!(neuronId in draft.visibilities)) {
-        draft.visibilities[neuronId] = emptyViewerData(Visibility.Hidden);
+        draft.visibilities[neuronId] = getDefaultViewerData(Visibility.Hidden);
       }
       // todo: add actions for other viewers
       draft.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Hidden;
+      draft.visibilities[neuronId][ViewerType.ThreeD].visibility = Visibility.Hidden;
     });
     this.updateContext(updated);
   }
@@ -97,10 +98,11 @@ export class Workspace {
   showNeuron(neuronId: string): void {
     const updated = produce(this, (draft: Workspace) => {
       if (!(neuronId in draft.visibilities)) {
-        draft.visibilities[neuronId] = emptyViewerData(Visibility.Visible);
+        draft.visibilities[neuronId] = getDefaultViewerData(Visibility.Visible);
       }
       // todo: add actions for other viewers
       draft.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Visible;
+      draft.visibilities[neuronId][ViewerType.ThreeD].visibility = Visibility.Visible;
     });
 
     this.updateContext(updated);
@@ -219,7 +221,7 @@ export class Workspace {
 
         const className = neuron.nclass;
         if (!(className in neuronsClass)) {
-          const neuronClass = { ...neuron, name: className };
+          const neuronClass = { ...neuron, name: className, model3DUrls: [...neuron.model3DUrls], datasetIds: [...neuron.datasetIds] };
           neuronsClass[className] = neuronClass;
           uniqueNeurons.add(neuronClass);
         } else {
