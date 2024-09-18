@@ -18,7 +18,6 @@ export class Workspace {
   availableNeurons: Record<string, EnhancedNeuron>;
   // neuronId
   activeNeurons: Set<string>;
-  selectedNeurons: Set<string>;
   viewers: Record<ViewerType, boolean>;
   neuronGroups: Record<string, NeuronGroup>;
 
@@ -34,7 +33,6 @@ export class Workspace {
     this.activeDatasets = activeDatasets;
     this.availableNeurons = {};
     this.activeNeurons = activeNeurons || new Set();
-    this.selectedNeurons = new Set();
     this.viewers = {
       [ViewerType.Graph]: true,
       [ViewerType.ThreeD]: false,
@@ -72,7 +70,7 @@ export class Workspace {
     const updated = produce(this, (draft: Workspace) => {
       if (draft.availableNeurons[neuronId]) {
         draft.availableNeurons[neuronId].isVisible = false;
-        draft.selectedNeurons.delete(neuronId);
+        draft.removeSelection(neuronId, ViewerType.Graph);
         // todo: add actions for other viewers
         draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].visibility = Visibility.Hidden;
       }
@@ -106,41 +104,12 @@ export class Workspace {
     const updatedWithNeurons = await this._getAvailableNeurons(updated);
     this.updateContext(updatedWithNeurons);
   }
-  addSelectedNeuron(neuronId: string): Workspace {
-    const update = produce(this, (draft: Workspace) => {
-      if (!draft.selectedNeurons.has(neuronId)) {
-        draft.selectedNeurons.add(neuronId);
-      }
-    });
-    this.updateContext(update);
-    return update;
-  }
-
-  removeSelectedNeuron(neuronId: string): Workspace {
-    const update = produce(this, (draft: Workspace) => {
-      if (draft.selectedNeurons.has(neuronId)) {
-        draft.selectedNeurons.delete(neuronId);
-      }
-    });
-    this.updateContext(update);
-    return update;
-  }
-
   setActiveNeurons(newActiveNeurons: Set<string>): void {
     const updated = produce(this, (draft: Workspace) => {
       draft.activeNeurons = newActiveNeurons;
     });
     this.updateContext(updated);
   }
-
-  clearSelectedNeurons(): Workspace {
-    const updated = produce(this, (draft: Workspace) => {
-      draft.selectedNeurons.clear();
-    });
-    this.updateContext(updated);
-    return updated;
-  }
-
   updateViewerSynchronizationStatus(pair: ViewerSynchronizationPair, isActive: boolean): void {
     const updated = produce(this, (draft: Workspace) => {
       draft.syncOrchestrator.setActive(pair, isActive);
@@ -250,31 +219,37 @@ export class Workspace {
   }
 
   setSelection(selection: Array<string>, initiator: ViewerType) {
-    const selectedNeurons = Object.values(this.availableNeurons).filter((neuron) => selection.includes(neuron.name));
     this.customUpdate((draft) => {
-      draft.syncOrchestrator.select(selectedNeurons, initiator);
+      draft.syncOrchestrator.select(selection, initiator);
     });
   }
-  clearSelection(initiator: ViewerType) {
-    this.customUpdate((draft) => {
+  clearSelection(initiator: ViewerType): Workspace {
+    const updated = produce(this, (draft: Workspace) => {
       draft.syncOrchestrator.clearSelection(initiator);
     });
+    this.updateContext(updated);
+    return updated;
   }
 
   addSelection(selection: string, initiator: ViewerType) {
-    const selectedNeurons = this.availableNeurons[selection];
     this.customUpdate((draft) => {
-      draft.syncOrchestrator.selectNeuron(selectedNeurons, initiator);
+      draft.syncOrchestrator.selectNeuron(selection, initiator);
     });
   }
 
   removeSelection(selection: string, initiator: ViewerType) {
-    const selectedNeurons = this.availableNeurons[selection];
     this.customUpdate((draft) => {
-      draft.syncOrchestrator.unSelectNeuron(selectedNeurons, initiator);
+      draft.syncOrchestrator.unSelectNeuron(selection, initiator);
     });
   }
 
+  getSelection(viewerType: ViewerType): string[] {
+    return this.syncOrchestrator.getSelection(viewerType);
+  }
+
+  getViewerSelecedNeurons(viewerType: ViewerType): string[] {
+    return this.syncOrchestrator.getSelection(viewerType);
+  }
   getHiddenNeurons() {
     const hiddenNodes = new Set<string>();
 

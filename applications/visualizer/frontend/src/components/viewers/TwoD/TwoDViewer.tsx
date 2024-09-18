@@ -68,6 +68,9 @@ const TwoDViewer = () => {
     reportedNeurons: new Set(),
     unreportedNeurons: new Set(),
   });
+
+  const selectedNeurons = workspace.getViewerSelecedNeurons(ViewerType.Graph);
+
   const visibleActiveNeurons = useMemo(() => {
     return getVisibleActiveNeuronsIn2D(workspace);
   }, [
@@ -182,9 +185,9 @@ const TwoDViewer = () => {
 
   useEffect(() => {
     if (cyRef.current) {
-      updateHighlighted(cyRef.current, Array.from(visibleActiveNeurons), Array.from(workspace.selectedNeurons), legendHighlights);
+      updateHighlighted(cyRef.current, Array.from(visibleActiveNeurons), selectedNeurons, legendHighlights);
     }
-  }, [legendHighlights, workspace.selectedNeurons, workspace.neuronGroups]);
+  }, [legendHighlights, selectedNeurons, workspace.neuronGroups]);
 
   // Update layout when layout setting changes
   useEffect(() => {
@@ -245,20 +248,21 @@ const TwoDViewer = () => {
 
     const handleNodeClick = (event) => {
       const neuronId = event.target.id();
-      const isSelected = workspace.selectedNeurons.has(neuronId);
+      const selectedNeurons = workspace.getSelection(ViewerType.Graph);
+      const isSelected = selectedNeurons.includes(neuronId);
 
       if (isSelected) {
-        workspace.removeSelectedNeuron(neuronId).removeSelection(neuronId, ViewerType.Graph);
+        workspace.removeSelection(neuronId, ViewerType.Graph);
         event.target.removeClass(SELECTED_CLASS);
       } else {
-        workspace.addSelectedNeuron(neuronId).addSelection(neuronId, ViewerType.Graph);
+        workspace.addSelection(neuronId, ViewerType.Graph);
         event.target.addClass(SELECTED_CLASS);
       }
     };
 
     const handleBackgroundClick = (event) => {
       if (event.target === cy) {
-        workspace.clearSelectedNeurons().clearSelection(ViewerType.Graph);
+        workspace.clearSelection(ViewerType.Graph);
         cy.nodes(`.${SELECTED_CLASS}`).removeClass(SELECTED_CLASS);
 
         setLegendHighlights(new Map()); // Reset legend highlights
@@ -270,8 +274,8 @@ const TwoDViewer = () => {
 
       const cyEvent = event as any; // Cast to any to access originalEvent
       const originalEvent = cyEvent.originalEvent as MouseEvent;
-
-      if (workspace.selectedNeurons.size > 0) {
+      const selectedNeurons = workspace.getViewerSelecedNeurons(ViewerType.Graph);
+      if (selectedNeurons.length > 0) {
         setMousePosition({
           mouseX: originalEvent.clientX,
           mouseY: originalEvent.clientY,
@@ -381,7 +385,7 @@ const TwoDViewer = () => {
     });
 
     updateNodeColors();
-    updateHighlighted(cy, Array.from(visibleActiveNeurons), Array.from(workspace.selectedNeurons), legendHighlights);
+    updateHighlighted(cy, Array.from(visibleActiveNeurons), selectedNeurons, legendHighlights);
     checkSplitNeuronsInGraph();
   };
 
