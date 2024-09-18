@@ -19,8 +19,6 @@ export class Workspace {
   // neuronId
   activeNeurons: Set<string>;
   visibilities: Record<string, ViewerData>;
-
-  selectedNeurons: Set<string>;
   viewers: Record<ViewerType, boolean>;
   neuronGroups: Record<string, NeuronGroup>;
 
@@ -45,7 +43,6 @@ export class Workspace {
     this.activeDatasets = activeDatasets;
     this.availableNeurons = {};
     this.activeNeurons = activeNeurons || new Set();
-    this.selectedNeurons = new Set();
     this.viewers = {
       [ViewerType.Graph]: true,
       [ViewerType.ThreeD]: false,
@@ -87,6 +84,7 @@ export class Workspace {
     const updated = produce(this, (draft: Workspace) => {
       if (!(neuronId in draft.visibilities)) {
         draft.visibilities[neuronId] = emptyViewerData(Visibility.Hidden);
+        draft.removeSelection(neuronId, ViewerType.Graph);
       }
       // todo: add actions for other viewers
       draft.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Hidden;
@@ -121,32 +119,12 @@ export class Workspace {
     const updatedWithNeurons = await this._getAvailableNeurons(updated);
     this.updateContext(updatedWithNeurons);
   }
-
-  toggleSelectedNeuron(neuronId: string): void {
-    const updated = produce(this, (draft: Workspace) => {
-      if (draft.selectedNeurons.has(neuronId)) {
-        draft.selectedNeurons.delete(neuronId);
-      } else {
-        draft.selectedNeurons.add(neuronId);
-      }
-    });
-    this.updateContext(updated);
-  }
-
   setActiveNeurons(newActiveNeurons: Set<string>): void {
     const updated = produce(this, (draft: Workspace) => {
       draft.activeNeurons = newActiveNeurons;
     });
     this.updateContext(updated);
   }
-
-  clearSelectedNeurons(): void {
-    const updated = produce(this, (draft: Workspace) => {
-      draft.selectedNeurons.clear();
-    });
-    this.updateContext(updated);
-  }
-
   updateViewerSynchronizationStatus(pair: ViewerSynchronizationPair, isActive: boolean): void {
     const updated = produce(this, (draft: Workspace) => {
       draft.syncOrchestrator.setActive(pair, isActive);
@@ -232,10 +210,48 @@ export class Workspace {
   }
 
   setSelection(selection: Array<string>, initiator: ViewerType) {
-    const selectedNeurons = Object.values(this.availableNeurons).filter((neuron) => selection.includes(neuron.name));
     this.customUpdate((draft) => {
-      draft.syncOrchestrator.select(selectedNeurons, initiator);
+      draft.syncOrchestrator.select(selection, initiator);
     });
+  }
+  clearSelection(initiator: ViewerType): Workspace {
+    const updated = produce(this, (draft: Workspace) => {
+      draft.syncOrchestrator.clearSelection(initiator);
+    });
+    this.updateContext(updated);
+    return updated;
+  }
+
+  addSelection(selection: string, initiator: ViewerType) {
+    this.customUpdate((draft) => {
+      draft.syncOrchestrator.selectNeuron(selection, initiator);
+    });
+  }
+
+  removeSelection(selection: string, initiator: ViewerType) {
+    this.customUpdate((draft) => {
+      draft.syncOrchestrator.unSelectNeuron(selection, initiator);
+    });
+  }
+
+  getSelection(viewerType: ViewerType): string[] {
+    return this.syncOrchestrator.getSelection(viewerType);
+  }
+
+  getViewerSelecedNeurons(viewerType: ViewerType): string[] {
+    return this.syncOrchestrator.getSelection(viewerType);
+  }
+  getHiddenNeurons() {
+    const hiddenNodes = new Set<string>();
+
+    for (const neuronId of this.activeNeurons) {
+      const neuron = this.availableNeurons[neuronId];
+      if (neuron && !neuron.isVisible) {
+        hiddenNodes.add(neuronId);
+      }
+    }
+
+    return hiddenNodes;
   }
 
   getNeuronCellsByClass(neuronClassId: string): string[] {

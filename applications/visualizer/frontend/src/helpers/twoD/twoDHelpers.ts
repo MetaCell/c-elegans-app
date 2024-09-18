@@ -13,16 +13,13 @@ export const createEdge = (id: string, conn: Connection, workspace: Workspace, i
   const label = createEdgeLabel(workspace, synapses);
   const longLabel = createEdgeLongLabel(workspace, synapses);
 
-  let annotationClasses: string[] = [];
+  const annotationClasses: string[] = annotations.map((annotation) => annotationLegend[annotation]?.id).filter(Boolean);
 
-  if (includeAnnotations) {
-    annotationClasses = annotations.map((annotation) => annotationLegend[annotation]?.id).filter(Boolean);
-    if (annotationClasses.length === 0) {
-      annotationClasses.push(annotationLegend.notClassified.id);
-    }
-  } else {
-    annotationClasses.push(conn.type);
+  if (includeAnnotations && annotationClasses.length === 0) {
+    annotationClasses.push(annotationLegend.notClassified.id);
   }
+
+  annotationClasses.push(conn.type);
 
   const classes = annotationClasses.join(" ");
   return {
