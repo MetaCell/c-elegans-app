@@ -21,7 +21,7 @@ interface CustomAutocompleteProps<T> {
   sx?: SxProps;
   componentsProps?: AutocompleteProps<T, boolean, boolean, boolean>["componentsProps"];
   value?: T;
-  onChange: (v: T ) => void;
+  onChange: (v: T) => void;
   disabled?: boolean;
   onInputChange?: (v: string) => void;
 }

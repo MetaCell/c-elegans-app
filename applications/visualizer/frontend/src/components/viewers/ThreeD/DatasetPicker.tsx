@@ -1,8 +1,8 @@
-import React from 'react';
-import { Dataset } from '../../../rest';
+import type React from "react";
+import type { Dataset } from "../../../rest";
 import CustomAutocomplete from "../../CustomAutocomplete.tsx";
-import { Typography, IconButton } from '@mui/material';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import { Typography, IconButton } from "@mui/material";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { CheckIcon, CloseIcon } from "../../../icons";
 import { vars } from "../../../theme/variables.ts";
 

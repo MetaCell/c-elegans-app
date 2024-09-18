@@ -36,7 +36,6 @@ export interface ThreeDViewerData {
   color: string;
 }
 
-
 export function getDefaultViewerData(visibility?: Visibility): ViewerData {
   return {
     [ViewerType.Graph]: {

@@ -29,7 +29,6 @@ export interface Instance {
 }
 
 function ThreeDViewer() {
-
   const workspace = useSelectedWorkspace();
   const dataSets = useMemo(() => Object.values(workspace.activeDatasets), [workspace.activeDatasets]);
 
@@ -46,16 +45,15 @@ function ThreeDViewer() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showSynapses, setShowSynapses] = useState<boolean>(true);
 
-
   useEffect(() => {
     if (!selectedDataset) return;
-  
+
     const visibleNeurons = getVisibleNeuronsInThreeD(workspace);
-    const newInstances: Instance[] = visibleNeurons.flatMap(neuronId => {
+    const newInstances: Instance[] = visibleNeurons.flatMap((neuronId) => {
       const neuron = workspace.availableNeurons[neuronId];
       const viewerData = workspace.visibilities[neuronId]?.[ViewerType.ThreeD];
       const urls = getNeuronUrlForDataset(neuron, selectedDataset.id);
-      
+
       return urls.map((url, index) => ({
         id: `${neuronId}-${index}`,
         url: `${OpenAPI.BASE}/${url}`,
@@ -63,17 +61,13 @@ function ThreeDViewer() {
         opacity: 1,
       }));
     });
-    
+
     setInstances(newInstances);
   }, [selectedDataset, workspace.availableNeurons, workspace.visibilities]);
 
   return (
     <>
-      <DatasetPicker
-        datasets={dataSets}
-        selectedDataset={selectedDataset}
-        onDatasetChange={setSelectedDataset}
-      />
+      <DatasetPicker datasets={dataSets} selectedDataset={selectedDataset} onDatasetChange={setSelectedDataset} />
       <Canvas style={{ backgroundColor: SCENE_BACKGROUND }} frameloop={"demand"}>
         <Suspense fallback={<Loader />}>
           <PerspectiveCamera
