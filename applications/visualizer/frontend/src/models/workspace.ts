@@ -268,4 +268,9 @@ export class Workspace {
       .filter((neuron) => neuron.nclass === neuronClassId && neuron.nclass !== neuron.name)
       .map((neuron) => neuron.name);
   }
+
+  getNeuronClass(neuronId: string): string {
+    const neuron = this.availableNeurons[neuronId];
+    return neuron.nclass;
+  }
 }

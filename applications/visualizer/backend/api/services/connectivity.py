@@ -113,7 +113,7 @@ def merge_gap_junctions(gap_junctions):
 def query_annotations(cells, include_neighboring_cells, dataset_type):
     # Prepare the SQL query
     sql_query = f"""
-    SELECT pre, post, type, annotation
+    SELECT id, pre, post, type, annotation
     FROM api_annotation
     WHERE (pre IN ({', '.join(['%s'] * len(cells))})
     {'OR' if include_neighboring_cells else 'AND'} post IN ({', '.join(['%s'] * len(cells))}))
