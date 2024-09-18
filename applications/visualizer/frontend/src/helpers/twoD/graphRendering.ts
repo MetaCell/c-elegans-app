@@ -114,15 +114,7 @@ export const computeGraphDifferences = (
         });
         const groupPosition = calculateMeanPosition(groupNeurons, workspace);
         nodesToAdd.push(
-          createNode(
-            nodeId,
-            selectedNeurons.includes(nodeId),
-            Array.from(attributes),
-            groupPosition,
-            true,
-            undefined,
-            workspace.activeNeurons.has(nodeId),
-          ),
+          createNode(nodeId, selectedNeurons.includes(nodeId), Array.from(attributes), groupPosition, true, undefined, workspace.activeNeurons.has(nodeId)),
         );
       } else {
         let parent = undefined;
