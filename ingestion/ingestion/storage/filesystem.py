@@ -127,11 +127,28 @@ def find_segmentation_resolution_metadata_file(paths: list[Path]) -> Path | None
     return metadata_path
 
 
-def find_3d_files(paths: list[Path]) -> Generator[Path]:
-    if len(paths) == 1 and paths[0].is_dir():
-        return (f for f in paths[0].rglob("*.stl"))
+DEFAULT_EXCLUDED_WORDS = ["synapse"]
 
-    return (path for path in paths if path.suffix == ".stl")
+
+def find_3d_files(
+    paths: list[Path], *, exclude_files_w_words: list[str] = DEFAULT_EXCLUDED_WORDS
+) -> Generator[Path]:
+    def contains_word(s: str, word_list: list[str]) -> bool:
+        return any(word in s for word in word_list)
+
+    if len(paths) == 1 and paths[0].is_dir():
+        return (
+            f
+            for f in paths[0].rglob("*.stl")
+            if not contains_word(str(f), exclude_files_w_words)
+        )
+
+    return (
+        path
+        for path in paths
+        if path.suffix == ".stl"
+        if not contains_word(str(path), exclude_files_w_words)
+    )
 
 
 def extract_tile_metadata(f: Path) -> Tile:
@@ -161,6 +178,7 @@ TILE_GLOB = "*_*_*.jpg"
 
 
 def load_tiles(paths: list[Path]) -> Generator[Tile]:
+
     # handle path being a single directory
     if len(paths) == 1 and paths[0].is_dir():
         paths = [f for f in paths[0].rglob(TILE_GLOB)]
