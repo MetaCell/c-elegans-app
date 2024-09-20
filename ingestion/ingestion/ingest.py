@@ -50,6 +50,13 @@ def add_flags(parser: ArgumentParser):
     )
 
     parser.add_argument(
+        "--dry-run",
+        default=False,
+        action="store_true",
+        help="show what would have been uploaded and where",
+    )
+
+    parser.add_argument(
         "--prune",
         help="prune files in the bucket before upload",
         default=False,
@@ -188,7 +195,7 @@ def upload_segmentations(
         logger.warning("skipping segmentation upload: no files matched")
         return
 
-    pbar = tqdm(seg_files)
+    pbar = tqdm(seg_files, disable=rs.dry_run)
     for _, segmentation_file in pbar:
         pbar.set_description(str(segmentation_file))
         rs.upload(
@@ -224,7 +231,7 @@ def upload_3d(
         logger.warning("skipping 3D files upload: no files matched")
         return
 
-    pbar = tqdm(files_3d)
+    pbar = tqdm(files_3d, disable=rs.dry_run)
     for f3d in pbar:
         pbar.set_description(str(f3d))
         rs.upload(f3d, fs_3d_blob_name(dataset_id, f3d), overwrite=overwrite)
@@ -279,12 +286,10 @@ def upload_tileset_metadata(
 
     logger.info(f"saving EM tiles metadata in {local_metadata_path}...")
 
-    json_content = metadata.model_dump_json()
-
     with open(local_metadata_path, "w") as f:
-        f.write(json_content)
+        f.write(metadata.model_dump_json())
 
-    rs.upload_from_string(json_content, metadata_blob_name, overwrite=overwrite)
+    rs.upload(local_metadata_path, metadata_blob_name, overwrite=overwrite)
 
     logger.info("uploaded EM tiles metadata!")
 
@@ -306,7 +311,7 @@ def upload_em_tiles(
 
     logger.info("uploading EM tiles...")
 
-    pbar = tqdm(tiles)
+    pbar = tqdm(tiles, disable=rs.dry_run)
     for tile in pbar:
         pbar.set_description(str(tile.path))
         rs.upload(
@@ -325,7 +330,8 @@ def ingest_cmd(args: Namespace):
 
     storage_client = storage.Client.from_service_account_json(args.gcp_credentials)
     bucket = storage_client.get_bucket(args.gcp_bucket)
-    rs = RemoteStorage(bucket)
+
+    rs = RemoteStorage(bucket, dry_run=args.dry_run)
 
     if args.prune:
         prune = args.y or ask(
