@@ -81,6 +81,10 @@ def _main(argv: Sequence[str] | None = None):
 
     add_ingest_add_dataset_flags(parser_ingest_add_dataset)
 
+    if argv is not None and len(argv) == 0:
+        parser.print_help(sys.stderr)
+        sys.exit(0)
+
     args = parser.parse_args(argv)
 
     setup_logger(args.debug)
