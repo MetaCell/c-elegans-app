@@ -42,19 +42,12 @@ def _done_message(dataset_name: str) -> str:
 
 
 def add_flags(parser: ArgumentParser):
-    def add_flag(parser: ArgumentParser, name: str, help: str):
-        group = parser.add_mutually_exclusive_group()
-        group.add_argument(
-            f"--{name}",
-            default=True,
-            action="store_true",
-            help=f"{help}",
-        )
-        group.add_argument(
-            f"--no-{name}", dest=name, action="store_false", help=f"don't {help}"
-        )
-
-    add_flag(parser, "overwrite", "overwrite files in the bucket")
+    parser.add_argument(
+        "--overwrite",
+        default=False,
+        action="store_true",
+        help="overwrite files in the bucket",
+    )
 
     parser.add_argument(
         "--prune",
