@@ -182,7 +182,7 @@ const EDGE_LABEL_STYLES = [
       "text-border-radius": "8px",
       "z-compound-depth": "top",
       shape: "roundrectangle",
-      "text-outline-width": 1,
+      "text-outline-width": 0.8,
       "text-outline-color": "rgb(244,244,244)",
     },
   },

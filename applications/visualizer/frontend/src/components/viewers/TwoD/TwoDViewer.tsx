@@ -288,6 +288,7 @@ const TwoDViewer = () => {
     const handleEdgeMouseOut = (event) => {
       event.target.removeClass(HOVER_CLASS);
       event.target.removeClass(FOCUS_CLASS);
+      event.target.removeClass(SHOW_EDGE_LABEL_CLASS);
     };
 
     const handleEdgeFocus = (event) => {
