@@ -105,7 +105,7 @@ def add_add_dataset_flags(parser: ArgumentParser):
             f"--{kind.lower()}",
             default=None,
             type=type_directory,
-            help=f"directory for {kind} data",
+            help=f"{kind} directory",
         )
 
     def add_in_paths(parser: ArgumentParser, kind: str):
