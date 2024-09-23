@@ -33,8 +33,8 @@ class Dataset(BaseModel):
     id: str
     name: str
     type: DatasetType
-    time: float  # TODO: should add validation gte than 0?
-    visualTime: float  # TODO: should add validation gte than 0?
+    time: float
+    visualTime: float
     description: str
     axes: list[Axe] | None = Field(
         default=None, description="different axes and their representation"

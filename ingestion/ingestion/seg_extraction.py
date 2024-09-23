@@ -212,10 +212,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--overwrite", help="Force JSON/img production", action="store_true"
     )
-    args = vars(parser.parse_args())
+    args = parser.parse_args()
 
-    metadata_path = Path(args["lut"])
-    segmentation_folder = Path(args["img_path"])
+    metadata_path = Path(args.lut)
+    segmentation_folder = Path(args.img_path)
     files = (
         list(segmentation_folder.glob("*.png"))
         if segmentation_folder.is_dir()
@@ -226,8 +226,8 @@ if __name__ == "__main__":
         extract(
             file,
             parse_entries(metadata_path),
-            overwrite=args["overwrite"],
-            write_img=args["write_img"],
-            write_json=not args["no_json"],
+            overwrite=args.overwrite,
+            write_img=args.write_img,
+            write_json=not args.no_json,
             print=tqdm.write,
         )

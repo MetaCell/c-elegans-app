@@ -76,7 +76,7 @@ def extract_cmd(args: Namespace, *, debug: bool = False):
             resolutions_dict[slice] = resolution
 
     resolutions = [res for res in resolutions_dict.values()]
-    are_same = [resolutions[0] == res for res in resolutions[1:]]
+    are_same = all(resolutions[0] == res for res in resolutions[1:])
     if not are_same:
         logger.warning(
             "skipping resolution metadata upload: multiple resolutions found for same dataset"
@@ -86,8 +86,7 @@ def extract_cmd(args: Namespace, *, debug: bool = False):
     resolution = resolutions[0]
 
     metadata_path = segmentation_folder / "metadata.json"
-    with open(metadata_path, "w") as f:
-        f.write(Metadata(resolution=resolution).model_dump_json())
+    metadata_path.write_text(Metadata(resolution=resolution).model_dump_json())
 
 
 if __name__ == "__main__":

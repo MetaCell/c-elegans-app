@@ -32,14 +32,14 @@ from ingestion.storage.filesystem import (
     load_data,
     load_tiles,
 )
-from ingestion.storage.gcp import RemoteStorage
+from ingestion.storage.gcp import FakeBucket, RemoteStorage
 from ingestion.xdg import xdg_config_celegans, xdg_gcloud_config
 
 logger = logging.getLogger(__name__)
 
 
-def _done_message(dataset_name: str) -> str:
-    return f"==> Done uploading dataset '{dataset_name}'! ✨"
+def _done_message(dataset_name: str, dry_run: bool = False) -> str:
+    return f"==> Done {'upload simulation for' if dry_run else 'uploading'} dataset '{dataset_name}'! ✨"
 
 
 def add_flags(parser: ArgumentParser):
@@ -73,13 +73,13 @@ def add_flags(parser: ArgumentParser):
 
     ENV_PREFIX = "C_ELEGANS"
 
-    def envOr(name: str, default: str) -> str:
-        return os.environ.get(ENV_PREFIX + "_" + name, default)
+    def env_or(name: str, default: str) -> str:
+        return os.environ.get(f"{ENV_PREFIX}_{name}", default)
 
     parser.add_argument(
         "--gcp-bucket",
         help=f"google storage bucket name (envvar: {ENV_PREFIX}_GCP_BUCKET_NAME)",
-        default=envOr("GCP_BUCKET_NAME", "celegans"),
+        default=env_or("GCP_BUCKET_NAME", "celegans"),
     )
 
     parser.add_argument(
@@ -88,14 +88,16 @@ def add_flags(parser: ArgumentParser):
         type=type_file,
         default=os.environ.get(
             "GOOGLE_APPLICATION_CREDENTIALS",
-            str(xdg_gcloud_config() / "application_default_credentials.json"),
+            f"{xdg_gcloud_config() / 'application_default_credentials.json'}",
         ),
     )
 
 
 def add_add_dataset_flags(parser: ArgumentParser):
     parser.add_argument(
-        "dataset_id",
+        "--id",
+        type=str,
+        required=True,
         help="dataset identifier for the ingested files",
     )
 
@@ -153,13 +155,13 @@ def validate_and_upload_data(
             f"specified dataset '{dataset_id}' was not found in datasets.json"
         )
 
-    logger.info(f"data in {dir} is valid!")
+    logger.info(f"data in {dir} has the right structure and is valid!")
 
     logger.info(f"uploading raw data...")
 
     paths: list[Path] = [data_files.neurons, data_files.datasets]
-    paths += [conn for conn in data_files.connections.values()]
-    paths += [ann for ann in data_files.annotations.values()]
+    paths.extend(conn for conn in data_files.connections.values())
+    paths.extend(ann for ann in data_files.annotations.values())
 
     pbar = tqdm(paths, disable=rs.dry_run)
     for p in pbar:
@@ -169,7 +171,7 @@ def validate_and_upload_data(
     logger.info(f"done uploading raw data!")
 
 
-def prune_bucket(bucket: storage.Bucket):
+def prune_bucket(bucket: storage.Bucket | FakeBucket):
     """Prune the bucket and waits until the bucket is empty by checking it periodically."""
 
     bucket.lifecycle_rules = [{"action": {"type": "Delete"}, "condition": {"age": 0}}]
@@ -205,7 +207,6 @@ def upload_segmentations(
 
     segmentation_files = find_segmentation_files(seg_paths)
 
-    # list cast to have a progression bar (it sucks)
     seg_files = list(segmentation_files)
     if len(seg_files) == 0:
         logger.warning("skipping segmentation upload: no files matched")
@@ -224,7 +225,7 @@ def upload_segmentations(
     resolutions_metadata = find_segmentation_resolution_metadata_file(seg_paths)
     if resolutions_metadata is None:
         logger.warning(
-            "skipping segmentation resolutions metadata upload: file not found"
+            "skipping segmentation resolutions metadata upload: no file found"
         )
         return
 
@@ -242,9 +243,9 @@ def upload_3d(
 
     paths_3d = find_3d_files(paths)
 
-    files_3d = list(paths_3d)  # list cast to have a progression bar (it sucks)
+    files_3d = list(paths_3d)
     if len(files_3d) == 0:
-        logger.warning("skipping 3D files upload: no files matched")
+        logger.warning("skipping 3D files upload: no files found")
         return
 
     pbar = tqdm(files_3d, disable=rs.dry_run)
@@ -274,8 +275,13 @@ def _tiles_root_path(tiles: list[Tile]) -> Path:
 
 
 def upload_tileset_metadata(
-    dataset_id: str, tiles: list[Tile], rs: RemoteStorage, *, overwrite: bool = False
+    dataset_id: str,
+    tiles: list[Tile],
+    rs: RemoteStorage,
+    *,
+    overwrite: bool = False,
 ):
+    dry_run = rs.dry_run
     logger.info("calculating EM tiles metadata...")
 
     metadata_blob_name = em_metadata_blob_name(dataset_id)
@@ -297,17 +303,24 @@ def upload_tileset_metadata(
             )
 
     local_metadata_dir = _tiles_root_path(tiles)
-    local_metadata_dir.mkdir(parents=True, exist_ok=True)
+    if not dry_run:
+        local_metadata_dir.mkdir(parents=True, exist_ok=True)
     local_metadata_path = local_metadata_dir / Path(metadata_blob_name).name
 
-    logger.info(f"saving EM tiles metadata in {local_metadata_path}...")
+    if dry_run:
+        logger.info(
+            f"EM tiles metadata will be saved in {local_metadata_path} and uploaded as {metadata_blob_name}..."
+        )
+    else:
+        logger.info(f"saving EM tiles metadata in {local_metadata_path}...")
 
     with open(local_metadata_path, "w") as f:
         f.write(metadata.model_dump_json())
 
     rs.upload(local_metadata_path, metadata_blob_name, overwrite=overwrite)
 
-    logger.info("uploaded EM tiles metadata!")
+    if not dry_run:
+        logger.info("uploaded EM tiles metadata!")
 
 
 def upload_em_tiles(
@@ -317,7 +330,6 @@ def upload_em_tiles(
     *,
     overwrite: bool = False,
 ):
-    # list cast to have a progression bar, which takes a lot of time (it sucks)
     tiles = list(load_tiles(tile_paths))
     if len(tiles) == 0:
         logger.warning("skipping EM tiles upload: no files matched")
@@ -333,23 +345,26 @@ def upload_em_tiles(
         rs.upload(
             tile.path, fs_em_tile_blob_name(dataset_id, tile), overwrite=overwrite
         )
-        # TODO: the amount of files is a bit overwelming and takes a lot of time
 
 
 def ingest_cmd(args: Namespace):
     """Runs the ingestion command."""
 
-    storage_client = storage.Client.from_service_account_json(args.gcp_credentials)
-    bucket = storage_client.get_bucket(args.gcp_bucket)
-
+    dry_run = args.dry_run
+    if dry_run:
+        bucket = FakeBucket(args.gcp_bucket)
+    else:
+        storage_client = storage.Client.from_service_account_json(args.gcp_credentials)
+        bucket = storage_client.get_bucket(args.gcp_bucket)
     rs = RemoteStorage(bucket, dry_run=args.dry_run)
 
+    dataset_id = args.id
+    overwrite = args.overwrite
+
     if args.data:
-        validate_and_upload_data(
-            args.dataset_id, args.data, rs, overwrite=args.overwrite
-        )
-    else:
-        logger.warning(f"skipping data validation: flag not set")
+        validate_and_upload_data(dataset_id, args.data, rs, overwrite=overwrite)
+    elif dry_run:
+        logger.warning(f"skipping neurons data validation and upload")
 
     if args.prune:
         prune = args.y or ask(
@@ -359,24 +374,22 @@ def ingest_cmd(args: Namespace):
         if prune:
             logger.warning(f"prunning all files from {bucket.name=}...")
             prune_bucket(bucket)
-        else:
+        elif dry_run:
             logger.info(f"skipped prunning files from the bucket")
 
     if args.segmentations:
-        upload_segmentations(
-            args.dataset_id, args.segmentations, rs, overwrite=args.overwrite
-        )
-    else:
-        logger.warning("skipping segmentation upload: flag not set")
+        upload_segmentations(dataset_id, args.segmentations, rs, overwrite=overwrite)
+    elif dry_run:
+        logger.debug("skipping segmentation upload: flag not set")
 
-    if paths := vars(args)["3d"]:
-        upload_3d(args.dataset_id, paths, rs, overwrite=args.overwrite)
-    else:
-        logger.warning("skipping 3D files upload: flag not set")
+    if paths := getattr(args, "3d"):
+        upload_3d(dataset_id, paths, rs, overwrite=overwrite)
+    elif dry_run:
+        logger.debug("skipping 3D files upload: flag not set")
 
     if args.em:
-        upload_em_tiles(args.dataset_id, args.em, rs, overwrite=args.overwrite)
-    else:
-        logger.warning("skipping EM tiles upload: flag not set")
+        upload_em_tiles(dataset_id, args.em, rs, overwrite=overwrite)
+    elif dry_run:
+        logger.debug("skipping EM tiles upload: flag not set")
 
-    print(_done_message(args.dataset_id))
+    print(_done_message(dataset_id, dry_run))

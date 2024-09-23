@@ -20,13 +20,9 @@ class LogFormatter(logging.Formatter):
     FORMATS = {
         logging.DEBUG: Fore.BLACK + _format + Fore.RESET,
         logging.INFO: Fore.CYAN + _format + Fore.RESET,
-        logging.WARNING: Fore.YELLOW + "warning: " + _format + Fore.RESET,
-        logging.ERROR: Fore.RED + "error: " + _format + Fore.RESET,
-        logging.CRITICAL: Fore.RED
-        + Style.BRIGHT
-        + "critial error: "
-        + _format
-        + Style.RESET_ALL,
+        logging.WARNING: f"{Fore.YELLOW}! {_format}{Fore.RESET}",
+        logging.ERROR: f"{Fore.RED}❌ {_format}{Fore.RESET}",
+        logging.CRITICAL: f"{Fore.RED}{Style.BRIGHT}critical error: {_format}{Style.RESET_ALL}",
     }
 
     FORMATS_DEBUG = {

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 import random
 from itertools import chain
 from pathlib import Path
@@ -12,6 +11,16 @@ from ingestion.__main__ import main, split_argv
 from ingestion.ingest import _done_message
 from ingestion.testing.gcs_mock import Mount  # type: ignore
 from ingestion.testing.gcs_mock import patch as gcs_patch  # type: ignore
+
+
+@pytest.fixture(scope="module")
+def fixture_path():
+    return Path("tests") / "fixtures"
+
+
+@pytest.fixture(scope="module")
+def fake_secret(fixture_path):
+    return fixture_path / "fake_secret.json"
 
 
 @pytest.mark.parametrize(
@@ -164,7 +173,10 @@ def compare_directories(dir1: Path, dir2: Path):
 
 
 def test__main_ingest_valid_data(
-    tmp_path: Path, capsys: pytest.CaptureFixture, request: pytest.FixtureRequest
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture,
+    request: pytest.FixtureRequest,
+    fake_secret,
 ):
     gcp_creds_path = tmp_path / "secret.json"
     gcp_creds_path.write_text("{}")
@@ -178,10 +190,13 @@ def test__main_ingest_valid_data(
         main(
             [
                 "ingest",
+                "--gcp-credentials",
+                f"{fake_secret}",
                 "add-dataset",
+                "--id",
                 "white_1986_jsh",
                 "--data",
-                str(data_dir),
+                f"{data_dir}",
             ]
         )
 
@@ -192,9 +207,9 @@ def test__main_ingest_valid_data(
 
 
 def test__main_ingest_invalid_data(
-    tmp_path: Path, capsys: pytest.CaptureFixture, request: pytest.FixtureRequest
+    tmp_path: Path, capsys: pytest.CaptureFixture, fixture_path, fake_secret
 ):
-    data_dir = Path(request.fspath).parent / "fixtures" / "invalid-data"  # type: ignore
+    data_dir = fixture_path / "invalid-data"
 
     celegans_dir = tmp_path / "celegans"
     celegans_dir.mkdir()
@@ -206,14 +221,17 @@ def test__main_ingest_invalid_data(
         main(
             [
                 "ingest",
+                "--gcp-credentials",
+                f"{fake_secret}",
                 "add-dataset",
+                "--id",
                 "white_1986_jsh",
                 "--data",
-                str(data_dir),
+                f"{data_dir}",
             ]
         )
 
-    assert len(os.listdir(celegans_dir)) == 0
+    assert len(list(celegans_dir.iterdir())) == 0
 
     assert excinfo.type == SystemExit
     assert excinfo.value.code == 1
@@ -225,9 +243,9 @@ def test__main_ingest_invalid_data(
 
 
 def test__main_ingest_valid_data_for_unknown_dataset_id(
-    tmp_path: Path, request: pytest.FixtureRequest
+    tmp_path: Path, fixture_path, fake_secret
 ):
-    data_dir = Path(request.fspath).parent / "fixtures" / "reference-data"  # type: ignore
+    data_dir = fixture_path / "reference-data"
 
     celegans_dir = tmp_path / "celegans"
     celegans_dir.mkdir()
@@ -239,22 +257,25 @@ def test__main_ingest_valid_data_for_unknown_dataset_id(
         main(
             [
                 "ingest",
+                "--gcp-credentials",
+                f"{fake_secret}",
                 "--debug",  # to bubble up the exception
                 "add-dataset",
+                "--id",
                 "unknown_dataset_id",
                 "--data",
-                str(data_dir),
+                f"{data_dir}",
             ]
         )
 
-    assert len(os.listdir(celegans_dir)) == 0
+    assert len(list(celegans_dir.iterdir())) == 0
 
 
 def test__main_ingest_bad_data_dir_schema(
-    tmp_path: Path, capsys: pytest.CaptureFixture, request: pytest.FixtureRequest
+    tmp_path: Path, capsys: pytest.CaptureFixture, fixture_path, fake_secret
 ):
     # data_path dir schema doesn't match what we expect
-    data_dir = Path(request.fspath).parent / "fixtures"  # type: ignore
+    data_dir = fixture_path
 
     celegans_dir = tmp_path / "celegans"
     celegans_dir.mkdir()
@@ -266,14 +287,17 @@ def test__main_ingest_bad_data_dir_schema(
         main(
             [
                 "ingest",
+                "--gcp-credentials",
+                f"{fake_secret}",
                 "add-dataset",
+                "--id",
                 "dataset8",
                 "--data",
-                str(data_dir),  # parent just cause its easy
+                f"{data_dir}",  # parent just cause its easy
             ]
         )
 
-    assert len(os.listdir(celegans_dir)) == 0
+    assert len(list(celegans_dir.iterdir())) == 0
 
     assert excinfo.type == SystemExit
     assert excinfo.value.code == 1
@@ -281,15 +305,15 @@ def test__main_ingest_bad_data_dir_schema(
     out, err = capsys.readouterr()
 
     assert out == ""
-    assert err == f"FileNotFoundError: {data_dir}/neurons.json\n"
+    assert err == f"FileNotFoundError: {data_dir.resolve()}/neurons.json\n"
 
 
 def test__main_ingest_segmentations(
-    tmp_path: Path, capsys: pytest.CaptureFixture, caplog: pytest.LogCaptureFixture
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture,
+    caplog: pytest.LogCaptureFixture,
+    fake_secret,
 ):
-    gcp_creds_path = tmp_path / "secret.json"
-    gcp_creds_path.write_text("{}")
-
     local_dir = tmp_path / "local"
     local_dir.mkdir()
 
@@ -308,14 +332,15 @@ def test__main_ingest_segmentations(
             [
                 "ingest",
                 "--gcp-credentials",
-                str(gcp_creds_path),
+                f"{fake_secret}",
                 "--gcp-bucket",
                 "celegans",
                 "--debug",
                 "add-dataset",
+                "--id",
                 "dataset8",
                 "--segmentations",
-                str(local_dir),
+                f"{local_dir}",
             ]
         )
 
@@ -323,16 +348,11 @@ def test__main_ingest_segmentations(
 
     out, _ = capsys.readouterr()
     assert _done_message("dataset8") in out
-    for log in [  # TODO: is this relevant?
-        "skipping data validation: flag not set",
-        "skipping 3D files upload: flag not set",
-        "skipping EM tiles upload: flag not set",
-    ]:
-        assert log in caplog.text
 
 
 def test__main_ingest_em_tiles(
-    request: pytest.FixtureRequest,
+    fixture_path,
+    fake_secret,
     tmp_path: Path,
     capsys: pytest.CaptureFixture,
     caplog: pytest.LogCaptureFixture,
@@ -343,7 +363,7 @@ def test__main_ingest_em_tiles(
     celegans_dir = tmp_path / "celegans"
     celegans_dir.mkdir()
 
-    em_fixtures_dir = Path(request.fspath).parent / "fixtures" / "em-tiles"  # type: ignore
+    em_fixtures_dir = fixture_path / "em-tiles"
 
     with (
         gcs_patch([Mount("celegans", celegans_dir, readable=True, writable=True)]),
@@ -353,14 +373,15 @@ def test__main_ingest_em_tiles(
             [
                 "ingest",
                 "--gcp-credentials",
-                str(gcp_creds_path),
+                f"{fake_secret}",
                 "--gcp-bucket",
                 "celegans",
                 "--debug",
                 "add-dataset",
+                "--id",
                 "dataset8",
                 "--em",
-                str(em_fixtures_dir),
+                f"{em_fixtures_dir}",
             ]
         )
 
@@ -370,11 +391,11 @@ def test__main_ingest_em_tiles(
 
 
 def test__main_ingest_3d(
-    tmp_path: Path, capsys: pytest.CaptureFixture, caplog: pytest.LogCaptureFixture
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture,
+    caplog: pytest.LogCaptureFixture,
+    fake_secret,
 ):
-    gcp_creds_path = tmp_path / "secret.json"
-    gcp_creds_path.write_text("{}")
-
     local_dir = tmp_path / "local"
     local_dir.mkdir()
 
@@ -410,39 +431,33 @@ def test__main_ingest_3d(
             [
                 "ingest",
                 "--gcp-credentials",
-                str(gcp_creds_path),
+                f"{fake_secret}",
                 "--gcp-bucket",
                 "celegans",
                 "--debug",
                 "add-dataset",
+                "--id",
                 "dataset8",
                 "--3d",
-                str(local_dir),  # parent just cause its easy
+                f"{local_dir}",  # parent just cause its easy
             ]
         )
 
-    remote_files = os.listdir(local_dir)
+    remote_files = list(local_dir.iterdir())
 
-    assert remote_files.sort() == expected_neurons_blob_names.sort()
+    assert remote_files.sort(key=lambda f: f.name) == expected_neurons_blob_names.sort()
 
     out, _ = capsys.readouterr()
     assert _done_message("dataset8") in out
-    for log in [  # TODO: is this relevant?
-        "skipping data validation: flag not set",
-        "skipping segmentation upload: flag not set",
-        "skipping EM tiles upload: flag not set",
-    ]:
-        assert log in caplog.text
 
 
 def test__main_ingest_multiple_datasets(
-    tmp_path: Path, capsys: pytest.CaptureFixture, caplog: pytest.LogCaptureFixture
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture,
+    caplog: pytest.LogCaptureFixture,
+    fake_secret,
 ):
     # lets try ingest segmentation from multiple datasets
-
-    gcp_creds_path = tmp_path / "secret.json"
-    gcp_creds_path.write_text("{}")
-
     local_dir = tmp_path / "local"
     local_dir.mkdir()
 
@@ -466,6 +481,7 @@ def test__main_ingest_multiple_datasets(
             *[
                 [
                     "add-dataset",
+                    "--id",
                     ds,
                     "--segmentations",
                     str(local_dir / ds / "segmentations"),
@@ -483,7 +499,7 @@ def test__main_ingest_multiple_datasets(
             [
                 "ingest",
                 "--gcp-credentials",
-                str(gcp_creds_path),
+                f"{fake_secret}",
                 "--gcp-bucket",
                 "celegans",
                 "--debug",

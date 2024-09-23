@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import base64
 import struct
-from functools import singledispatchmethod
 from io import BufferedIOBase
 
 from crc32c import crc32c
@@ -31,18 +30,11 @@ class Crc32cCalculator(BufferedIOBase):
         self._update(r)
         return r
 
-    @singledispatchmethod
     def _update(self, chunk):
         """Given a chunk from the read in file, update the hexdigest"""
-        raise TypeError(f"Unsupported type for _update: {type(chunk)}")
-
-    @_update.register  # type: ignore
-    def _(self, chunk: bytes):
+        if isinstance(chunk, str):
+            chunk = chunk.encode("utf-8")
         self.digest = crc32c(chunk, self.digest)
-
-    @_update.register  # type: ignore
-    def _(self, chunk: str):
-        self.digest = crc32c(chunk.encode("utf-8"), self.digest)
 
     def hexdigest(self) -> str:
         """Return the hexdigest of the hasher.

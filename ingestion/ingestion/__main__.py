@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 import sys
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
-from typing import Sequence
 
 from ingestion.extract import add_flags as add_extract_flags
 from ingestion.extract import extract_cmd
@@ -32,7 +31,7 @@ def split_argv(argv: list[str], delimiter: str) -> list[list[str]]:
     return out
 
 
-def _main(argv: Sequence[str] | None = None):
+def _main(argv: list[str] | None = None):
     parser = ArgumentParser(
         prog="celegans",
         description="Support tool for the C-Elegans application",
@@ -89,15 +88,12 @@ def _main(argv: Sequence[str] | None = None):
 
     setup_logger(args.debug)
 
-    exec = lambda: ...  # command to run
-    match args.command:
-        case "ingest":
-            exec = lambda: ingest_cmd(args)
-        case "extract":
-            exec = lambda: extract_cmd(args, debug=args.debug)
-
     try:
-        exec()
+        match args.command:
+            case "ingest":
+                ingest_cmd(args)
+            case "extract":
+                extract_cmd(args, debug=args.debug)
     except KeyboardInterrupt as e:
         if args.debug:
             raise
@@ -111,14 +107,14 @@ def _main(argv: Sequence[str] | None = None):
         sys.exit(1)
 
 
-def main(argv: Sequence[str] | None = None):
+def main(argv: list[str] | None = None):
     """Calls main but is inspects argv and splits accordingly"""
 
     if argv is None:
         argv = sys.argv[1:]
 
     if "ingest" in argv and "add-dataset" in argv:
-        argvl = split_argv(list(argv), "add-dataset")
+        argvl = split_argv(argv, "add-dataset")
 
         # TODO: print help of missing "add-dataset" if repeated flags are detected
 
