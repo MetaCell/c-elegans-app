@@ -141,89 +141,6 @@ def test__main_can_help():
     must(["ingest", "--help"])
 
 
-def test__main_ingest_valid_data(
-    capsys: pytest.CaptureFixture, request: pytest.FixtureRequest
-):
-    data_dir = Path(request.fspath).parent / "fixtures" / "reference-data"  # type: ignore
-    main(
-        [
-            "ingest",
-            "add-dataset",
-            "white_1986_jsh",
-            "--data",
-            str(data_dir),
-        ]
-    )
-
-    out, err = capsys.readouterr()
-    assert _done_message("white_1986_jsh") in out
-    assert err == ""
-
-
-def test__main_ingest_invalid_data(
-    capsys: pytest.CaptureFixture, request: pytest.FixtureRequest
-):
-    data_dir = Path(request.fspath).parent / "fixtures" / "invalid-data"  # type: ignore
-
-    with pytest.raises(SystemExit) as excinfo:
-        main(
-            [
-                "ingest",
-                "add-dataset",
-                "white_1986_jsh",
-                "--data",
-                str(data_dir),
-            ]
-        )
-    assert excinfo.type == SystemExit
-    assert excinfo.value.code == 1
-
-    out, err = capsys.readouterr()
-
-    assert out == ""
-    assert err != ""
-
-
-def test__main_ingest_valid_data_for_unknown_dataset_id(request: pytest.FixtureRequest):
-    data_dir = Path(request.fspath).parent / "fixtures" / "reference-data"  # type: ignore
-    with pytest.raises(Exception):
-        main(
-            [
-                "ingest",
-                "--debug",  # to bubble up the exception
-                "add-dataset",
-                "unknown_dataset_id",
-                "--data",
-                str(data_dir),
-            ]
-        )
-
-
-def test__main_ingest_bad_data_dir_schema(
-    capsys: pytest.CaptureFixture, request: pytest.FixtureRequest
-):
-    # data_path dir schema doesn't match what we expect
-    data_dir = Path(request.fspath).parent / "fixtures"  # type: ignore
-
-    with pytest.raises(SystemExit) as excinfo:
-        main(
-            [
-                "ingest",
-                "add-dataset",
-                "dataset8",
-                "--data",
-                str(data_dir),  # parent just cause its easy
-            ]
-        )
-    assert excinfo.type == SystemExit
-    assert excinfo.value.code == 1
-
-    out, err = capsys.readouterr()
-
-    assert out == ""
-    assert err == f"FileNotFoundError: {data_dir}/neurons.json\n"
-
-
 def compare_directories(dir1: Path, dir2: Path):
     """
     Compare the contents of `dir1` and `dir2`, considering only the relative paths and file contents.
@@ -244,6 +161,127 @@ def compare_directories(dir1: Path, dir2: Path):
             raise Exception(f"content differs: {file1} != {file2}")
 
     return True
+
+
+def test__main_ingest_valid_data(
+    tmp_path: Path, capsys: pytest.CaptureFixture, request: pytest.FixtureRequest
+):
+    gcp_creds_path = tmp_path / "secret.json"
+    gcp_creds_path.write_text("{}")
+
+    data_dir = Path(request.fspath).parent / "fixtures" / "reference-data"  # type: ignore
+
+    celegans_dir = tmp_path / "celegans"
+    celegans_dir.mkdir()
+
+    with gcs_patch([Mount("celegans", celegans_dir, readable=True, writable=True)]):
+        main(
+            [
+                "ingest",
+                "add-dataset",
+                "white_1986_jsh",
+                "--data",
+                str(data_dir),
+            ]
+        )
+
+    assert compare_directories(data_dir, celegans_dir / "white_1986_jsh" / "raw-data")
+
+    out, _ = capsys.readouterr()
+    assert _done_message("white_1986_jsh") in out
+
+
+def test__main_ingest_invalid_data(
+    tmp_path: Path, capsys: pytest.CaptureFixture, request: pytest.FixtureRequest
+):
+    data_dir = Path(request.fspath).parent / "fixtures" / "invalid-data"  # type: ignore
+
+    celegans_dir = tmp_path / "celegans"
+    celegans_dir.mkdir()
+
+    with (
+        gcs_patch([Mount("celegans", celegans_dir, readable=True, writable=True)]),
+        pytest.raises(SystemExit) as excinfo,
+    ):
+        main(
+            [
+                "ingest",
+                "add-dataset",
+                "white_1986_jsh",
+                "--data",
+                str(data_dir),
+            ]
+        )
+
+    assert len(os.listdir(celegans_dir)) == 0
+
+    assert excinfo.type == SystemExit
+    assert excinfo.value.code == 1
+
+    out, err = capsys.readouterr()
+
+    assert out == ""
+    assert err != ""
+
+
+def test__main_ingest_valid_data_for_unknown_dataset_id(
+    tmp_path: Path, request: pytest.FixtureRequest
+):
+    data_dir = Path(request.fspath).parent / "fixtures" / "reference-data"  # type: ignore
+
+    celegans_dir = tmp_path / "celegans"
+    celegans_dir.mkdir()
+
+    with (
+        gcs_patch([Mount("celegans", celegans_dir, readable=True, writable=True)]),
+        pytest.raises(Exception),
+    ):
+        main(
+            [
+                "ingest",
+                "--debug",  # to bubble up the exception
+                "add-dataset",
+                "unknown_dataset_id",
+                "--data",
+                str(data_dir),
+            ]
+        )
+
+    assert len(os.listdir(celegans_dir)) == 0
+
+
+def test__main_ingest_bad_data_dir_schema(
+    tmp_path: Path, capsys: pytest.CaptureFixture, request: pytest.FixtureRequest
+):
+    # data_path dir schema doesn't match what we expect
+    data_dir = Path(request.fspath).parent / "fixtures"  # type: ignore
+
+    celegans_dir = tmp_path / "celegans"
+    celegans_dir.mkdir()
+
+    with (
+        gcs_patch([Mount("celegans", celegans_dir, readable=True, writable=True)]),
+        pytest.raises(SystemExit) as excinfo,
+    ):
+        main(
+            [
+                "ingest",
+                "add-dataset",
+                "dataset8",
+                "--data",
+                str(data_dir),  # parent just cause its easy
+            ]
+        )
+
+    assert len(os.listdir(celegans_dir)) == 0
+
+    assert excinfo.type == SystemExit
+    assert excinfo.value.code == 1
+
+    out, err = capsys.readouterr()
+
+    assert out == ""
+    assert err == f"FileNotFoundError: {data_dir}/neurons.json\n"
 
 
 def test__main_ingest_segmentations(

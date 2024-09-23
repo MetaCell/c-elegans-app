@@ -19,6 +19,7 @@ from ingestion.schema import Data
 from ingestion.storage.blob import (
     em_metadata_blob_name,
     fs_3d_blob_name,
+    fs_data_blob_name,
     fs_em_tile_blob_name,
     fs_resolutions_metadata_blob_name,
     fs_segmentation_blob_name,
@@ -122,7 +123,9 @@ def add_add_dataset_flags(parser: ArgumentParser):
     add_in_paths(parser, "EM")
 
 
-def validate_data(dataset_id: str, dir: Path):
+def validate_and_upload_data(
+    dataset_id: str, dir: Path, rs: RemoteStorage, *, overwrite: bool = False
+):
     data_files = find_data_files(dir)
     json_data = load_data(data_files)
 
@@ -151,6 +154,19 @@ def validate_data(dataset_id: str, dir: Path):
         )
 
     logger.info(f"data in {dir} is valid!")
+
+    logger.info(f"uploading raw data...")
+
+    paths: list[Path] = [data_files.neurons, data_files.datasets]
+    paths += [conn for conn in data_files.connections.values()]
+    paths += [ann for ann in data_files.annotations.values()]
+
+    pbar = tqdm(paths, disable=rs.dry_run)
+    for p in pbar:
+        pbar.set_description(str(p))
+        rs.upload(p, fs_data_blob_name(dataset_id, p, dir), overwrite=overwrite)
+
+    logger.info(f"done uploading raw data!")
 
 
 def prune_bucket(bucket: storage.Bucket):
@@ -323,15 +339,17 @@ def upload_em_tiles(
 def ingest_cmd(args: Namespace):
     """Runs the ingestion command."""
 
-    if args.data:
-        validate_data(args.dataset_id, args.data)
-    else:
-        logger.warning(f"skipping data validation: flag not set")
-
     storage_client = storage.Client.from_service_account_json(args.gcp_credentials)
     bucket = storage_client.get_bucket(args.gcp_bucket)
 
     rs = RemoteStorage(bucket, dry_run=args.dry_run)
+
+    if args.data:
+        validate_and_upload_data(
+            args.dataset_id, args.data, rs, overwrite=args.overwrite
+        )
+    else:
+        logger.warning(f"skipping data validation: flag not set")
 
     if args.prune:
         prune = args.y or ask(

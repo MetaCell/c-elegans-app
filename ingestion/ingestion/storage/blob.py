@@ -7,6 +7,10 @@ from ingestion.em_metadata import Tile
 from ingestion.storage.filesystem import SEGMENTATION_REGEX
 
 
+def fs_data_blob_name(dataset_id: str, p: Path, base_dir: Path) -> str:
+    return f"{dataset_id}/raw-data/{p.relative_to(base_dir)}"
+
+
 def fs_segmentation_blob_name(dataset_id: str, p: Path) -> str:
     match = re.search(SEGMENTATION_REGEX, p.name)
     if not match:

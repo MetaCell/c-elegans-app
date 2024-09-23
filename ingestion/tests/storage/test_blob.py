@@ -7,9 +7,45 @@ import pytest
 from ingestion.em_metadata import Tile
 from ingestion.storage.blob import (
     fs_3d_blob_name,
+    fs_data_blob_name,
     fs_em_tile_blob_name,
     fs_segmentation_blob_name,
 )
+
+
+@pytest.mark.parametrize(
+    "dataset_id, file_path, base_dir, blob_name",
+    [
+        (
+            "witvliet_2020_1",
+            Path("./data/db-raw-data/neurons.json"),
+            Path("./data/db-raw-data"),
+            "witvliet_2020_1/raw-data/neurons.json",
+        ),
+        (
+            "witvliet_2020_1",
+            Path("./data/db-raw-data/datasets.json"),
+            Path("./data/db-raw-data"),
+            "witvliet_2020_1/raw-data/datasets.json",
+        ),
+        (
+            "witvliet_2020_1",
+            Path("./data/db-raw-data/connections/white_1986_whole.json"),
+            Path("./data/db-raw-data"),
+            "witvliet_2020_1/raw-data/connections/white_1986_whole.json",
+        ),
+        (
+            "witvliet_2020_1",
+            Path("./data/db-raw-data/annotations/complete.annotations.json"),
+            Path("./data/db-raw-data"),
+            "witvliet_2020_1/raw-data/annotations/complete.annotations.json",
+        ),
+    ],
+)
+def test__fs_data_blob_name(
+    dataset_id: str, file_path: Path, base_dir: Path, blob_name: str
+):
+    assert fs_data_blob_name(dataset_id, file_path, base_dir) == blob_name
 
 
 @pytest.mark.parametrize(

@@ -41,7 +41,7 @@ class RemoteStorage:
             blob = self.bucket.blob(blob_name)
             if self.dry_run:
                 self._logger.debug(
-                    f"dryrun: blob does not exist: {source_file} --> {blob_name}"
+                    f"dryrun: remote blob doesn't exist: uploading {source_file} --> {self.bucket.name}://{blob_name}"
                 )
                 return
             blob.upload_from_string(content)
@@ -51,7 +51,7 @@ class RemoteStorage:
                 return
             if self.dry_run:
                 self._logger.debug(
-                    f"dryrun: blob exists but is different: {source_file} --> {blob_name}"
+                    f"dryrun: remote blob exists but hash doesn't match: uploading {source_file} --> {self.bucket.name}://c{blob_name}"
                 )
                 return
             blob.upload_from_string(content)
