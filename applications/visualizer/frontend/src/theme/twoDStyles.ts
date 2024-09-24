@@ -60,7 +60,7 @@ const EDGE_STYLE = [
       "arrow-scale": 0.6,
       "source-distance-from-node": 1,
       "target-distance-from-node": 1,
-      width: "data(width)",
+      width: (node: any) => node.data("width"),
     },
   },
   {
@@ -76,7 +76,7 @@ const EDGE_STYLE = [
 const CHEMICAL_STYLE = [
   {
     selector: ".chemical",
-    style: { "line-color": "#63625F", width: "data(width)" },
+    style: { "line-color": "#63625F", width: (node: any) => node.data("width") },
   },
   {
     selector: "edge.chemical.parallel",
@@ -93,7 +93,6 @@ const ELECTRICAL_STYLE = [
     selector: ".electrical",
     style: {
       "line-color": "#63625F",
-      width: "data(width)",
       "curve-style": "segments",
       "target-arrow-color": "#666666",
       "source-arrow-color": "#666666",
@@ -106,6 +105,7 @@ const ELECTRICAL_STYLE = [
         return [-2.0, -1.5, -0.5, 0.5, 1.5, 2.0].map((d) => 0.5 + d * divider).join(" ");
       },
       "target-arrow-shape": "none",
+      width: (node: any) => node.data("width"),
     },
   },
   {
@@ -174,7 +174,7 @@ const EDGE_LABEL_STYLES = [
     selector: "edge.hover, edge.showEdgeLabel",
     style: {
       label: "data(label)",
-      "font-size": "8px",
+      "font-size": "10px",
       "font-weight": "bold",
       "text-background-opacity": 0,
       "text-background-padding": "3px",
@@ -182,6 +182,8 @@ const EDGE_LABEL_STYLES = [
       "text-border-radius": "8px",
       "z-compound-depth": "top",
       shape: "roundrectangle",
+      "text-outline-width": 0.8,
+      "text-outline-color": "rgb(244,244,244)",
     },
   },
   {
@@ -246,7 +248,6 @@ const NODE_STYLE = [
     css: {
       "font-size": 8,
       shape: "roundrectangle",
-      width: "label",
       height: "10px",
       padding: "8px",
       "z-index": 10,

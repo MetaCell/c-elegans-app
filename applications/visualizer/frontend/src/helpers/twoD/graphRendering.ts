@@ -157,7 +157,7 @@ export const computeGraphDifferences = (
       if (conn.type === "chemical") {
         width = Math.max(1, 2 * Math.pow(meanSyn, 1 / 4) - 2);
       } else {
-        width = Math.min(3, meanSyn * 1.5);
+        width = Math.min(4, meanSyn * 0.8);
       }
       if (conn) {
         edgesToAdd.push(createEdge(edgeId, conn, workspace, includeAnnotations, width));
