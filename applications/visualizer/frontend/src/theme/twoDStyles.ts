@@ -179,6 +179,8 @@ const EDGE_LABEL_STYLES = [
       "z-index": 10,
       "z-compound-depth": "top",
       shape: "roundrectangle",
+      "text-outline-width": 0.8,
+      "text-outline-color": "rgb(244,244,244)",
     },
   },
   {
@@ -242,7 +244,6 @@ const NODE_STYLE = [
     css: {
       "font-size": 8,
       shape: "roundrectangle",
-      width: (node: any) => node.data("label"),
       height: "10px",
       padding: "8px",
       "z-index": 10,
