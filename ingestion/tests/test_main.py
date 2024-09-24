@@ -192,11 +192,11 @@ def test__main_ingest_valid_data(
                 "ingest",
                 "--gcp-credentials",
                 f"{fake_secret}",
+                "--data",
+                f"{data_dir}",
                 "add-dataset",
                 "--id",
                 "white_1986_jsh",
-                "--data",
-                f"{data_dir}",
             ]
         )
 
@@ -223,11 +223,11 @@ def test__main_ingest_invalid_data(
                 "ingest",
                 "--gcp-credentials",
                 f"{fake_secret}",
+                "--data",
+                f"{data_dir}",
                 "add-dataset",
                 "--id",
                 "white_1986_jsh",
-                "--data",
-                f"{data_dir}",
             ]
         )
 
@@ -260,11 +260,11 @@ def test__main_ingest_valid_data_for_unknown_dataset_id(
                 "--gcp-credentials",
                 f"{fake_secret}",
                 "--debug",  # to bubble up the exception
+                "--data",
+                f"{data_dir}",
                 "add-dataset",
                 "--id",
                 "unknown_dataset_id",
-                "--data",
-                f"{data_dir}",
             ]
         )
 
@@ -289,11 +289,11 @@ def test__main_ingest_bad_data_dir_schema(
                 "ingest",
                 "--gcp-credentials",
                 f"{fake_secret}",
+                "--data",
+                f"{data_dir}",  # parent just cause its easy
                 "add-dataset",
                 "--id",
                 "dataset8",
-                "--data",
-                f"{data_dir}",  # parent just cause its easy
             ]
         )
 
@@ -339,7 +339,7 @@ def test__main_ingest_segmentations(
                 "add-dataset",
                 "--id",
                 "dataset8",
-                "--segmentations",
+                "--segmentation",
                 f"{local_dir}",
             ]
         )
@@ -483,7 +483,7 @@ def test__main_ingest_multiple_datasets(
                     "add-dataset",
                     "--id",
                     ds,
-                    "--segmentations",
+                    "--segmentation",
                     str(local_dir / ds / "segmentations"),
                 ]
                 for ds in datasets

@@ -58,6 +58,13 @@ def add_flags(parser: ArgumentParser):
     )
 
     parser.add_argument(
+        "-d",
+        "--data",
+        type=type_directory,
+        help="folder with the main structure with JSON files about neurons/datasets/connectivity that will be ingested in the DB (for all datasets)",
+    )
+
+    parser.add_argument(
         "--prune",
         help="prune files in the bucket before upload",
         default=False,
@@ -101,14 +108,14 @@ def add_add_dataset_flags(parser: ArgumentParser):
         help="dataset identifier for the ingested files",
     )
 
-    def add_in_dir(parser: ArgumentParser, kind: str):
-        parser.add_argument(
-            f"-{kind.lower()[0]}",
-            f"--{kind.lower()}",
-            default=None,
-            type=type_directory,
-            help=f"{kind} directory",
-        )
+    # def add_in_dir(parser: ArgumentParser, kind: str):
+    #     parser.add_argument(
+    #         f"-{kind.lower()[0]}",
+    #         f"--{kind.lower()}",
+    #         default=None,
+    #         type=type_directory,
+    #         help=f"{kind} directory",
+    #     )
 
     def add_in_paths(parser: ArgumentParser, kind: str):
         parser.add_argument(
@@ -119,8 +126,8 @@ def add_add_dataset_flags(parser: ArgumentParser):
             help=f"directory, files or glob match for {kind} data",
         )
 
-    add_in_dir(parser, "data")
-    add_in_paths(parser, "segmentations")
+    # add_in_dir(parser, "connectivity")
+    add_in_paths(parser, "segmentation")
     add_in_paths(parser, "3D")
     add_in_paths(parser, "EM")
 
@@ -377,8 +384,8 @@ def ingest_cmd(args: Namespace):
         elif dry_run:
             logger.info(f"skipped prunning files from the bucket")
 
-    if args.segmentations:
-        upload_segmentations(dataset_id, args.segmentations, rs, overwrite=overwrite)
+    if args.segmentation:
+        upload_segmentations(dataset_id, args.segmentation, rs, overwrite=overwrite)
     elif dry_run:
         logger.debug("skipping segmentation upload: flag not set")
 
