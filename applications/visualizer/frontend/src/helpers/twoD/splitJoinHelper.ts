@@ -1,5 +1,5 @@
 import { ViewerType, type Workspace } from "../../models";
-import { getDefaultViewerData, type GraphViewerData, Visibility } from "../../models/models.ts";
+import { type GraphViewerData, Visibility, getDefaultViewerData } from "../../models/models.ts";
 import { calculateMeanPosition, calculateSplitPositions, isNeuronCell, isNeuronClass } from "./twoDHelpers.ts";
 
 interface SplitJoinState {
@@ -10,14 +10,15 @@ interface SplitJoinState {
 export const processNeuronSplit = (workspace: Workspace, splitJoinState: SplitJoinState): SplitJoinState => {
   const newSplit = new Set(splitJoinState.split);
   const newJoin = new Set(splitJoinState.join);
+  const selectedNeurons = workspace.getViewerSelecedNeurons(ViewerType.Graph);
 
-  const newSelectedNeurons = new Set(workspace.selectedNeurons);
+  const newSelectedNeurons = new Set(selectedNeurons);
   const graphViewDataUpdates: Record<string, Partial<GraphViewerData>> = {};
 
   const groupModifications: Record<string, Set<string>> = {};
   const groupsToDelete = new Set<string>();
 
-  for (const neuronId of workspace.selectedNeurons) {
+  for (const neuronId of selectedNeurons) {
     if (!isNeuronClass(neuronId, workspace)) {
       return;
     }
@@ -53,7 +54,7 @@ export const processNeuronSplit = (workspace: Workspace, splitJoinState: SplitJo
   }
 
   workspace.customUpdate((draft) => {
-    draft.selectedNeurons = newSelectedNeurons;
+    draft.setSelection(Array.from(newSelectedNeurons), ViewerType.Graph);
 
     for (const [groupId, neurons] of Object.entries(groupModifications)) {
       if (neurons.size === 0) {
@@ -82,14 +83,15 @@ export const processNeuronSplit = (workspace: Workspace, splitJoinState: SplitJo
 export const processNeuronJoin = (workspace: Workspace, splitJoinState: SplitJoinState): SplitJoinState => {
   const newJoin = new Set(splitJoinState.join);
   const newSplit = new Set(splitJoinState.split);
+  const selectedNeurons = workspace.getViewerSelecedNeurons(ViewerType.Graph);
 
-  const newSelectedNeurons = new Set(workspace.selectedNeurons);
+  const newSelectedNeurons = new Set(selectedNeurons);
   const graphViewDataUpdates: Record<string, Partial<GraphViewerData>> = {};
 
   const groupModifications: Record<string, Set<string>> = {};
   const groupsToDelete = new Set<string>();
 
-  for (const neuronId of workspace.selectedNeurons) {
+  for (const neuronId of selectedNeurons) {
     if (!isNeuronCell(neuronId, workspace)) {
       return;
     }
@@ -130,7 +132,7 @@ export const processNeuronJoin = (workspace: Workspace, splitJoinState: SplitJoi
   }
 
   workspace.customUpdate((draft) => {
-    draft.selectedNeurons = newSelectedNeurons;
+    draft.setSelection(Array.from(newSelectedNeurons), ViewerType.Graph);
 
     for (const [groupId, neurons] of Object.entries(groupModifications)) {
       if (neurons.size === 0) {

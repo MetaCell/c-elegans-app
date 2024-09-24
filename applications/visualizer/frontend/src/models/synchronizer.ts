@@ -29,18 +29,18 @@ class Synchronizer {
     return this.viewers.includes(viewer);
   }
 
-  sync(selection: Selection, initiator: ViewerType, contexts: Record<ViewerType, SynchronizerContext>) {
+  sync(selection: Array<string>, initiator: ViewerType, contexts: Record<ViewerType, SynchronizerContext>) {
     if (!this.canHandle(initiator)) {
       return;
     }
 
     if (!this.active) {
-      contexts[initiator] = selection.map((n) => n.name);
+      contexts[initiator] = selection.map((n) => n);
       return;
     }
 
     for (const viewer of this.viewers) {
-      contexts[viewer] = selection.map((n) => n.name);
+      contexts[viewer] = selection.map((n) => n);
     }
   }
 
@@ -123,7 +123,7 @@ export class SynchronizerOrchestrator {
     return new SynchronizerOrchestrator(synchronizers, contexts);
   }
 
-  public select(selection: Selection, initiator: ViewerType) {
+  public select(selection: Array<string>, initiator: ViewerType) {
     for (const synchronizer of this.synchronizers) {
       synchronizer.sync(selection, initiator, this.contexts);
     }
@@ -147,6 +147,9 @@ export class SynchronizerOrchestrator {
     }
   }
 
+  public getSelection(viewerType: ViewerType): SynchronizerContext {
+    return this.contexts[viewerType];
+  }
   public setActive(synchronizer: ViewerSynchronizationPair, isActive: boolean) {
     this.synchronizers[synchronizer].setActive(isActive);
   }

@@ -27,6 +27,7 @@ export const computeGraphDifferences = (
   includePostEmbryonic: boolean,
 ) => {
   const visibleActiveNeurons = getVisibleActiveNeuronsIn2D(workspace);
+  const selectedNeurons = workspace.getViewerSelecedNeurons(ViewerType.Graph);
 
   // Current nodes and edges in the Cytoscape instance
   const currentNodes = new Set(cy.nodes().map((node) => node.id()));
@@ -115,15 +116,7 @@ export const computeGraphDifferences = (
         }
         const groupPosition = calculateMeanPosition(groupNeurons, workspace);
         nodesToAdd.push(
-          createNode(
-            nodeId,
-            workspace.selectedNeurons.has(nodeId),
-            Array.from(attributes),
-            groupPosition,
-            true,
-            undefined,
-            workspace.activeNeurons.has(nodeId),
-          ),
+          createNode(nodeId, selectedNeurons.includes(nodeId), Array.from(attributes), groupPosition, true, undefined, workspace.activeNeurons.has(nodeId)),
         );
       } else {
         let parent = undefined;
@@ -135,10 +128,11 @@ export const computeGraphDifferences = (
             break;
           }
         }
-        const attributes = extractNeuronAttributes(workspace.availableNeurons[nodeId]);
+        const neuron = workspace.availableNeurons[nodeId];
+        const attributes = extractNeuronAttributes(neuron);
         const neuronVisibility = workspace.visibilities[nodeId];
         const position = neuronVisibility?.[ViewerType.Graph]?.defaultPosition ?? null;
-        nodesToAdd.push(createNode(nodeId, workspace.selectedNeurons.has(nodeId), attributes, position, false, parent, workspace.activeNeurons.has(nodeId)));
+        nodesToAdd.push(createNode(nodeId, selectedNeurons.includes(nodeId), attributes, position, false, parent, workspace.activeNeurons.has(nodeId)));
         if (!(nodeId in workspace.visibilities)) {
           workspace.showNeuron(nodeId);
         }

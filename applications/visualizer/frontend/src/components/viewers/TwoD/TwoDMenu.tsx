@@ -98,7 +98,7 @@ const TwoDMenu = ({
       if (neuron) {
         const currentVisibility = neuron[ViewerType.Graph]?.visibility;
         neuron[ViewerType.Graph].visibility = currentVisibility === Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
-        draft.selectedNeurons.delete(neuronId);
+        draft.removeSelection(neuronId, ViewerType.Graph);
       }
     });
   };

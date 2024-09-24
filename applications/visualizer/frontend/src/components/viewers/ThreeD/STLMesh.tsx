@@ -23,21 +23,21 @@ const STLMesh: FC<Props> = ({ id, color, opacity, renderOrder, isWireframe, stl 
   const { workspaces } = useGlobalContext();
   const workspaceId = useSelector((state: RootState) => state.workspaceId);
   const workspace: Workspace = workspaces[workspaceId];
+  const selectedNeurons = workspace.getViewerSelecedNeurons(ViewerType.Graph);
+  const isSelected = selectedNeurons.includes(id);
 
   const onClick = (event: ThreeEvent<MouseEvent>) => {
     const clicked = getFurthestIntersectedObject(event);
     const { id } = clicked.userData;
-    const isNeuronSelected = workspace.selectedNeurons.has(id);
     if (clicked) {
-      if (isNeuronSelected) {
-        workspace.removeSelectedNeuron(id).removeSelection(id, ViewerType.Graph);
+      if (isSelected) {
+        console.log(`Neurons selected: ${id}`);
       } else {
-        workspace.addSelectedNeuron(id).addSelection(id, ViewerType.Graph);
+        console.log(`Neurons un selected: ${id}`);
       }
     }
   };
 
-  const isSelected = id in workspace.selectedNeurons;
   return (
     <mesh userData={{ id }} onClick={onClick} frustumCulled={false} renderOrder={renderOrder}>
       <primitive attach="geometry" object={stl} />

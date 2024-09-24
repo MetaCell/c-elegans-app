@@ -1,10 +1,10 @@
-import type React from "react";
-import type { Dataset } from "../../../rest";
-import CustomAutocomplete from "../../CustomAutocomplete.tsx";
-import { Typography, IconButton } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { IconButton, Typography } from "@mui/material";
+import type React from "react";
 import { CheckIcon, CloseIcon } from "../../../icons";
+import type { Dataset } from "../../../rest";
 import { vars } from "../../../theme/variables.ts";
+import CustomAutocomplete from "../../CustomAutocomplete.tsx";
 
 const { gray100, gray600 } = vars;
 
