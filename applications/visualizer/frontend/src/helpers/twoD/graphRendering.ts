@@ -44,10 +44,10 @@ export const computeGraphDifferences = (
 
   // Create a map of connections by edgeId
   const connectionMap = new Map<string, Connection>();
-  connections.forEach((conn) => {
+  for (const conn of connections) {
     const edgeId = getEdgeId(conn, includeAnnotations);
     connectionMap.set(edgeId, conn);
-  });
+  }
 
   // Compute expected nodes based on visibleActiveNeurons and connections
   const filteredActiveNeurons = Array.from(visibleActiveNeurons).filter((neuronId: string) => {
@@ -108,10 +108,12 @@ export const computeGraphDifferences = (
         const attributes = new Set<string>();
         const groupNeurons = Array.from(group.neurons);
 
-        groupNeurons.forEach((neuronId) => {
+        for (const neuronId of groupNeurons) {
           const neuron = workspace.availableNeurons[neuronId];
-          extractNeuronAttributes(neuron).forEach((attr) => attributes.add(attr));
-        });
+          for (const attr of extractNeuronAttributes(neuron)) {
+            attributes.add(attr);
+          }
+        }
         const groupPosition = calculateMeanPosition(groupNeurons, workspace);
         nodesToAdd.push(
           createNode(nodeId, selectedNeurons.includes(nodeId), Array.from(attributes), groupPosition, true, undefined, workspace.activeNeurons.has(nodeId)),
@@ -128,8 +130,12 @@ export const computeGraphDifferences = (
         }
         const neuron = workspace.availableNeurons[nodeId];
         const attributes = extractNeuronAttributes(neuron);
-        const position = neuron.viewerData[ViewerType.Graph]?.defaultPosition ?? null;
+        const neuronVisibility = workspace.visibilities[nodeId];
+        const position = neuronVisibility?.[ViewerType.Graph]?.defaultPosition ?? null;
         nodesToAdd.push(createNode(nodeId, selectedNeurons.includes(nodeId), attributes, position, false, parent, workspace.activeNeurons.has(nodeId)));
+        if (!(nodeId in workspace.visibilities)) {
+          workspace.showNeuron(nodeId);
+        }
       }
     }
   }
@@ -178,7 +184,7 @@ const applyGroupingRulesToNodes = (
   const nodesToAdd = new Set<string>();
   const nodesToRemove = new Set<string>();
 
-  expectedNodes.forEach((nodeId) => {
+  for (const nodeId of expectedNodes) {
     for (const groupId in neuronGroups) {
       const group = neuronGroups[groupId];
 
@@ -191,12 +197,16 @@ const applyGroupingRulesToNodes = (
         }
       }
     }
-  });
+  }
 
   // Remove individual nodes if they are replaced by a closed group node
-  nodesToRemove.forEach((nodeId) => expectedNodes.delete(nodeId));
+  for (const nodeId of nodesToRemove) {
+    expectedNodes.delete(nodeId);
+  }
   // Add group nodes
-  nodesToAdd.forEach((nodeId) => expectedNodes.add(nodeId));
+  for (const nodeId of nodesToAdd) {
+    expectedNodes.add(nodeId);
+  }
 
   return expectedNodes;
 };
@@ -213,7 +223,7 @@ const applyGroupingRulesToEdges = (
   const edgesToRemove = new Set<string>();
   const groupedConnections: Map<string, Connection> = new Map();
 
-  expectedEdges.forEach((edgeId) => {
+  for (const edgeId of expectedEdges) {
     const conn = connectionMap.get(edgeId);
     if (!conn) return;
 
@@ -264,16 +274,20 @@ const applyGroupingRulesToEdges = (
     if (fullNewEdgeId !== edgeId) {
       edgesToRemove.add(edgeId);
     }
-  });
+  }
 
-  groupedConnections.forEach((conn) => {
+  for (const conn of groupedConnections.values()) {
     const fullNewEdgeId = getEdgeId(conn, includeAnnotations);
     edgesToAdd.add(fullNewEdgeId);
     connectionMap.set(fullNewEdgeId, conn);
-  });
+  }
 
-  edgesToRemove.forEach((edgeId) => expectedEdges.delete(edgeId));
-  edgesToAdd.forEach((edgeId) => expectedEdges.add(edgeId));
+  for (const edgeId of edgesToRemove) {
+    expectedEdges.delete(edgeId);
+  }
+  for (const edgeId of edgesToAdd) {
+    expectedEdges.add(edgeId);
+  }
 
   return expectedEdges;
 };
@@ -293,16 +307,18 @@ const applySplitJoinRulesToNodes = (
 ) => {
   const nodesToRemove = new Set<string>();
 
-  expectedNodes.forEach((nodeId) => {
+  for (const nodeId of expectedNodes) {
     if (
       !visibleActiveNeurons.has(nodeId) &&
       shouldRemoveNode(nodeId, toSplit, toJoin, includeNeighboringCellsAsIndividualCells, workspace, visibleActiveNeurons)
     ) {
       nodesToRemove.add(nodeId);
     }
-  });
+  }
 
-  nodesToRemove.forEach((nodeId) => expectedNodes.delete(nodeId));
+  for (const nodeId of nodesToRemove) {
+    expectedNodes.delete(nodeId);
+  }
 
   return expectedNodes;
 };
@@ -311,7 +327,7 @@ const applySplitJoinRulesToNodes = (
 const applySplitJoinRulesToEdges = (expectedEdges: Set<string>, expectedNodes: Set<string>, connectionMap: Map<string, Connection>) => {
   const edgesToRemove = new Set<string>();
 
-  expectedEdges.forEach((edgeId) => {
+  for (const edgeId of expectedEdges) {
     const conn = connectionMap.get(edgeId);
 
     if (conn) {
@@ -322,9 +338,11 @@ const applySplitJoinRulesToEdges = (expectedEdges: Set<string>, expectedNodes: S
         edgesToRemove.add(edgeId);
       }
     }
-  });
+  }
 
-  edgesToRemove.forEach((edgeId) => expectedEdges.delete(edgeId));
+  for (const edgeId of edgesToRemove) {
+    expectedEdges.delete(edgeId);
+  }
 
   return expectedEdges;
 };
@@ -390,7 +408,7 @@ export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights) =
   const sourceIds = selectedIds.length ? selectedIds : inputIds;
   let sourceNodes = cy.collection();
 
-  sourceIds.forEach((id) => {
+  for (const id of sourceIds) {
     const node = cy.getElementById(id);
 
     if (node.isParent()) {
@@ -398,15 +416,15 @@ export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights) =
     } else {
       sourceNodes = sourceNodes.union(node);
     }
-  });
+  }
 
   // Filter network by edges, as set by legend.
   let edgeSel = "edge";
   legendHighlights.forEach((highlight, type) => {
     if (type === LegendType.Connection) {
       edgeSel += `[type="${highlight}"]`;
-    } else if (type == LegendType.Annotation) {
-      edgeSel += "." + highlight;
+    } else if (type === LegendType.Annotation) {
+      edgeSel += `.${highlight}`;
     }
   });
 
@@ -415,7 +433,7 @@ export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights) =
   // Filter network by nodes, as set by legend.
   legendHighlights.forEach((highlight, type) => {
     if (type === LegendType.Node) {
-      connectedNodes = connectedNodes.filter("[?" + highlight + "]");
+      connectedNodes = connectedNodes.filter(`[?${highlight}]`);
     }
   });
 
@@ -448,10 +466,10 @@ export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights) =
 
 export const updateParentNodes = (cy: Core, workspace: Workspace, openGroups: Set<string>) => {
   // Iterate through each neuron group in the workspace
-  Object.entries(workspace.neuronGroups).forEach(([groupId, group]) => {
+  for (const [groupId, group] of Object.entries(workspace.neuronGroups)) {
     const groupIsOpen = openGroups.has(groupId);
 
-    group.neurons.forEach((neuronId) => {
+    for (const neuronId of group.neurons) {
       const cyNode = cy.getElementById(neuronId);
 
       if (groupIsOpen) {
@@ -462,8 +480,8 @@ export const updateParentNodes = (cy: Core, workspace: Workspace, openGroups: Se
           cyNode.move({ parent: groupId });
         }
       }
-    });
-  });
+    }
+  }
 };
 
 export const updateParallelEdges = (cy: Core) => {
