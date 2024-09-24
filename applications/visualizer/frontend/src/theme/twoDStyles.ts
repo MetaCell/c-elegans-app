@@ -33,11 +33,11 @@ const GROUP_NODE_STYLE = {
   padding: "7px",
   "text-wrap": "wrap",
   "text-valign": "center",
-  "text-align": "center",
+  "text-halign": "center",
   color: "black",
   "border-width": 1,
   "border-color": "black",
-  "font-weight": "semibold",
+  "font-weight": "normal",
   "background-image": "none",
   "pie-size": "75%",
   "border-opacity": 1,
@@ -93,6 +93,7 @@ const ELECTRICAL_STYLE = [
     selector: ".electrical",
     style: {
       "line-color": "#63625F",
+      width: (node: any) => node.data("width"),
       "curve-style": "segments",
       "target-arrow-color": "#666666",
       "source-arrow-color": "#666666",
@@ -105,7 +106,6 @@ const ELECTRICAL_STYLE = [
         return [-2.0, -1.5, -0.5, 0.5, 1.5, 2.0].map((d) => 0.5 + d * divider).join(" ");
       },
       "target-arrow-shape": "none",
-      width: (node: any) => node.data("width"),
     },
   },
   {
@@ -146,11 +146,9 @@ const OPEN_GROUP_STYLE = {
   "font-size": "10px",
   "background-opacity": 0.7,
   "text-wrap": "wrap",
-  "text-align": "center",
   color: "black",
   "border-width": 3,
-  "font-weight": "semibold",
-  "text-border-radius": "8px",
+  "font-weight": "bold",
 };
 
 const FADED_STYLE = [
@@ -174,12 +172,11 @@ const EDGE_LABEL_STYLES = [
     selector: "edge.hover, edge.showEdgeLabel",
     style: {
       label: "data(label)",
-      "font-size": "10px",
+      "font-size": "12px",
       "font-weight": "bold",
       "text-background-opacity": 0,
       "text-background-padding": "3px",
       "z-index": 10,
-      "text-border-radius": "8px",
       "z-compound-depth": "top",
       shape: "roundrectangle",
       "text-outline-width": 0.8,
@@ -190,12 +187,11 @@ const EDGE_LABEL_STYLES = [
     selector: "edge.focus",
     style: {
       label: "data(longLabel)",
-      "font-size": "4px",
+      "font-size": "8px",
       "text-wrap": "wrap",
       "text-background-opacity": 0,
       "text-background-padding": "3px",
       "z-index": 10,
-      "text-border-radius": "8px",
     },
   },
 ];
@@ -268,7 +264,7 @@ const ANNOTATION_STYLES = Object.entries(annotationLegend).map(([, { id, color }
   style: {
     "line-color": color,
     "target-arrow-color": color,
-    "sources-arrow-color": color,
+    "source-arrow-color": color,
   },
 }));
 
