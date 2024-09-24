@@ -216,7 +216,7 @@ def upload_segmentations(
 
     seg_files = list(segmentation_files)
     if len(seg_files) == 0:
-        logger.warning("skipping segmentation upload: no files matched")
+        logger.warning("skipping segmentation upload: no files found")
         return
 
     pbar = tqdm(seg_files, disable=rs.dry_run)
@@ -232,7 +232,7 @@ def upload_segmentations(
     resolutions_metadata = find_segmentation_resolution_metadata_file(seg_paths)
     if resolutions_metadata is None:
         logger.warning(
-            "skipping segmentation resolutions metadata upload: no file found"
+            "skipping segmentation resolutions metadata upload: no files found"
         )
         return
 
@@ -339,7 +339,7 @@ def upload_em_tiles(
 ):
     tiles = list(load_tiles(tile_paths))
     if len(tiles) == 0:
-        logger.warning("skipping EM tiles upload: no files matched")
+        logger.warning("skipping EM tiles upload: no files found")
         return
 
     upload_tileset_metadata(dataset_id, tiles, rs, overwrite=overwrite)
@@ -387,16 +387,16 @@ def ingest_cmd(args: Namespace):
     if args.segmentation:
         upload_segmentations(dataset_id, args.segmentation, rs, overwrite=overwrite)
     elif dry_run:
-        logger.debug("skipping segmentation upload: flag not set")
+        logger.warning("skipping segmentation upload: flag not set")
 
     if paths := getattr(args, "3d"):
         upload_3d(dataset_id, paths, rs, overwrite=overwrite)
     elif dry_run:
-        logger.debug("skipping 3D files upload: flag not set")
+        logger.warning("skipping 3D files upload: flag not set")
 
     if args.em:
         upload_em_tiles(dataset_id, args.em, rs, overwrite=overwrite)
     elif dry_run:
-        logger.debug("skipping EM tiles upload: flag not set")
+        logger.warning("skipping EM tiles upload: flag not set")
 
     print(_done_message(dataset_id, dry_run))
