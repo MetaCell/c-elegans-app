@@ -20,6 +20,7 @@ import { processNeuronJoin, processNeuronSplit } from "../../../helpers/twoD/spl
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
 import { AlignBottomIcon, AlignLeftIcon, AlignRightIcon, AlignTopIcon, DistributeHorizontallyIcon, DistributeVerticallyIcon } from "../../../icons";
 import { Alignment, ViewerType, Visibility } from "../../../models";
+import { emptyViewerData } from "../../../models/models.ts";
 import { vars } from "../../../theme/variables.ts";
 
 const { gray700 } = vars;
@@ -37,6 +38,7 @@ interface ContextMenuProps {
 const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setSplitJoinState, openGroups, setOpenGroups, cy }) => {
   const workspace = useSelectedWorkspace();
   const [submenuAnchorEl, setSubmenuAnchorEl] = useState<null | HTMLElement>(null);
+  const selectedNeurons = workspace.getViewerSelecedNeurons(ViewerType.Graph);
 
   const submenuOpen = Boolean(submenuAnchorEl);
 
@@ -54,55 +56,60 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
   };
 
   const handleAlignOption = (option: Alignment) => {
-    alignNeurons(option, Array.from(workspace.selectedNeurons), cy);
+    alignNeurons(option, selectedNeurons, cy);
     setSubmenuAnchorEl(null);
     onClose();
     setSubmenuAnchorEl(null);
   };
 
   const handleDistributeOption = (option: Alignment) => {
-    distributeNeurons(option, Array.from(workspace.selectedNeurons), cy);
+    distributeNeurons(option, selectedNeurons, cy);
     setSubmenuAnchorEl(null);
     onClose();
   };
   const handleHide = () => {
     workspace.customUpdate((draft) => {
-      workspace.selectedNeurons.forEach((neuronId) => {
-        const neuron = draft.availableNeurons[neuronId];
-        if (neuron && neuron.viewerData[ViewerType.Graph]) {
-          neuron.viewerData[ViewerType.Graph].visibility = Visibility.Hidden;
+      for (const neuronId of selectedNeurons) {
+        if (!(neuronId in draft.visibilities)) {
+          draft.visibilities[neuronId] = emptyViewerData(Visibility.Hidden);
+        } else {
+          draft.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Hidden;
         }
-      });
-      draft.selectedNeurons.clear();
+      }
+      draft.clearSelection(ViewerType.Graph);
     });
     onClose();
   };
 
   const handleGroup = () => {
-    const { newGroupId, newGroup, groupsToDelete } = groupNeurons(workspace.selectedNeurons, workspace);
+    const selectedNeuronsSet = new Set(selectedNeurons);
+    const { newGroupId, newGroup, groupsToDelete } = groupNeurons(selectedNeuronsSet, workspace);
 
     workspace.customUpdate((draft) => {
       // Add the new group
       draft.neuronGroups[newGroupId] = newGroup;
+      draft.visibilities[newGroupId] = emptyViewerData(Visibility.Visible);
 
       // Remove the old groups that were merged into the new group
-      groupsToDelete.forEach((groupId) => delete draft.neuronGroups[groupId]);
+      for (const groupId of groupsToDelete) {
+        delete draft.neuronGroups[groupId];
+        delete draft.visibilities[groupId];
+      }
 
       // Clear the current selection and select the new group
-      draft.selectedNeurons.clear();
-      draft.selectedNeurons.add(newGroupId);
+      draft.setSelection([newGroupId], ViewerType.Graph);
     });
 
     setOpenGroups((prevOpenGroups: Set<string>) => {
       const updatedOpenGroups = new Set(prevOpenGroups);
       let wasGroupOpen = false;
 
-      groupsToDelete.forEach((groupId) => {
+      for (const groupId of groupsToDelete) {
         if (updatedOpenGroups.has(groupId)) {
           updatedOpenGroups.delete(groupId);
           wasGroupOpen = true;
         }
-      });
+      }
 
       // Only add the new group if any of the deleted groups were open
       if (wasGroupOpen) {
@@ -120,7 +127,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
     workspace.customUpdate((draft) => {
       const nextSelected = new Set<string>();
 
-      for (const elementId of draft.selectedNeurons) {
+      for (const elementId of selectedNeurons) {
         if (draft.neuronGroups[elementId]) {
           // Handle the case where the selected element is a group
           const group = draft.neuronGroups[elementId];
@@ -134,7 +141,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
           }
         } else {
           // Handle the case where the selected element is a neuron within a group
-          Object.entries(draft.neuronGroups).forEach(([groupId, group]) => {
+          for (const [groupId, group] of Object.entries(draft.neuronGroups)) {
             if (group.neurons.has(elementId)) {
               group.neurons.delete(elementId); // Remove the neuron from the group
               nextSelected.add(elementId);
@@ -148,17 +155,19 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
                 }
               }
             }
-          });
+          }
         }
       }
 
-      draft.selectedNeurons = nextSelected;
+      draft.setSelection(Array.from(nextSelected), ViewerType.Graph);
     });
 
     // Remove groups from the openGroups set
     setOpenGroups((prevOpenGroups: Set<string>) => {
       const updatedOpenGroups = new Set<string>(prevOpenGroups);
-      groupsToRemoveFromOpen.forEach((groupId) => updatedOpenGroups.delete(groupId));
+      for (const groupId of groupsToRemoveFromOpen) {
+        updatedOpenGroups.delete(groupId);
+      }
       return updatedOpenGroups;
     });
 
@@ -181,28 +190,24 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
 
   const handleAddToWorkspace = () => {
     workspace.customUpdate((draft) => {
-      workspace.selectedNeurons.forEach((neuronId) => {
+      for (const neuronId of selectedNeurons) {
         const group = workspace.neuronGroups[neuronId];
         if (group) {
-          group.neurons.forEach((groupedNeuronId) => {
+          for (const groupedNeuronId of group.neurons) {
             draft.activeNeurons.add(groupedNeuronId);
-            if (draft.availableNeurons[groupedNeuronId]) {
-              draft.availableNeurons[groupedNeuronId].isVisible = true;
-            }
-          });
+            draft.visibilities[groupedNeuronId] = emptyViewerData(Visibility.Visible);
+          }
         } else {
           draft.activeNeurons.add(neuronId);
-          if (draft.availableNeurons[neuronId]) {
-            draft.availableNeurons[neuronId].isVisible = true;
-          }
+          draft.visibilities[neuronId] = emptyViewerData(Visibility.Visible);
         }
-      });
+      }
     });
     onClose();
   };
 
   const handleOpenGroup = () => {
-    workspace.selectedNeurons.forEach((neuronId) => {
+    for (const neuronId of selectedNeurons) {
       if (workspace.neuronGroups[neuronId] && !openGroups.has(neuronId)) {
         // Mark the group as open
         setOpenGroups((prevOpenGroups: Set<string>) => {
@@ -211,11 +216,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
           return updatedOpenGroups;
         });
       }
-    });
+    }
     onClose();
   };
   const handleCloseGroup = () => {
-    workspace.selectedNeurons.forEach((neuronId) => {
+    for (const neuronId of selectedNeurons) {
       if (workspace.neuronGroups[neuronId] && openGroups.has(neuronId)) {
         // Mark the group as closed
         setOpenGroups((prevOpenGroups: Set<string>) => {
@@ -224,15 +229,14 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
           return updatedOpenGroups;
         });
       }
-    });
+    }
     onClose();
   };
 
   const groupEnabled = useMemo(() => {
     const groupOrPartOfGroupSet = new Set<string>();
     let nonGroupOrPartCount = 0;
-
-    Array.from(workspace.selectedNeurons).forEach((neuronId) => {
+    for (const neuronId of selectedNeurons) {
       const isGroup = Boolean(workspace.neuronGroups[neuronId]);
       const isPartOfGroup = Object.entries(workspace.neuronGroups).find(([, group]) => group.neurons.has(neuronId));
 
@@ -243,14 +247,14 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
       } else {
         nonGroupOrPartCount++;
       }
-    });
+    }
 
     // Enable grouping if there are neurons not in any group and at most one group or part of a group is selected.
     return nonGroupOrPartCount > 0 && groupOrPartOfGroupSet.size <= 1;
-  }, [workspace.selectedNeurons, workspace.neuronGroups]);
+  }, [selectedNeurons, workspace.neuronGroups]);
 
   const ungroupEnabled = useMemo(() => {
-    return Array.from(workspace.selectedNeurons).some((neuronId) => {
+    return selectedNeurons.some((neuronId) => {
       // Check if the neuronId is a group itself
       const isGroup = Boolean(workspace.neuronGroups[neuronId]);
 
@@ -260,29 +264,29 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
       // Enable ungroup if the neuron is a group or is part of a group
       return isGroup || isPartOfGroup;
     });
-  }, [workspace.selectedNeurons, workspace.neuronGroups]);
+  }, [selectedNeurons, workspace.neuronGroups]);
 
   const splitEnabled = useMemo(() => {
-    return Array.from(workspace.selectedNeurons).some((neuronId) => {
+    return selectedNeurons.some((neuronId) => {
       const neuron = workspace.availableNeurons[neuronId];
       return neuron && neuron.name === neuron.nclass;
     });
-  }, [workspace.selectedNeurons, workspace.availableNeurons]);
+  }, [selectedNeurons, workspace.availableNeurons]);
 
   const joinEnabled = useMemo(() => {
-    return Array.from(workspace.selectedNeurons).some((neuronId) => {
+    return selectedNeurons.some((neuronId) => {
       const neuron = workspace.availableNeurons[neuronId];
       return neuron && neuron.name !== neuron.nclass;
     });
-  }, [workspace.selectedNeurons, workspace.availableNeurons]);
+  }, [selectedNeurons, workspace.availableNeurons]);
 
   const openGroupEnabled = useMemo(() => {
-    return Array.from(workspace.selectedNeurons).some((neuronId) => workspace.neuronGroups[neuronId] && !openGroups.has(neuronId));
-  }, [workspace.selectedNeurons, workspace.neuronGroups, openGroups]);
+    return selectedNeurons.some((neuronId) => workspace.neuronGroups[neuronId] && !openGroups.has(neuronId));
+  }, [selectedNeurons, workspace.neuronGroups, openGroups]);
 
   const closeGroupEnabled = useMemo(() => {
-    return Array.from(workspace.selectedNeurons).some((neuronId) => workspace.neuronGroups[neuronId] && openGroups.has(neuronId));
-  }, [workspace.selectedNeurons, workspace.neuronGroups, openGroups]);
+    return selectedNeurons.some((neuronId) => workspace.neuronGroups[neuronId] && openGroups.has(neuronId));
+  }, [selectedNeurons, workspace.neuronGroups, openGroups]);
   const handleContextMenu = (event: React.MouseEvent) => {
     event.preventDefault(); // Prevent default context menu
   };

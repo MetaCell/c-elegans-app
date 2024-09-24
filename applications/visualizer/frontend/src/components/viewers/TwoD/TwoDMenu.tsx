@@ -94,11 +94,11 @@ const TwoDMenu = ({
 
   const handleToggleVisibility = (neuronId) => {
     workspace.customUpdate((draft) => {
-      const neuron = draft.availableNeurons[neuronId];
+      const neuron = draft.visibilities[neuronId];
       if (neuron) {
-        const currentVisibility = neuron.viewerData[ViewerType.Graph]?.visibility;
-        neuron.viewerData[ViewerType.Graph].visibility = currentVisibility === Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
-        draft.selectedNeurons.delete(neuronId);
+        const currentVisibility = neuron[ViewerType.Graph]?.visibility;
+        neuron[ViewerType.Graph].visibility = currentVisibility === Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
+        draft.removeSelection(neuronId, ViewerType.Graph);
       }
     });
   };
@@ -109,13 +109,13 @@ const TwoDMenu = ({
   const openVisibility = Boolean(visibilityAnchorEl);
   const visibilityId = openVisibility ? "visibility-popover" : undefined;
 
-  const visibleNeurons = Object.keys(workspace.availableNeurons).filter(
-    (neuronId) => workspace.availableNeurons[neuronId]?.viewerData[ViewerType.Graph]?.visibility === Visibility.Visible,
-  );
+  const visibleNeurons = Object.entries(workspace.visibilities)
+    .filter(([_, data]) => data[ViewerType.Graph].visibility === Visibility.Visible)
+    .map(([key, _]) => key);
 
-  const hiddenNeurons = Object.keys(workspace.availableNeurons).filter(
-    (neuronId) => workspace.availableNeurons[neuronId]?.viewerData[ViewerType.Graph]?.visibility === Visibility.Hidden,
-  );
+  const hiddenNeurons = Object.entries(workspace.visibilities)
+    .filter(([_, data]) => data[ViewerType.Graph].visibility === Visibility.Hidden)
+    .map(([key, _]) => key);
 
   return (
     <Box
@@ -342,7 +342,7 @@ const TwoDMenu = ({
               key={neuronId}
               control={
                 <Switch
-                  checked={workspace.availableNeurons[neuronId].viewerData[ViewerType.Graph]?.visibility === Visibility.Visible}
+                  checked={workspace.visibilities[neuronId][ViewerType.Graph]?.visibility === Visibility.Visible}
                   onChange={() => handleToggleVisibility(neuronId)}
                 />
               }
@@ -360,7 +360,7 @@ const TwoDMenu = ({
               key={neuronId}
               control={
                 <Switch
-                  checked={workspace.availableNeurons[neuronId].viewerData[ViewerType.Graph]?.visibility === Visibility.Visible}
+                  checked={workspace.visibilities[neuronId][ViewerType.Graph]?.visibility === Visibility.Visible}
                   onChange={() => handleToggleVisibility(neuronId)}
                 />
               }

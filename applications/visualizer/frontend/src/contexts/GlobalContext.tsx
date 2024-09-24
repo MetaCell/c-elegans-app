@@ -1,3 +1,5 @@
+import { produce } from "immer";
+import pako from "pako";
 import type React from "react";
 import { type ReactNode, createContext, useContext, useEffect, useState } from "react";
 import ErrorAlert from "../components/ErrorAlert.tsx";
@@ -6,6 +8,20 @@ import { ViewMode } from "../models";
 import { Workspace } from "../models";
 import { GlobalError } from "../models/Error.ts";
 import { type Dataset, DatasetsService } from "../rest";
+import type { SerializedGlobalContext } from "./SerializedContext.tsx";
+
+function b64Tob64Url(buffer: string): string {
+  return buffer.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function b64UrlTo64(value: string): string {
+  const m = value.length % 4;
+  return value
+    .replace(/-/g, "+")
+    .replace(/_/g, "/")
+    .padEnd(value.length + (m === 0 ? 0 : 4 - m), "=");
+}
+
 export interface GlobalContextType {
   workspaces: Record<string, Workspace>;
   currentWorkspaceId: string | undefined;
@@ -21,6 +37,9 @@ export interface GlobalContextType {
   datasets: Record<string, Dataset>;
   setAllWorkspaces: (workspaces: Record<string, Workspace>) => void;
   handleErrors: (error: Error) => void;
+  serializeGlobalContext: () => string;
+  restoreGlobalContext: (context: SerializedGlobalContext) => void;
+  restoreGlobalContextFromBase64: (base64Context: string) => void;
 }
 
 interface GlobalContextProviderProps {
@@ -74,7 +93,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
   };
 
   const getCurrentWorkspace = () => {
-    return workspaces[currentWorkspaceId];
+    return workspaces?.[currentWorkspaceId];
   };
 
   const handleErrors = (error: Error) => {
@@ -83,6 +102,79 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
       setOpenErrorAlert(true);
     }
   };
+
+  const serializeGlobalContext = () => {
+    // Create a special context with only the information we need
+    const subContext = {
+      workspaces: {},
+      currentWorkspaceId,
+      viewMode,
+      selectedWorkspacesIds: [...selectedWorkspacesIds],
+    };
+
+    // Modify this context to remove the elements we don't want by workspace and to simplify it
+    //   - layoutManager (not serializable)
+    //   - store (related to the layour manager)
+    //   - availableNeurons (they are computed when a workspace is created)
+    //   - activeDatasets, we replace only with the keys of the datasets
+    //   - synchronizerOrchestrator, we move some of its properties to the simplified workspace (gain space)
+    //   - contexts comes from the synchronizer orchestrator
+    //   - active viewers comes from the synchronizer orchestrator
+    const updatedSubContext = produce(subContext, (draft) => {
+      const simpleWorkspace = {};
+      for (const [key, workspace] of Object.entries(workspaces)) {
+        const copy = {
+          ...workspace,
+          layoutManager: undefined,
+          store: undefined,
+          availableNeurons: undefined,
+          syncOrchestrator: undefined,
+          activeDatasets: Object.keys(workspace.activeDatasets),
+          contexts: workspace.syncOrchestrator.contexts,
+          activeSyncs: Object.fromEntries(workspace.syncOrchestrator.synchronizers.map((sync) => [sync.pair, sync.active])),
+        };
+        simpleWorkspace[key] = copy;
+      }
+      draft.workspaces = simpleWorkspace;
+    });
+
+    const jsonContext = JSON.stringify(updatedSubContext, (_key, value) => (value instanceof Set ? [...value] : value));
+    const gzipContext = pako.gzip(jsonContext);
+    const base64UrlFragment = btoa(String.fromCharCode.apply(null, gzipContext));
+    return b64Tob64Url(base64UrlFragment);
+  };
+
+  const restoreGlobalContext = (context: SerializedGlobalContext) => {
+    setCurrentWorkspaceId(context.currentWorkspaceId);
+    setSelectedWorkspacesIds(new Set(context.selectedWorkspacesIds));
+    setViewMode(context.viewMode);
+
+    const reconstructedWorkspaces = {};
+    for (const [wsId, ws] of Object.entries(context.workspaces)) {
+      const activeDatasets: Record<string, Dataset> = {};
+      for (const key of ws.activeDatasets) {
+        if (datasets[key]) {
+          activeDatasets[key] = datasets[key];
+        }
+      }
+      const workspace = new Workspace(ws.id, ws.name, activeDatasets, new Set(ws.activeNeurons), updateWorkspace, ws.activeSyncs, ws.contexts, ws.visibilities);
+      workspace.viewers = ws.viewers;
+
+      reconstructedWorkspaces[wsId] = workspace;
+    }
+    setWorkspaces(reconstructedWorkspaces);
+  };
+
+  const restoreGlobalContextFromBase64 = (base64UrlContext: string) => {
+    const base64Context = b64UrlTo64(base64UrlContext);
+    const gzipedContext = Uint8Array.from(atob(base64Context), (c) => c.charCodeAt(0));
+    const serializedContext = pako.ungzip(gzipedContext);
+    const jsonContext = new TextDecoder().decode(serializedContext);
+
+    const ctx = JSON.parse(jsonContext) as SerializedGlobalContext;
+    restoreGlobalContext(ctx);
+  };
+
   const getGlobalContext = () => ({
     workspaces,
     currentWorkspaceId,
@@ -98,6 +190,9 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     datasets,
     setAllWorkspaces,
     handleErrors,
+    serializeGlobalContext,
+    restoreGlobalContext,
+    restoreGlobalContextFromBase64,
   });
 
   useEffect(() => {
