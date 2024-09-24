@@ -52,7 +52,8 @@ class RemoteStorage:
     def upload(self, source_file: Path, blob_name: str, *, overwrite: bool = False):
         if self.dry_run:
             self._logger.info(
-                f" * file {source_file} will be uplodaded --> {self.bucket.name}://{blob_name}"
+                f" * File {source_file} will be uplodaded\n"
+                f"   to {self.bucket.name}://{blob_name}"
             )
             return
 

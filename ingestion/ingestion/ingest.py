@@ -152,12 +152,12 @@ def validate_and_upload_data(
 
     if dataset_id not in (ds.id for ds in data.datasets):
         raise Exception(
-            f"specified dataset '{dataset_id}' was not found in datasets.json"
+            f"Specified dataset '{dataset_id}' was not found in datasets.json"
         )
 
-    logger.info(f"data in {dir} has the right structure and is valid!")
+    logger.info(f"Data in {dir} has the right structure and is valid!")
 
-    logger.info(f"uploading raw data...")
+    logger.info(f"Uploading raw data...")
 
     paths: list[Path] = [data_files.neurons, data_files.datasets]
     paths.extend(conn for conn in data_files.connections.values())
@@ -168,7 +168,7 @@ def validate_and_upload_data(
         pbar.set_description(str(p))
         rs.upload(p, fs_data_blob_name(dataset_id, p, dir), overwrite=overwrite)
 
-    logger.info(f"done uploading raw data!")
+    logger.info(f"Done uploading raw data!")
 
 
 def prune_bucket(bucket: storage.Bucket | FakeBucket):
