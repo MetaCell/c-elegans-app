@@ -46,8 +46,8 @@ class RemoteStorage:
         self.dry_run = dry_run
 
         self._logger = logging.getLogger(f"{__name__} ({bucket.name=})")
-        if dry_run:
-            self._logger.setLevel(logging.DEBUG)
+        # if dry_run:
+        #     self._logger.setLevel(logging.DEBUG)
 
     def upload(self, source_file: Path, blob_name: str, *, overwrite: bool = False):
         if self.dry_run:
