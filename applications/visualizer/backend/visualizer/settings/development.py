@@ -17,3 +17,18 @@ DATABASES = {
         "TEST": {"NAME": BASE_DIR / "tests" / "testdb.sqlite3"},
     }
 }
+
+
+class DbDataDownloader:
+    def __init__(self): ...
+
+    def get_summary(self):
+        return GCS_BUCKET_URL / "db-raw-data" / "summary.json"
+
+    def pull_files(self):
+        # In the local version, we just return the parent, the files are already pulled
+        files = self.get_summary()
+        return files.parent
+
+
+RAW_DB_DATA_DOWNLOADER = DbDataDownloader
