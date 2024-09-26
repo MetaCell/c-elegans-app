@@ -200,7 +200,7 @@ def test__main_ingest_valid_data(
             ]
         )
 
-    assert compare_directories(data_dir, celegans_dir / "raw-data")
+    assert compare_directories(data_dir, celegans_dir / "db-raw-data")
 
     out, _ = capsys.readouterr()
     assert _done_message("white_1986_jsh") in out
