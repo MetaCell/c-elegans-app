@@ -25,7 +25,7 @@ class FakeBucket:
         return FakeBlob()  # type:ignore
 
     def patch(self, *_): ...
-    def list_blobs(self, *_, **kwargs) -> Iterable[Any]: ...
+    def list_blobs(self, *_, **kwargs) -> Iterable[Any]: ...  # type:ignore
 
 
 class RemoteStorage:
