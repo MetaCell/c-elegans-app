@@ -9,7 +9,7 @@ import CustomFormControlLabel from "./CustomFormControlLabel.tsx";
 
 const { gray500 } = vars;
 
-function SceneControls({ cameraControlRef, isWireframe, setIsWireframe }) {
+function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, handleScreenshot }) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   const open = Boolean(anchorEl);
@@ -129,7 +129,7 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe }) {
         </IconButton>
       </Tooltip>
       <Tooltip title="Download graph" placement="right-start">
-        <IconButton>
+        <IconButton onClick={handleScreenshot}>
           <GetAppOutlined />
         </IconButton>
       </Tooltip>

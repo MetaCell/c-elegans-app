@@ -70,7 +70,6 @@ function ThreeDViewer() {
 
   const handleScreenshot = () => {
     if (ref.current) {
-      // Use the Screenshoter utility functionthis.sceneRef.current && this.sceneRef.current.getElementsByTagName('canvas')[0]
       downloadScreenshot(ref.current && ref.current.getElementsByTagName("canvas")[0], 0.95, { width: 3840, height: 2160 }, 1, () => true, "screenshot.png");
     }
   };
