@@ -1,4 +1,3 @@
-db-raw-data/summary.json
 db-raw-data/datasets.json
 db-raw-data/neurons.json
 db-raw-data/annotations/complete.annotations.json
