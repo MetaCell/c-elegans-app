@@ -1,270 +1,418 @@
+import {
+  ArrowRightOutlined,
+  CallSplitOutlined,
+  CloseFullscreen,
+  FormatAlignJustifyOutlined,
+  GroupOutlined,
+  HubOutlined,
+  MergeOutlined,
+  OpenInFull,
+  VisibilityOutlined,
+  WorkspacesOutlined,
+} from "@mui/icons-material";
+import { Box, Divider, Menu, MenuItem, Popover } from "@mui/material";
+import type { Core } from "cytoscape";
 import type React from "react";
-import { useMemo } from "react";
-import { Menu, MenuItem } from "@mui/material";
-import { type NeuronGroup, ViewerType } from "../../../models";
-import { calculateMeanPosition, calculateSplitPositions, isNeuronClass } from "../../../helpers/twoD/twoDHelpers.ts";
+import { useEffect, useMemo, useState } from "react";
+import { alignNeurons, distributeNeurons } from "../../../helpers/twoD/alignHelper.ts";
+import { groupNeurons, removeNodeFromGroup } from "../../../helpers/twoD/groupHelper.ts";
+import { processNeuronJoin, processNeuronSplit } from "../../../helpers/twoD/splitJoinHelper.ts";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
-import type { Position } from "cytoscape";
-import type { GraphViewerData } from "../../../models/models.ts";
+import { AlignBottomIcon, AlignLeftIcon, AlignRightIcon, AlignTopIcon, DistributeHorizontallyIcon, DistributeVerticallyIcon } from "../../../icons";
+import { Alignment, ViewerType, Visibility } from "../../../models";
+import { emptyViewerData } from "../../../models/models.ts";
+import { vars } from "../../../theme/variables.ts";
+
+const { gray700 } = vars;
 
 interface ContextMenuProps {
   open: boolean;
   onClose: () => void;
   position: { mouseX: number; mouseY: number } | null;
   setSplitJoinState: React.Dispatch<React.SetStateAction<{ split: Set<string>; join: Set<string> }>>;
-  setHiddenNodes: React.Dispatch<React.SetStateAction<Set<string>>>;
+  openGroups: Set<string>;
+  setOpenGroups: React.Dispatch<React.SetStateAction<Set<string>>>;
+  cy: Core;
 }
 
-const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setSplitJoinState, setHiddenNodes }) => {
+const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setSplitJoinState, openGroups, setOpenGroups, cy }) => {
   const workspace = useSelectedWorkspace();
+  const [submenuAnchorEl, setSubmenuAnchorEl] = useState<null | HTMLElement>(null);
+  const selectedNeurons = workspace.getViewerSelecedNeurons(ViewerType.Graph);
 
+  const submenuOpen = Boolean(submenuAnchorEl);
+
+  const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setSubmenuAnchorEl(event.currentTarget);
+  };
+
+  const handlePopoverClose = () => {
+    setSubmenuAnchorEl(null);
+  };
+
+  const handleContextMenuClose = () => {
+    onClose();
+    handlePopoverClose(); // Ensure the submenu is also closed when the context menu closes.
+  };
+
+  const handleAlignOption = (option: Alignment) => {
+    alignNeurons(option, selectedNeurons, cy);
+    setSubmenuAnchorEl(null);
+    onClose();
+    setSubmenuAnchorEl(null);
+  };
+
+  const handleDistributeOption = (option: Alignment) => {
+    distributeNeurons(option, selectedNeurons, cy);
+    setSubmenuAnchorEl(null);
+    onClose();
+  };
   const handleHide = () => {
-    setHiddenNodes((prevHiddenNodes) => {
-      const newHiddenNodes = new Set([...prevHiddenNodes]);
-      workspace.selectedNeurons.forEach((neuronId) => {
-        newHiddenNodes.add(neuronId);
-      });
-      return newHiddenNodes;
+    workspace.customUpdate((draft) => {
+      for (const neuronId of selectedNeurons) {
+        if (!(neuronId in draft.visibilities)) {
+          draft.visibilities[neuronId] = emptyViewerData(Visibility.Hidden);
+        } else {
+          draft.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Hidden;
+        }
+      }
+      draft.clearSelection(ViewerType.Graph);
     });
-    workspace.clearSelectedNeurons();
     onClose();
   };
 
   const handleGroup = () => {
-    const newGroupId = `group_${Date.now()}`;
-    const newGroupNeurons = new Set<string>();
-    const groupsToDelete = new Set<string>();
-
-    for (const neuronId of workspace.selectedNeurons) {
-      const group = workspace.neuronGroups[neuronId];
-      if (group) {
-        for (const groupedNeuronId of group.neurons) {
-          newGroupNeurons.add(groupedNeuronId);
-        }
-        groupsToDelete.add(neuronId);
-      } else {
-        newGroupNeurons.add(neuronId);
-      }
-    }
-
-    const newGroup: NeuronGroup = {
-      id: newGroupId,
-      name: newGroupId,
-      color: "#9FEE9A",
-      neurons: newGroupNeurons,
-    };
+    const selectedNeuronsSet = new Set(selectedNeurons);
+    const { newGroupId, newGroup, groupsToDelete } = groupNeurons(selectedNeuronsSet, workspace);
 
     workspace.customUpdate((draft) => {
+      // Add the new group
       draft.neuronGroups[newGroupId] = newGroup;
-      groupsToDelete.forEach((groupId) => delete draft.neuronGroups[groupId]);
-      draft.selectedNeurons.clear();
-      draft.selectedNeurons.add(newGroupId);
+      draft.visibilities[newGroupId] = emptyViewerData(Visibility.Visible);
+
+      // Remove the old groups that were merged into the new group
+      for (const groupId of groupsToDelete) {
+        delete draft.neuronGroups[groupId];
+        delete draft.visibilities[groupId];
+      }
+
+      // Clear the current selection and select the new group
+      draft.setSelection([newGroupId], ViewerType.Graph);
     });
+
+    setOpenGroups((prevOpenGroups: Set<string>) => {
+      const updatedOpenGroups = new Set(prevOpenGroups);
+      let wasGroupOpen = false;
+
+      for (const groupId of groupsToDelete) {
+        if (updatedOpenGroups.has(groupId)) {
+          updatedOpenGroups.delete(groupId);
+          wasGroupOpen = true;
+        }
+      }
+
+      // Only add the new group if any of the deleted groups were open
+      if (wasGroupOpen) {
+        updatedOpenGroups.add(newGroupId);
+      }
+
+      return updatedOpenGroups;
+    });
+
     onClose();
   };
-
   const handleUngroup = () => {
+    const groupsToRemoveFromOpen = new Set<string>();
+
     workspace.customUpdate((draft) => {
       const nextSelected = new Set<string>();
-      for (const elementId of draft.selectedNeurons) {
+
+      for (const elementId of selectedNeurons) {
         if (draft.neuronGroups[elementId]) {
+          // Handle the case where the selected element is a group
           const group = draft.neuronGroups[elementId];
           for (const groupedNeuronId of group.neurons) {
             nextSelected.add(groupedNeuronId);
+            removeNodeFromGroup(cy, groupedNeuronId, true);
           }
-          delete draft.neuronGroups[elementId];
+          delete draft.neuronGroups[elementId]; // Delete the entire group
+          if (openGroups.has(elementId)) {
+            groupsToRemoveFromOpen.add(elementId);
+          }
+        } else {
+          // Handle the case where the selected element is a neuron within a group
+          for (const [groupId, group] of Object.entries(draft.neuronGroups)) {
+            if (group.neurons.has(elementId)) {
+              group.neurons.delete(elementId); // Remove the neuron from the group
+              nextSelected.add(elementId);
+              removeNodeFromGroup(cy, elementId, true);
+
+              if (group.neurons.size === 0) {
+                // If the group is now empty, delete it
+                delete draft.neuronGroups[groupId];
+                if (openGroups.has(groupId)) {
+                  groupsToRemoveFromOpen.add(groupId);
+                }
+              }
+            }
+          }
         }
       }
-      draft.selectedNeurons = nextSelected;
+
+      draft.setSelection(Array.from(nextSelected), ViewerType.Graph);
     });
+
+    // Remove groups from the openGroups set
+    setOpenGroups((prevOpenGroups: Set<string>) => {
+      const updatedOpenGroups = new Set<string>(prevOpenGroups);
+      for (const groupId of groupsToRemoveFromOpen) {
+        updatedOpenGroups.delete(groupId);
+      }
+      return updatedOpenGroups;
+    });
+
     onClose();
   };
 
   const handleSplit = () => {
     setSplitJoinState((prevState) => {
-      const newSplit = new Set(prevState.split);
-      const newJoin = new Set(prevState.join);
-
-      const newSelectedNeurons = new Set(workspace.selectedNeurons);
-      const graphViewDataUpdates: Record<string, { position?: Position | null; visibility: boolean }> = {};
-
-      workspace.selectedNeurons.forEach((neuronId) => {
-        if (isNeuronClass(neuronId, workspace)) {
-          newSplit.add(neuronId);
-          newSelectedNeurons.delete(neuronId);
-
-          const individualNeurons = Object.values(workspace.availableNeurons)
-            .filter((neuron) => {
-              return neuron.nclass === neuronId && neuron.nclass !== neuron.name;
-            })
-            .map((neuron) => neuron.name);
-
-          // Calculate the positions for the individual neurons
-          const basePosition = workspace.availableNeurons[neuronId].viewerData[ViewerType.Graph]?.defaultPosition || {
-            x: 0,
-            y: 0,
-          };
-          const positions = calculateSplitPositions(individualNeurons, basePosition);
-
-          // Update the selected neurons with individual neurons
-          individualNeurons.forEach((neuronName) => {
-            newSelectedNeurons.add(neuronName);
-            // Only set the position if it doesn't exist yet
-            if (!workspace.availableNeurons[neuronName].viewerData[ViewerType.Graph]?.defaultPosition) {
-              graphViewDataUpdates[neuronName] = { position: positions[neuronName], visibility: true };
-            } else {
-              graphViewDataUpdates[neuronName] = { visibility: true };
-            }
-          });
-
-          // Remove the corresponding class from the toJoin set
-          newJoin.forEach((joinNeuronId) => {
-            if (workspace.availableNeurons[joinNeuronId].nclass === neuronId) {
-              newJoin.delete(joinNeuronId);
-            }
-          });
-
-          graphViewDataUpdates[neuronId] = { visibility: false };
-        }
-      });
-
-      // Update the selected neurons in the workspace
-      updateWorkspace(newSelectedNeurons, graphViewDataUpdates);
-
-      return { split: newSplit, join: newJoin };
+      return processNeuronSplit(workspace, prevState);
     });
     onClose();
   };
 
   const handleJoin = () => {
     setSplitJoinState((prevState) => {
-      const newJoin = new Set(prevState.join);
-      const newSplit = new Set(prevState.split);
-
-      const newSelectedNeurons = new Set(workspace.selectedNeurons);
-      const graphViewDataUpdates: Record<string, { position?: Position | null; visibility: boolean }> = {};
-
-      workspace.selectedNeurons.forEach((neuronId) => {
-        const neuronClass = workspace.availableNeurons[neuronId].nclass;
-
-        const individualNeurons = Object.values(workspace.availableNeurons).filter((neuron) => neuron.nclass === neuronClass && neuron.name !== neuronClass);
-        const individualNeuronIds = individualNeurons.map((neuron) => neuron.name);
-
-        // Calculate and set the class position if not set already
-        const classPosition = calculateMeanPosition(individualNeuronIds, workspace);
-
-        if (!workspace.availableNeurons[neuronClass].viewerData[ViewerType.Graph]?.defaultPosition) {
-          graphViewDataUpdates[neuronClass] = { position: classPosition, visibility: true };
-        } else {
-          graphViewDataUpdates[neuronClass] = { ...graphViewDataUpdates[neuronClass], visibility: true };
-        }
-        // Remove the individual neurons from the selected neurons and add the class neuron
-        individualNeuronIds.forEach((neuronName) => {
-          newSelectedNeurons.delete(neuronName);
-          newJoin.add(neuronName);
-
-          // Set individual neurons' visibility to false
-          graphViewDataUpdates[neuronName] = { visibility: false };
-        });
-        newSelectedNeurons.add(neuronClass);
-
-        // Remove the corresponding cells from the toSplit set
-        newSplit.forEach((splitNeuronId) => {
-          if (workspace.availableNeurons[splitNeuronId].nclass === neuronClass) {
-            newSplit.delete(splitNeuronId);
-          }
-        });
-      });
-
-      // Update the selected neurons in the workspace
-      updateWorkspace(newSelectedNeurons, graphViewDataUpdates);
-
-      return { split: newSplit, join: newJoin };
+      return processNeuronJoin(workspace, prevState);
     });
     onClose();
-  };
-
-  const updateWorkspace = (newSelectedNeurons: Set<string>, graphViewDataUpdates: Record<string, Partial<GraphViewerData>>) => {
-    workspace.customUpdate((draft) => {
-      // Update the selected neurons
-      draft.selectedNeurons = newSelectedNeurons;
-
-      // Update the positions and visibility for the individual neurons and class neuron
-      Object.entries(graphViewDataUpdates).forEach(([neuronName, update]) => {
-        if (draft.availableNeurons[neuronName]) {
-          if (update.defaultPosition !== undefined) {
-            draft.availableNeurons[neuronName].viewerData[ViewerType.Graph].defaultPosition = update.defaultPosition;
-          }
-          draft.availableNeurons[neuronName].viewerData[ViewerType.Graph].visibility = update.visibility;
-        }
-      });
-    });
   };
 
   const handleAddToWorkspace = () => {
     workspace.customUpdate((draft) => {
-      workspace.selectedNeurons.forEach((neuronId) => {
+      for (const neuronId of selectedNeurons) {
         const group = workspace.neuronGroups[neuronId];
         if (group) {
-          group.neurons.forEach((groupedNeuronId) => {
+          for (const groupedNeuronId of group.neurons) {
             draft.activeNeurons.add(groupedNeuronId);
-          });
+            draft.visibilities[groupedNeuronId] = emptyViewerData(Visibility.Visible);
+          }
         } else {
           draft.activeNeurons.add(neuronId);
+          draft.visibilities[neuronId] = emptyViewerData(Visibility.Visible);
         }
-      });
+      }
     });
     onClose();
   };
 
+  const handleOpenGroup = () => {
+    for (const neuronId of selectedNeurons) {
+      if (workspace.neuronGroups[neuronId] && !openGroups.has(neuronId)) {
+        // Mark the group as open
+        setOpenGroups((prevOpenGroups: Set<string>) => {
+          const updatedOpenGroups = new Set<string>(prevOpenGroups);
+          updatedOpenGroups.add(neuronId);
+          return updatedOpenGroups;
+        });
+      }
+    }
+    onClose();
+  };
+  const handleCloseGroup = () => {
+    for (const neuronId of selectedNeurons) {
+      if (workspace.neuronGroups[neuronId] && openGroups.has(neuronId)) {
+        // Mark the group as closed
+        setOpenGroups((prevOpenGroups: Set<string>) => {
+          const updatedOpenGroups = new Set<string>(prevOpenGroups);
+          updatedOpenGroups.delete(neuronId);
+          return updatedOpenGroups;
+        });
+      }
+    }
+    onClose();
+  };
+
   const groupEnabled = useMemo(() => {
-    return Array.from(workspace.selectedNeurons).some((neuronId) => !workspace.neuronGroups[neuronId]);
-  }, [workspace.selectedNeurons, workspace.neuronGroups]);
+    const groupOrPartOfGroupSet = new Set<string>();
+    let nonGroupOrPartCount = 0;
+    for (const neuronId of selectedNeurons) {
+      const isGroup = Boolean(workspace.neuronGroups[neuronId]);
+      const isPartOfGroup = Object.entries(workspace.neuronGroups).find(([, group]) => group.neurons.has(neuronId));
+
+      if (isGroup) {
+        groupOrPartOfGroupSet.add(neuronId);
+      } else if (isPartOfGroup) {
+        groupOrPartOfGroupSet.add(isPartOfGroup[0]);
+      } else {
+        nonGroupOrPartCount++;
+      }
+    }
+
+    // Enable grouping if there are neurons not in any group and at most one group or part of a group is selected.
+    return nonGroupOrPartCount > 0 && groupOrPartOfGroupSet.size <= 1;
+  }, [selectedNeurons, workspace.neuronGroups]);
 
   const ungroupEnabled = useMemo(() => {
-    return Array.from(workspace.selectedNeurons).some((neuronId) => workspace.neuronGroups[neuronId]);
-  }, [workspace.selectedNeurons, workspace.neuronGroups]);
+    return selectedNeurons.some((neuronId) => {
+      // Check if the neuronId is a group itself
+      const isGroup = Boolean(workspace.neuronGroups[neuronId]);
+
+      // Check if the neuronId is part of any group
+      const isPartOfGroup = Object.values(workspace.neuronGroups).some((group) => group.neurons.has(neuronId));
+
+      // Enable ungroup if the neuron is a group or is part of a group
+      return isGroup || isPartOfGroup;
+    });
+  }, [selectedNeurons, workspace.neuronGroups]);
 
   const splitEnabled = useMemo(() => {
-    return Array.from(workspace.selectedNeurons).some((neuronId) => {
+    return selectedNeurons.some((neuronId) => {
       const neuron = workspace.availableNeurons[neuronId];
       return neuron && neuron.name === neuron.nclass;
     });
-  }, [workspace.selectedNeurons, workspace.availableNeurons]);
+  }, [selectedNeurons, workspace.availableNeurons]);
 
   const joinEnabled = useMemo(() => {
-    return Array.from(workspace.selectedNeurons).some((neuronId) => {
+    return selectedNeurons.some((neuronId) => {
       const neuron = workspace.availableNeurons[neuronId];
       return neuron && neuron.name !== neuron.nclass;
     });
-  }, [workspace.selectedNeurons, workspace.availableNeurons]);
+  }, [selectedNeurons, workspace.availableNeurons]);
 
+  const openGroupEnabled = useMemo(() => {
+    return selectedNeurons.some((neuronId) => workspace.neuronGroups[neuronId] && !openGroups.has(neuronId));
+  }, [selectedNeurons, workspace.neuronGroups, openGroups]);
+
+  const closeGroupEnabled = useMemo(() => {
+    return selectedNeurons.some((neuronId) => workspace.neuronGroups[neuronId] && openGroups.has(neuronId));
+  }, [selectedNeurons, workspace.neuronGroups, openGroups]);
   const handleContextMenu = (event: React.MouseEvent) => {
     event.preventDefault(); // Prevent default context menu
   };
+
+  useEffect(() => {
+    if (open) {
+      setSubmenuAnchorEl(null);
+    }
+  }, [open]);
 
   return (
     <Menu
       anchorReference="anchorPosition"
       anchorPosition={position !== null ? { top: position.mouseY, left: position.mouseX } : undefined}
       open={open}
-      onClose={onClose}
+      onClose={handleContextMenuClose}
       onContextMenu={handleContextMenu}
+      sx={{
+        "& .MuiMenuItem-root": {
+          color: gray700,
+        },
+      }}
     >
-      <MenuItem onClick={handleHide}>Hide</MenuItem>
-      <MenuItem onClick={handleGroup} disabled={!groupEnabled}>
-        Group
+      <MenuItem onClick={handleHide}>
+        <VisibilityOutlined fontSize="small" />
+        Hide
       </MenuItem>
-      <MenuItem onClick={handleUngroup} disabled={!ungroupEnabled}>
-        Ungroup
+      <MenuItem onClick={handleAddToWorkspace}>
+        <HubOutlined fontSize="small" />
+        Add to Workspace
       </MenuItem>
-      <MenuItem onClick={handleJoin} disabled={!joinEnabled}>
-        Join Left-Right
+      {joinEnabled && (
+        <MenuItem onClick={handleJoin} disabled={!joinEnabled}>
+          <MergeOutlined fontSize="small" />
+          Join Left-Right
+        </MenuItem>
+      )}
+      {splitEnabled && (
+        <MenuItem onClick={handleSplit} disabled={!splitEnabled}>
+          <CallSplitOutlined fontSize="small" />
+          Split Left-Right
+        </MenuItem>
+      )}
+
+      <Divider />
+      {groupEnabled && (
+        <MenuItem onClick={handleGroup} disabled={!groupEnabled}>
+          <GroupOutlined fontSize="small" />
+          Group
+        </MenuItem>
+      )}
+      {ungroupEnabled && (
+        <MenuItem onClick={handleUngroup} disabled={!ungroupEnabled}>
+          <WorkspacesOutlined fontSize="small" />
+          Ungroup
+        </MenuItem>
+      )}
+      {openGroupEnabled && (
+        <MenuItem onClick={handleOpenGroup} disabled={!openGroupEnabled}>
+          <OpenInFull fontSize="small" />
+          Open Group
+        </MenuItem>
+      )}
+      {closeGroupEnabled && (
+        <MenuItem onClick={handleCloseGroup} disabled={!closeGroupEnabled}>
+          <CloseFullscreen fontSize="small" style={{ transform: "rotate(180deg)" }} />
+          Close Group
+        </MenuItem>
+      )}
+      <MenuItem onMouseEnter={handlePopoverOpen}>
+        <FormatAlignJustifyOutlined fontSize="small" />
+        <Box width={1} display="flex" alignItems="center" justifyContent="space-between">
+          Align
+          <ArrowRightOutlined />
+        </Box>
       </MenuItem>
-      <MenuItem onClick={handleSplit} disabled={!splitEnabled}>
-        Split Left-Right
-      </MenuItem>
-      <MenuItem onClick={handleAddToWorkspace}>Add to Workspace</MenuItem>
+      <Popover
+        id="mouse-over-popover"
+        sx={{
+          "& .MuiMenuItem-root": {
+            color: gray700,
+          },
+          "& .MuiPopover-paper": {
+            padding: "0.5rem",
+            borderRadius: "0.5rem",
+          },
+        }}
+        open={submenuOpen}
+        anchorEl={submenuAnchorEl}
+        anchorOrigin={{
+          vertical: "center",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+        onClose={handlePopoverClose}
+        disableRestoreFocus
+      >
+        <MenuItem onClick={() => handleAlignOption(Alignment.Left)}>
+          <AlignLeftIcon />
+          Align left
+        </MenuItem>
+        <MenuItem onClick={() => handleAlignOption(Alignment.Right)}>
+          <AlignRightIcon />
+          Align right
+        </MenuItem>
+        <MenuItem onClick={() => handleAlignOption(Alignment.Top)}>
+          <AlignTopIcon />
+          Align top
+        </MenuItem>
+        <MenuItem onClick={() => handleAlignOption(Alignment.Bottom)}>
+          <AlignBottomIcon />
+          Align bottom
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={() => handleDistributeOption(Alignment.Horizontal)}>
+          <DistributeHorizontallyIcon />
+          Distribute horizontally
+        </MenuItem>
+        <MenuItem onClick={() => handleDistributeOption(Alignment.Vertical)}>
+          <DistributeVerticallyIcon />
+          Distribute vertically
+        </MenuItem>
+      </Popover>
     </Menu>
   );
 };

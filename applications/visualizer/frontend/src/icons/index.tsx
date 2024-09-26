@@ -165,3 +165,51 @@ export const GapJunctionIcon = () => (
     <path d="M1 3.06061L8.5 3L9 1L10 5L11 1L12 5L12.5 3L21 3.06061" stroke="#63625F" strokeLinecap="round" />
   </svg>
 );
+
+export const AlignLeftIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+    <path
+      d="M5.33333 8.66732L5.33333 6.66732L12 6.66732L12 5.33398L5.33333 5.33398L5.33333 3.33398L2.66667 6.00065L5.33333 8.66732ZM0 11.334L1.33333 11.334L1.33333 0.667318L1.27199e-07 0.667318L0 11.334Z"
+      fill="#757570"
+    />
+  </svg>
+);
+
+export const AlignRightIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+    <path
+      d="M6.66667 3.33268L6.66667 5.33268L-2.03986e-07 5.33268L-2.62268e-07 6.66601L6.66667 6.66601L6.66667 8.66601L9.33333 5.99935L6.66667 3.33268ZM12 0.666016L10.6667 0.666016L10.6667 11.3327L12 11.3327L12 0.666016Z"
+      fill="#757570"
+    />
+  </svg>
+);
+
+export const AlignTopIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path d="M5.33366 7.33333H7.33366V14H8.66699V7.33333H10.667L8.00033 4.66667L5.33366 7.33333ZM2.66699 2V3.33333H13.3337V2H2.66699Z" fill="#757570" />
+  </svg>
+);
+
+export const AlignBottomIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path d="M10.667 8.66667H8.66699V2H7.33366V8.66667H5.33366L8.00033 11.3333L10.667 8.66667ZM2.66699 12.6667V14H13.3337V12.6667H2.66699Z" fill="#757570" />
+  </svg>
+);
+
+export const DistributeHorizontallyIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path
+      d="M2.66634 14.6673H1.33301V1.33398H2.66634V14.6673ZM14.6663 1.33398H13.333V14.6673H14.6663V1.33398ZM8.99967 4.66732H6.99967V11.334H8.99967V4.66732Z"
+      fill="#757570"
+    />
+  </svg>
+);
+
+export const DistributeVerticallyIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path
+      d="M14.6663 1.33398V2.66732H1.33301V1.33398H14.6663ZM4.66634 7.00065V9.00065H11.333V7.00065H4.66634ZM1.33301 13.334V14.6673H14.6663V13.334H1.33301Z"
+      fill="#757570"
+    />
+  </svg>
+);

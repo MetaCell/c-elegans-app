@@ -3,6 +3,7 @@ import { type Theme, ThemeProvider } from "@mui/material/styles";
 import { Suspense } from "react";
 import "@metacell/geppetto-meta-ui/flex-layout/style/light.scss";
 import { Box } from "@mui/system";
+import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 import { DownloadIcon, LinkIcon } from "../../icons";
 import theme from "../../theme";
 import { vars } from "../../theme/variables.ts";
@@ -11,6 +12,8 @@ const { gray100 } = vars;
 const drawerWidth = "22.31299rem";
 const drawerHeight = "3.5rem";
 function CompareWrapper({ children, sidebarOpen }) {
+  const { serializeGlobalContext } = useGlobalContext();
+
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -73,7 +76,17 @@ function CompareWrapper({ children, sidebarOpen }) {
                   </IconButton>
                 </Box>
                 <Box display="flex" gap="0.625rem">
-                  <Button color="info" variant="contained">
+                  <Button
+                    color="info"
+                    variant="contained"
+                    onClick={() => {
+                      const url = `${window.location.origin}/share/${serializeGlobalContext()}`;
+                      navigator.clipboard
+                        .writeText(url)
+                        .then(() => alert(`URL copied in clipboard: ${url}`))
+                        .catch(() => alert("Failed to copy url to clipboard"));
+                    }}
+                  >
                     Share
                   </Button>
                 </Box>

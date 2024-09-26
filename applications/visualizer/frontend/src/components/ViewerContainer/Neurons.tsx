@@ -1,21 +1,19 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Box, IconButton, Stack, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
-import { debounce } from "lodash";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 import type { Neuron } from "../../rest";
-import { NeuronsService } from "../../rest";
 import { vars } from "../../theme/variables.ts";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 import CustomListItem from "./CustomListItem.tsx";
-import type { EnhancedNeuron } from "../../models/models.ts";
+import { Visibility, type ViewerData } from "../../models/models.ts";
 
 const { gray900, gray500 } = vars;
-const mapNeuronsToListItem = (neuron: string, isActive: boolean) => ({
+const mapNeuronsToListItem = (neuron: string, visibility: ViewerData) => ({
   id: neuron,
   label: neuron,
-  checked: isActive,
+  checked: Object.values(visibility).every((e) => e === undefined || e.visibility === Visibility.Visible),
 });
 const mapNeuronsAvailableNeuronsToOptions = (neuron: Neuron) => ({
   id: neuron.name,
@@ -24,62 +22,46 @@ const mapNeuronsAvailableNeuronsToOptions = (neuron: Neuron) => ({
 });
 
 const Neurons = ({ children }) => {
-  const { workspaces, datasets, currentWorkspaceId } = useGlobalContext();
-  const currentWorkspace = workspaces[currentWorkspaceId];
+  const { getCurrentWorkspace } = useGlobalContext();
+  const currentWorkspace = getCurrentWorkspace();
+
   const activeNeurons = currentWorkspace.activeNeurons;
-  const recentNeurons = Object.values(currentWorkspace.availableNeurons).filter((neuron) => neuron.isInteractant);
   const availableNeurons = currentWorkspace.availableNeurons;
+  const groups = currentWorkspace.neuronGroups;
 
   const [neurons, setNeurons] = useState(availableNeurons);
 
-  const handleSwitchChange = async (neuronId: string, checked: boolean) => {
-    const neuron = availableNeurons[neuronId];
-
-    if (!neuron) return;
-    if (checked) {
-      await currentWorkspace.activateNeuron(neuron);
+  const handleSwitchChange = async (neuronId: string, isChecked: boolean) => {
+    if (isChecked) {
+      await currentWorkspace.showNeuron(neuronId);
     } else {
-      await currentWorkspace.deactivateNeuron(neuronId);
+      await currentWorkspace.hideNeuron(neuronId);
     }
   };
 
   const onNeuronClick = (option) => {
     const neuron = availableNeurons[option.id];
+
     if (neuron && !activeNeurons.has(option.id)) {
-      currentWorkspace.activateNeuron(neuron);
+      currentWorkspace.activateNeuron(neuron).showNeuron(neuron.name);
     } else {
-      currentWorkspace.deleteNeuron(option.id);
+      currentWorkspace.deactivateNeuron(option.id);
     }
   };
   const handleDeleteNeuron = (neuronId: string) => {
-    currentWorkspace.deleteNeuron(neuronId);
+    currentWorkspace.deactivateNeuron(neuronId);
   };
 
-  const fetchNeurons = async (name: string, datasetsIds: { id: string }[]) => {
-    try {
-      const ids = datasetsIds.map((dataset) => dataset.id);
-      const response = await NeuronsService.searchCells({ name: name, datasetIds: ids });
-
-      // Convert the object to a Record<string, Neuron>
-      const neuronsRecord = Object.entries(response).reduce((acc: Record<string, EnhancedNeuron>, [_, neuron]: [string, EnhancedNeuron]) => {
-        acc[neuron.name] = neuron;
-        return acc;
-      }, {});
-
-      setNeurons(neuronsRecord);
-    } catch (error) {
-      console.error("Failed to fetch datasets", error);
-    }
+  const onSearchNeurons = (nameFragment) => {
+    const filteredNeurons = Object.fromEntries(
+      Object.entries(availableNeurons).filter(([_, neuron]) => neuron.name.toLowerCase().startsWith(nameFragment.toLowerCase())),
+    );
+    setNeurons(filteredNeurons);
   };
 
-  const debouncedFetchNeurons = useCallback(debounce(fetchNeurons, 300), []);
-
-  const onSearchNeurons = (value) => {
-    const datasetsIds = Object.keys(datasets);
-    debouncedFetchNeurons(value, datasetsIds);
-  };
-
-  const autoCompleteOptions = Object.values(neurons).map((neuron: Neuron) => mapNeuronsAvailableNeuronsToOptions(neuron));
+  const autoCompleteOptions = Object.values(neurons)
+    .map((neuron: Neuron) => mapNeuronsAvailableNeuronsToOptions(neuron))
+    .sort((a, b) => a.label.localeCompare(b.label));
 
   return (
     <Box
@@ -130,16 +112,43 @@ const Neurons = ({ children }) => {
               </IconButton>
             </Tooltip>
           </Box>
-          {Array.from(recentNeurons).map((neuron) => (
+          {Array.from(activeNeurons).map((neuronId) => (
             <CustomListItem
-              key={neuron.name}
-              data={mapNeuronsToListItem(neuron.name, activeNeurons.has(neuron.name))}
+              key={neuronId}
+              data={mapNeuronsToListItem(neuronId, currentWorkspace.visibilities[neuronId])}
               showTooltip={false}
               showExtraActions={true}
               listType="neurons"
               onSwitchChange={handleSwitchChange}
               onDelete={handleDeleteNeuron}
               deleteTooltipTitle="Remove neuron from the workspace"
+            />
+          ))}
+          <Box display="flex" alignItems="center" justifyContent="space-between" padding=".25rem .5rem">
+            <Typography color={gray500} variant="subtitle1">
+              All Groups
+            </Typography>
+            <Tooltip title="Create new group">
+              <IconButton
+                sx={{
+                  padding: ".25rem",
+                  borderRadius: ".25rem",
+                }}
+              >
+                <AddIcon fontSize="medium" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+          {Array.from(Object.keys(groups)).map((groupId) => (
+            <CustomListItem
+              key={groupId}
+              data={mapNeuronsToListItem(groupId, currentWorkspace.visibilities[groupId])}
+              showTooltip={false}
+              showExtraActions={true}
+              listType="groups"
+              onSwitchChange={() => console.log("switch")}
+              onDelete={() => console.log("delete")}
+              deleteTooltipTitle="Remove group from the workspace"
             />
           ))}
         </Stack>

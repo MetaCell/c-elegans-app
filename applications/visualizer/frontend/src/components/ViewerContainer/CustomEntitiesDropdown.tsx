@@ -5,7 +5,7 @@ import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { CheckIcon } from "../../icons";
 import { vars } from "../../theme/variables.ts";
-import type { EnhancedNeuron } from "../../models/models.ts";
+import type { Neuron } from "../../rest/index.ts";
 
 const { gray50, brand600 } = vars;
 
@@ -25,8 +25,8 @@ interface CustomEntitiesDropdownProps {
   activeNeurons: Set<string>;
   onNeuronClick?: (neuron: Option) => void;
   onSearchNeurons?: (value: string) => void;
-  setNeurons?: (neurons: Record<string, EnhancedNeuron>) => void;
-  availableNeurons: Record<string, EnhancedNeuron>;
+  setNeurons?: (neurons: Record<string, Neuron>) => void;
+  availableNeurons: Record<string, Neuron>;
 }
 
 const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearchNeurons, setNeurons, availableNeurons }: CustomEntitiesDropdownProps) => {
@@ -86,7 +86,7 @@ const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearc
         InputProps={{
           startAdornment: (
             <InputAdornment position="start" sx={{ margin: 0 }}>
-              <SearchIcon sx={{ fontSize: "1.25rem", marginLeft: `0 !important` }} />
+              <SearchIcon sx={{ fontSize: "1.25rem", marginLeft: "0 !important" }} />
             </InputAdornment>
           ),
           endAdornment: open && (
@@ -178,7 +178,7 @@ const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearc
                         >
                           <CheckIcon />
                         </Box>
-                        {option?.label?.length > 100 ? option?.label.slice(0, 100) + "..." : option?.label}
+                        {option?.label?.length > 100 ? `${option?.label.slice(0, 100)}...` : option?.label}
                       </Box>
                     </li>
                   ))}

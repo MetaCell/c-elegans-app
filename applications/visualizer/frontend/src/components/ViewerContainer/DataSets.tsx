@@ -18,20 +18,23 @@ const categorizeDatasets = (datasets: Dataset[]) => {
     L1: [],
     L2: [],
     L3: [],
+    L4: [],
     Adult: [],
   };
 
-  datasets.forEach((dataset) => {
-    if (dataset.visualTime >= 0 && dataset.visualTime < 10) {
-      categories["L1"].push(dataset);
-    } else if (dataset.visualTime >= 10 && dataset.visualTime < 20) {
-      categories["L2"].push(dataset);
-    } else if (dataset.visualTime >= 20 && dataset.visualTime < 30) {
-      categories["L3"].push(dataset);
-    } else if (dataset.visualTime >= 30) {
-      categories["Adult"].push(dataset);
+  for (const dataset of datasets) {
+    if (dataset.visualTime >= 0 && dataset.visualTime < 16) {
+      categories.L1.push(dataset);
+    } else if (dataset.visualTime >= 16 && dataset.visualTime < 25) {
+      categories.L2.push(dataset);
+    } else if (dataset.visualTime >= 25 && dataset.visualTime < 34) {
+      categories.L3.push(dataset);
+    } else if (dataset.visualTime >= 34 && dataset.visualTime < 45) {
+      categories.L4.push(dataset);
+    } else if (dataset.visualTime >= 45) {
+      categories.Adult.push(dataset);
     }
-  });
+  }
 
   return categories;
 };
@@ -97,6 +100,7 @@ const DataSets = ({ children }) => {
       L1: [],
       L2: [],
       L3: [],
+      L4: [],
       Adult: [],
     };
 
@@ -106,10 +110,18 @@ const DataSets = ({ children }) => {
 
     const filteredActiveList = inputValue ? activeDatasetsList.filter((dataset) => dataset.name.toLowerCase().includes(inputValue)) : activeDatasetsList;
 
-    setFilteredDatasets(filteredCategories);
-    setFilterActiveDatasets(filteredActiveList);
+    if (filterGroupsValue === "All") {
+      setFilteredDatasets(filteredCategories);
+      setFilterActiveDatasets(filteredActiveList);
+    } else {
+      const activeGroup = filteredCategories[filterGroupsValue];
+      const updatedFilteredDatasets = { ...filteredActiveList, [filterGroupsValue]: activeGroup };
+      // @ts-ignore
+      setFilteredDatasets(updatedFilteredDatasets);
+      const updatedFilteredActiveDatasets = filteredActiveList.filter((dataset) => activeGroup.some((catDataset) => catDataset.id === dataset.id));
+      setFilterActiveDatasets(updatedFilteredActiveDatasets);
+    }
   };
-
   const onSelectGroupChange = (e) => {
     const selectedGroup = e.target.value;
     setFilterGroupsValue(selectedGroup);
@@ -133,11 +145,11 @@ const DataSets = ({ children }) => {
 
   const getDatasetsTypes = (datasets: { [key: string]: Dataset }) => {
     const types = new Set<string>();
-    Object.values(datasets).forEach((dataset) => {
+    for (const dataset of Object.values(datasets)) {
       if (dataset.type) {
         types.add(dataset.type);
       }
-    });
+    }
     return Array.from(types);
   };
 
@@ -149,6 +161,7 @@ const DataSets = ({ children }) => {
       L1: [],
       L2: [],
       L3: [],
+      L4: [],
       Adult: [],
     };
 
@@ -213,7 +226,7 @@ const DataSets = ({ children }) => {
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <SearchIcon sx={{ fontSize: "1.25rem", margin: `0 !important` }} />
+              <SearchIcon sx={{ fontSize: "1.25rem", margin: "0 !important" }} />
             </InputAdornment>
           ),
         }}
@@ -306,8 +319,8 @@ const DataSets = ({ children }) => {
             },
           }}
         >
-          {datasetsTypes.map((type, i) => (
-            <MenuItem key={i} value={type} onClick={() => handleTypeSelect(type)}>
+          {datasetsTypes.map((type) => (
+            <MenuItem key={type} value={type} onClick={() => handleTypeSelect(type)}>
               <Box display="flex" alignItems="center" gap=".5rem">
                 <Box
                   sx={{

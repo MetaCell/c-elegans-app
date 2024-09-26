@@ -26,14 +26,18 @@ export interface NeuronGroup {
   neurons: Set<string>;
 }
 
-export interface EnhancedNeuron extends Neuron {
-  viewerData: ViewerData;
-  isInteractant: boolean;
-}
-
 export interface GraphViewerData {
   defaultPosition: Position | null;
-  visibility: boolean;
+  visibility: Visibility;
+}
+
+export function emptyViewerData(visibility?: Visibility): ViewerData {
+  return {
+    [ViewerType.Graph]: {
+      defaultPosition: null,
+      visibility: visibility ?? Visibility.Hidden,
+    },
+  };
 }
 
 export interface ViewerData {
@@ -47,18 +51,33 @@ const buildUrlFromFormat = (s: string, param: string) => {
   return s.replace(s.match("{[^}]+}")?.[0], param);
 };
 
-export function getNeuronUrlForDataset(neuron: Neuron, datasetId: string) {
-  return buildUrlFromFormat(neuron.model3DUrl, datasetId);
+export function getNeuronUrlForDataset(neuron: Neuron, datasetId: string): string[] {
+  return neuron.model3DUrls.map((url) => buildUrlFromFormat(url, datasetId));
 }
 
-export function getNeuronURL(dataset: Dataset, neuronName: string) {
+export function getNeuronURL(dataset: Dataset, neuronName: string): string {
   return buildUrlFromFormat(dataset.neuron3DUrl, neuronName);
 }
 
-export function getSegmentationURL(dataset: Dataset, sliceIndex: number) {
+export function getSegmentationURL(dataset: Dataset, sliceIndex: number): string {
   return buildUrlFromFormat(dataset.emData.segmentation_url, sliceIndex?.toString());
 }
 
-export function getEMDataURL(dataset: Dataset, sliceIndex: number) {
+export function getEMDataURL(dataset: Dataset, sliceIndex: number): string {
   return buildUrlFromFormat(dataset.emData.resource_url, sliceIndex?.toString());
+}
+
+export enum Alignment {
+  Left = "left",
+  Right = "right",
+  Top = "top",
+  Bottom = "bottom",
+  Horizontal = "Horizontal",
+  Vertical = "Vertical",
+}
+
+export enum Visibility {
+  Visible = "Visible",
+  Hidden = "Hidden",
+  Unset = "Unset",
 }

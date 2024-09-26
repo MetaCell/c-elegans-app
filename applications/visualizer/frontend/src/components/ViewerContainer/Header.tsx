@@ -89,7 +89,8 @@ const Header = ({
   const [active, setActive] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const { workspaces, setSelectedWorkspacesIds, setViewMode, selectedWorkspacesIds, viewMode, setCurrentWorkspace } = useGlobalContext();
+  const { workspaces, setSelectedWorkspacesIds, setViewMode, selectedWorkspacesIds, viewMode, setCurrentWorkspace, serializeGlobalContext } =
+    useGlobalContext();
 
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -133,7 +134,7 @@ const Header = ({
     } else {
       setViewMode(ViewMode.Compare);
     }
-  }, [selectedWorkspacesIds]);
+  }, [selectedWorkspacesIds, setViewMode]);
   return (
     <>
       <AppBar
@@ -175,7 +176,7 @@ const Header = ({
           <ButtonGroup variant="outlined" aria-label="Basic button group">
             {VIEW_OPTIONS.map((item, index) => {
               return (
-                <Tooltip placement={index === 0 ? "bottom-start" : "bottom"} title={item.description} key={index}>
+                <Tooltip placement={index === 0 ? "bottom-start" : "bottom"} title={item.description} key={item.label}>
                   <Button className={active === index ? "active" : ""} onClick={(e) => onClick(e, index)}>
                     {item.label}
                   </Button>
@@ -186,7 +187,17 @@ const Header = ({
 
           <Box display="flex" gap="0.625rem">
             {viewMode === ViewMode.Default && (
-              <Button color="info" variant="contained">
+              <Button
+                color="info"
+                variant="contained"
+                onClick={() => {
+                  const url = `${window.location.origin}/share/${serializeGlobalContext()}`;
+                  navigator.clipboard
+                    .writeText(url)
+                    .then(() => alert(`URL copied in clipboard: ${url}`))
+                    .catch(() => alert("Failed to copy url to clipboard"));
+                }}
+              >
                 Share
               </Button>
             )}

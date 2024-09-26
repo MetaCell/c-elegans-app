@@ -77,7 +77,7 @@ const CustomListItem = ({
     <>
       <FormControlLabel
         control={
-          <Tooltip title={"data.helpText"}>
+          <Tooltip title={data.helpText}>
             <CustomSwitch checked={data.checked} onChange={handleSwitchChange} />
           </Tooltip>
         }
@@ -116,7 +116,7 @@ const CustomListItem = ({
                   />
                 )}
                 <Typography color={gray600} variant="subtitle1">
-                  {data?.label?.length > 32 ? data?.label.slice(0, 32) + "..." : data?.label}
+                  {data?.label?.length > 32 ? `${data?.label.slice(0, 32)}...` : data?.label}
                 </Typography>
               </Stack>
               {showTooltip && (

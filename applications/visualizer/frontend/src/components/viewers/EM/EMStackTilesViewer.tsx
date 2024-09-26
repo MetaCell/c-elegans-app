@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import "ol/ol.css";
-import { type Feature, Map, View } from "ol";
+import { type Feature, Map as OLMap, View } from "ol";
 import type { FeatureLike } from "ol/Feature";
 import ScaleLine from "ol/control/ScaleLine";
 import { shiftKeyOnly } from "ol/events/condition";
@@ -98,6 +98,7 @@ const newEMLayer = (dataset: Dataset, slice: number): TileLayer<XYZ> => {
       // url: `emdata/${slice}/{x}_{y}_{z}.jpg`,
       url: getEMDataURL(dataset, slice),
       projection: projection,
+      crossOrigin: "anonymous",
     }),
     zIndex: 0,
   });
@@ -126,9 +127,12 @@ const EMStackViewer = () => {
   const startSlice = 537;
   const ringSize = 11;
 
-  const mapRef = useRef<Map | null>(null);
+  const mapRef = useRef<OLMap | null>(null);
   const currSegLayer = useRef<VectorLayer<Feature> | null>(null);
   const clickedFeature = useRef<Feature | null>(null);
+
+  let ringEM: SlidingRing<TileLayer<XYZ>>;
+  let ringSeg: SlidingRing<VectorLayer<Feature>>;
 
   // const debugLayer = new TileLayer({
   // 	source: new TileDebug({
@@ -154,7 +158,7 @@ const EMStackViewer = () => {
       return;
     }
 
-    const map = new Map({
+    const map = new OLMap({
       target: "emviewer",
       layers: [],
       view: new View({
@@ -171,7 +175,7 @@ const EMStackViewer = () => {
     const minZoomAvailable = tilegrid.getMinZoom();
     map.getView().setZoom(minZoomAvailable);
 
-    const ringEM = new SlidingRing({
+    ringEM = new SlidingRing({
       cacheSize: ringSize,
       startAt: startSlice,
       extent: [minSlice, maxSlice],
@@ -192,7 +196,7 @@ const EMStackViewer = () => {
       },
     });
 
-    const ringSeg = new SlidingRing({
+    ringSeg = new SlidingRing({
       cacheSize: ringSize,
       startAt: startSlice,
       extent: [minSlice, maxSlice],
@@ -269,6 +273,10 @@ const EMStackViewer = () => {
   };
 
   const onResetView = () => {
+    // reset sliding window
+    ringEM.goto(startSlice);
+    ringSeg.goto(startSlice);
+
     if (!mapRef.current) return;
     const view = mapRef.current.getView();
 
@@ -297,7 +305,7 @@ const EMStackViewer = () => {
 
 export default EMStackViewer;
 
-function printEMView(map: Map) {
+function printEMView(map: OLMap) {
   const mapCanvas = document.createElement("canvas");
 
   const size = map.getSize();
@@ -310,7 +318,7 @@ function printEMView(map: Map) {
     if (canvas.width > 0) {
       const opacity = canvas.parentNode.style.opacity || canvas.style.opacity;
       mapContext.globalAlpha = opacity === "" ? 1 : Number(opacity);
-      let matrix;
+      let matrix: Array<number>;
       const transform = canvas.style.transform;
       if (transform) {
         // Get the transform parameters from the style's transform matrix

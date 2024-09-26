@@ -1,11 +1,12 @@
 from collections import defaultdict
-
-from django.db.models import Q
-
 from api.models import Annotation, Connection
 
 
-def query_connections(
+## This module was converted from the original nemanode code found here:
+## https://github.com/zhenlab-ltri/NemaNode/blob/master/src/server/db/nematode-connections.js
+
+
+def query_nematode_connections(
     cells: list[str],
     dataset_ids: list[str],
     dataset_type: list[str],
@@ -14,7 +15,21 @@ def query_connections(
     include_neighboring_cells: bool,
     include_annotations: bool,
 ):
-    connections = _query_raw_connections(
+    if not cells:
+        return []
+
+    annotations_map = defaultdict(list)
+    if include_annotations:
+        annotations = query_annotations(cells, include_neighboring_cells, dataset_type)
+        for annotation in annotations:
+            pre = annotation["pre"]
+            post = annotation["post"]
+            connection_type = annotation["type"]
+            annotation_type = annotation["annotation"]
+            key = get_connection_primary_key(pre, post, connection_type)
+            annotations_map[key].append(annotation_type)
+
+    raw_connections = query_connections(
         cells,
         dataset_ids,
         include_neighboring_cells,
@@ -22,100 +37,158 @@ def query_connections(
         threshold_electrical,
     )
 
-    annotations_map = _query_annotations(
-        cells, dataset_type, include_annotations, include_neighboring_cells
-    )
-
+    connections = []
+    # Group raw_connections by the connection key
     grouped_connections = defaultdict(list)
-    for connection in connections:
-        key = _get_connection_key(connection.pre, connection.post, connection.type)
-        grouped_connections[key].append(connection)
+    for raw_conn in raw_connections:
+        key = get_connection_primary_key(
+            raw_conn["pre"], raw_conn["post"], raw_conn["type"]
+        )
+        grouped_connections[key].append(raw_conn)
 
-    response_data = []
-    for key, group in grouped_connections.items():
-        synapses = {conn.dataset_id: conn.synapses for conn in group}
+    for key, grouped in grouped_connections.items():
+        pre = grouped[0]["pre"]
+        post = grouped[0]["post"]
+        type_ = grouped[0]["type"]
+        annotations = annotations_map[key] if include_annotations else []
 
-        # It's safe to access the first item directly as group won't be empty by design of the grouping process
-        connection = group[0]
-        response_data.append(
+        # Accumulate all synapses for the grouped connections
+        synapses = {g["dataset_id"]: g["synapses"] for g in grouped}
+
+        connections.append(
             {
-                "pre": connection.pre,
-                "post": connection.post,
-                "type": connection.type,
-                "annotations": (
-                    annotations_map.get(key, []) if include_annotations else []
-                ),
+                "pre": pre,
+                "post": post,
+                "type": type_,
+                "annotations": annotations,
                 "synapses": synapses,
             }
         )
+    gap_junctions = [c for c in connections if c["type"] == "electrical"]
+    chemical_synapses = [c for c in connections if c["type"] == "chemical"]
 
-    return response_data
+    merged_gap_junctions = merge_gap_junctions(gap_junctions)
 
-
-# SELECT pre, post, type, annotation
-#     FROM annotations
-#     WHERE (pre in (${cells})
-#     ${includeNeighboringCells ? 'OR' : 'AND'} post in (${cells}))
-#       AND collection in (${datasetType})
+    return merged_gap_junctions + chemical_synapses
 
 
-def _query_annotations(
-    cells, dataset_type, include_annotations, include_neighboring_cells
-):
-    if not include_annotations:
-        return {}
-
-    annotations_map = defaultdict(list)
-    annotations = Annotation.objects.filter(
-        (
-            Q(pre__in=cells) | Q(post__in=cells)
-            if include_neighboring_cells
-            else Q(pre__in=cells, post__in=cells)
-        ),
-        collection__in=dataset_type,
-    )
-    for annotation in annotations:
-        key = _get_connection_key(annotation.pre, annotation.post, annotation.type)
-        annotations_map[key].append(annotation.annotation)
-    return annotations_map
+def get_connection_primary_key(pre, post, type_):
+    return hash(f"{pre}-{post}-{type_}")
 
 
-# SELECT c.pre, c.post, c.type, c.dataset_id, c.synapses from (
-#   SELECT pre, post, type
-#   FROM connections
-#   WHERE (pre IN (${cells})
-#   ${includeNeighboringCells ? 'OR' : 'AND'} post IN (${cells}))
-#     AND dataset_id IN (${datasetIds})
-#     AND (
-#       (type = 'chemical' && synapses >= ${thresholdChemical})
-#       OR (type = 'electrical' && synapses >= ${thresholdElectrical})
-#     )
-#   GROUP BY pre, post, type
-# ) f
-# LEFT JOIN connections c ON f.pre = c.pre AND f.post = c.post AND f.type = c.type
-# WHERE c.dataset_id IN (${datasetIds})
+def merge_gap_junctions(gap_junctions):
+    gap_junctions_key_map = {}
+
+    for gj in gap_junctions:
+        pre, post = gj["pre"], gj["post"]
+        synapses = gj["synapses"]
+        key = "$".join(sorted([pre, post]))
+
+        if key not in gap_junctions_key_map:
+            gap_junctions_key_map[key] = gj
+        else:
+            for dataset, synapse_count in synapses.items():
+                if dataset in gap_junctions_key_map[key]["synapses"]:
+                    gap_junctions_key_map[key]["synapses"][dataset] += synapse_count
+                else:
+                    gap_junctions_key_map[key]["synapses"][dataset] = synapse_count
+
+    merged = []
+    for gj_key, gj in gap_junctions_key_map.items():
+        pre, post = gj_key.split("$")
+        type_, synapses, annotations = gj["type"], gj["synapses"], gj["annotations"]
+        merged.append(
+            {
+                "pre": pre,
+                "post": post,
+                "type": type_,
+                "synapses": synapses,
+                "annotations": annotations,
+            }
+        )
+
+    return merged
 
 
-def _query_raw_connections(
+def query_annotations(cells, include_neighboring_cells, dataset_type):
+    # Prepare the SQL query
+    sql_query = f"""
+    SELECT id, pre, post, type, annotation
+    FROM api_annotation
+    WHERE (pre IN ({', '.join(['%s'] * len(cells))})
+    {'OR' if include_neighboring_cells else 'AND'} post IN ({', '.join(['%s'] * len(cells))}))
+      AND collection IN ({', '.join(['%s'] * len(dataset_type))})
+    """
+
+    # Combine all parameters into a single list for passing to the query
+    params = cells + cells + dataset_type
+
+    # Execute the raw query using Django's raw() method
+    annotations = Annotation.objects.raw(sql_query, params)
+
+    # Convert the result to a list of dictionaries
+    results = [
+        {
+            "pre": annotation.pre,
+            "post": annotation.post,
+            "type": annotation.type,
+            "annotation": annotation.annotation,
+        }
+        for annotation in annotations
+    ]
+
+    return results
+
+
+def query_connections(
     cells,
     dataset_ids,
     include_neighboring_cells,
     threshold_chemical,
     threshold_electrical,
 ):
-    connection_query = (
-        Q(pre__in=cells) | Q(post__in=cells)
-        if include_neighboring_cells
-        else Q(pre__in=cells, post__in=cells)
-    )
-    connection_query &= Q(dataset_id__in=dataset_ids)
-    connection_query &= Q(type="chemical", synapses__gte=threshold_chemical) | Q(
-        type="electrical", synapses__gte=threshold_electrical
-    )
-    return (
-        Connection.objects.filter(connection_query).select_related("dataset").distinct()
+    # Prepare the SQL query
+    sql_query = f"""
+    SELECT c.id, c.pre, c.post, c.type, c.dataset_id, c.synapses 
+    FROM (
+        SELECT pre, post, type
+        FROM api_connection
+        WHERE (pre IN ({', '.join(['%s'] * len(cells))})
+        {'OR' if include_neighboring_cells else 'AND'} post IN ({', '.join(['%s'] * len(cells))}))
+          AND dataset_id IN ({', '.join(['%s'] * len(dataset_ids))})
+          AND (
+            (type = 'chemical' AND synapses >= %s)
+            OR (type = 'electrical' AND synapses >= %s)
+          )
+        GROUP BY pre, post, type
+    ) f
+    LEFT JOIN api_connection c ON f.pre = c.pre AND f.post = c.post AND f.type = c.type
+    WHERE c.dataset_id IN ({', '.join(['%s'] * len(dataset_ids))})
+    """
+
+    # Combine all parameters into a single list for passing to the query
+    params = (
+        cells
+        + cells
+        + dataset_ids
+        + [threshold_chemical, threshold_electrical]
+        + dataset_ids
     )
 
+    # Execute the raw query using Django's raw() method
+    connections = Connection.objects.raw(sql_query, params)
 
-def _get_connection_key(pre, post, connection_type):
-    return pre, post, connection_type
+    # Convert the result to a list of dictionaries (similar to what Django ORM's .values() would return)
+    results = [
+        {
+            "id": connection.id,
+            "pre": connection.pre,
+            "post": connection.post,
+            "type": connection.type,
+            "dataset_id": connection.dataset_id,
+            "synapses": connection.synapses,
+        }
+        for connection in connections
+    ]
+
+    return results

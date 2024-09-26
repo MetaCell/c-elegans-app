@@ -1,12 +1,13 @@
-import type { FC } from "react";
 import { Outlines } from "@react-three/drei";
-import { useGlobalContext } from "../../../contexts/GlobalContext";
-import { useSelector } from "react-redux";
-import type { Workspace } from "../../../models/workspace";
-import type { RootState } from "../../../layout-manager/layoutManagerFactory";
-import { type BufferGeometry, DoubleSide, NormalBlending } from "three";
 import type { ThreeEvent } from "@react-three/fiber";
+import type { FC } from "react";
+import { useSelector } from "react-redux";
+import { type BufferGeometry, DoubleSide, NormalBlending } from "three";
+import { useGlobalContext } from "../../../contexts/GlobalContext";
 import { getFurthestIntersectedObject } from "../../../helpers/threeDHelpers";
+import type { RootState } from "../../../layout-manager/layoutManagerFactory";
+import type { Workspace } from "../../../models";
+import { ViewerType } from "../../../models";
 import { OUTLINE_COLOR, OUTLINE_THICKNESS } from "../../../settings/threeDSettings";
 
 interface Props {
@@ -22,14 +23,21 @@ const STLMesh: FC<Props> = ({ id, color, opacity, renderOrder, isWireframe, stl 
   const { workspaces } = useGlobalContext();
   const workspaceId = useSelector((state: RootState) => state.workspaceId);
   const workspace: Workspace = workspaces[workspaceId];
+  const selectedNeurons = workspace.getViewerSelecedNeurons(ViewerType.Graph);
+  const isSelected = selectedNeurons.includes(id);
+
   const onClick = (event: ThreeEvent<MouseEvent>) => {
     const clicked = getFurthestIntersectedObject(event);
+    const { id } = clicked.userData;
     if (clicked) {
-      workspace.toggleSelectedNeuron(clicked.userData.id);
+      if (isSelected) {
+        console.log(`Neurons selected: ${id}`);
+      } else {
+        console.log(`Neurons un selected: ${id}`);
+      }
     }
   };
 
-  const isSelected = id in workspace.selectedNeurons;
   return (
     <mesh userData={{ id }} onClick={onClick} frustumCulled={false} renderOrder={renderOrder}>
       <primitive attach="geometry" object={stl} />
