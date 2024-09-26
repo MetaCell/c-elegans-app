@@ -189,9 +189,7 @@ def prune_bucket(bucket: storage.Bucket | FakeBucket):
 
     def is_prune_lifecycle(rule: dict) -> bool:
         return (
-            rule["action"]["type"] == "Delete"
-            and "createdBefore" in rule["condition"]
-            and len(rule["condition"].keys()) == 0
+            rule["action"]["type"] == "Delete" and "createdBefore" in rule["condition"]
         )
 
     lifecycle_rules = list(bucket.lifecycle_rules)
