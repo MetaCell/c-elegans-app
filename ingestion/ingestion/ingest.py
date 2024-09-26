@@ -5,8 +5,8 @@ import logging
 import os
 import sys
 from argparse import ArgumentParser, Namespace
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from time import sleep
 
 from google.cloud import storage
 from pydantic import ValidationError
@@ -181,24 +181,35 @@ def validate_and_upload_data(
 def prune_bucket(bucket: storage.Bucket | FakeBucket):
     """Prune the bucket and waits until the bucket is empty by checking it periodically."""
 
-    bucket.lifecycle_rules = [{"action": {"type": "Delete"}, "condition": {"age": 0}}]
+    yesterday = datetime.now(timezone.utc) - timedelta(days=1)
+    prune_rule = {
+        "action": {"type": "Delete"},
+        "condition": {"createdBefore": yesterday.strftime("%Y-%m-%d")},
+    }
+
+    def is_prune_lifecycle(rule: dict) -> bool:
+        return (
+            rule["action"]["type"] == "Delete"
+            and "createdBefore" in rule["condition"]
+            and len(rule["condition"].keys()) == 0
+        )
+
+    lifecycle_rules = list(bucket.lifecycle_rules)
+
+    prune_lifecycle_already_exists: bool = False
+    for lifecycle in lifecycle_rules:
+        if is_prune_lifecycle(lifecycle):
+            lifecycle["condition"]["createdBefore"] = prune_rule["condition"][
+                "createdBefore"
+            ]
+            prune_lifecycle_already_exists = True
+            break
+
+    if not prune_lifecycle_already_exists:
+        lifecycle_rules = lifecycle_rules + [prune_rule]
+
+    bucket.lifecycle_rules = lifecycle_rules
     bucket.patch()
-
-    try:
-        sleep_interval = 10
-        while True:
-            has_blobs = len(list(bucket.list_blobs(max_results=1))) != 0
-            if not has_blobs:
-                break
-
-            logger.info(f"bucket '{bucket.name}' is not yet empty. waiting...")
-            sleep(sleep_interval)
-    except Exception as e:
-        raise
-    finally:
-        # ensure that the lifecycle rule is removed
-        bucket.lifecycle_rules = []
-        bucket.patch()
 
     logger.info(f"bucket '{bucket.name}' was pruned successfully!")
 
@@ -368,11 +379,6 @@ def ingest_cmd(args: Namespace):
     dataset_id = args.id
     overwrite = args.overwrite
 
-    if args.data:
-        validate_and_upload_data(dataset_id, args.data, rs, overwrite=overwrite)
-    elif dry_run:
-        logger.warning(f"skipping neurons data validation and upload")
-
     if args.prune:
         prune = args.y or ask(
             "Are you sure you want to delete all files on the bucket?"
@@ -383,6 +389,11 @@ def ingest_cmd(args: Namespace):
             prune_bucket(bucket)
         elif dry_run:
             logger.info(f"skipped prunning files from the bucket")
+
+    if args.data:
+        validate_and_upload_data(dataset_id, args.data, rs, overwrite=overwrite)
+    elif dry_run:
+        logger.warning(f"skipping neurons data validation and upload")
 
     if args.segmentation:
         upload_segmentations(dataset_id, args.segmentation, rs, overwrite=overwrite)
