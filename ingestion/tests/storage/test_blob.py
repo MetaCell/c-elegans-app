@@ -45,7 +45,7 @@ from ingestion.storage.blob import (
 def test__fs_data_blob_name(
     dataset_id: str, file_path: Path, base_dir: Path, blob_name: str
 ):
-    assert fs_data_blob_name(dataset_id, file_path, base_dir) == blob_name
+    assert fs_data_blob_name(file_path, base_dir) == blob_name
 
 
 @pytest.mark.parametrize(
