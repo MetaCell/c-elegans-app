@@ -77,7 +77,7 @@ const CustomListItem = ({
     <>
       <FormControlLabel
         control={
-          <Tooltip title={"data.helpText"}>
+          <Tooltip title={data.helpText}>
             <CustomSwitch checked={data.checked} onChange={handleSwitchChange} />
           </Tooltip>
         }

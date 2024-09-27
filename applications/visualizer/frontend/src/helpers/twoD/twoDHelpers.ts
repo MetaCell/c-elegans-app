@@ -3,6 +3,7 @@ import { ViewerType, Visibility, type Workspace } from "../../models";
 import type { Connection } from "../../rest";
 import { GRAPH_LAYOUTS, LAYOUT_OPTIONS, annotationLegend } from "../../settings/twoDSettings.tsx";
 import { cellConfig, neurotransmitterConfig } from "./coloringHelper.ts";
+import { emptyViewerData } from "../../models/models.ts";
 import { getConcentricLayoutPositions } from "./concentricLayoutHelper.ts";
 
 export const createEdge = (id: string, conn: Connection, workspace: Workspace, includeAnnotations: boolean, width: number): ElementDefinition => {
@@ -12,16 +13,13 @@ export const createEdge = (id: string, conn: Connection, workspace: Workspace, i
   const label = createEdgeLabel(workspace, synapses);
   const longLabel = createEdgeLongLabel(workspace, synapses);
 
-  let annotationClasses: string[] = [];
+  const annotationClasses: string[] = annotations.map((annotation) => annotationLegend[annotation]?.id).filter(Boolean);
 
-  if (includeAnnotations) {
-    annotationClasses = annotations.map((annotation) => annotationLegend[annotation]?.id).filter(Boolean);
-    if (annotationClasses.length === 0) {
-      annotationClasses.push(annotationLegend.notClassified.id);
-    }
-  } else {
-    annotationClasses.push(conn.type);
+  if (includeAnnotations && annotationClasses.length === 0) {
+    annotationClasses.push(annotationLegend.notClassified.id);
   }
+
+  annotationClasses.push(conn.type);
 
   const classes = annotationClasses.join(" ");
   return {
@@ -143,12 +141,12 @@ export const extractNeuronAttributes = (neuron) => {
 
 export const getNclassSet = (neuronIds: Set<string>, workspace: Workspace): Set<string> => {
   const nclassSet = new Set<string>();
-  neuronIds.forEach((neuronId) => {
+  for (const neuronId of neuronIds) {
     const neuron = workspace.availableNeurons[neuronId];
-    if (neuron && neuron.nclass) {
+    if (neuron?.nclass) {
       nclassSet.add(neuron.nclass);
     }
-  });
+  }
   return nclassSet;
 };
 
@@ -157,15 +155,15 @@ export const calculateMeanPosition = (nodeIds: string[], workspace: Workspace): 
   let totalY = 0;
   let count = 0;
 
-  nodeIds.forEach((nodeId) => {
-    const neuron = workspace.availableNeurons[nodeId];
-    const position = neuron?.viewerData[ViewerType.Graph]?.defaultPosition;
+  for (const nodeId of nodeIds) {
+    const neuron = workspace.visibilities[nodeId];
+    const position = neuron?.[ViewerType.Graph]?.defaultPosition;
     if (position) {
       totalX += position.x;
       totalY += position.y;
       count++;
     }
-  });
+  }
 
   return {
     x: totalX / count,
@@ -179,27 +177,28 @@ export const calculateSplitPositions = (nodes, basePosition) => {
   const positions = {};
   const n = nodes.length;
 
-  if (n == 1) {
+  if (n === 1) {
     positions[nodes[0]] = { x: offsetX, y: offsetY };
     return positions;
-  } else if (n == 2) {
+  }
+  if (n === 2) {
     positions[nodes[0]] = { x: offsetX - 35, y: offsetY };
     positions[nodes[1]] = { x: offsetX + 35, y: offsetY };
-  } else if (n == 3) {
+  } else if (n === 3) {
     positions[nodes[0]] = { x: offsetX, y: offsetY - 35 };
     positions[nodes[1]] = { x: offsetX - 35, y: offsetY + 35 };
     positions[nodes[2]] = { x: offsetX + 35, y: offsetY + 35 };
-  } else if (n == 4 && nodes[0] == "RMED") {
+  } else if (n === 4 && nodes[0] === "RMED") {
     positions[nodes[0]] = { x: offsetX, y: offsetY - 50 };
     positions[nodes[1]] = { x: offsetX - 50, y: offsetY };
     positions[nodes[2]] = { x: offsetX + 50, y: offsetY };
     positions[nodes[3]] = { x: offsetX, y: offsetY + 50 };
-  } else if (n == 4) {
+  } else if (n === 4) {
     positions[nodes[0]] = { x: offsetX - 35, y: offsetY - 35 };
     positions[nodes[1]] = { x: offsetX + 35, y: offsetY - 35 };
     positions[nodes[2]] = { x: offsetX - 35, y: offsetY + 35 };
     positions[nodes[3]] = { x: offsetX + 35, y: offsetY + 35 };
-  } else if (n == 6) {
+  } else if (n === 6) {
     positions[nodes[0]] = { x: offsetX - 35, y: offsetY - 60 };
     positions[nodes[1]] = { x: offsetX + 35, y: offsetY - 60 };
     positions[nodes[2]] = { x: offsetX - 70, y: offsetY };
@@ -223,19 +222,20 @@ export const updateWorkspaceNeurons2DViewerData = (workspace: Workspace, cy: Cor
   // Update the workspace availableNeurons with the positions and visibility
   workspace.customUpdate((draft) => {
     // Set visibility and position for nodes in the cytoscape graph
-    cy.nodes().forEach((node) => {
+    for (const node of cy.nodes()) {
       const neuronId = node.id();
-      if (draft.availableNeurons[neuronId]) {
-        draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].defaultPosition = { ...node.position() };
-        draft.availableNeurons[neuronId].viewerData[ViewerType.Graph].visibility = Visibility.Visible;
+      if (!(neuronId in draft.visibilities)) {
+        draft.visibilities[neuronId] = emptyViewerData(Visibility.Visible);
       }
-    });
+      draft.visibilities[neuronId][ViewerType.Graph].defaultPosition = { ...node.position() };
+      draft.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Visible;
+    }
   });
 };
 
 export function getVisibleActiveNeuronsIn2D(workspace: Workspace): Set<string> {
   const activeVisibleNeurons = Array.from(workspace.activeNeurons).filter((neuronId) => {
-    return workspace.availableNeurons[neuronId]?.viewerData[ViewerType.Graph]?.visibility === Visibility.Visible;
+    return workspace.visibilities[neuronId]?.[ViewerType.Graph]?.visibility === Visibility.Visible;
   });
 
   // Create a set to store the class neurons that are active and visible
@@ -258,18 +258,11 @@ export function getVisibleActiveNeuronsIn2D(workspace: Workspace): Set<string> {
 }
 
 export function getHiddenNeuronsIn2D(workspace: Workspace): Set<string> {
-  const hiddenNeurons = new Set<string>();
-
-  Object.keys(workspace.availableNeurons).forEach((neuronId) => {
-    const neuron = workspace.availableNeurons[neuronId];
-    const visibility = neuron.viewerData[ViewerType.Graph]?.visibility;
-
-    if (visibility === Visibility.Hidden) {
-      hiddenNeurons.add(neuronId);
-    }
-  });
-
-  return hiddenNeurons;
+  return new Set(
+    Object.entries(workspace.visibilities)
+      .filter(([_, data]) => data[ViewerType.Graph].visibility === Visibility.Hidden)
+      .map(([name, _]) => name),
+  );
 }
 
 export function isNeuronPartOfClosedGroup(neuronId: string, workspace: Workspace, openGroups: Set<string>): boolean {
