@@ -3,25 +3,20 @@ import { Box, IconButton, Stack, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
+import { type ViewerData, Visibility } from "../../models/models.ts";
 import type { Neuron } from "../../rest";
 import { vars } from "../../theme/variables.ts";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 import CustomListItem from "./CustomListItem.tsx";
-import { Visibility, type ViewerData } from "../../models/models.ts";
 
 const { gray900, gray500 } = vars;
-const mapNeuronsToListItem = (neuron: string, visibility: ViewerData) => ({
+const mapToListItem = (neuron: string, visibility: ViewerData) => ({
   id: neuron,
   label: neuron,
   checked: Object.values(visibility).every((e) => e === undefined || e.visibility === Visibility.Visible),
 });
 
-const mapGroupsToListItem = (group: string, isActive: boolean) => ({
-  id: group,
-  label: group,
-  checked: isActive,
-});
-const mapNeuronsAvailableNeuronsToOptions = (neuron: Neuron) => ({
+const neuronToOption = (neuron: Neuron) => ({
   id: neuron.name,
   label: neuron.name,
   content: [],
@@ -66,12 +61,9 @@ const Neurons = ({ children }) => {
   };
 
   const autoCompleteOptions = Object.values(neurons)
-    .map((neuron: Neuron) => mapNeuronsAvailableNeuronsToOptions(neuron))
+    .map((neuron: Neuron) => neuronToOption(neuron))
     .sort((a, b) => a.label.localeCompare(b.label));
 
-  const handleUpdateNeuronGroupVisibility = (_, group) => {
-    currentWorkspace.updateNeuronGroupVisibility(group.id, group.visible);
-  };
   return (
     <Box
       sx={{
@@ -124,7 +116,7 @@ const Neurons = ({ children }) => {
           {Array.from(activeNeurons).map((neuronId) => (
             <CustomListItem
               key={neuronId}
-              data={mapNeuronsToListItem(neuronId, currentWorkspace.visibilities[neuronId])}
+              data={mapToListItem(neuronId, currentWorkspace.visibilities[neuronId])}
               showTooltip={false}
               showExtraActions={true}
               listType="neurons"
@@ -151,11 +143,11 @@ const Neurons = ({ children }) => {
           {Array.from(Object.keys(groups)).map((groupId) => (
             <CustomListItem
               key={groupId}
-              data={mapNeuronsToListItem(groupId, currentWorkspace.visibilities[groupId])}
+              data={mapToListItem(groupId, currentWorkspace.visibilities[groupId])}
               showTooltip={false}
               showExtraActions={true}
               listType="groups"
-              onSwitchChange={(e) => handleUpdateNeuronGroupVisibility(e, groups[groupId])}
+              onSwitchChange={handleSwitchChange}
               onDelete={() => console.log("delete")}
               deleteTooltipTitle="Remove group from the workspace"
             />
