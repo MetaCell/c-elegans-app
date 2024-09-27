@@ -179,7 +179,7 @@ def validate_and_upload_data(
 
 
 def prune_bucket(bucket: storage.Bucket | FakeBucket):
-    """Prune the bucket and waits until the bucket is empty by checking it periodically."""
+    """Asynchronously prune the bucket from content older than today. This can take up to 24h."""
 
     yesterday = datetime.now(timezone.utc) - timedelta(days=1)
     prune_rule = {
