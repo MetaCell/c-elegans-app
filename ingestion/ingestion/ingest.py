@@ -194,17 +194,14 @@ def prune_bucket(bucket: storage.Bucket | FakeBucket):
 
     lifecycle_rules = list(bucket.lifecycle_rules)
 
-    prune_lifecycle_already_exists: bool = False
     for lifecycle in lifecycle_rules:
         if is_prune_lifecycle(lifecycle):
             lifecycle["condition"]["createdBefore"] = prune_rule["condition"][
                 "createdBefore"
             ]
-            prune_lifecycle_already_exists = True
             break
-
-    if not prune_lifecycle_already_exists:
-        lifecycle_rules = lifecycle_rules + [prune_rule]
+    else:
+        lifecycle_rules.append(prune_rule)  # type: ignore
 
     bucket.lifecycle_rules = lifecycle_rules
     bucket.patch()
