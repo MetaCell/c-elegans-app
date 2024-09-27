@@ -159,17 +159,6 @@ export class Workspace {
     this.updateContext(updated);
   }
 
-  updateNeuronGroupVisibility(groupId: string, isVisible: boolean): void {
-    const updated = produce(this, (draft: Workspace) => {
-      if (draft.neuronGroups[groupId]) {
-        draft.neuronGroups[groupId].visible = !isVisible;
-      } else {
-        throw new Error("Neuron group not found");
-      }
-    });
-    this.updateContext(updated);
-  }
-
   changeViewerVisibility(viewerId: ViewerType, isVisible: boolean): void {
     const updated = produce(this, (draft: Workspace) => {
       if (draft.viewers[viewerId] === undefined) {
