@@ -1,16 +1,6 @@
 import * as htmlToImage from "html-to-image";
+import { formatDate } from "../../../helpers/utils.ts";
 
-export function formatDate(d) {
-  return `${d.getFullYear()}${d.getMonth() + 1}${d.getDate()}-${pad(d.getHours(), 2)}${pad(d.getMinutes(), 2)}${pad(d.getSeconds(), 2)}`;
-}
-
-function pad(num, size) {
-  let s = num + "";
-  while (s.length < size) {
-    s = "0" + s;
-  }
-  return s;
-}
 function getOptions(htmlElement, targetResolution, quality, pixelRatio, filter) {
   const resolution = getResolutionFixedRatio(htmlElement, targetResolution);
   return {
@@ -32,7 +22,6 @@ export function downloadScreenshot(
 ) {
   const options = getOptions(htmlElement, targetResolution, quality, pixelRatio, filter);
 
-  // Use `toBlob` to capture the canvas content as a blob
   htmlToImage.toBlob(htmlElement, options).then((blob) => {
     const link = document.createElement("a");
     link.download = filename;
@@ -46,7 +35,7 @@ function getResolutionFixedRatio(htmlElement, target) {
     height: htmlElement.clientHeight,
     width: htmlElement.clientWidth,
   };
-  // if height is closer
+
   if ((Math.abs(target.width - current.width) * 9) / 16 > Math.abs(target.height - current.height)) {
     return {
       height: target.height,

@@ -1,7 +1,6 @@
-import { Box } from "@mui/system";
 import { CameraControls, PerspectiveCamera } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { Suspense, createRef, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
 import { ViewerType, getNeuronUrlForDataset } from "../../../models/models.ts";
 import { type Dataset, OpenAPI } from "../../../rest";
@@ -18,6 +17,7 @@ import {
 import DatasetPicker from "./DatasetPicker.tsx";
 import Gizmo from "./Gizmo.tsx";
 import Loader from "./Loader.tsx";
+import { Recorder } from "./Recorder";
 import STLViewer from "./STLViewer.tsx";
 import SceneControls from "./SceneControls.tsx";
 import { downloadScreenshot } from "./Screenshoter.ts";
@@ -39,7 +39,7 @@ function ThreeDViewer() {
 
   const cameraControlRef = useRef<CameraControls | null>(null);
 
-  const ref = createRef<HTMLDivElement | null>();
+  const recorderRef = useRef<Recorder | null>(null);
 
   // @ts-expect-error 'setShowNeurons' is declared but its value is never read.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -69,14 +69,35 @@ function ThreeDViewer() {
   }, [selectedDataset, workspace.availableNeurons, workspace.visibilities]);
 
   const handleScreenshot = () => {
-    if (ref.current) {
-      downloadScreenshot(ref.current && ref.current.getElementsByTagName("canvas")[0], 0.95, { width: 3840, height: 2160 }, 1, () => true, "screenshot.png");
+    if (cameraControlRef.current) {
+      downloadScreenshot(document.getElementsByTagName("canvas")[0], 0.95, { width: 3840, height: 2160 }, 1, () => true, "screenshot.png");
     }
   };
+
+  const startRecording = () => {
+    if (recorderRef.current === null) {
+      const canvas = document.getElementsByTagName("canvas")[0];
+      recorderRef.current = new Recorder(canvas, {
+        mediaRecorderOptions: { mimeType: "video/webm" },
+        blobOptions: { type: "video/webm" },
+      });
+      recorderRef.current.startRecording();
+    }
+  };
+
+  const stopRecording = async () => {
+    if (recorderRef.current) {
+      recorderRef.current.stopRecording({ type: "video/webm" });
+      recorderRef.current.download("CanvasRecording.webm", { type: "video/webm" });
+      recorderRef.current = null;
+    }
+  };
+
   return (
-    <Box ref={ref}>
+    <>
       <DatasetPicker datasets={dataSets} selectedDataset={selectedDataset} onDatasetChange={setSelectedDataset} />
-      <Canvas style={{ backgroundColor: SCENE_BACKGROUND }} gl={{ preserveDrawingBuffer: true }}>
+      <Canvas style={{ backgroundColor: SCENE_BACKGROUND }} gl={{ alpha: true, antialias: true, preserveDrawingBuffer: true }}>
+        <color attach="background" args={["#F6F5F4"]} />
         <Suspense fallback={<Loader />}>
           <PerspectiveCamera
             makeDefault
@@ -96,8 +117,15 @@ function ThreeDViewer() {
           <STLViewer instances={instances} isWireframe={isWireframe} />
         </Suspense>
       </Canvas>
-      <SceneControls cameraControlRef={cameraControlRef} isWireframe={isWireframe} setIsWireframe={setIsWireframe} handleScreenshot={handleScreenshot} />
-    </Box>
+      <SceneControls
+        cameraControlRef={cameraControlRef}
+        isWireframe={isWireframe}
+        setIsWireframe={setIsWireframe}
+        handleScreenshot={handleScreenshot}
+        startRecording={startRecording}
+        stopRecording={stopRecording}
+      />
+    </>
   );
 }
 

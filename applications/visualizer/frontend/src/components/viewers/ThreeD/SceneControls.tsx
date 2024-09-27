@@ -9,8 +9,18 @@ import CustomFormControlLabel from "./CustomFormControlLabel.tsx";
 
 const { gray500 } = vars;
 
-function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, handleScreenshot }) {
+function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, handleScreenshot, startRecording, stopRecording }) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+
+  const handleRecordClick = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+    setIsRecording(!isRecording);
+  };
 
   const open = Boolean(anchorEl);
   const id = open ? "settings-popover" : undefined;
@@ -123,9 +133,13 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, handleSc
           <PlayArrowOutlined />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Record viewer" placement="right-start">
-        <IconButton>
-          <RadioButtonCheckedOutlined />
+      <Tooltip title={isRecording ? "Stop recording" : "Record viewer"} placement="right-start">
+        <IconButton onClick={handleRecordClick}>
+          <RadioButtonCheckedOutlined
+            sx={{
+              color: isRecording ? "red" : "inherit",
+            }}
+          />
         </IconButton>
       </Tooltip>
       <Tooltip title="Download graph" placement="right-start">
