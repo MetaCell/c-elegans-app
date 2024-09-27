@@ -6,10 +6,12 @@ import Tooltip from "@mui/material/Tooltip";
 import { useState } from "react";
 import { vars } from "../../../theme/variables.ts";
 import CustomFormControlLabel from "./CustomFormControlLabel.tsx";
+import { Recorder } from "./Recorder.ts";
+import { downloadScreenshot } from "./Screenshoter.ts";
 
 const { gray500 } = vars;
 
-function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, handleScreenshot, startRecording, stopRecording }) {
+function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorderRef }) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [isRecording, setIsRecording] = useState(false);
 
@@ -30,6 +32,31 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, handleSc
 
   const handleCloseSettings = () => {
     setAnchorEl(null);
+  };
+
+  const handleScreenshot = () => {
+    if (cameraControlRef.current) {
+      downloadScreenshot(document.getElementsByTagName("canvas")[0], 0.95, { width: 3840, height: 2160 }, 1, () => true, "screenshot.png");
+    }
+  };
+
+  const startRecording = () => {
+    if (recorderRef.current === null) {
+      const canvas = document.getElementsByTagName("canvas")[0];
+      recorderRef.current = new Recorder(canvas, {
+        mediaRecorderOptions: { mimeType: "video/webm" },
+        blobOptions: { type: "video/webm" },
+      });
+      recorderRef.current.startRecording();
+    }
+  };
+
+  const stopRecording = async () => {
+    if (recorderRef.current) {
+      recorderRef.current.stopRecording({ type: "video/webm" });
+      recorderRef.current.download("CanvasRecording.webm", { type: "video/webm" });
+      recorderRef.current = null;
+    }
   };
 
   return (

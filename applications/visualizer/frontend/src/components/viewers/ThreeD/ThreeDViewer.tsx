@@ -17,10 +17,9 @@ import {
 import DatasetPicker from "./DatasetPicker.tsx";
 import Gizmo from "./Gizmo.tsx";
 import Loader from "./Loader.tsx";
-import { Recorder } from "./Recorder";
+import type { Recorder } from "./Recorder";
 import STLViewer from "./STLViewer.tsx";
 import SceneControls from "./SceneControls.tsx";
-import { downloadScreenshot } from "./Screenshoter.ts";
 
 export interface Instance {
   id: string;
@@ -68,31 +67,6 @@ function ThreeDViewer() {
     setInstances(newInstances);
   }, [selectedDataset, workspace.availableNeurons, workspace.visibilities]);
 
-  const handleScreenshot = () => {
-    if (cameraControlRef.current) {
-      downloadScreenshot(document.getElementsByTagName("canvas")[0], 0.95, { width: 3840, height: 2160 }, 1, () => true, "screenshot.png");
-    }
-  };
-
-  const startRecording = () => {
-    if (recorderRef.current === null) {
-      const canvas = document.getElementsByTagName("canvas")[0];
-      recorderRef.current = new Recorder(canvas, {
-        mediaRecorderOptions: { mimeType: "video/webm" },
-        blobOptions: { type: "video/webm" },
-      });
-      recorderRef.current.startRecording();
-    }
-  };
-
-  const stopRecording = async () => {
-    if (recorderRef.current) {
-      recorderRef.current.stopRecording({ type: "video/webm" });
-      recorderRef.current.download("CanvasRecording.webm", { type: "video/webm" });
-      recorderRef.current = null;
-    }
-  };
-
   return (
     <>
       <DatasetPicker datasets={dataSets} selectedDataset={selectedDataset} onDatasetChange={setSelectedDataset} />
@@ -117,14 +91,7 @@ function ThreeDViewer() {
           <STLViewer instances={instances} isWireframe={isWireframe} />
         </Suspense>
       </Canvas>
-      <SceneControls
-        cameraControlRef={cameraControlRef}
-        isWireframe={isWireframe}
-        setIsWireframe={setIsWireframe}
-        handleScreenshot={handleScreenshot}
-        startRecording={startRecording}
-        stopRecording={stopRecording}
-      />
+      <SceneControls cameraControlRef={cameraControlRef} isWireframe={isWireframe} setIsWireframe={setIsWireframe} recorderRef={recorderRef} />
     </>
   );
 }
