@@ -40,6 +40,8 @@ export interface GlobalContextType {
   serializeGlobalContext: () => string;
   restoreGlobalContext: (context: SerializedGlobalContext) => void;
   restoreGlobalContextFromBase64: (base64Context: string) => void;
+  isGlobalRotating: boolean;
+  toggleGlobalRotation: () => void;
 }
 
 interface GlobalContextProviderProps {
