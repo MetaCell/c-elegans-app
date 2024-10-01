@@ -38,10 +38,10 @@ BLACK_TILE.save(BLACK_TILE_BUFFER, format="JPEG")
 MAX_ZOOM = 6  # Should be set
 
 
-def get_tile(request, slice, x, y, zoom):
+def get_tile(request, dataset, slice, x, y, zoom):
     path = (
-        Path("sem-adult")
-        / "catmaid-tiles"
+        Path(dataset)
+        / "em"
         / f"{slice}"
         / f"{y}_{x}_{MAX_ZOOM - int(zoom)}.jpg"
     )
