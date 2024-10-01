@@ -3,7 +3,7 @@ import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import { Box, Divider, IconButton, Popover, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { vars } from "../../../theme/variables.ts";
 import CustomFormControlLabel from "./CustomFormControlLabel.tsx";
 import { Recorder } from "./Recorder.ts";
@@ -13,6 +13,8 @@ const { gray500 } = vars;
 
 function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorderRef }) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const rotateAnimationRef = useRef<number | null>(null);
+  const [isRotating, setIsRotating] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
 
   const handleRecordClick = () => {
@@ -26,12 +28,33 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorder
 
   const open = Boolean(anchorEl);
   const id = open ? "settings-popover" : undefined;
+
   const handleOpenSettings = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
   const handleCloseSettings = () => {
     setAnchorEl(null);
+  };
+
+  const handleRotation = () => {
+    if (!cameraControlRef.current) return;
+
+    const rotate = () => {
+      cameraControlRef.current.rotate(0.01, 0, true);
+      rotateAnimationRef.current = requestAnimationFrame(rotate);
+    };
+
+    if (isRotating) {
+      if (rotateAnimationRef.current) {
+        cancelAnimationFrame(rotateAnimationRef.current);
+        rotateAnimationRef.current = null;
+      }
+    } else {
+      rotate();
+    }
+
+    setIsRotating(!isRotating);
   };
 
   const handleScreenshot = () => {
@@ -116,7 +139,6 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorder
             3D viewer settings
           </Typography>
           <CustomFormControlLabel label="Neurons" tooltipTitle="tooltip" helpText="data.helpText" />
-
           <CustomFormControlLabel label="Synapses" tooltipTitle="tooltip" helpText="data.helpText" />
         </Box>
       </Popover>
@@ -156,7 +178,7 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorder
       </Tooltip>
       <Divider />
       <Tooltip title="Play 3D viewer" placement="right-start">
-        <IconButton>
+        <IconButton onClick={handleRotation}>
           <PlayArrowOutlined />
         </IconButton>
       </Tooltip>
