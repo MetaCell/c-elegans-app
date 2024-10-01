@@ -39,12 +39,7 @@ MAX_ZOOM = 6  # Should be set
 
 
 def get_tile(request, dataset, slice, x, y, zoom):
-    path = (
-        Path(dataset)
-        / "em"
-        / f"{slice}"
-        / f"{y}_{x}_{MAX_ZOOM - int(zoom)}.jpg"
-    )
+    path = Path(dataset) / "em" / f"{slice}" / f"{y}_{x}_{MAX_ZOOM - int(zoom)}.jpg"
 
     return access_bucket_artifact(
         request, path, unavaiable_page=BLACK_TILE_BUFFER.getbuffer()
