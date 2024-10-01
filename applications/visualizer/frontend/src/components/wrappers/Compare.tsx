@@ -10,7 +10,6 @@ import theme from "../../theme";
 import { vars } from "../../theme/variables.ts";
 const { gray100 } = vars;
 
-
 const drawerWidth = "22.31299rem";
 const drawerHeight = "3.5rem";
 function CompareWrapper({ children, sidebarOpen }) {
