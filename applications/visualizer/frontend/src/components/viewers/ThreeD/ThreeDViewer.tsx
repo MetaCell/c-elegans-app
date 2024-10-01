@@ -70,7 +70,7 @@ function ThreeDViewer() {
   return (
     <>
       <DatasetPicker datasets={dataSets} selectedDataset={selectedDataset} onDatasetChange={setSelectedDataset} />
-      <Canvas style={{ backgroundColor: SCENE_BACKGROUND }} gl={{ alpha: true, antialias: true, preserveDrawingBuffer: true }}>
+      <Canvas style={{ backgroundColor: SCENE_BACKGROUND }} frameloop={"demand"}>
         <color attach="background" args={["#F6F5F4"]} />
         <Suspense fallback={<Loader />}>
           <PerspectiveCamera
