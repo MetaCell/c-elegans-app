@@ -1,5 +1,5 @@
 import { ViewerType, type Workspace } from "../../models";
-import { emptyViewerData, type GraphViewerData, Visibility } from "../../models/models.ts";
+import { type GraphViewerData, Visibility, getDefaultViewerData } from "../../models/models.ts";
 import { calculateMeanPosition, calculateSplitPositions, isNeuronCell, isNeuronClass } from "./twoDHelpers.ts";
 
 interface SplitJoinState {
@@ -69,7 +69,7 @@ export const processNeuronSplit = (workspace: Workspace, splitJoinState: SplitJo
 
     for (const [neuronName, update] of Object.entries(graphViewDataUpdates)) {
       if (!(neuronName in draft.visibilities)) {
-        draft.visibilities[neuronName] = emptyViewerData(update.visibility);
+        draft.visibilities[neuronName] = getDefaultViewerData(update.visibility);
       }
       if (update.defaultPosition !== undefined) {
         draft.visibilities[neuronName][ViewerType.Graph].defaultPosition = update.defaultPosition;
@@ -147,7 +147,7 @@ export const processNeuronJoin = (workspace: Workspace, splitJoinState: SplitJoi
 
     for (const [neuronName, update] of Object.entries(graphViewDataUpdates)) {
       if (!(neuronName in draft.visibilities)) {
-        draft.visibilities[neuronName] = emptyViewerData(update.visibility);
+        draft.visibilities[neuronName] = getDefaultViewerData(update.visibility);
       }
       if (update.defaultPosition !== undefined) {
         draft.visibilities[neuronName][ViewerType.Graph].defaultPosition = update.defaultPosition;

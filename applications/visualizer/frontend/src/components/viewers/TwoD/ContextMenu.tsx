@@ -20,7 +20,7 @@ import { processNeuronJoin, processNeuronSplit } from "../../../helpers/twoD/spl
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
 import { AlignBottomIcon, AlignLeftIcon, AlignRightIcon, AlignTopIcon, DistributeHorizontallyIcon, DistributeVerticallyIcon } from "../../../icons";
 import { Alignment, ViewerType, Visibility } from "../../../models";
-import { emptyViewerData } from "../../../models/models.ts";
+import { getDefaultViewerData } from "../../../models/models.ts";
 import { vars } from "../../../theme/variables.ts";
 
 const { gray700 } = vars;
@@ -71,7 +71,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
     workspace.customUpdate((draft) => {
       for (const neuronId of selectedNeurons) {
         if (!(neuronId in draft.visibilities)) {
-          draft.visibilities[neuronId] = emptyViewerData(Visibility.Hidden);
+          draft.visibilities[neuronId] = getDefaultViewerData(Visibility.Hidden);
         } else {
           draft.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Hidden;
         }
@@ -88,7 +88,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
     workspace.customUpdate((draft) => {
       // Add the new group
       draft.neuronGroups[newGroupId] = newGroup;
-      draft.visibilities[newGroupId] = emptyViewerData(Visibility.Visible);
+      draft.visibilities[newGroupId] = getDefaultViewerData(Visibility.Visible);
 
       // Remove the old groups that were merged into the new group
       for (const groupId of groupsToDelete) {
@@ -195,11 +195,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
         if (group) {
           for (const groupedNeuronId of group.neurons) {
             draft.activeNeurons.add(groupedNeuronId);
-            draft.visibilities[groupedNeuronId] = emptyViewerData(Visibility.Visible);
+            draft.visibilities[groupedNeuronId] = getDefaultViewerData(Visibility.Visible);
           }
         } else {
           draft.activeNeurons.add(neuronId);
-          draft.visibilities[neuronId] = emptyViewerData(Visibility.Visible);
+          draft.visibilities[neuronId] = getDefaultViewerData(Visibility.Visible);
         }
       }
     });

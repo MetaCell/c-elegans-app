@@ -3,11 +3,11 @@ import { Box, IconButton, Stack, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
+import { type ViewerData, Visibility } from "../../models/models.ts";
 import type { Neuron } from "../../rest";
 import { vars } from "../../theme/variables.ts";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 import CustomListItem from "./CustomListItem.tsx";
-import { Visibility, type ViewerData } from "../../models/models.ts";
 
 const { gray900, gray500 } = vars;
 const mapNeuronsToListItem = (neuron: string, visibility: ViewerData) => ({
