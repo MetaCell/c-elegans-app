@@ -284,7 +284,7 @@ function WorkspaceComponent({ sidebarOpen }) {
             </Box>
             <Box p={1.5} height={1} display="flex">
               <LayoutComponent />
-              <ViewerSettings open={open} toggleDrawer={toggleDrawer} />
+              <ViewerSettings open={open} toggleDrawer={toggleDrawer} workspaceId={workspaceId} />
             </Box>
           </Box>
         </Box>
