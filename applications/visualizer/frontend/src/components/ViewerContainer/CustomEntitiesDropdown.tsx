@@ -4,8 +4,8 @@ import { Box, InputAdornment, Popper, TextField, Typography } from "@mui/materia
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { CheckIcon } from "../../icons";
-import { vars } from "../../theme/variables.ts";
 import type { Neuron } from "../../rest/index.ts";
+import { vars } from "../../theme/variables.ts";
 
 const { gray50, brand600 } = vars;
 
