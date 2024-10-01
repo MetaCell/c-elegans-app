@@ -17,7 +17,7 @@ export class Recorder {
     this.setupMediaRecorder(mediaRecorderOptions);
     this.recordedBlobs = [];
     this.blobOptions = blobOptions;
-    this.ctx = canvas.getContext("webgl", { alpha: true, antialias: true, preserveDrawingBuffer: true });
+    this.ctx = canvas.getContext("webgl");
   }
 
   handleDataAvailable(event) {
