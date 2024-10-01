@@ -17,7 +17,7 @@ import {
 } from "../../../helpers/twoD/twoDHelpers";
 import { areSetsEqual } from "../../../helpers/utils.ts";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace";
-import { ViewerType } from "../../../models";
+import { ViewerType, Visibility } from "../../../models";
 import { GlobalError } from "../../../models/Error.ts";
 import { type Connection, ConnectivityService } from "../../../rest";
 import {
@@ -82,11 +82,7 @@ const TwoDViewer = () => {
 
   const hiddenNeurons = useMemo(() => {
     return getHiddenNeuronsIn2D(workspace);
-  }, [
-    Object.keys(workspace.availableNeurons)
-      .map((neuronId) => workspace.visibilities[neuronId]?.[ViewerType.Graph]?.visibility || "")
-      .join(","),
-  ]);
+  }, [Object.keys(workspace.visibilities).filter((neuronId) => workspace.visibilities[neuronId]?.Graph?.visibility === Visibility.Visible)]);
 
   const handleContextMenuClose = () => {
     setMousePosition(null);

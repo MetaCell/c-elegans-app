@@ -158,7 +158,7 @@ export const computeGraphDifferences = (
       } else {
         width = Math.min(4, meanSyn * 0.8);
       }
-      if (conn) {
+      if (conn && !hiddenNodes.has(conn.pre) && !hiddenNodes.has(conn.post)) {
         edgesToAdd.push(createEdge(edgeId, conn, workspace, includeAnnotations, width));
       }
     }
