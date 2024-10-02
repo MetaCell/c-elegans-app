@@ -1,6 +1,7 @@
 import { Add as AddIcon, DeleteOutlined as DeleteOutlinedIcon, HelpOutline as HelpOutlineIcon } from "@mui/icons-material";
 import { Box, FormControlLabel, IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import { useState } from "react";
+import { ViewerType, type Workspace } from "../../models";
 import { vars } from "../../theme/variables.ts";
 import CustomSwitch from "./CustomSwitch";
 import PickerWrapper from "./PickerWrapper";
@@ -20,6 +21,7 @@ interface CustomListItemProps {
   onSwitchChange?: (id: string, checked: boolean) => void;
   onDelete?: (id: string) => void;
   deleteTooltipTitle?: string;
+  workspace: Workspace;
 }
 const CustomListItem = ({
   data,
@@ -29,6 +31,7 @@ const CustomListItem = ({
   onSwitchChange,
   onDelete,
   deleteTooltipTitle,
+  workspace,
 }: CustomListItemProps) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [open, setOpen] = useState(false);
@@ -55,7 +58,9 @@ const CustomListItem = ({
   };
 
   const handleColorChange = (color) => {
-    setSelectedColor(color.hex);
+    const hexColor = color.hex;
+    setSelectedColor(hexColor);
+    workspace.changeNeuronColorForViewers(data.id, hexColor, [ViewerType.ThreeD, ViewerType.EM]);
   };
 
   const handleOnMouseEnter = () => {

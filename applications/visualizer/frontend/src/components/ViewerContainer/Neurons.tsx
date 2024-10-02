@@ -123,6 +123,7 @@ const Neurons = ({ children }) => {
               onSwitchChange={handleSwitchChange}
               onDelete={handleDeleteNeuron}
               deleteTooltipTitle="Remove neuron from the workspace"
+              workspace={currentWorkspace}
             />
           ))}
           <Box display="flex" alignItems="center" justifyContent="space-between" padding=".25rem .5rem">
@@ -150,6 +151,7 @@ const Neurons = ({ children }) => {
               onSwitchChange={handleSwitchChange}
               onDelete={() => console.log("delete")}
               deleteTooltipTitle="Remove group from the workspace"
+              workspace={currentWorkspace}
             />
           ))}
         </Stack>
