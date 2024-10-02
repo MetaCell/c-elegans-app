@@ -21,7 +21,7 @@ interface CustomListItemProps {
   onSwitchChange?: (id: string, checked: boolean) => void;
   onDelete?: (id: string) => void;
   deleteTooltipTitle?: string;
-  workspace: Workspace;
+  workspace?: Workspace;
 }
 const CustomListItem = ({
   data,
