@@ -13,7 +13,7 @@ import {
   LIGHT_1_COLOR,
   LIGHT_2_COLOR,
   LIGHT_2_POSITION,
-  SCENE_BACKGROUND,
+  LIGHT_SCENE_BACKGROUND,
 } from "../../../settings/threeDSettings.ts";
 import DatasetPicker from "./DatasetPicker.tsx";
 import Gizmo from "./Gizmo.tsx";
@@ -43,6 +43,8 @@ function ThreeDViewer() {
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const glRef = useRef<THREE.WebGLRenderer | null>(null);
+
+  const [sceneColor, setSceneColor] = useState(LIGHT_SCENE_BACKGROUND);
 
   // @ts-expect-error 'setShowNeurons' is declared but its value is never read.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -85,8 +87,8 @@ function ThreeDViewer() {
   return (
     <>
       <DatasetPicker datasets={dataSets} selectedDataset={selectedDataset} onDatasetChange={setSelectedDataset} />
-      <Canvas style={{ backgroundColor: SCENE_BACKGROUND }} frameloop={"demand"} gl={{ preserveDrawingBuffer: false }} onCreated={onCreated}>
-        <color attach="background" args={["#F6F5F4"]} />
+      <Canvas style={{ backgroundColor: sceneColor }} frameloop={"demand"} gl={{ preserveDrawingBuffer: false }} onCreated={onCreated}>
+        <color attach="background" args={[sceneColor]} />
         <Suspense fallback={<Loader />}>
           <PerspectiveCamera
             makeDefault
@@ -113,6 +115,8 @@ function ThreeDViewer() {
         setIsWireframe={setIsWireframe}
         recorderRef={recorderRef}
         handleScreenshot={handleScreenshot}
+        sceneColor={sceneColor}
+        setSceneColor={setSceneColor}
       />
     </>
   );

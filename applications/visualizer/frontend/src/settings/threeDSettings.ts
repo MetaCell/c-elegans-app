@@ -9,7 +9,8 @@ export const LIGHT_1_COLOR = 0x404040;
 export const LIGHT_2_COLOR = 0xccccff;
 export const LIGHT_2_POSITION = new Vector3(-1, 0.75, -0.5);
 
-export const SCENE_BACKGROUND = "0xd9d8d4";
+export const LIGHT_SCENE_BACKGROUND = 0xf6f5f4;
+export const DARK_SCENE_BACKGROUND = 0x21201c;
 
 export const OUTLINE_THICKNESS = 0.05;
 export const OUTLINE_COLOR = "hotpink";
