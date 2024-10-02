@@ -28,7 +28,7 @@ urlpatterns = [
     path("api/", api.urls),
     *static(settings.STATIC_URL, document_root=settings.STATIC_ROOT),
     re_path(
-        r"resources/(?P<dataset>\d+)/em/(?P<slice>\d+)/(?P<x>\d+)_(?P<y>\d+)_(?P<zoom>\d+).jpg",
+        r"resources/(?P<dataset>\w+)/em/(?P<slice>\d+)/(?P<x>\d+)_(?P<y>\d+)_(?P<zoom>\d+).jpg",
         get_tile,
         name="em_resources",
     ),
