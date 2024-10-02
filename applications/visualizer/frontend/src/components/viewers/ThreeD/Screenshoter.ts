@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { GlobalError } from "../../../models/Error.ts";
 
 function getResolutionFixedRatio(htmlElement: HTMLElement, target: { width: number; height: number }) {
   const current = {
@@ -59,6 +60,6 @@ export function downloadScreenshot(
 
     tempRenderer.dispose();
   } catch (e) {
-    console.error("Error saving image:", e);
+    throw new GlobalError(`Error saving image: ${e}`);
   }
 }
