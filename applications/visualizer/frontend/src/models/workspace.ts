@@ -79,7 +79,6 @@ export class Workspace {
     });
     this.updateContext(updated);
   }
-
   hideNeuron(neuronId: string): void {
     const updated = produce(this, (draft: Workspace) => {
       if (!(neuronId in draft.visibilities)) {

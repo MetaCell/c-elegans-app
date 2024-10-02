@@ -83,8 +83,8 @@ const TwoDViewer = () => {
   const hiddenNeurons = useMemo(() => {
     return getHiddenNeuronsIn2D(workspace);
   }, [
-    Object.keys(workspace.availableNeurons)
-      .map((neuronId) => workspace.visibilities[neuronId]?.[ViewerType.Graph]?.visibility || "")
+    Object.entries(workspace.visibilities)
+      .map(([name, data]) => `${name}-${data[ViewerType.Graph].visibility}`)
       .join(","),
   ]);
 

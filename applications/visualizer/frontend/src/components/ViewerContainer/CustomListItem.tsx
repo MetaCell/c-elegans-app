@@ -137,11 +137,13 @@ const CustomListItem = ({
                       <DeleteOutlinedIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Add to group">
-                    <IconButton>
-                      <AddIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                  {isNeurons && (
+                    <Tooltip title="Add to group">
+                      <IconButton>
+                        <AddIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                 </Box>
               )}
             </Stack>
