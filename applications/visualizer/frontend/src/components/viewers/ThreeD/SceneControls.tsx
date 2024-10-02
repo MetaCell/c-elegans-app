@@ -4,6 +4,7 @@ import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import { Box, Divider, IconButton, Popover, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { useRef, useState } from "react";
+import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
 import { vars } from "../../../theme/variables.ts";
 import CustomFormControlLabel from "./CustomFormControlLabel.tsx";
 import { Recorder } from "./Recorder.ts";
@@ -11,6 +12,7 @@ import { Recorder } from "./Recorder.ts";
 const { gray500 } = vars;
 
 function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorderRef, handleScreenshot }) {
+  const workspace = useSelectedWorkspace();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const rotateAnimationRef = useRef<number | null>(null);
   const [isRotating, setIsRotating] = useState(false);
@@ -69,7 +71,7 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorder
   const stopRecording = async () => {
     if (recorderRef.current) {
       recorderRef.current.stopRecording({ type: "video/webm" });
-      recorderRef.current.download("CanvasRecording.webm", { type: "video/webm" });
+      recorderRef.current.download(workspace.name + ".webm", { type: "video/webm" });
       recorderRef.current = null;
     }
   };
