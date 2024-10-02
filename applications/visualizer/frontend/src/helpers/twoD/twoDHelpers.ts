@@ -234,17 +234,12 @@ export const updateWorkspaceNeurons2DViewerData = (workspace: Workspace, cy: Cor
 };
 
 export function getVisibleActiveNeuronsIn2D(workspace: Workspace): Set<string> {
-  const activeVisibleNeurons = Array.from(workspace.activeNeurons).filter((neuronId) => {
-    return workspace.visibilities[neuronId]?.[ViewerType.Graph]?.visibility === Visibility.Visible;
-  });
+  const activeVisibleNeurons = Array.from(workspace.activeNeurons).filter(
+    (neuronId) => workspace.visibilities[neuronId]?.[ViewerType.Graph]?.visibility === Visibility.Visible,
+  );
 
   // Create a set to store the class neurons that are active and visible
-  const activeVisibleClasses = new Set(
-    activeVisibleNeurons.filter((neuronId) => {
-      const neuron = workspace.availableNeurons[neuronId];
-      return neuron && isNeuronClass(neuronId, workspace);
-    }),
-  );
+  const activeVisibleClasses = new Set(activeVisibleNeurons.filter((neuronId) => workspace.availableNeurons[neuronId] && isNeuronClass(neuronId, workspace)));
 
   // Filter out individual cells if their class neuron is active and visible
   return new Set(
