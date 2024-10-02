@@ -6,12 +6,26 @@ import Tooltip from "@mui/material/Tooltip";
 import { useRef, useState } from "react";
 import { vars } from "../../../theme/variables.ts";
 import CustomFormControlLabel from "./CustomFormControlLabel.tsx";
+import { Recorder } from "./Recorder.ts";
+import { downloadScreenshot } from "./Screenshoter.ts";
+
 const { gray500 } = vars;
 
-function SceneControls({ cameraControlRef, isWireframe, setIsWireframe }) {
+function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorderRef }) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const rotateAnimationRef = useRef<number | null>(null);
   const [isRotating, setIsRotating] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+
+  const handleRecordClick = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+    setIsRecording(!isRecording);
+  };
+
   const open = Boolean(anchorEl);
   const id = open ? "settings-popover" : undefined;
 
@@ -41,6 +55,31 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe }) {
     }
 
     setIsRotating(!isRotating);
+  };
+
+  const handleScreenshot = () => {
+    if (cameraControlRef.current) {
+      downloadScreenshot(document.getElementsByTagName("canvas")[0], 0.95, { width: 3840, height: 2160 }, 1, () => true, "screenshot.png");
+    }
+  };
+
+  const startRecording = () => {
+    if (recorderRef.current === null) {
+      const canvas = document.getElementsByTagName("canvas")[0];
+      recorderRef.current = new Recorder(canvas, {
+        mediaRecorderOptions: { mimeType: "video/webm" },
+        blobOptions: { type: "video/webm" },
+      });
+      recorderRef.current.startRecording();
+    }
+  };
+
+  const stopRecording = async () => {
+    if (recorderRef.current) {
+      recorderRef.current.stopRecording({ type: "video/webm" });
+      recorderRef.current.download("CanvasRecording.webm", { type: "video/webm" });
+      recorderRef.current = null;
+    }
   };
 
   return (
@@ -143,13 +182,17 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe }) {
           <PlayArrowOutlined />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Record viewer" placement="right-start">
-        <IconButton>
-          <RadioButtonCheckedOutlined />
+      <Tooltip title={isRecording ? "Stop recording" : "Record viewer"} placement="right-start">
+        <IconButton onClick={handleRecordClick}>
+          <RadioButtonCheckedOutlined
+            sx={{
+              color: isRecording ? "red" : "inherit",
+            }}
+          />
         </IconButton>
       </Tooltip>
       <Tooltip title="Download graph" placement="right-start">
-        <IconButton>
+        <IconButton onClick={handleScreenshot}>
           <GetAppOutlined />
         </IconButton>
       </Tooltip>

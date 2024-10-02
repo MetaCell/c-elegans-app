@@ -17,6 +17,7 @@ import {
 import DatasetPicker from "./DatasetPicker.tsx";
 import Gizmo from "./Gizmo.tsx";
 import Loader from "./Loader.tsx";
+import type { Recorder } from "./Recorder";
 import STLViewer from "./STLViewer.tsx";
 import SceneControls from "./SceneControls.tsx";
 
@@ -36,6 +37,8 @@ function ThreeDViewer() {
   const [isWireframe, setIsWireframe] = useState<boolean>(false);
 
   const cameraControlRef = useRef<CameraControls | null>(null);
+
+  const recorderRef = useRef<Recorder | null>(null);
 
   // @ts-expect-error 'setShowNeurons' is declared but its value is never read.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -67,7 +70,8 @@ function ThreeDViewer() {
   return (
     <>
       <DatasetPicker datasets={dataSets} selectedDataset={selectedDataset} onDatasetChange={setSelectedDataset} />
-      <Canvas style={{ backgroundColor: SCENE_BACKGROUND }} frameloop={"demand"}>
+      <Canvas style={{ backgroundColor: SCENE_BACKGROUND }} frameloop={"demand"} gl={{ preserveDrawingBuffer: true }}>
+        <color attach="background" args={["#F6F5F4"]} />
         <Suspense fallback={<Loader />}>
           <PerspectiveCamera
             makeDefault
@@ -87,7 +91,7 @@ function ThreeDViewer() {
           <STLViewer instances={instances} isWireframe={isWireframe} />
         </Suspense>
       </Canvas>
-      <SceneControls cameraControlRef={cameraControlRef} isWireframe={isWireframe} setIsWireframe={setIsWireframe} />
+      <SceneControls cameraControlRef={cameraControlRef} isWireframe={isWireframe} setIsWireframe={setIsWireframe} recorderRef={recorderRef} />
     </>
   );
 }
