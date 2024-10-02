@@ -38,13 +38,8 @@ BLACK_TILE.save(BLACK_TILE_BUFFER, format="JPEG")
 MAX_ZOOM = 6  # Should be set
 
 
-def get_tile(request, slice, x, y, zoom):
-    path = (
-        Path("sem-adult")
-        / "catmaid-tiles"
-        / f"{slice}"
-        / f"{y}_{x}_{MAX_ZOOM - int(zoom)}.jpg"
-    )
+def get_tile(request, dataset, slice, x, y, zoom):
+    path = Path(dataset) / "em" / f"{slice}" / f"{y}_{x}_{MAX_ZOOM - int(zoom)}.jpg"
 
     return access_bucket_artifact(
         request, path, unavaiable_page=BLACK_TILE_BUFFER.getbuffer()
