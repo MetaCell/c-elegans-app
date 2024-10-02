@@ -1,6 +1,7 @@
 import { CameraControls, PerspectiveCamera } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import type * as THREE from "three";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
 import { ViewerType, getNeuronUrlForDataset } from "../../../models/models.ts";
 import { type Dataset, OpenAPI } from "../../../rest";
@@ -20,7 +21,7 @@ import Loader from "./Loader.tsx";
 import type { Recorder } from "./Recorder";
 import STLViewer from "./STLViewer.tsx";
 import SceneControls from "./SceneControls.tsx";
-
+import { downloadScreenshot } from "./Screenshoter.ts";
 export interface Instance {
   id: string;
   url: string;
@@ -37,8 +38,11 @@ function ThreeDViewer() {
   const [isWireframe, setIsWireframe] = useState<boolean>(false);
 
   const cameraControlRef = useRef<CameraControls | null>(null);
-
   const recorderRef = useRef<Recorder | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const glRef = useRef<THREE.WebGLRenderer | null>(null);
 
   // @ts-expect-error 'setShowNeurons' is declared but its value is never read.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -67,10 +71,21 @@ function ThreeDViewer() {
     setInstances(newInstances);
   }, [selectedDataset, workspace.availableNeurons, workspace.visibilities]);
 
+  const handleScreenshot = () => {
+    downloadScreenshot(canvasRef, sceneRef, cameraRef);
+  };
+
+  const onCreated = (state) => {
+    canvasRef.current = state.gl.domElement;
+    sceneRef.current = state.scene;
+    cameraRef.current = state.camera;
+    glRef.current = state.gl;
+  };
+
   return (
     <>
       <DatasetPicker datasets={dataSets} selectedDataset={selectedDataset} onDatasetChange={setSelectedDataset} />
-      <Canvas style={{ backgroundColor: SCENE_BACKGROUND }} frameloop={"demand"} gl={{ preserveDrawingBuffer: true }}>
+      <Canvas style={{ backgroundColor: SCENE_BACKGROUND }} frameloop={"demand"} gl={{ preserveDrawingBuffer: false }} onCreated={onCreated}>
         <color attach="background" args={["#F6F5F4"]} />
         <Suspense fallback={<Loader />}>
           <PerspectiveCamera
@@ -80,6 +95,7 @@ function ThreeDViewer() {
             position={CAMERA_POSITION}
             near={CAMERA_NEAR}
             far={CAMERA_FAR}
+            ref={cameraRef}
           />
           <CameraControls ref={cameraControlRef} />
 
@@ -91,7 +107,13 @@ function ThreeDViewer() {
           <STLViewer instances={instances} isWireframe={isWireframe} />
         </Suspense>
       </Canvas>
-      <SceneControls cameraControlRef={cameraControlRef} isWireframe={isWireframe} setIsWireframe={setIsWireframe} recorderRef={recorderRef} />
+      <SceneControls
+        cameraControlRef={cameraControlRef}
+        isWireframe={isWireframe}
+        setIsWireframe={setIsWireframe}
+        recorderRef={recorderRef}
+        handleScreenshot={handleScreenshot}
+      />
     </>
   );
 }

@@ -7,11 +7,10 @@ import { useRef, useState } from "react";
 import { vars } from "../../../theme/variables.ts";
 import CustomFormControlLabel from "./CustomFormControlLabel.tsx";
 import { Recorder } from "./Recorder.ts";
-import { downloadScreenshot } from "./Screenshoter.ts";
 
 const { gray500 } = vars;
 
-function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorderRef }) {
+function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorderRef, handleScreenshot }) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const rotateAnimationRef = useRef<number | null>(null);
   const [isRotating, setIsRotating] = useState(false);
@@ -56,13 +55,6 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorder
 
     setIsRotating(!isRotating);
   };
-
-  const handleScreenshot = () => {
-    if (cameraControlRef.current) {
-      downloadScreenshot(document.getElementsByTagName("canvas")[0], 0.95, { width: 3840, height: 2160 }, 1, () => true, "screenshot.png");
-    }
-  };
-
   const startRecording = () => {
     if (recorderRef.current === null) {
       const canvas = document.getElementsByTagName("canvas")[0];

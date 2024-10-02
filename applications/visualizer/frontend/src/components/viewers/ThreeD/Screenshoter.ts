@@ -1,36 +1,6 @@
-import * as htmlToImage from "html-to-image";
-import { formatDate } from "../../../helpers/utils.ts";
+import * as THREE from "three";
 
-function getOptions(htmlElement, targetResolution, quality, pixelRatio, filter) {
-  const resolution = getResolutionFixedRatio(htmlElement, targetResolution);
-  return {
-    quality: quality,
-    canvasWidth: resolution.width,
-    canvasHeight: resolution.height,
-    pixelRatio: pixelRatio,
-    filter: filter,
-  };
-}
-
-export function downloadScreenshot(
-  htmlElement,
-  quality = 0.95,
-  targetResolution = { width: 3840, height: 2160 },
-  pixelRatio = 1,
-  filter = () => true,
-  filename = `Canvas_${formatDate(new Date())}.png`,
-) {
-  const options = getOptions(htmlElement, targetResolution, quality, pixelRatio, filter);
-
-  htmlToImage.toBlob(htmlElement, options).then((blob) => {
-    const link = document.createElement("a");
-    link.download = filename;
-    link.href = window.URL.createObjectURL(blob);
-    link.click();
-  });
-}
-
-function getResolutionFixedRatio(htmlElement, target) {
+function getResolutionFixedRatio(htmlElement: HTMLElement, target: { width: number; height: number }) {
   const current = {
     height: htmlElement.clientHeight,
     width: htmlElement.clientWidth,
@@ -46,4 +16,48 @@ function getResolutionFixedRatio(htmlElement, target) {
     height: Math.round((current.height * target.width) / current.width),
     width: target.width,
   };
+}
+
+function getOptions(htmlElement: HTMLCanvasElement, targetResolution: { width: number; height: number }, pixelRatio: number) {
+  const resolution = getResolutionFixedRatio(htmlElement, targetResolution);
+  return {
+    canvasWidth: resolution.width,
+    canvasHeight: resolution.height,
+    pixelRatio: pixelRatio,
+  };
+}
+
+export function downloadScreenshot(
+  canvasRef: React.RefObject<HTMLCanvasElement>,
+  sceneRef: React.RefObject<THREE.Scene>,
+  cameraRef: React.RefObject<THREE.PerspectiveCamera>,
+) {
+  if (!sceneRef.current || !cameraRef.current || !canvasRef.current) return;
+
+  const options = getOptions(canvasRef.current, { width: 3840, height: 2160 }, 1);
+
+  try {
+    const tempRenderer = new THREE.WebGLRenderer({ preserveDrawingBuffer: true });
+    tempRenderer.setSize(options.canvasWidth, options.canvasHeight);
+    tempRenderer.setPixelRatio(options.pixelRatio); // Set the resolution scaling
+
+    cameraRef.current.aspect = options.canvasWidth / options.canvasHeight;
+    cameraRef.current.updateProjectionMatrix();
+
+    tempRenderer.render(sceneRef.current, cameraRef.current);
+
+    tempRenderer.domElement.toBlob((blob) => {
+      if (blob) {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "screenshot.png";
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }
+    }, "image/png");
+
+    tempRenderer.dispose();
+  } catch (e) {
+    console.error("Error saving image:", e);
+  }
 }
