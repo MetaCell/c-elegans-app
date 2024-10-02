@@ -33,6 +33,7 @@ export interface GlobalContextType {
   removeWorkspace: (workspaceId: string) => void;
   setCurrentWorkspace: (workspaceId: string) => void;
   getCurrentWorkspace: () => Workspace;
+  getWorkspaceById: (workspaceId: string) => Workspace;
   setSelectedWorkspacesIds: (workspaceId: Set<string>) => void;
   datasets: Record<string, Dataset>;
   setAllWorkspaces: (workspaces: Record<string, Workspace>) => void;
@@ -98,6 +99,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
 
   const getCurrentWorkspace = () => {
     return workspaces?.[currentWorkspaceId];
+  };
+
+  const getWorkspaceById = (workspaceId: string) => {
+    return workspaces?.[workspaceId];
   };
 
   const handleErrors = (error: Error) => {
@@ -187,6 +192,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     workspaces,
     currentWorkspaceId,
     getCurrentWorkspace,
+    getWorkspaceById,
     createWorkspace,
     updateWorkspace,
     removeWorkspace,

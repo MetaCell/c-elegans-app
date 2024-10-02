@@ -54,8 +54,8 @@ const buttonStyle = {
 
 const ViewerSettings = ({ open, toggleDrawer, workspaceId }) => {
   const dispatch = useDispatch();
-  const { workspaces } = useGlobalContext();
-  const currentWorkspace = workspaces[workspaceId];
+  const { getWorkspaceById } = useGlobalContext();
+  const currentWorkspace = getWorkspaceById(workspaceId);
 
   const handleToggle = (e, viewer) => {
     const status = e.target.checked ? WidgetStatus.ACTIVE : WidgetStatus.MINIMIZED;
