@@ -258,15 +258,11 @@ export class Workspace {
     return Array.from(this.activeNeurons).filter((neuronId) => this.visibilities[neuronId]?.[ViewerType.ThreeD]?.visibility === Visibility.Visible);
   }
 
-  changeNeuronColorForViewers(neuronId: string, color: string, viewerTypes: ViewerType[] = [ViewerType.ThreeD, ViewerType.EM]): void {
-    const unsupportedTypes = viewerTypes.filter((type) => type !== ViewerType.ThreeD && type !== ViewerType.EM);
-
-    if (unsupportedTypes.length > 0) {
-      throw new Error(`Unsupported viewer types: ${unsupportedTypes.join(", ")}`);
-    }
+  changeNeuronColorForViewers(neuronId: string, color: string): void {
+    const viewers: ViewerType[] = [ViewerType.ThreeD, ViewerType.EM];
 
     const updated = produce(this, (draft: Workspace) => {
-      viewerTypes.forEach((viewerType) => {
+      viewers.forEach((viewerType) => {
         if (viewerType in draft.visibilities[neuronId]) {
           draft.visibilities[neuronId][viewerType].color = color;
         }
