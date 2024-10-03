@@ -71,7 +71,7 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorder
   const stopRecording = async () => {
     if (recorderRef.current) {
       recorderRef.current.stopRecording({ type: "video/webm" });
-      recorderRef.current.download(workspace.name + ".webm", { type: "video/webm" });
+      recorderRef.current.download(`${workspace.name}.webm`, { type: "video/webm" });
       recorderRef.current = null;
     }
   };
