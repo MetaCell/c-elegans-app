@@ -82,7 +82,7 @@ const TwoDViewer = () => {
 
   const hiddenNeurons = useMemo(() => {
     return getHiddenNeuronsIn2D(workspace);
-  }, [Object.keys(workspace.visibilities).filter((neuronId) => workspace.visibilities[neuronId]?.Graph?.visibility === Visibility.Visible)]);
+  }, [Object.keys(workspace.visibilities).filter((neuronId) => workspace.visibilities[neuronId]?.Graph?.visibility === Visibility.Hidden)]);
 
   const handleContextMenuClose = () => {
     setMousePosition(null);
@@ -128,7 +128,6 @@ const TwoDViewer = () => {
       cy.destroy();
     };
   }, []);
-
   // Fetch and process connections data
   useEffect(() => {
     if (!workspace) return;
