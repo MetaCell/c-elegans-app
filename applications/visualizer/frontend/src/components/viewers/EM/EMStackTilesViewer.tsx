@@ -131,8 +131,8 @@ const EMStackViewer = () => {
   const currSegLayer = useRef<VectorLayer<Feature> | null>(null);
   const clickedFeature = useRef<Feature | null>(null);
 
-  let ringEM: SlidingRing<TileLayer<XYZ>>;
-  let ringSeg: SlidingRing<VectorLayer<Feature>>;
+  const ringEM = useRef<SlidingRing<TileLayer<XYZ>>>()
+  const ringSeg = useRef<SlidingRing<VectorLayer<Feature>>>();
 
   // const debugLayer = new TileLayer({
   // 	source: new TileDebug({
@@ -175,7 +175,7 @@ const EMStackViewer = () => {
     const minZoomAvailable = tilegrid.getMinZoom();
     map.getView().setZoom(minZoomAvailable);
 
-    ringEM = new SlidingRing({
+    ringEM.current = new SlidingRing({
       cacheSize: ringSize,
       startAt: startSlice,
       extent: [minSlice, maxSlice],
@@ -196,7 +196,7 @@ const EMStackViewer = () => {
       },
     });
 
-    ringSeg = new SlidingRing({
+    ringSeg.current = new SlidingRing({
       cacheSize: ringSize,
       startAt: startSlice,
       extent: [minSlice, maxSlice],
@@ -245,11 +245,11 @@ const EMStackViewer = () => {
       const scrollUp = e.deltaY < 0;
 
       if (scrollUp) {
-        ringEM.next();
-        ringSeg.next();
+        ringEM.current.next();
+        ringSeg.current.next();
       } else {
-        ringEM.prev();
-        ringSeg.prev();
+        ringEM.current.prev();
+        ringSeg.current.prev();
       }
     });
 
@@ -274,8 +274,8 @@ const EMStackViewer = () => {
 
   const onResetView = () => {
     // reset sliding window
-    ringEM.goto(startSlice);
-    ringSeg.goto(startSlice);
+    ringEM.current.goto(startSlice);
+    ringSeg.current.goto(startSlice);
 
     if (!mapRef.current) return;
     const view = mapRef.current.getView();
