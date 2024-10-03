@@ -74,7 +74,7 @@ function ThreeDViewer() {
   }, [selectedDataset, workspace.availableNeurons, workspace.visibilities]);
 
   const handleScreenshot = () => {
-    downloadScreenshot(canvasRef, sceneRef, cameraRef);
+    downloadScreenshot(canvasRef, sceneRef, cameraRef, workspace.name);
   };
 
   const onCreated = (state) => {

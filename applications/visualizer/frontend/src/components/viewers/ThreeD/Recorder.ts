@@ -1,4 +1,5 @@
 import { formatDate } from "../../../helpers/utils.ts";
+import { GlobalError } from "../../../models/Error.ts";
 export class Recorder {
   private mediaRecorder: MediaRecorder | null = null;
   private recordedBlobs: Blob[] = [];
@@ -56,7 +57,7 @@ export class Recorder {
     }
 
     if (!mediaRecorder) {
-      throw new Error(error);
+      throw new GlobalError(error);
     }
 
     mediaRecorder.ondataavailable = (evt) => this.handleDataAvailable(evt);

@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { GlobalError } from "../../../models/Error.ts";
 
 function getResolutionFixedRatio(htmlElement: HTMLElement, target: { width: number; height: number }) {
   const current = {
@@ -31,6 +32,7 @@ export function downloadScreenshot(
   canvasRef: React.RefObject<HTMLCanvasElement>,
   sceneRef: React.RefObject<THREE.Scene>,
   cameraRef: React.RefObject<THREE.PerspectiveCamera>,
+  filename?: string,
 ) {
   if (!sceneRef.current || !cameraRef.current || !canvasRef.current) return;
 
@@ -50,7 +52,7 @@ export function downloadScreenshot(
       if (blob) {
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = "screenshot.png";
+        link.download = filename || "screenshot.png";
         link.click();
         URL.revokeObjectURL(link.href);
       }
@@ -58,6 +60,6 @@ export function downloadScreenshot(
 
     tempRenderer.dispose();
   } catch (e) {
-    console.error("Error saving image:", e);
+    throw new GlobalError(`Error saving image: ${e}`);
   }
 }
