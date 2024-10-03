@@ -32,6 +32,7 @@ import SceneControls from "./SceneControls.tsx";
 // const height = 22528 / 2;
 const width = 19968;
 const height = 11008;
+const startZoom = 0;
 
 // const extent = [0, -height, width, 0];
 const extent = [0, 0, width, height];
@@ -44,6 +45,7 @@ const projection = new Projection({
 });
 
 const tilegrid = new TileGrid({
+  minZoom: 1, // tiles for zoom 0 not available in the dataset
   extent: extent,
   tileSize: 512,
   resolutions: [0.5, 1, 2, 4, 8, 16, 32].reverse(),
@@ -131,7 +133,7 @@ const EMStackViewer = () => {
   const currSegLayer = useRef<VectorLayer<Feature> | null>(null);
   const clickedFeature = useRef<Feature | null>(null);
 
-  const ringEM = useRef<SlidingRing<TileLayer<XYZ>>>()
+  const ringEM = useRef<SlidingRing<TileLayer<XYZ>>>();
   const ringSeg = useRef<SlidingRing<VectorLayer<Feature>>>();
 
   // const debugLayer = new TileLayer({
@@ -170,10 +172,6 @@ const EMStackViewer = () => {
       controls: [scale],
       interactions: interactions,
     });
-
-    // set map zoom to the minimum zoom possible
-    const minZoomAvailable = tilegrid.getMinZoom();
-    map.getView().setZoom(minZoomAvailable);
 
     ringEM.current = new SlidingRing({
       cacheSize: ringSize,
@@ -253,6 +251,10 @@ const EMStackViewer = () => {
       }
     });
 
+    // set map zoom to the minimum zoom possible
+    // const minZoomAvailable = tilegrid.getMinZoom();
+    map.getView().setZoom(startZoom);
+
     mapRef.current = map;
 
     return () => map.setTarget(null);
@@ -283,7 +285,7 @@ const EMStackViewer = () => {
     const center = getCenter(extent);
     view.setCenter(center);
 
-    const minZoomAvailable = tilegrid.getMinZoom();
+    const minZoomAvailable = view.getMinZoom();
     view.setZoom(minZoomAvailable);
   };
 
