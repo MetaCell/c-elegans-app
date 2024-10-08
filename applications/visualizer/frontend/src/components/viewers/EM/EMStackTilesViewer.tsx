@@ -21,7 +21,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { SlidingRing } from "../../../helpers/slidingRing";
 import { getEMDataURL, getSegmentationURL } from "../../../models/models.ts";
-import type { Dataset, EMData } from "../../../rest/index.ts";
+import type { Dataset } from "../../../rest/index.ts";
 import SceneControls from "./SceneControls.tsx";
 
 const getFeatureStyle = (feature: FeatureLike) => {
