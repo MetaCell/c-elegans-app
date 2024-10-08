@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 from typing import Any, Iterable
 
-from attr import dataclass
+from dataclasses import dataclass
 from google.cloud.storage import Blob, Bucket
 
 from ingestion.hash import Crc32cCalculator
