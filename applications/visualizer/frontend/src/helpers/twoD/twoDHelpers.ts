@@ -1,9 +1,9 @@
 import type { Core, ElementDefinition, Position } from "cytoscape";
 import { ViewerType, Visibility, type Workspace } from "../../models";
+import { getDefaultViewerData } from "../../models/models.ts";
 import type { Connection } from "../../rest";
 import { GRAPH_LAYOUTS, LAYOUT_OPTIONS, annotationLegend } from "../../settings/twoDSettings.tsx";
 import { cellConfig, neurotransmitterConfig } from "./coloringHelper.ts";
-import { emptyViewerData } from "../../models/models.ts";
 import { getConcentricLayoutPositions } from "./concentricLayoutHelper.ts";
 
 export const createEdge = (id: string, conn: Connection, workspace: Workspace, includeAnnotations: boolean, width: number): ElementDefinition => {
@@ -225,7 +225,7 @@ export const updateWorkspaceNeurons2DViewerData = (workspace: Workspace, cy: Cor
     for (const node of cy.nodes()) {
       const neuronId = node.id();
       if (!(neuronId in draft.visibilities)) {
-        draft.visibilities[neuronId] = emptyViewerData(Visibility.Visible);
+        draft.visibilities[neuronId] = getDefaultViewerData(Visibility.Visible);
       }
       draft.visibilities[neuronId][ViewerType.Graph].defaultPosition = { ...node.position() };
       draft.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Visible;
@@ -234,17 +234,12 @@ export const updateWorkspaceNeurons2DViewerData = (workspace: Workspace, cy: Cor
 };
 
 export function getVisibleActiveNeuronsIn2D(workspace: Workspace): Set<string> {
-  const activeVisibleNeurons = Array.from(workspace.activeNeurons).filter((neuronId) => {
-    return workspace.visibilities[neuronId]?.[ViewerType.Graph]?.visibility === Visibility.Visible;
-  });
+  const activeVisibleNeurons = Array.from(workspace.activeNeurons).filter(
+    (neuronId) => workspace.visibilities[neuronId]?.[ViewerType.Graph]?.visibility === Visibility.Visible,
+  );
 
   // Create a set to store the class neurons that are active and visible
-  const activeVisibleClasses = new Set(
-    activeVisibleNeurons.filter((neuronId) => {
-      const neuron = workspace.availableNeurons[neuronId];
-      return neuron && isNeuronClass(neuronId, workspace);
-    }),
-  );
+  const activeVisibleClasses = new Set(activeVisibleNeurons.filter((neuronId) => workspace.availableNeurons[neuronId] && isNeuronClass(neuronId, workspace)));
 
   // Filter out individual cells if their class neuron is active and visible
   return new Set(

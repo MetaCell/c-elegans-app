@@ -24,6 +24,7 @@ export interface NeuronGroup {
   name: string;
   color: string;
   neurons: Set<string>;
+  visible: boolean;
 }
 
 export interface GraphViewerData {
@@ -31,18 +32,27 @@ export interface GraphViewerData {
   visibility: Visibility;
 }
 
-export function emptyViewerData(visibility?: Visibility): ViewerData {
+export interface ThreeDViewerData {
+  visibility: Visibility;
+  color: string;
+}
+
+export function getDefaultViewerData(visibility?: Visibility): ViewerData {
   return {
     [ViewerType.Graph]: {
       defaultPosition: null,
       visibility: visibility ?? Visibility.Hidden,
+    },
+    [ViewerType.ThreeD]: {
+      visibility: visibility ?? Visibility.Hidden,
+      color: "#000000",
     },
   };
 }
 
 export interface ViewerData {
   [ViewerType.Graph]?: GraphViewerData;
-  [ViewerType.ThreeD]?: any; // Define specific data for 3D viewer if needed
+  [ViewerType.ThreeD]?: ThreeDViewerData;
   [ViewerType.EM]?: any; // Define specific data for EM viewer if needed
   [ViewerType.InstanceDetails]?: any; // Define specific data for Instance Details viewer if needed
 }
@@ -60,11 +70,11 @@ export function getNeuronURL(dataset: Dataset, neuronName: string): string {
 }
 
 export function getSegmentationURL(dataset: Dataset, sliceIndex: number): string {
-  return buildUrlFromFormat(dataset.emData.segmentation_url, sliceIndex?.toString());
+  return buildUrlFromFormat(buildUrlFromFormat(dataset.emData.segmentation_url, dataset.id), sliceIndex?.toString());
 }
 
 export function getEMDataURL(dataset: Dataset, sliceIndex: number): string {
-  return buildUrlFromFormat(dataset.emData.resource_url, sliceIndex?.toString());
+  return buildUrlFromFormat(buildUrlFromFormat(dataset.emData.resource_url, dataset.id), sliceIndex?.toString());
 }
 
 export enum Alignment {
