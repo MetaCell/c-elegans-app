@@ -4,7 +4,6 @@ import logging
 import platform
 from contextlib import contextmanager
 from dataclasses import dataclass
-from enum import Enum
 from functools import lru_cache
 from itertools import groupby, islice
 from pathlib import Path
@@ -30,8 +29,7 @@ if platform.system() == "Windows":  # fix ansi on windows
 class ErrorWriter:
     def __init__(self, w: str = "") -> None:
         self.w = w
-        self.i = 0
-        self.begin = True
+        self.indent = ""
 
     def __str__(self) -> str:
         return self.w
@@ -56,25 +54,21 @@ class ErrorWriter:
         self.w += "\n"
 
     def write(self, text: str, pre: str = "", color: str | None = None):
-        indent = self.i * "\t" + pre
-        if color is not None:
-            indent = color + indent
+        indent = f"{self.indent}{pre}"
 
-        for line in text.splitlines():
-            self.w += indent + line + "\n"
-
+        indented_text = "".join(f"{indent}{line}\n" for line in text.splitlines())
         if color is not None:
-            self.w += Style.RESET_ALL
+            self.w += f"{color}{indented_text}{Style.RESET_ALL}"
+        else:
+            self.w += f"{indented_text}"
 
     def _indent(self):
         """Increase the indentation level for all subsequent output."""
-        self.i += 1
-        self.begin = True
+        self.indent += "\t"
 
     def _dedent(self):
         """Decrease the indentation level fro all subsequent output."""
-        self.i = max(self.i - 1, 0)
-        self.begin = True
+        self.indent = self.indent[:-1]
 
     @contextmanager
     def wrap(self, before_start: str = "", after_end: str = "\n"):
@@ -113,13 +107,6 @@ class ErrorWriter:
         self._dedent()
         self.write(f"{style[1]}{after_end}")
 
-    @contextmanager
-    def color(self, color: str):
-        """Returns a context within which writes are colorized."""
-        self.w += color
-        yield
-        self.w += Style.RESET_ALL
-
 
 class DataErrorLoc(NamedTuple):
     collection: DataCollectionEntry
@@ -147,10 +134,8 @@ class _DataErrorLocFinder:
     @staticmethod
     @lru_cache  # TODO: find a better way to keep used source maps in memory
     def load_source_map(p: Path) -> TSourceMap:
-        with open(p, "r") as f:
-            source_map = calculate(f.read())
-            logger.debug(f"computed json source map for {p}")
-            return source_map
+        logger.debug(f"computed json source map for {p}")
+        return calculate((p.read_text()))
 
     def get_source_map(self, err: ErrorDetails) -> TSourceMap:
         # only compute the source map that haven't yet been
@@ -187,7 +172,7 @@ class _DataErrorLocFinder:
         def compute_key(loc: tuple[str | int, ...]) -> str:
             # filter loc for inexistent keys and other edge cases
             if "[key]" in loc:
-                loc = loc[: len(loc) - 1]
+                loc = loc[:-1]
 
             key_fragment = "/".join(str(l) for l in loc)
             key = f"/{key_fragment}"
@@ -257,12 +242,10 @@ def _write_error_snippet(
                 w.write("...")
 
             for line in islice(file, read_from_line, to_line):
-                s = str(i) + "\t"
-                s += line
+                s = f"{i}\t{line}"
 
                 if i >= entry.value_start.line and i <= entry.value_end.line:
-                    with w.color(Fore.RED):
-                        w.write(s)
+                    w.write(s, color=Fore.RED)
                 else:
                     w.write(s)
                 i += 1
@@ -293,6 +276,7 @@ class DataValidationError:
         if data_files is not None:
             finder = _DataErrorLocFinder(data_files)
 
+        # TODO: self._exc.errors() may have to be sorted
         for k, errors in groupby(self._exc.errors(), lambda err: err["loc"][0]):
             collection_rule = f"--- {str(k)} "
             collection_rule += (88 - len(collection_rule)) * "-"
@@ -300,8 +284,7 @@ class DataValidationError:
 
             w.linebreak()
             for error in errors:
-                with w.color(BOLD):
-                    w.write("Error: " + error["msg"])
+                w.write(f"Error: {error['msg']}", color=BOLD)
 
                 if finder is not None:
                     _write_error_snippet(w, error, finder)
