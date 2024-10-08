@@ -153,12 +153,13 @@ NINJA_PAGINATION_PER_PAGE = 100
 # DATASET_EMDATA_SEGMENTATION_URL_FORMAT = "resources/{dataset}/em-data/segmentation/{{index}}"
 
 
+BASE_DATASET_URL = "resources/{dataset}"
 NEURON_REPRESENTATION_3D_URL_FORMAT = "resources/{{dataset}}/3d/{name}.stl"
 DATASET_NEURON_REPRESENTATION_3D_URL_FORMAT = "resources/{dataset}/3d/{{name}}.stl"
 # DATASET_EMDATA_URL_FORMAT = (
 #     f"resources/sem-adult/catmaid-tiles/{{index}}/{{x}}_{{y}}_{{z}}.jpg"
 # )
-DATASET_EMDATA_URL_FORMAT = f"resources/{{dataset}}/em/{{index}}/{{x}}_{{y}}_{{z}}.jpg"
+DATASET_EMDATA_URL_FORMAT = "resources/{dataset}/em/{{index}}/{{x}}_{{y}}_{{z}}.jpg"
 DATASET_EMDATA_SEGMENTATION_URL_FORMAT = (
-    f"resources/{{dataset}}/segmentations/s{{index}}.json"
+    "resources/{dataset}/segmentations/s{{index}}.json"
 )
