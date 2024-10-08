@@ -70,11 +70,11 @@ export function getNeuronURL(dataset: Dataset, neuronName: string): string {
 }
 
 export function getSegmentationURL(dataset: Dataset, sliceIndex: number): string {
-  return buildUrlFromFormat(buildUrlFromFormat(dataset.emData.segmentation_url, dataset.id), sliceIndex?.toString());
+  return buildUrlFromFormat(dataset.emData.segmentationUrl, sliceIndex?.toString());
 }
 
 export function getEMDataURL(dataset: Dataset, sliceIndex: number): string {
-  return buildUrlFromFormat(buildUrlFromFormat(dataset.emData.resource_url, dataset.id), sliceIndex?.toString());
+  return buildUrlFromFormat(dataset.emData.resourceUrl, sliceIndex?.toString());
 }
 
 export enum Alignment {
