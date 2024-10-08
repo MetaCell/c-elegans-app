@@ -35,7 +35,7 @@ class EMData(BilingualSchema):
 class Dataset(ModelSchema, BilingualSchema):
     id: str
     neuron3D_url: str
-    em_data: EMData
+    em_data: EMData | None
 
     class Meta:
         model = DatasetModel

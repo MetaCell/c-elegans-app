@@ -40,10 +40,14 @@ class DbDataDownloader:
 
     def get_segmentation_metadata(self, dataset_id):
         file = GCS_BUCKET_URL / dataset_id / "segmentations" / "metadata.json"
+        if not file.exists():
+            return {}
         return json.loads(file.read_text())
 
     def get_em_metadata(self, dataset_id):
         file = GCS_BUCKET_URL / dataset_id / "em" / "metadata.json"
+        if not file.exists():
+            return {}
         return json.loads(file.read_text())
 
     def get_metadata_files(self, dataset_id):

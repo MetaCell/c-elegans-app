@@ -98,17 +98,15 @@ class DbDataDownloader:
     def get_segmentation_metadata(self, dataset_id):
         url = f"{GCS_BUCKET_URL}/{dataset_id}/segmentations/metadata.json"
         result = self.session.get(url)
-        assert (
-            result.text and result.status_code == 200
-        ), f"Cannot fetch {url}[{result.status_code}]"
+        if result.status_code != 200 or not result.text:
+            return {}
         return json.loads(result.text)
 
     def get_em_metadata(self, dataset_id):
         url = f"{GCS_BUCKET_URL}/{dataset_id}/em/metadata.json"
         result = self.session.get(url)
-        assert (
-            result.text and result.status_code == 200
-        ), f"Cannot fetch {url}[{result.status_code}]"
+        if result.status_code != 200 or not result.text:
+            return {}
         return json.loads(result.text)
 
     def get_metadata_files(self, dataset_id):

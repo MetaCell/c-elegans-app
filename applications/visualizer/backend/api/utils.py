@@ -29,6 +29,8 @@ def lru_cache_time(seconds, maxsize=None):
 def fetch_dataset_metadata(dataset_id):
     downloader = settings.METADATA_DOWNLOADER()
     em_metadata, segmentation_metadata = downloader.get_metadata_files(dataset_id)
+    if not em_metadata or not segmentation_metadata:
+        return None
 
     return EMData(
         min_zoom=em_metadata["minzoom"],
