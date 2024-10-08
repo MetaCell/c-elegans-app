@@ -169,6 +169,18 @@ The cloud storage of the ingested files will be organized in the following patte
 
 ```console
 .
+├── db-raw-data
+│   ├── annotations
+│   │   ├── complete.annotations.json
+│   │   └── head.annotations.json
+│   ├── connections
+│   │   ├── <dataset_id>.json
+│   │   ...
+│   ├── datasets.json
+│   ├── neurons.json
+│   └── trajectories
+│       ├── <dataset_id>.json
+│       ...
 ├── dataset-1
 │   ├── 3d
 │   │   ├── nervering.stl
@@ -177,6 +189,7 @@ The cloud storage of the ingested files will be organized in the following patte
 │   │   ├── ADEL.stl
 │   │   │   ...
 │   ├── em
+│   │   ├── metadata.json
 │   │   ├── ...
 │   │   ├── 13
 │   │   │   ├── 0_0_5.jpg
@@ -184,18 +197,21 @@ The cloud storage of the ingested files will be organized in the following patte
 │   │   │   ├── 0_1_5.jpg
 │   │   │   ...
 │   │   ├── ...
-│   │   └── metadata.json
+│   │   ...
 │   └── segmentations
+│       ├── metadata.json
 │       ├── s000.json
-│       └── s001.json
+│       ├── s001.json
 │       └── ...
 ├── dataset-2
 ├── dataset-3
 ...
 ```
 
-Each dataset will have its own base directory with the name being the dataset identifier. Inside each dataset directory we will find 3 subdirectories:
+A `db-raw-data` directory containing a copy of the data ingested in the dabase.
+
+Then, each dataset will have its own base directory with the name being the dataset identifier. Inside each dataset directory we will find 3 subdirectories:
 
 - `3d`: containing the 3D models for the neurons with the file name following `<neuron name>.stl`, with the exception of `nervering.stl`.
-- `em`: storing each slice tileset in its own subdirectory and a `metadata.json` file with information required to represent the tiles in the frontend application _(TODO: define `metadata.json` format)_.
-- `segmentations`: stores all the segmentation json files following the namming schema `s<slice>.json`, where `slice` is a positive integer (can contain left padding zeros).
+- `em`: storing each slice tileset in its own subdirectory and a `metadata.json` file with information required to represent the tiles in the frontend application (for an example see: [./tests/fixtures/em-tiles/metadata.json](./tests/fixtures/em-tiles/metadata.json)).
+- `segmentations`: stores all the segmentation json files following the namming schema `s<slice>.json`, where `slice` is a positive integer (can contain left padding zeros). It also contains a metadata file (for an example see: [./tests/fixtures/segmentation/metadata.json](./tests/fixtures/segmentation/metadata.json))

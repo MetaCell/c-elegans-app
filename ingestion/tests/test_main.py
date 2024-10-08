@@ -150,14 +150,23 @@ def test__main_can_help():
     must(["ingest", "--help"])
 
 
-def compare_directories(dir1: Path, dir2: Path):
+def compare_directories(dir1: Path, dir2: Path, excluding=None):
     """
     Compare the contents of `dir1` and `dir2`, considering only the relative paths and file contents.
     Standard libraty filecmp.dircmp can not perform relative path comparison, so even if the contents
     of a directory are the same, the relative path will forcefully assert to false.
     """
-    dir1_files = sorted(p.relative_to(dir1) for p in dir1.rglob("*") if p.is_file())
-    dir2_files = sorted(p.relative_to(dir2) for p in dir2.rglob("*") if p.is_file())
+    excluding_path = excluding or []
+    dir1_files = sorted(
+        p.relative_to(dir1)
+        for p in dir1.rglob("*")
+        if p.is_file() and p.name not in excluding_path
+    )
+    dir2_files = sorted(
+        p.relative_to(dir2)
+        for p in dir2.rglob("*")
+        if p.is_file() and p.name not in excluding_path
+    )
 
     if dir1_files != dir2_files:
         raise Exception(f"{dir1_files} != {dir2_files}")
@@ -200,7 +209,9 @@ def test__main_ingest_valid_data(
             ]
         )
 
-    assert compare_directories(data_dir, celegans_dir / "db-raw-data")
+    assert compare_directories(
+        data_dir, celegans_dir / "db-raw-data", excluding=["summary.txt"]
+    )
 
     out, _ = capsys.readouterr()
     assert _done_message("white_1986_jsh") in out

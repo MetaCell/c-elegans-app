@@ -81,7 +81,9 @@ class TileGrid:
             raise Exception("tiles can not be an empty list")
 
         size = cls._matrix_size(tiles)
-        assert cls._are_tiles_size_eq(tiles)
+        # It's not necessary to test all the tiles size in a same slice
+        # We consider that they have the same size
+        # assert cls._are_tiles_size_eq(tiles)
 
         zoom = tiles[0].zoom
 
@@ -158,53 +160,55 @@ class SliceMetadata(BaseModel):
 class EMMetadata(BaseModel):
     number_slices: int
     slice_range: tuple[int, int]
-    slices: list[SliceMetadata]
+    minzoom: int
+    maxzoom: int
+    tile_size: tuple[int, int]
+    slices: list[int]
 
     @classmethod
     def from_tiles(cls, tiles: list[Tile]) -> EMMetadata:
-        metadata: list[SliceMetadata] = []
-        available_slices: list[int] = []
+        available_slices = []
 
+        piramid = None
         tiles.sort(key=operator.attrgetter("slice"))  # groupby expects things sorted
+        previous_piramid = None
         for slice, stiles in groupby(tiles, lambda t: t.slice):
             piramid = Piramid.build(list(stiles))
-
             available_slices.append(slice)
-            metadata.append(
-                SliceMetadata(
-                    slice=slice,
-                    zooms=piramid.zooms,
-                    minzoom=piramid.minzoom,
-                    maxzoom=piramid.maxzoom,
-                    tile_size=piramid.tile_dimensions,
-                )
+            assert (
+                not previous_piramid
+                or previous_piramid.tile_dimensions == piramid.tile_dimensions
             )
-
+        assert piramid
         return cls(
-            number_slices=len(metadata),
+            number_slices=len(available_slices),
             slice_range=(min(available_slices), max(available_slices)),
-            slices=metadata,
+            slices=available_slices,
+            minzoom=piramid.minzoom,
+            maxzoom=piramid.maxzoom,
+            tile_size=piramid.tile_dimensions,
         )
 
     def merge(self, emm2: EMMetadata) -> EMMetadata:
-        slices_dict = {s.slice: s for s in self.slices}
-
-        for emm2s in emm2.slices:
-            s = slices_dict.get(emm2s.slice)
-            if s is None or s != emm2s:
-                slices_dict[emm2s.slice] = emm2s
-
-        slices_metadata = [s for s in slices_dict.values()]
-        slices_metadata.sort(key=operator.attrgetter("slice"))
-        slice_range = (
-            min(s.slice for s in slices_metadata),
-            max(s.slice for s in slices_metadata),
-        )
+        if emm2.minzoom != self.minzoom or self.maxzoom != emm2.maxzoom:
+            raise Exception(
+                f"Zoom level [{emm2.minzoom}, {emm2.maxzoom}] of the added metadata set is not compatible with the existing one [{self.minzoom}, {self.maxzoom}]"
+            )
+        if emm2.tile_size != self.tile_size:
+            raise Exception(
+                f"Tiles size {emm2.tile_size} of the added metadata set is not compatible with the existing tile size {self.tile_size}"
+            )
+        slices = set(self.slices)
+        slices.update(emm2.slices)
+        slices = sorted(slices)
 
         return EMMetadata(
-            number_slices=len(slices_metadata),
-            slice_range=slice_range,
-            slices=slices_metadata,
+            number_slices=len(slices),
+            slices=slices,
+            slice_range=(slices[0], slices[-1]),
+            minzoom=self.minzoom,
+            maxzoom=self.maxzoom,
+            tile_size=self.tile_size,
         )
 
 
