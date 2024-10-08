@@ -9,7 +9,7 @@ from ingestion.extract import extract_cmd
 from ingestion.ingest import add_add_dataset_flags as add_ingest_add_dataset_flags
 from ingestion.ingest import add_flags as add_ingest_flags
 from ingestion.ingest import ingest_cmd
-from ingestion.logging import setup_logger
+from ingestion.log import setup_logger
 
 logger = logging.getLogger(__name__)
 

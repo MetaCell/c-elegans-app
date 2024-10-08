@@ -92,7 +92,7 @@ def extract_cmd(args: Namespace, *, debug: bool = False):
 if __name__ == "__main__":
     from argparse import ArgumentDefaultsHelpFormatter
 
-    from ingestion.logging import setup_logger
+    from ingestion.log import setup_logger
 
     parser = ArgumentParser(
         prog="extract",

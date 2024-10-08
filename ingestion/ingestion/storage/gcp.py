@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 from typing import Any, Iterable
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from google.cloud.storage import Blob, Bucket
 
 from ingestion.hash import Crc32cCalculator
@@ -18,7 +18,7 @@ class FakeBlob:
 @dataclass
 class FakeBucket:
     name: str
-    lifecycle_rules: list[Any] = []
+    lifecycle_rules: list[Any] = field(default_factory=list)
 
     def get_blob(self, *_): ...
     def blob(self, *_) -> Blob:

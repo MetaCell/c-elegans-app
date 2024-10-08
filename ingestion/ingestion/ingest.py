@@ -327,8 +327,7 @@ def upload_tileset_metadata(
     else:
         logger.info(f"saving EM tiles metadata in {local_metadata_path}...")
 
-    with open(local_metadata_path, "w") as f:
-        f.write(metadata.model_dump_json())
+    local_metadata_path.write_text(metadata.model_dump_json())
 
     rs.upload(local_metadata_path, metadata_blob_name, overwrite=overwrite)
 
