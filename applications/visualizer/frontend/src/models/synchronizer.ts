@@ -1,3 +1,4 @@
+import { immerable } from "immer";
 import type { Neuron } from "../rest";
 import { ViewerSynchronizationPair, ViewerType } from "./models";
 
@@ -11,6 +12,8 @@ const syncViewerDefs: Record<ViewerSynchronizationPair, [ViewerType, ViewerType]
 };
 
 class Synchronizer {
+  [immerable] = true;
+
   active: boolean;
   viewers: [ViewerType, ViewerType];
   readonly pair: ViewerSynchronizationPair;
@@ -96,6 +99,8 @@ class Synchronizer {
 }
 
 export class SynchronizerOrchestrator {
+  [immerable] = true;
+
   contexts: Record<ViewerType, SynchronizerContext>;
   synchronizers: Array<Synchronizer>;
 

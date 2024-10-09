@@ -77,10 +77,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
   };
 
   const updateWorkspace = (workspace: Workspace) => {
-    setWorkspaces((prev) => ({
-      ...prev,
-      [workspace.id]: workspace,
-    }));
+    setWorkspaces({ ...workspaces, [workspace.id]: workspace });
   };
 
   const setAllWorkspaces = (workspaces: Record<string, Workspace>) => {
