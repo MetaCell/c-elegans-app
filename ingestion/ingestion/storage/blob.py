@@ -7,7 +7,7 @@ from ingestion.em_metadata import Tile
 from ingestion.storage.filesystem import SEGMENTATION_REGEX
 
 
-def fs_data_blob_name(dataset_id: str, p: Path, base_dir: Path) -> str:
+def fs_data_blob_name(p: Path, base_dir: Path) -> str:
     return f"db-raw-data/{p.relative_to(base_dir)}"
 
 

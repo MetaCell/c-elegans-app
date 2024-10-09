@@ -18,6 +18,14 @@ def translate(translation_map, data):
     return data
 
 
+def clear_db(_, print, print_success):
+    print("Cleaning all the entries from the tables...")
+    for table in (Synapse, Connection, Annotation, Neuron, Dataset):
+        print(f"  . removing entries from {table.__name__}...", ending="")
+        table.objects.all().delete()
+        print_success("\t[OK]")
+
+
 def populate_datasets(path, print, print_success):
     print("Populate Dataset table...", ending="")
     raw_datasets = path / "datasets.json"
@@ -30,7 +38,7 @@ def populate_datasets(path, print, print_success):
         ],
         ignore_conflicts=True,
     )
-    print_success("\t[OK]")
+    print_success("\t\t[OK]")
 
 
 def populate_neurons(path, print, print_success):
@@ -53,7 +61,7 @@ def populate_neurons(path, print, print_success):
         neurons.append(Neuron(**data))
 
     Neuron.objects.bulk_create(neurons, ignore_conflicts=True)
-    print_success("\t[OK]")
+    print_success("\t\t[OK]")
 
 
 def combine_annotations(annotation_path: Path, print):
@@ -121,7 +129,7 @@ def populate_annotations(path, print, print_success):
     Annotation.objects.bulk_create(
         [Annotation(**data) for data in annotations], ignore_conflicts=True
     )
-    print_success("\t\t[OK]")
+    print_success("\t\t\t[OK]")
 
 
 def combine_connections(connections_path: Path, print):
@@ -238,7 +246,7 @@ def populate_connections(path, print, print_success):
         [Connection(**connection) for connection in connections.values()],
         ignore_conflicts=True,
     )
-    print_success("\t\t[OK]")
+    print_success("\t\t\t[OK]")
 
 
 def populate_synapses(_, print, print_success):
@@ -251,10 +259,11 @@ def populate_synapses(_, print, print_success):
         synapse_objects.append(Synapse(**synapse))
 
     Synapse.objects.bulk_create(synapse_objects, ignore_conflicts=True)
-    print_success("\t\t[OK]")
+    print_success("\t\t\t[OK]")
 
 
 populate_functions = [
+    clear_db,
     populate_datasets,
     populate_neurons,
     populate_annotations,

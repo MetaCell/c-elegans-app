@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import sys
+import tempfile
 from argparse import ArgumentParser, Namespace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -166,16 +167,20 @@ def validate_and_upload_data(
 
     logger.info(f"Uploading raw data...")
 
-    paths: list[Path] = [data_files.neurons, data_files.datasets]
-    paths.extend(conn for conn in data_files.connections.values())
-    paths.extend(ann for ann in data_files.annotations.values())
+    paths: list[Path] = list(data_files.all_paths())
 
     pbar = tqdm(paths, disable=rs.dry_run)
     for p in pbar:
         pbar.set_description(str(p))
-        rs.upload(p, fs_data_blob_name(dataset_id, p, dir), overwrite=overwrite)
+        rs.upload(p, fs_data_blob_name(p, dir), overwrite=overwrite)
 
-    logger.info(f"Done uploading raw data!")
+    logger.info("Done uploading raw data!")
+
+    logger.info("Building the summary.txt file...")
+    summary_file = dir / "summary.txt"
+    summary_file.write_text("\n".join(fs_data_blob_name(file, dir) for file in paths))
+    rs.upload(summary_file, fs_data_blob_name(summary_file, dir), overwrite=overwrite)
+    logger.info("Done uploading summary.txt")
 
 
 def prune_bucket(bucket: storage.Bucket | FakeBucket):

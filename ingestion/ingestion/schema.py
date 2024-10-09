@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
-from typing import Generic, Literal, TypeVar
+from itertools import chain
+from typing import Generator, Generic, Literal, TypeVar
 
 from pydantic import BaseModel, Field, RootModel, model_validator
 
@@ -122,3 +123,9 @@ class DataContainer(Generic[T]):
     datasets: T
     connections: dict[str, T] = field(default_factory=dict)  # dataset_name: T
     annotations: dict[DataAnnotationEntry, T] = field(default_factory=dict)
+
+    def all_paths(self) -> Generator[T]:
+        yield self.neurons
+        yield self.datasets
+        yield from self.connections.values()
+        yield from self.annotations.values()
