@@ -1,10 +1,11 @@
 import { AppBar, Button, CircularProgress, CssBaseline, IconButton, Toolbar } from "@mui/material";
+import { PlayArrowOutlined } from "@mui/icons-material";
 import { type Theme, ThemeProvider } from "@mui/material/styles";
 import { Suspense } from "react";
 import "@metacell/geppetto-meta-ui/flex-layout/style/light.scss";
 import { Box } from "@mui/system";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
-import { DownloadIcon, LinkIcon } from "../../icons";
+import { LinkIcon } from "../../icons";
 import theme from "../../theme";
 import { vars } from "../../theme/variables.ts";
 const { gray100 } = vars;
@@ -12,7 +13,7 @@ const { gray100 } = vars;
 const drawerWidth = "22.31299rem";
 const drawerHeight = "3.5rem";
 function CompareWrapper({ children, sidebarOpen }) {
-  const { serializeGlobalContext } = useGlobalContext();
+  const { serializeGlobalContext, toggleGlobalRotation } = useGlobalContext();
 
   return (
     <>
@@ -71,8 +72,8 @@ function CompareWrapper({ children, sidebarOpen }) {
                   <IconButton>
                     <LinkIcon />
                   </IconButton>
-                  <IconButton>
-                    <DownloadIcon />
+                  <IconButton onClick={toggleGlobalRotation}>
+                    <PlayArrowOutlined />
                   </IconButton>
                 </Box>
                 <Box display="flex" gap="0.625rem">

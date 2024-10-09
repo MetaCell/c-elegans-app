@@ -3,12 +3,15 @@ import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import { Box, Divider, IconButton, Popover, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { vars } from "../../../theme/variables.ts";
 import CustomFormControlLabel from "./CustomFormControlLabel.tsx";
+import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
+
 const { gray500 } = vars;
 
 function SceneControls({ cameraControlRef, isWireframe, setIsWireframe }) {
+  const { isGlobalRotating } = useGlobalContext();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const rotateAnimationRef = useRef<number | null>(null);
   const [isRotating, setIsRotating] = useState(false);
@@ -23,7 +26,12 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe }) {
     setAnchorEl(null);
   };
 
-  const handleRotation = () => {
+  const handleRotationToggle = () => {
+    setIsRotating(!isRotating);
+  };
+
+  // useEffect to handle rotation when isRotating changes
+  useEffect(() => {
     if (!cameraControlRef.current) return;
 
     const rotate = () => {
@@ -32,16 +40,25 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe }) {
     };
 
     if (isRotating) {
+      rotate(); // Start rotation
+    } else if (rotateAnimationRef.current) {
+      // Stop rotation when isRotating is false
+      cancelAnimationFrame(rotateAnimationRef.current);
+      rotateAnimationRef.current = null;
+    }
+
+    // Cleanup function to stop animation if the component unmounts or rotation stops
+    return () => {
       if (rotateAnimationRef.current) {
         cancelAnimationFrame(rotateAnimationRef.current);
         rotateAnimationRef.current = null;
       }
-    } else {
-      rotate();
-    }
+    };
+  }, [isRotating, cameraControlRef]);
 
-    setIsRotating(!isRotating);
-  };
+  useEffect(() => {
+    setIsRotating(isGlobalRotating);
+  }, [isGlobalRotating]);
 
   return (
     <Box
@@ -139,7 +156,7 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe }) {
       </Tooltip>
       <Divider />
       <Tooltip title="Play 3D viewer" placement="right-start">
-        <IconButton onClick={handleRotation}>
+        <IconButton onClick={handleRotationToggle}>
           <PlayArrowOutlined />
         </IconButton>
       </Tooltip>
