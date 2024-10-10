@@ -13,6 +13,7 @@ interface CustomListItemProps {
     checked: boolean;
     helpText?: string;
     description?: string;
+    color?: string;
   };
   showTooltip?: boolean;
   listType: string;
@@ -20,6 +21,7 @@ interface CustomListItemProps {
   onSwitchChange?: (id: string, checked: boolean) => void;
   onDelete?: (id: string) => void;
   deleteTooltipTitle?: string;
+  onColorChange?: (id: string, color: string) => void;
 }
 const CustomListItem = ({
   data,
@@ -29,10 +31,11 @@ const CustomListItem = ({
   onSwitchChange,
   onDelete,
   deleteTooltipTitle,
+  onColorChange,
 }: CustomListItemProps) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [open, setOpen] = useState(false);
-  const [selectedColor, setSelectedColor] = useState("#9FEE9A");
+  const [selectedColor, setSelectedColor] = useState(data.color);
   const [itemHovered, setItemHovered] = useState(false);
   const isNeurons = listType === "neurons";
 
@@ -56,6 +59,7 @@ const CustomListItem = ({
 
   const handleColorChange = (color) => {
     setSelectedColor(color.hex);
+    onColorChange(data.id, color);
   };
 
   const handleOnMouseEnter = () => {

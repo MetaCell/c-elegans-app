@@ -260,4 +260,18 @@ export class Workspace {
   getVisibleNeuronsInThreeD(): string[] {
     return Array.from(this.activeNeurons).filter((neuronId) => this.visibilities[neuronId]?.[ViewerType.ThreeD]?.visibility === Visibility.Visible);
   }
+
+  changeNeuronColorForViewers(neuronId: string, color: string): void {
+    const viewers: ViewerType[] = [ViewerType.ThreeD, ViewerType.EM];
+
+    const updated = produce(this, (draft: Workspace) => {
+      viewers.forEach((viewerType) => {
+        if (viewerType in draft.visibilities[neuronId]) {
+          draft.visibilities[neuronId][viewerType].color = color;
+        }
+      });
+    });
+
+    this.updateContext(updated);
+  }
 }

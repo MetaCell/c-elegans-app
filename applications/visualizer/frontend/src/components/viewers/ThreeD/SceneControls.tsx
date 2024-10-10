@@ -121,7 +121,7 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe }) {
         </Box>
       </Popover>
       <Divider />
-      <Tooltip title="Switch theme" placement="right-start">
+      <Tooltip title="Toggle Wireframe" placement="right-start">
         <IconButton onClick={() => setIsWireframe(!isWireframe)}>
           <TonalityOutlined />
         </IconButton>
