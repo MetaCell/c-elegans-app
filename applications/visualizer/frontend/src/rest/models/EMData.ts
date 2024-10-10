@@ -3,10 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 export type EMData = {
-    min_zoom: number;
-    max_zoom: number;
-    nb_slices: number;
-    resource_url: string;
-    segmentation_url: string;
+    minZoom: number;
+    maxZoom: number;
+    nbSlices: number;
+    tileSize: any[];
+    sliceRange: any[];
+    resourceUrl: string;
+    segmentationUrl: string;
+    segmentationSize: any[];
 };
 

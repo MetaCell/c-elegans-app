@@ -47,7 +47,9 @@ components:
           title: Description
           type: string
         emData:
-          $ref: '#/components/schemas/EMData'
+          anyOf:
+          - $ref: '#/components/schemas/EMData'
+          - type: 'null'
         id:
           title: Id
           type: string
@@ -82,27 +84,54 @@ components:
       type: object
     EMData:
       properties:
-        max_zoom:
-          title: Max Zoom
+        maxZoom:
+          title: Maxzoom
           type: integer
-        min_zoom:
-          title: Min Zoom
+        minZoom:
+          title: Minzoom
           type: integer
-        nb_slices:
-          title: Nb Slices
+        nbSlices:
+          title: Nbslices
           type: integer
-        resource_url:
-          title: Resource Url
+        resourceUrl:
+          title: Resourceurl
           type: string
-        segmentation_url:
-          title: Segmentation Url
+        segmentationSize:
+          maxItems: 2
+          minItems: 2
+          prefixItems:
+          - type: integer
+          - type: integer
+          title: Segmentationsize
+          type: array
+        segmentationUrl:
+          title: Segmentationurl
           type: string
+        sliceRange:
+          maxItems: 2
+          minItems: 2
+          prefixItems:
+          - type: integer
+          - type: integer
+          title: Slicerange
+          type: array
+        tileSize:
+          maxItems: 2
+          minItems: 2
+          prefixItems:
+          - type: integer
+          - type: integer
+          title: Tilesize
+          type: array
       required:
-      - min_zoom
-      - max_zoom
-      - nb_slices
-      - resource_url
-      - segmentation_url
+      - minZoom
+      - maxZoom
+      - nbSlices
+      - tileSize
+      - sliceRange
+      - resourceUrl
+      - segmentationUrl
+      - segmentationSize
       title: EMData
       type: object
     ErrorMessage:

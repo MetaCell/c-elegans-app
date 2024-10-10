@@ -1,5 +1,7 @@
+import json
 from pathlib import Path
 from functools import lru_cache
+import niquests
 from ruamel.yaml import YAML
 from niquests.sessions import Session
 from .common import *
@@ -72,6 +74,7 @@ class DbDataDownloader:
             raise Exception(
                 f"Error while pulling 'summary.txt' from the bucket: {summary_content}"
             )
+        assert summary_content.text, "The summary.txt looks empty"
         return summary_content.text
 
     def pull_files(self):
@@ -92,5 +95,26 @@ class DbDataDownloader:
 
         return BASE_DIR / DB_RAW_DATA_FOLDER
 
+    def get_segmentation_metadata(self, dataset_id):
+        url = f"{GCS_BUCKET_URL}/{dataset_id}/segmentations/metadata.json"
+        result = self.session.get(url)
+        if result.status_code != 200 or not result.text:
+            return {}
+        return json.loads(result.text)
+
+    def get_em_metadata(self, dataset_id):
+        url = f"{GCS_BUCKET_URL}/{dataset_id}/em/metadata.json"
+        result = self.session.get(url)
+        if result.status_code != 200 or not result.text:
+            return {}
+        return json.loads(result.text)
+
+    def get_metadata_files(self, dataset_id):
+        return (
+            self.get_em_metadata(dataset_id),
+            self.get_segmentation_metadata(dataset_id),
+        )
+
 
 RAW_DB_DATA_DOWNLOADER = DbDataDownloader
+METADATA_DOWNLOADER = DbDataDownloader

@@ -17,37 +17,12 @@ import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
 import Text from "ol/style/Text";
 import { TileGrid } from "ol/tilegrid";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { SlidingRing } from "../../../helpers/slidingRing";
 import { getEMDataURL, getSegmentationURL } from "../../../models/models.ts";
 import type { Dataset } from "../../../rest/index.ts";
 import SceneControls from "./SceneControls.tsx";
-
-// type EMStackViewerParameters = {
-//   dataset: Dataset;
-// };
-
-// const width = 42496 / 2;
-// const height = 22528 / 2;
-const width = 19968;
-const height = 11008;
-
-// const extent = [0, -height, width, 0];
-const extent = [0, 0, width, height];
-
-const projection = new Projection({
-  code: "pixel",
-  units: "pixels",
-  extent: extent,
-  metersPerUnit: 2e-9, // 2 nm voxels
-});
-
-const tilegrid = new TileGrid({
-  extent: extent,
-  tileSize: 512,
-  resolutions: [0.5, 1, 2, 4, 8, 16, 32].reverse(),
-});
 
 const getFeatureStyle = (feature: FeatureLike) => {
   const opacity = 0.2;
@@ -91,11 +66,10 @@ const setHighlightStyle = (feature: Feature) => {
   feature.setStyle(style);
 };
 
-const newEMLayer = (dataset: Dataset, slice: number): TileLayer<XYZ> => {
+const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, projection: Projection): TileLayer<XYZ> => {
   return new TileLayer({
     source: new XYZ({
       tileGrid: tilegrid,
-      // url: `emdata/${slice}/{x}_{y}_{z}.jpg`,
       url: getEMDataURL(dataset, slice),
       projection: projection,
       crossOrigin: "anonymous",
@@ -107,7 +81,6 @@ const newEMLayer = (dataset: Dataset, slice: number): TileLayer<XYZ> => {
 const newSegLayer = (dataset: Dataset, slice: number) => {
   return new VectorLayer({
     source: new VectorSource({
-      // url: `segdata/${slice}`,
       url: getSegmentationURL(dataset, slice),
       format: new GeoJSON(),
     }),
@@ -116,23 +89,62 @@ const newSegLayer = (dataset: Dataset, slice: number) => {
   });
 };
 
+const scale = new ScaleLine({
+  units: "metric",
+});
+
+const interactions = defaultInteractions({
+  mouseWheelZoom: false,
+}).extend([
+  new MouseWheelZoom({
+    condition: shiftKeyOnly,
+  }),
+]);
+
 // const EMStackViewer = ({ dataset }: EMStackViewerParameters) => {
 const EMStackViewer = () => {
   const currentWorkspace = useGlobalContext().getCurrentWorkspace();
 
   // We take the first active dataset at the moment (will change later)
   const firstActiveDataset = Object.values(currentWorkspace.activeDatasets)?.[0];
-  const minSlice = 0;
-  const maxSlice = 714;
-  const startSlice = 537;
+  const [minSlice, maxSlice] = firstActiveDataset.emData.sliceRange;
+  const startSlice = Math.floor((maxSlice + minSlice) / 2);
   const ringSize = 11;
 
   const mapRef = useRef<OLMap | null>(null);
   const currSegLayer = useRef<VectorLayer<Feature> | null>(null);
   const clickedFeature = useRef<Feature | null>(null);
 
-  let ringEM: SlidingRing<TileLayer<XYZ>>;
-  let ringSeg: SlidingRing<VectorLayer<Feature>>;
+  const ringEM = useRef<SlidingRing<TileLayer<XYZ>>>();
+  const ringSeg = useRef<SlidingRing<VectorLayer<Feature>>>();
+
+  const startZoom = useMemo(() => {
+    const emData = firstActiveDataset.emData;
+    if (!emData) {
+      return undefined;
+    }
+    return emData.minZoom;
+  }, [firstActiveDataset.emData]);
+
+  const extent = useMemo(() => [0, 0, ...firstActiveDataset.emData.segmentationSize], [firstActiveDataset.emData.segmentationSize]);
+
+  const projection = useMemo(() => {
+    return new Projection({
+      code: "pixel",
+      units: "pixels",
+      extent: extent,
+      metersPerUnit: 2e-9, // 2 nm voxels
+    });
+  }, [extent]);
+
+  const tilegrid = useMemo(() => {
+    return new TileGrid({
+      minZoom: 1, // tiles for zoom 0 not available in the dataset
+      extent: extent,
+      tileSize: firstActiveDataset.emData.tileSize[0],
+      resolutions: [0.5, 1, 2, 4, 8, 16, 32].reverse(),
+    });
+  }, [extent, firstActiveDataset.emData.tileSize]);
 
   // const debugLayer = new TileLayer({
   // 	source: new TileDebug({
@@ -140,18 +152,6 @@ const EMStackViewer = () => {
   // 		tileGrid: tilegrid,
   // 	}),
   // });
-
-  const scale = new ScaleLine({
-    units: "metric",
-  });
-
-  const interactions = defaultInteractions({
-    mouseWheelZoom: false,
-  }).extend([
-    new MouseWheelZoom({
-      condition: shiftKeyOnly,
-    }),
-  ]);
 
   useEffect(() => {
     if (mapRef.current) {
@@ -171,16 +171,12 @@ const EMStackViewer = () => {
       interactions: interactions,
     });
 
-    // set map zoom to the minimum zoom possible
-    const minZoomAvailable = tilegrid.getMinZoom();
-    map.getView().setZoom(minZoomAvailable);
-
-    ringEM = new SlidingRing({
+    ringEM.current = new SlidingRing({
       cacheSize: ringSize,
       startAt: startSlice,
       extent: [minSlice, maxSlice],
       onPush: (slice) => {
-        const layer = newEMLayer(firstActiveDataset, slice);
+        const layer = newEMLayer(firstActiveDataset, slice, tilegrid, projection);
         layer.setOpacity(0);
         map.addLayer(layer);
         return layer;
@@ -196,7 +192,7 @@ const EMStackViewer = () => {
       },
     });
 
-    ringSeg = new SlidingRing({
+    ringSeg.current = new SlidingRing({
       cacheSize: ringSize,
       startAt: startSlice,
       extent: [minSlice, maxSlice],
@@ -245,13 +241,17 @@ const EMStackViewer = () => {
       const scrollUp = e.deltaY < 0;
 
       if (scrollUp) {
-        ringEM.next();
-        ringSeg.next();
+        ringEM.current.next();
+        ringSeg.current.next();
       } else {
-        ringEM.prev();
-        ringSeg.prev();
+        ringEM.current.prev();
+        ringSeg.current.prev();
       }
     });
+
+    // set map zoom to the minimum zoom possible
+    // const minZoomAvailable = tilegrid.getMinZoom();
+    map.getView().setZoom(startZoom);
 
     mapRef.current = map;
 
@@ -274,8 +274,8 @@ const EMStackViewer = () => {
 
   const onResetView = () => {
     // reset sliding window
-    ringEM.goto(startSlice);
-    ringSeg.goto(startSlice);
+    ringEM.current.goto(startSlice);
+    ringSeg.current.goto(startSlice);
 
     if (!mapRef.current) return;
     const view = mapRef.current.getView();
@@ -283,7 +283,7 @@ const EMStackViewer = () => {
     const center = getCenter(extent);
     view.setCenter(center);
 
-    const minZoomAvailable = tilegrid.getMinZoom();
+    const minZoomAvailable = view.getMinZoom();
     view.setZoom(minZoomAvailable);
   };
 
