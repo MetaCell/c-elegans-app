@@ -33,6 +33,7 @@ export interface GlobalContextType {
   removeWorkspace: (workspaceId: string) => void;
   setCurrentWorkspace: (workspaceId: string) => void;
   getCurrentWorkspace: () => Workspace;
+  getWorkspaceById: (workspaceId: string) => Workspace;
   setSelectedWorkspacesIds: (workspaceId: Set<string>) => void;
   datasets: Record<string, Dataset>;
   setAllWorkspaces: (workspaces: Record<string, Workspace>) => void;
@@ -40,6 +41,8 @@ export interface GlobalContextType {
   serializeGlobalContext: () => string;
   restoreGlobalContext: (context: SerializedGlobalContext) => void;
   restoreGlobalContextFromBase64: (base64Context: string) => void;
+  isGlobalRotating: boolean;
+  toggleGlobalRotation: () => void;
 }
 
 interface GlobalContextProviderProps {
@@ -56,6 +59,8 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
   const [datasets, setDatasets] = useState<Record<string, Dataset>>({});
   const [openErrorAlert, setOpenErrorAlert] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isGlobalRotating, setIsGlobalRotating] = useState(false);
+
   const createWorkspace = (id: string, name: string, activeDatasetKeys: Set<string>, activeNeurons: Set<string>) => {
     // Convert the activeDatasetKeys into a Record<string, Dataset>
     const activeDatasets: Record<string, Dataset> = {};
@@ -72,10 +77,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
   };
 
   const updateWorkspace = (workspace: Workspace) => {
-    setWorkspaces((prev) => ({
-      ...prev,
-      [workspace.id]: workspace,
-    }));
+    setWorkspaces({ ...workspaces, [workspace.id]: workspace });
   };
 
   const setAllWorkspaces = (workspaces: Record<string, Workspace>) => {
@@ -94,6 +96,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
 
   const getCurrentWorkspace = () => {
     return workspaces?.[currentWorkspaceId];
+  };
+
+  const getWorkspaceById = (workspaceId: string) => {
+    return workspaces?.[workspaceId];
   };
 
   const handleErrors = (error: Error) => {
@@ -175,10 +181,15 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     restoreGlobalContext(ctx);
   };
 
+  const toggleGlobalRotation = () => {
+    setIsGlobalRotating((prev) => !prev);
+  };
+
   const getGlobalContext = () => ({
     workspaces,
     currentWorkspaceId,
     getCurrentWorkspace,
+    getWorkspaceById,
     createWorkspace,
     updateWorkspace,
     removeWorkspace,
@@ -193,6 +204,8 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     serializeGlobalContext,
     restoreGlobalContext,
     restoreGlobalContextFromBase64,
+    toggleGlobalRotation,
+    isGlobalRotating,
   });
 
   useEffect(() => {

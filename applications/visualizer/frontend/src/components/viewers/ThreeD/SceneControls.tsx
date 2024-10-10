@@ -12,16 +12,19 @@ import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import { Box, Divider, IconButton, Popover, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
 import { DARK_SCENE_BACKGROUND, LIGHT_SCENE_BACKGROUND } from "../../../settings/threeDSettings.ts";
 import { vars } from "../../../theme/variables.ts";
 import CustomFormControlLabel from "./CustomFormControlLabel.tsx";
 import { Recorder } from "./Recorder.ts";
 
+import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
+
 const { gray500 } = vars;
 
 function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorderRef, handleScreenshot, sceneColor, setSceneColor }) {
+  const { isGlobalRotating } = useGlobalContext();
   const workspace = useSelectedWorkspace();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const rotateAnimationRef = useRef<number | null>(null);
@@ -48,7 +51,12 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorder
     setAnchorEl(null);
   };
 
-  const handleRotation = () => {
+  const handleRotationToggle = () => {
+    setIsRotating(!isRotating);
+  };
+
+  // useEffect to handle rotation when isRotating changes
+  useEffect(() => {
     if (!cameraControlRef.current) return;
 
     const rotate = () => {
@@ -57,16 +65,26 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorder
     };
 
     if (isRotating) {
+      rotate(); // Start rotation
+    } else if (rotateAnimationRef.current) {
+      // Stop rotation when isRotating is false
+      cancelAnimationFrame(rotateAnimationRef.current);
+      rotateAnimationRef.current = null;
+    }
+
+    // Cleanup function to stop animation if the component unmounts or rotation stops
+    return () => {
       if (rotateAnimationRef.current) {
         cancelAnimationFrame(rotateAnimationRef.current);
         rotateAnimationRef.current = null;
       }
-    } else {
-      rotate();
-    }
+    };
+  }, [isRotating, cameraControlRef]);
 
-    setIsRotating(!isRotating);
-  };
+  useEffect(() => {
+    setIsRotating(isGlobalRotating);
+  }, [isGlobalRotating]);
+
   const startRecording = () => {
     if (recorderRef.current === null) {
       const canvas = document.getElementsByTagName("canvas")[0];
@@ -168,7 +186,7 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorder
         </Box>
       </Popover>
       <Divider />
-      <Tooltip title="Switch theme" placement="right-start">
+      <Tooltip title="Toggle Wireframe" placement="right-start">
         <IconButton onClick={() => setIsWireframe(!isWireframe)}>
           <TonalityOutlined />
         </IconButton>
@@ -206,7 +224,7 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorder
       </Tooltip>
       <Divider />
       <Tooltip title="Play 3D viewer" placement="right-start">
-        <IconButton onClick={handleRotation}>
+        <IconButton onClick={handleRotationToggle}>
           <PlayArrowOutlined />
         </IconButton>
       </Tooltip>

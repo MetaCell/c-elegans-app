@@ -24,6 +24,7 @@ export interface NeuronGroup {
   name: string;
   color: string;
   neurons: Set<string>;
+  visible: boolean;
 }
 
 export interface GraphViewerData {
@@ -69,11 +70,11 @@ export function getNeuronURL(dataset: Dataset, neuronName: string): string {
 }
 
 export function getSegmentationURL(dataset: Dataset, sliceIndex: number): string {
-  return buildUrlFromFormat(dataset.emData.segmentation_url, sliceIndex?.toString());
+  return buildUrlFromFormat(buildUrlFromFormat(dataset.emData.segmentation_url, dataset.id), sliceIndex?.toString());
 }
 
 export function getEMDataURL(dataset: Dataset, sliceIndex: number): string {
-  return buildUrlFromFormat(dataset.emData.resource_url, sliceIndex?.toString());
+  return buildUrlFromFormat(buildUrlFromFormat(dataset.emData.resource_url, dataset.id), sliceIndex?.toString());
 }
 
 export enum Alignment {

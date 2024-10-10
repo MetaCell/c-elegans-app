@@ -3,19 +3,26 @@ import { Box, IconButton, Stack, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
-import { type ViewerData, Visibility } from "../../models/models.ts";
+import { type ViewerData, ViewerType, Visibility } from "../../models/models.ts";
 import type { Neuron } from "../../rest";
 import { vars } from "../../theme/variables.ts";
 import CustomEntitiesDropdown from "./CustomEntitiesDropdown.tsx";
 import CustomListItem from "./CustomListItem.tsx";
 
 const { gray900, gray500 } = vars;
-const mapNeuronsToListItem = (neuron: string, visibility: ViewerData) => ({
+const mapToListItem = (neuron: string, visibility: ViewerData) => ({
   id: neuron,
   label: neuron,
   checked: Object.values(visibility).every((e) => e === undefined || e.visibility === Visibility.Visible),
 });
-const mapNeuronsAvailableNeuronsToOptions = (neuron: Neuron) => ({
+const mapNeuronsToListItem = (neuron: string, visibility: ViewerData) => ({
+  id: neuron,
+  label: neuron,
+  checked: Object.values(visibility).every((e) => e === undefined || e.visibility === Visibility.Visible),
+  color: visibility[ViewerType.ThreeD]?.color || visibility[ViewerType.EM]?.color || "#000000",
+});
+
+const neuronToOption = (neuron: Neuron) => ({
   id: neuron.name,
   label: neuron.name,
   content: [],
@@ -58,9 +65,12 @@ const Neurons = ({ children }) => {
     );
     setNeurons(filteredNeurons);
   };
+  const handleColorChange = (neuronId, color) => {
+    currentWorkspace.changeNeuronColorForViewers(neuronId, color.hex);
+  };
 
   const autoCompleteOptions = Object.values(neurons)
-    .map((neuron: Neuron) => mapNeuronsAvailableNeuronsToOptions(neuron))
+    .map((neuron: Neuron) => neuronToOption(neuron))
     .sort((a, b) => a.label.localeCompare(b.label));
 
   return (
@@ -122,6 +132,7 @@ const Neurons = ({ children }) => {
               onSwitchChange={handleSwitchChange}
               onDelete={handleDeleteNeuron}
               deleteTooltipTitle="Remove neuron from the workspace"
+              onColorChange={handleColorChange}
             />
           ))}
           <Box display="flex" alignItems="center" justifyContent="space-between" padding=".25rem .5rem">
@@ -142,13 +153,14 @@ const Neurons = ({ children }) => {
           {Array.from(Object.keys(groups)).map((groupId) => (
             <CustomListItem
               key={groupId}
-              data={mapNeuronsToListItem(groupId, currentWorkspace.visibilities[groupId])}
+              data={mapToListItem(groupId, currentWorkspace.visibilities[groupId])}
               showTooltip={false}
               showExtraActions={true}
               listType="groups"
-              onSwitchChange={() => console.log("switch")}
+              onSwitchChange={handleSwitchChange}
               onDelete={() => console.log("delete")}
               deleteTooltipTitle="Remove group from the workspace"
+              onColorChange={handleColorChange}
             />
           ))}
         </Stack>

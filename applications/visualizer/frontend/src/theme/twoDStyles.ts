@@ -33,11 +33,11 @@ const GROUP_NODE_STYLE = {
   padding: "7px",
   "text-wrap": "wrap",
   "text-valign": "center",
-  "text-align": "center",
+  "text-halign": "center",
   color: "black",
   "border-width": 1,
   "border-color": "black",
-  "font-weight": "semibold",
+  "font-weight": "normal",
   "background-image": "none",
   "pie-size": "75%",
   "border-opacity": 1,
@@ -60,7 +60,7 @@ const EDGE_STYLE = [
       "arrow-scale": 0.6,
       "source-distance-from-node": 1,
       "target-distance-from-node": 1,
-      width: "data(width)",
+      width: (node: any) => node.data("width"),
     },
   },
   {
@@ -76,7 +76,7 @@ const EDGE_STYLE = [
 const CHEMICAL_STYLE = [
   {
     selector: ".chemical",
-    style: { "line-color": "#63625F", width: "data(width)" },
+    style: { "line-color": "#63625F", width: (node: any) => node.data("width") },
   },
   {
     selector: "edge.chemical.parallel",
@@ -93,7 +93,7 @@ const ELECTRICAL_STYLE = [
     selector: ".electrical",
     style: {
       "line-color": "#63625F",
-      width: "data(width)",
+      width: (node: any) => node.data("width"),
       "curve-style": "segments",
       "target-arrow-color": "#666666",
       "source-arrow-color": "#666666",
@@ -146,11 +146,9 @@ const OPEN_GROUP_STYLE = {
   "font-size": "10px",
   "background-opacity": 0.7,
   "text-wrap": "wrap",
-  "text-align": "center",
   color: "black",
   "border-width": 3,
-  "font-weight": "semibold",
-  "text-border-radius": "8px",
+  "font-weight": "bold",
 };
 
 const FADED_STYLE = [
@@ -174,26 +172,26 @@ const EDGE_LABEL_STYLES = [
     selector: "edge.hover, edge.showEdgeLabel",
     style: {
       label: "data(label)",
-      "font-size": "8px",
+      "font-size": "12px",
       "font-weight": "bold",
       "text-background-opacity": 0,
       "text-background-padding": "3px",
       "z-index": 10,
-      "text-border-radius": "8px",
       "z-compound-depth": "top",
       shape: "roundrectangle",
+      "text-outline-width": 0.8,
+      "text-outline-color": "rgb(244,244,244)",
     },
   },
   {
     selector: "edge.focus",
     style: {
       label: "data(longLabel)",
-      "font-size": "4px",
+      "font-size": "8px",
       "text-wrap": "wrap",
       "text-background-opacity": 0,
       "text-background-padding": "3px",
       "z-index": 10,
-      "text-border-radius": "8px",
     },
   },
 ];
@@ -246,7 +244,6 @@ const NODE_STYLE = [
     css: {
       "font-size": 8,
       shape: "roundrectangle",
-      width: "label",
       height: "10px",
       padding: "8px",
       "z-index": 10,
@@ -267,7 +264,7 @@ const ANNOTATION_STYLES = Object.entries(annotationLegend).map(([, { id, color }
   style: {
     "line-color": color,
     "target-arrow-color": color,
-    "sources-arrow-color": color,
+    "source-arrow-color": color,
   },
 }));
 
