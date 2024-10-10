@@ -1,5 +1,5 @@
-import { AppBar, Button, CircularProgress, CssBaseline, IconButton, Toolbar } from "@mui/material";
 import { PlayArrowOutlined } from "@mui/icons-material";
+import { AppBar, Button, CircularProgress, CssBaseline, IconButton, Toolbar } from "@mui/material";
 import { type Theme, ThemeProvider } from "@mui/material/styles";
 import { Suspense } from "react";
 import "@metacell/geppetto-meta-ui/flex-layout/style/light.scss";

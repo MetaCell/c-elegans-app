@@ -1,20 +1,45 @@
-import { GetAppOutlined, HomeOutlined, PlayArrowOutlined, RadioButtonCheckedOutlined, SettingsOutlined, TonalityOutlined } from "@mui/icons-material";
+import {
+  DarkModeOutlined,
+  GetAppOutlined,
+  HomeOutlined,
+  PlayArrowOutlined,
+  RadioButtonCheckedOutlined,
+  SettingsOutlined,
+  TonalityOutlined,
+  WbSunnyOutlined,
+} from "@mui/icons-material";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import { Box, Divider, IconButton, Popover, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { useEffect, useRef, useState } from "react";
+import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
+import { DARK_SCENE_BACKGROUND, LIGHT_SCENE_BACKGROUND } from "../../../settings/threeDSettings.ts";
 import { vars } from "../../../theme/variables.ts";
 import CustomFormControlLabel from "./CustomFormControlLabel.tsx";
+import { Recorder } from "./Recorder.ts";
+
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 
 const { gray500 } = vars;
 
-function SceneControls({ cameraControlRef, isWireframe, setIsWireframe }) {
+function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorderRef, handleScreenshot, sceneColor, setSceneColor }) {
   const { isGlobalRotating } = useGlobalContext();
+  const workspace = useSelectedWorkspace();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const rotateAnimationRef = useRef<number | null>(null);
   const [isRotating, setIsRotating] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+
+  const handleRecordClick = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+    setIsRecording(!isRecording);
+  };
+
   const open = Boolean(anchorEl);
   const id = open ? "settings-popover" : undefined;
 
@@ -60,6 +85,33 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe }) {
     setIsRotating(isGlobalRotating);
   }, [isGlobalRotating]);
 
+  const startRecording = () => {
+    if (recorderRef.current === null) {
+      const canvas = document.getElementsByTagName("canvas")[0];
+      recorderRef.current = new Recorder(canvas, {
+        mediaRecorderOptions: { mimeType: "video/webm" },
+        blobOptions: { type: "video/webm" },
+      });
+      recorderRef.current.startRecording();
+    }
+  };
+
+  const stopRecording = async () => {
+    if (recorderRef.current) {
+      recorderRef.current.stopRecording({ type: "video/webm" });
+      recorderRef.current.download(`${workspace.name}.webm`, { type: "video/webm" });
+      recorderRef.current = null;
+    }
+  };
+
+  const handleSwichMode = () => {
+    if (sceneColor === LIGHT_SCENE_BACKGROUND) {
+      setSceneColor(DARK_SCENE_BACKGROUND);
+    } else {
+      setSceneColor(LIGHT_SCENE_BACKGROUND);
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -69,11 +121,24 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe }) {
         position: "absolute",
         top: ".5rem",
         left: ".5rem",
-        backgroundColor: "#fff",
+        backgroundColor: sceneColor === LIGHT_SCENE_BACKGROUND ? "white" : "#393937",
         borderRadius: "0.5rem",
-        border: "1px solid #ECECE9",
+        border: `1px solid ${sceneColor === LIGHT_SCENE_BACKGROUND ? "#ECECE9" : "#393937"}`,
         boxShadow: "0px 1px 2px 0px rgba(16, 24, 40, 0.05)",
         padding: "0.25rem",
+
+        "& .MuiDivider-root": {
+          borderColor: sceneColor === LIGHT_SCENE_BACKGROUND ? "#ECECE9" : "#535350",
+        },
+
+        "& .MuiButtonBase-root": {
+          "&:hover": {
+            backgroundColor: sceneColor === LIGHT_SCENE_BACKGROUND ? "#F6F5F4" : "#535350",
+          },
+          "& .MuiSvgIcon-root": {
+            color: sceneColor === LIGHT_SCENE_BACKGROUND ? "#757570" : "#ECECE9",
+          },
+        },
       }}
     >
       <Tooltip title="Change settings" placement="right-start">
@@ -126,6 +191,9 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe }) {
           <TonalityOutlined />
         </IconButton>
       </Tooltip>
+      <Tooltip title={sceneColor === LIGHT_SCENE_BACKGROUND ? "Switch to dark mode" : "Switch to light mode"} placement="right-start">
+        <IconButton onClick={handleSwichMode}>{sceneColor === LIGHT_SCENE_BACKGROUND ? <DarkModeOutlined /> : <WbSunnyOutlined />}</IconButton>
+      </Tooltip>
       <Divider />
       <Tooltip title="Zoom in" placement="right-start">
         <IconButton
@@ -160,13 +228,17 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe }) {
           <PlayArrowOutlined />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Record viewer" placement="right-start">
-        <IconButton>
-          <RadioButtonCheckedOutlined />
+      <Tooltip title={isRecording ? "Stop recording" : "Record viewer"} placement="right-start">
+        <IconButton onClick={handleRecordClick}>
+          <RadioButtonCheckedOutlined
+            sx={{
+              color: isRecording ? "red !important" : "inherit",
+            }}
+          />
         </IconButton>
       </Tooltip>
       <Tooltip title="Download graph" placement="right-start">
-        <IconButton>
+        <IconButton onClick={handleScreenshot}>
           <GetAppOutlined />
         </IconButton>
       </Tooltip>
