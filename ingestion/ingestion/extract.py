@@ -44,11 +44,8 @@ class Metadata(BaseModel):
 def extract_cmd(args: Namespace, *, debug: bool = False):
     from tqdm import tqdm
 
-    from ingestion.seg_extraction import (  # type: ignore
-        extract,
-        extract_slice_number,
-        parse_entries,
-    )
+    from ingestion.seg_extraction import extract  # type: ignore
+    from ingestion.seg_extraction import extract_slice_number, parse_entries
 
     metadata_path = args.lut
     segmentation_folder = args.img_path

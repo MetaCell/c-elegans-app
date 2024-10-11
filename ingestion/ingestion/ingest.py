@@ -1,14 +1,17 @@
 from __future__ import annotations
 
+import concurrent.futures
 import json
 import logging
 import os
 import sys
 import tempfile
 from argparse import ArgumentParser, Namespace
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from google.api_core.exceptions import PreconditionFailed
 from google.cloud import storage
 from pydantic import ValidationError
 from tqdm import tqdm
@@ -356,12 +359,54 @@ def upload_em_tiles(
 
     logger.info("uploading EM tiles...")
 
-    pbar = tqdm(tiles, disable=rs.dry_run)
-    for tile in pbar:
-        pbar.set_description(str(tile.path))
-        rs.upload(
-            tile.path, fs_em_tile_blob_name(dataset_id, tile), overwrite=overwrite
-        )
+    # hold in memory tiles that failed to upload
+    # retries are provided by google.storage but some errors seem to
+    # not be intermittent and bubble up
+    # if the program is stopped, it is fine, each tile will be checked
+    # in the bucket and uploaded accordingly
+    failed_upload_tiles: list[Tile] = []
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        future_to_tile = {
+            executor.submit(
+                rs.upload,
+                tile.path,
+                fs_em_tile_blob_name(dataset_id, tile),
+                overwrite=overwrite,
+            ): tile
+            for tile in tiles
+        }
+
+        pbar = tqdm(total=len(future_to_tile))
+        for future in concurrent.futures.as_completed(future_to_tile):
+            tile = future_to_tile[future]
+            pbar.update(1)
+            exp = future.exception()
+            if exp and not isinstance(exp, PreconditionFailed):
+                logger.error(f"uploading EM tile {tile.path} exception: {str(exp)}")
+                failed_upload_tiles.append(tile)
+                continue
+
+        pbar.close()
+
+        # retry tiles that failed to upload
+        pbar = tqdm(total=len(failed_upload_tiles))
+        while len(failed_upload_tiles) > 0:
+            tile = failed_upload_tiles.pop()
+            pbar.set_description(f"retrying upload {tile.path}")
+            try:
+                rs.upload(
+                    tile.path,
+                    fs_em_tile_blob_name(dataset_id, tile),
+                    overwrite=overwrite,
+                )
+                pbar.update(1)
+            except PreconditionFailed:
+                pass
+            except Exception as exp:
+                failed_upload_tiles.append(tile)
+
+        pbar.close()
 
 
 def ingest_cmd(args: Namespace):

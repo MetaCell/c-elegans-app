@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable
 
-from dataclasses import dataclass, field
 from google.cloud.storage import Blob, Bucket
 
 from ingestion.hash import Crc32cCalculator
