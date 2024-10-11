@@ -23,7 +23,7 @@ const STLMesh: FC<Props> = ({ id, color, opacity, renderOrder, isWireframe, stl 
   const { workspaces } = useGlobalContext();
   const workspaceId = useSelector((state: RootState) => state.workspaceId);
   const workspace: Workspace = workspaces[workspaceId];
-  const selectedNeurons = workspace.getViewerSelecedNeurons(ViewerType.Graph);
+  const selectedNeurons = workspace.getViewerSelectedNeurons(ViewerType.Graph);
   const isSelected = selectedNeurons.includes(id);
 
   const onClick = (event: ThreeEvent<MouseEvent>) => {

@@ -38,7 +38,7 @@ interface ContextMenuProps {
 const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setSplitJoinState, openGroups, setOpenGroups, cy }) => {
   const workspace = useSelectedWorkspace();
   const [submenuAnchorEl, setSubmenuAnchorEl] = useState<null | HTMLElement>(null);
-  const selectedNeurons = workspace.getViewerSelecedNeurons(ViewerType.Graph);
+  const selectedNeurons = workspace.getViewerSelectedNeurons(ViewerType.Graph);
 
   const submenuOpen = Boolean(submenuAnchorEl);
 

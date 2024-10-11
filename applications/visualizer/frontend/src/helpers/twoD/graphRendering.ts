@@ -27,7 +27,7 @@ export const computeGraphDifferences = (
   includePostEmbryonic: boolean,
 ) => {
   const visibleActiveNeurons = getVisibleActiveNeuronsIn2D(workspace);
-  const selectedNeurons = workspace.getViewerSelecedNeurons(ViewerType.Graph);
+  const selectedNeurons = workspace.getViewerSelectedNeurons(ViewerType.Graph);
 
   // Current nodes and edges in the Cytoscape instance
   const currentNodes = new Set(cy.nodes().map((node) => node.id()));

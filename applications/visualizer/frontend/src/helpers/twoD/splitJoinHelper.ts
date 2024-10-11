@@ -10,7 +10,7 @@ interface SplitJoinState {
 export const processNeuronSplit = (workspace: Workspace, splitJoinState: SplitJoinState): SplitJoinState => {
   const newSplit = new Set(splitJoinState.split);
   const newJoin = new Set(splitJoinState.join);
-  const selectedNeurons = workspace.getViewerSelecedNeurons(ViewerType.Graph);
+  const selectedNeurons = workspace.getViewerSelectedNeurons(ViewerType.Graph);
 
   const newSelectedNeurons = new Set(selectedNeurons);
   const graphViewDataUpdates: Record<string, Partial<GraphViewerData>> = {};
@@ -83,7 +83,7 @@ export const processNeuronSplit = (workspace: Workspace, splitJoinState: SplitJo
 export const processNeuronJoin = (workspace: Workspace, splitJoinState: SplitJoinState): SplitJoinState => {
   const newJoin = new Set(splitJoinState.join);
   const newSplit = new Set(splitJoinState.split);
-  const selectedNeurons = workspace.getViewerSelecedNeurons(ViewerType.Graph);
+  const selectedNeurons = workspace.getViewerSelectedNeurons(ViewerType.Graph);
 
   const newSelectedNeurons = new Set(selectedNeurons);
   const graphViewDataUpdates: Record<string, Partial<GraphViewerData>> = {};

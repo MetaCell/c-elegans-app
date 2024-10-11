@@ -38,11 +38,11 @@ const Neurons = ({ children }) => {
 
   const [neurons, setNeurons] = useState(availableNeurons);
 
-  const handleSwitchChange = async (neuronId: string, isChecked: boolean) => {
+  const handleSwitchChange = (neuronId: string, isChecked: boolean) => {
     if (isChecked) {
-      await currentWorkspace.showNeuron(neuronId);
+      currentWorkspace.showNeuron(neuronId);
     } else {
-      await currentWorkspace.hideNeuron(neuronId);
+      currentWorkspace.hideNeuron(neuronId);
     }
   };
 
