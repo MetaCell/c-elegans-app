@@ -67,6 +67,7 @@ export class Workspace {
     activeSynchronizers?: Record<ViewerSynchronizationPair, boolean>,
     contexts?: Record<ViewerType, SynchronizerContext>,
     visibilities?: Record<string, ViewerData>,
+    neuronGroups?: Record<string, NeuronGroup>,
   ) {
     this.id = id;
     this.name = name;
@@ -79,7 +80,7 @@ export class Workspace {
       [ViewerType.EM]: false,
       [ViewerType.InstanceDetails]: false,
     };
-    this.neuronGroups = {};
+    this.neuronGroups = neuronGroups || {};
 
     const { layoutManager, store } = getLayoutManagerAndStore(id);
     this.layoutManager = layoutManager;
@@ -242,7 +243,7 @@ export class Workspace {
     return this.syncOrchestrator.getSelection(viewerType);
   }
 
-  getViewerSelecedNeurons(viewerType: ViewerType): string[] {
+  getViewerSelectedNeurons(viewerType: ViewerType): string[] {
     return this.syncOrchestrator.getSelection(viewerType);
   }
 
@@ -265,11 +266,11 @@ export class Workspace {
     const viewers: ViewerType[] = [ViewerType.ThreeD, ViewerType.EM];
 
     const updated = produce(this, (draft: Workspace) => {
-      viewers.forEach((viewerType) => {
+      for (const viewerType of viewers) {
         if (viewerType in draft.visibilities[neuronId]) {
           draft.visibilities[neuronId][viewerType].color = color;
         }
-      });
+      }
     });
 
     this.updateContext(updated);

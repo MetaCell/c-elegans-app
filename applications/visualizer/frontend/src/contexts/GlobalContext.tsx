@@ -163,7 +163,20 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
           activeDatasets[key] = datasets[key];
         }
       }
-      const workspace = new Workspace(ws.id, ws.name, activeDatasets, new Set(ws.activeNeurons), updateWorkspace, ws.activeSyncs, ws.contexts, ws.visibilities);
+      for (const group of Object.values(ws.neuronGroups)) {
+        group.neurons = new Set(group.neurons);
+      }
+      const workspace = new Workspace(
+        ws.id,
+        ws.name,
+        activeDatasets,
+        new Set(ws.activeNeurons),
+        updateWorkspace,
+        ws.activeSyncs,
+        ws.contexts,
+        ws.visibilities,
+        ws.neuronGroups,
+      );
       workspace.viewers = ws.viewers;
 
       reconstructedWorkspaces[wsId] = workspace;

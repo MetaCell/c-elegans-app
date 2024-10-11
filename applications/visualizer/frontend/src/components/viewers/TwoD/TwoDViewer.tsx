@@ -70,12 +70,12 @@ const TwoDViewer = () => {
     unreportedNeurons: new Set<string>(),
   });
 
-  const selectedNeurons = workspace.getViewerSelecedNeurons(ViewerType.Graph);
+  const selectedNeurons = workspace.getViewerSelectedNeurons(ViewerType.Graph);
 
   const visibleActiveNeurons = useMemo(() => {
     return getVisibleActiveNeuronsIn2D(workspace);
   }, [
-    Array.from(workspace.activeNeurons)
+    [...workspace.activeNeurons, ...Object.keys(workspace.neuronGroups)]
       .map((neuronId) => workspace.visibilities[neuronId]?.[ViewerType.Graph]?.visibility || "")
       .join(","),
   ]);
@@ -270,7 +270,7 @@ const TwoDViewer = () => {
 
       const cyEvent = event as any; // Cast to any to access originalEvent
       const originalEvent = cyEvent.originalEvent as MouseEvent;
-      const selectedNeurons = workspace.getViewerSelecedNeurons(ViewerType.Graph);
+      const selectedNeurons = workspace.getViewerSelectedNeurons(ViewerType.Graph);
       if (selectedNeurons.length > 0) {
         setMousePosition({
           mouseX: originalEvent.clientX,
