@@ -2,96 +2,127 @@ from __future__ import annotations
 
 import logging
 import sys
-from pathlib import Path
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
-from pydantic import ValidationError
-
-from ingestion.errors import DataValidationError, ErrorWriter
-from ingestion.filesystem import find_data_files, load_data
-from ingestion.schema import Data
+from ingestion.extract import add_flags as add_extract_flags
+from ingestion.extract import extract_cmd
+from ingestion.ingest import add_add_dataset_flags as add_ingest_add_dataset_flags
+from ingestion.ingest import add_flags as add_ingest_flags
+from ingestion.ingest import ingest_cmd
+from ingestion.log import setup_logger
 
 logger = logging.getLogger(__name__)
 
 
-def main():
-    import argparse
-    import os
+def split_argv(argv: list[str], delimiter: str) -> list[list[str]]:
+    out: list[list[str]] = []
+    temp: list[str] = []
 
-    parser = argparse.ArgumentParser(
-        description="This is a python script to read c-elegans ingestion"
-        "files and validate its content."
+    for arg in argv:
+        if arg == delimiter:
+            out.append(temp)
+            temp = [arg]
+            continue
+        temp.append(arg)
+
+    if temp:
+        out.append(temp)
+
+    return out
+
+
+def _main(argv: list[str] | None = None):
+    parser = ArgumentParser(
+        prog="celegans",
+        description="Support tool for the C-Elegans application",
+        formatter_class=ArgumentDefaultsHelpFormatter,
     )
 
-    def directory(raw_path: str) -> Path:
-        if not os.path.isdir(raw_path):
-            raise argparse.ArgumentTypeError(f"{raw_path} is not an existing directory")
-        return Path(os.path.abspath(raw_path))
+    def add_debug_flag(parser: ArgumentParser):
+        parser.add_argument(
+            "--debug",
+            help="runs with debug logs",
+            default=False,
+            action="store_true",
+        )
 
-    parser.add_argument(
-        "-i",
-        "--ingestion-dir",
-        help="input files to be ingested (default: current directory)",
-        type=directory,
-        default=os.path.curdir,
+    add_debug_flag(parser)
+
+    subparsers = parser.add_subparsers(dest="command")
+
+    # subcommand for the extraction of segmentation files
+    parser_extract = subparsers.add_parser(
+        name="extract",
+        help="extracs segentations from the bitmap files",
+        formatter_class=ArgumentDefaultsHelpFormatter,
     )
 
-    parser.add_argument(
-        "--overwrite",
-        help="overwrite files in the bucket",
-        default=False,
-        action="store_true",
+    add_extract_flags(parser_extract)
+    add_debug_flag(parser_extract)
+
+    # subcommand for the file ingestion
+    parser_ingest = subparsers.add_parser(
+        name="ingest",
+        help="ingest files into the C-Elegans deployment",
+        formatter_class=ArgumentDefaultsHelpFormatter,
     )
 
-    parser.add_argument(
-        "--prune",
-        help="prune files in the bucket before upload",
-        default=False,
-        action="store_true",
+    add_ingest_flags(parser_ingest)
+    add_debug_flag(parser_ingest)
+
+    subparsers_ingest = parser_ingest.add_subparsers(dest="ingest_subcommand")
+
+    parser_ingest_add_dataset = subparsers_ingest.add_parser(
+        name="add-dataset",
+        help="ingests a dataset data",
+        formatter_class=ArgumentDefaultsHelpFormatter,
     )
 
-    parser.add_argument(
-        "--debug",
-        help="runs the ingestion with debug logs",
-        default=False,
-        action="store_true",
-    )
+    add_ingest_add_dataset_flags(parser_ingest_add_dataset)
 
-    args = parser.parse_args()
+    if argv is not None and len(argv) == 0:
+        parser.print_help(sys.stderr)
+        sys.exit(0)
 
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
+    args = parser.parse_args(argv)
 
-    data_files = find_data_files(args.ingestion_dir)
-    json_data = load_data(data_files)
-
-    err_header = (
-        "Seems like we found something unexpected with your data.\n"
-        "Bellow is an overview of what we think may be wrong.\n"
-        "If you think this is an error on our side, please reach out!\n"
-    )
+    setup_logger(args.debug)
 
     try:
-        Data.model_validate(json_data)
-    except ValidationError as e:
-        sys.stdout.write(
-            DataValidationError(e).humanize(
-                w=ErrorWriter(),
-                header=err_header,
-                data_files=data_files,
-            )
+        match args.command:
+            case "ingest":
+                ingest_cmd(args)
+            case "extract":
+                extract_cmd(args, debug=args.debug)
+    except KeyboardInterrupt as e:
+        if args.debug:
+            raise
+        logger.error(
+            "execution interrupted, some resources may have not uploaded properly!"
         )
+    except Exception as e:
+        if args.debug:
+            raise
+        print(f"{type(e).__name__}: {e}", file=sys.stderr)
         sys.exit(1)
 
-    print("OK")
+
+def main(argv: list[str] | None = None):
+    """Calls main but is inspects argv and splits accordingly"""
+
+    if argv is None:
+        argv = sys.argv[1:]
+
+    if "ingest" in argv and "add-dataset" in argv:
+        argvl = split_argv(argv, "add-dataset")
+
+        # TODO: print help of missing "add-dataset" if repeated flags are detected
+
+        for add_dataset_args in argvl[1:]:
+            _main(argvl[0] + add_dataset_args)
+    else:
+        _main(argv)
 
 
 if __name__ == "__main__":
-    try:
-        import pydantic as _
-    except ImportError:
-        print('error: missing pydantic; try "pip install pydantic"')
-        sys.exit(1)
-
     main()

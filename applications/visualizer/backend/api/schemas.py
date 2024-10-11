@@ -21,24 +21,21 @@ class BilingualSchema(Schema):
         populate_by_name = True
 
 
-class Artifact(Schema): ...
-
-
-class Model3D(Artifact): ...
-
-
-class EMData(Artifact):
+class EMData(BilingualSchema):
     min_zoom: int
     max_zoom: int
     nb_slices: int
+    tile_size: tuple[int, int]
+    slice_range: tuple[int, int]
     resource_url: str
     segmentation_url: str
+    segmentation_size: tuple[int, int]
 
 
 class Dataset(ModelSchema, BilingualSchema):
     id: str
     neuron3D_url: str
-    em_data: EMData
+    em_data: EMData | None
 
     class Meta:
         model = DatasetModel

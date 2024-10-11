@@ -1,12 +1,14 @@
 from collections import defaultdict
 from typing import Iterable, Optional
 
-from ninja import NinjaAPI, Router, Schema, Query
+from ninja import NinjaAPI, Router, Query, Schema
 from ninja.pagination import paginate, PageNumberPagination
 from django.shortcuts import aget_object_or_404
 from django.db.models import Q
 from django.db.models.manager import BaseManager
 from django.conf import settings
+
+from .utils import fetch_dataset_metadata, to_list
 
 from .schemas import Dataset, EMData, Neuron, Connection
 from .models import (
@@ -19,10 +21,6 @@ from .services.connectivity import query_nematode_connections
 
 class ErrorMessage(Schema):
     detail: str
-
-
-async def to_list(q):
-    return [x async for x in q]
 
 
 class CElegansAPI(NinjaAPI):
@@ -57,17 +55,7 @@ def annotate_dataset(datasets: Iterable[DatasetModel]):
                 dataset=dataset_id
             )
         )
-        dataset.em_data = EMData(  # type: ignore
-            min_zoom=0,
-            max_zoom=0,
-            nb_slices=0,
-            # resource_url=settings.DATASET_EMDATA_URL_FORMAT.format(dataset=dataset_id),
-            # segmentation_url=settings.DATASET_EMDATA_SEGMENTATION_URL_FORMAT.format(
-            # dataset=dataset_id
-            # ),
-            resource_url=settings.DATASET_EMDATA_URL_FORMAT,
-            segmentation_url=settings.DATASET_EMDATA_SEGMENTATION_URL_FORMAT,
-        )
+        dataset.em_data = fetch_dataset_metadata(dataset_id)  # type: ignore
 
 
 @api.get("/datasets", response=list[Dataset], tags=["datasets"])

@@ -19,7 +19,17 @@ maintainers = [
 dependencies = [
     "pydantic==2.8.2",
     "json_source_map==1.0.5",
+    "crc32c==2.7.post1",
     "colorama==0.4.6",
+    "google-cloud-storage==2.18.2",
+    "tqdm==4.66.5",
+    "pillow==10.4.0",
+
+    # extraction dependencies
+    "diplib==3.5.1",
+    "geojson==3.1.0",
+    "geojson-rewind==1.1.0",
+    "numpy==2.0.0",
 ]
 
 [project.optional-dependencies]
@@ -33,7 +43,7 @@ dev = [
 ]
 
 [project.scripts]
-celegans-ingest = "ingestion.__main__:main"
+celegans = "ingestion.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["."]  # list of folders that contain the packages (["."] by default)
