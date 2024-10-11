@@ -224,17 +224,29 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorder
       </Tooltip>
       <Divider />
       <Tooltip title="Play 3D viewer" placement="right-start">
-        <IconButton onClick={handleRotationToggle}>
+        <IconButton
+          onClick={handleRotationToggle}
+          sx={{
+            backgroundColor: isRotating ? "#ECF4FD" : "inherit",
+            "& .MuiSvgIcon-root": {
+              color: isRotating ? "#1568D5 !important" : "inherit",
+            },
+          }}
+        >
           <PlayArrowOutlined />
         </IconButton>
       </Tooltip>
       <Tooltip title={isRecording ? "Stop recording" : "Record viewer"} placement="right-start">
-        <IconButton onClick={handleRecordClick}>
-          <RadioButtonCheckedOutlined
-            sx={{
-              color: isRecording ? "red !important" : "inherit",
-            }}
-          />
+        <IconButton
+          onClick={handleRecordClick}
+          sx={{
+            backgroundColor: isRecording ? "#ECF4FD" : "inherit",
+            "& .MuiSvgIcon-root": {
+              color: isRecording ? "#1568D5 !important" : "inherit",
+            },
+          }}
+        >
+          <RadioButtonCheckedOutlined />
         </IconButton>
       </Tooltip>
       <Tooltip title="Download graph" placement="right-start">
