@@ -136,6 +136,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
             removeNodeFromGroup(cy, groupedNeuronId, true);
           }
           delete draft.neuronGroups[elementId]; // Delete the entire group
+          delete draft.visibilities[elementId];
           if (openGroups.has(elementId)) {
             groupsToRemoveFromOpen.add(elementId);
           }

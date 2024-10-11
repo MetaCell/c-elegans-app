@@ -2,8 +2,18 @@ import type { Core } from "cytoscape";
 import type { NeuronGroup, Workspace } from "../../models";
 import { SELECTED_CLASS } from "../../settings/twoDSettings.tsx";
 
+const _incrementInt = () => {
+  let i = 0;
+  return () => {
+    i++;
+    return i;
+  };
+};
+
+const incrementInt = _incrementInt();
+
 export const groupNeurons = (selectedNeurons: Set<string>, workspace: Workspace) => {
-  const newGroupId = `group_${Date.now()}`;
+  const newGroupId = `group_${incrementInt()}`;
   const newGroupNeurons = new Set<string>();
   const groupsToDelete = new Set<string>();
   let originalGroupName = "";
@@ -16,24 +26,24 @@ export const groupNeurons = (selectedNeurons: Set<string>, workspace: Workspace)
 
     // Check if the neuronId is a group itself or part of another group
     if (group) {
-      group.neurons.forEach((groupedNeuronId) => {
+      for (const groupedNeuronId of group.neurons) {
         newGroupNeurons.add(groupedNeuronId);
-      });
+      }
       groupsToDelete.add(neuronId);
       originalGroupName = group.name;
       originalGroupColor = group.color;
     } else {
-      Object.entries(workspace.neuronGroups).forEach(([groupId, existingGroup]) => {
+      for (const [groupId, existingGroup] of Object.entries(workspace.neuronGroups)) {
         if (existingGroup.neurons.has(neuronId)) {
-          existingGroup.neurons.forEach((groupedNeuronId) => {
+          for (const groupedNeuronId of existingGroup.neurons) {
             newGroupNeurons.add(groupedNeuronId);
-          });
+          }
           groupsToDelete.add(groupId);
           originalGroupName = existingGroup.name;
           originalGroupColor = existingGroup.color;
           isPartOfAnotherGroup = true;
         }
-      });
+      }
 
       // If neuronId is not part of any group, add it directly
       if (!isPartOfAnotherGroup) {
@@ -48,7 +58,6 @@ export const groupNeurons = (selectedNeurons: Set<string>, workspace: Workspace)
     name: originalGroupName || newGroupId,
     color: originalGroupColor,
     neurons: newGroupNeurons,
-    visible: true,
   };
 
   return { newGroupId, newGroup, groupsToDelete };
@@ -56,7 +65,7 @@ export const groupNeurons = (selectedNeurons: Set<string>, workspace: Workspace)
 
 export function removeNodeFromGroup(cy: Core, nodeId: string, setSelected: boolean) {
   const cyNode = cy.getElementById(nodeId);
-  if (cyNode && cyNode.isNode()) {
+  if (cyNode?.isNode()) {
     cyNode.move({ parent: null });
     if (setSelected) {
       cyNode.addClass(SELECTED_CLASS);
