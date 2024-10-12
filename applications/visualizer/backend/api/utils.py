@@ -1,6 +1,3 @@
-import time
-from functools import lru_cache, partial, update_wrapper
-from django.utils.functional import lazy
 from django.conf import settings
 
 from .schemas import EMData
@@ -12,21 +9,6 @@ async def to_list(q):
     return [x async for x in q]
 
 
-def lru_cache_time(seconds, maxsize=None):
-    def wrapper(func):
-        # Lazy function that makes sure the lru_cache() invalidate after X secs
-        ttl_hash = lazy(lambda: round(time.time() / seconds), int)()
-
-        @lru_cache(maxsize)
-        def time_aware(__ttl, *args, **kwargs):
-            return func(*args, **kwargs)
-
-        return update_wrapper(partial(time_aware, ttl_hash), func)
-
-    return wrapper
-
-
-@lru_cache_time(seconds=60 * 60, maxsize=10)  # We cache information for 1h
 async def get_dataset_viewer_config(dataset: Dataset):
     config = await dataset.config.afirst()  # type: ignore
     if config is None:
