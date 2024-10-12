@@ -3,14 +3,12 @@ from django.db.models import (
     BooleanField,
     FloatField,
     ForeignKey,
-    IntegerField,
     JSONField,
     Model,
     CharField,
     PositiveIntegerField,
     PositiveSmallIntegerField,
     TextField,
-    SmallIntegerField,
     UniqueConstraint,
 )
 
