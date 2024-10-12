@@ -525,22 +525,36 @@
             "type": "string"
           },
           "segmentationUrl": {
-            "title": "Segmentationurl",
-            "type": "string"
-          },
-          "segmentationSize": {
-            "maxItems": 2,
-            "minItems": 2,
-            "prefixItems": [
+            "anyOf": [
               {
-                "type": "integer"
+                "type": "string"
               },
               {
-                "type": "integer"
+                "type": "null"
               }
             ],
-            "title": "Segmentationsize",
-            "type": "array"
+            "title": "Segmentationurl"
+          },
+          "segmentationSize": {
+            "anyOf": [
+              {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Segmentationsize"
           }
         },
         "required": [

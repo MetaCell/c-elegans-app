@@ -152,3 +152,11 @@ class Synapse(Model):
                 name="unique_synapse",
             )
         ]
+
+
+class ViewerConfig(Model):
+    dataset = ForeignKey(
+        to=Dataset, on_delete=CASCADE, db_index=True, related_name="config"
+    )
+    em_config = JSONField(null=True)
+    segmentation_config = JSONField(null=True)

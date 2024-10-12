@@ -97,16 +97,20 @@ components:
           title: Resourceurl
           type: string
         segmentationSize:
-          maxItems: 2
-          minItems: 2
-          prefixItems:
-          - type: integer
-          - type: integer
+          anyOf:
+          - maxItems: 2
+            minItems: 2
+            prefixItems:
+            - type: integer
+            - type: integer
+            type: array
+          - type: 'null'
           title: Segmentationsize
-          type: array
         segmentationUrl:
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Segmentationurl
-          type: string
         sliceRange:
           maxItems: 2
           minItems: 2

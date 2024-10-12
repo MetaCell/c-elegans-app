@@ -133,13 +133,15 @@ class DbDataDownloader:
         print(f"  . pulling gs://{url}")
         return self.session.get(url)
 
-    def get_segmentation_metadata(self, dataset_id):
+    @classmethod
+    def get_segmentation_metadata(cls, dataset_id):
         file = BASE_DIR / DB_RAW_DATA_FOLDER / dataset_id / "segmentation_metadata.json"
         if not file.exists():
             return {}
         return json.loads(file.read_text())
 
-    def get_em_metadata(self, dataset_id):
+    @classmethod
+    def get_em_metadata(cls, dataset_id):
         file = BASE_DIR / DB_RAW_DATA_FOLDER / dataset_id / "em_metadata.json"
         if not file.exists():
             return {}
