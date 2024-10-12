@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.db.models.manager import BaseManager
 from django.conf import settings
 
-from .utils import fetch_dataset_metadata, to_list
+from .utils import get_dataset_viewer_config, to_list
 
 from .schemas import Dataset, EMData, Neuron, Connection
 from .models import (
@@ -47,7 +47,7 @@ api = CElegansAPI(title="C. Elegans Visualizer", default_router=ByAliasRouter())
 #     )
 
 
-def annotate_dataset(datasets: Iterable[DatasetModel]):
+async def annotate_dataset(datasets: Iterable[DatasetModel]):
     for dataset in datasets:
         dataset_id = dataset.id
         dataset.neuron3D_url = (  # type: ignore
@@ -55,7 +55,7 @@ def annotate_dataset(datasets: Iterable[DatasetModel]):
                 dataset=dataset_id
             )
         )
-        dataset.em_data = fetch_dataset_metadata(dataset_id)  # type: ignore
+        dataset.em_data = await get_dataset_viewer_config(dataset)  # type: ignore
 
 
 @api.get("/datasets", response=list[Dataset], tags=["datasets"])
@@ -66,7 +66,7 @@ async def get_datasets(request, ids: Optional[list[str]] = Query(None)):
     else:
         datasets = await to_list(DatasetModel.objects.all())
 
-    annotate_dataset(datasets)
+    await annotate_dataset(datasets)
     return datasets
 
 
@@ -93,7 +93,7 @@ async def get_datasets(request, ids: Optional[list[str]] = Query(None)):
 async def get_dataset(request, dataset: str):
     """Returns a specific dataset"""
     obj = await aget_object_or_404(DatasetModel, id=dataset)
-    annotate_dataset((obj,))
+    await annotate_dataset((obj,))
     return obj
 
 

@@ -28,8 +28,8 @@ class EMData(BilingualSchema):
     tile_size: tuple[int, int]
     slice_range: tuple[int, int]
     resource_url: str
-    segmentation_url: str
-    segmentation_size: tuple[int, int]
+    segmentation_url: str | None
+    segmentation_size: tuple[int, int] | None
 
 
 class Dataset(ModelSchema, BilingualSchema):

@@ -1,7 +1,6 @@
 import json
 from pathlib import Path
 from functools import lru_cache
-import niquests
 from ruamel.yaml import YAML
 from niquests.sessions import Session
 from .common import *
@@ -93,21 +92,60 @@ class DbDataDownloader:
             file_path.parent.mkdir(parents=True, exist_ok=True)
             file_path.write_text(result.text)
 
+        # We pull the segmentation metadata and the EM viewer metadata
+        self._pull_metadata()
+
         return BASE_DIR / DB_RAW_DATA_FOLDER
 
-    def get_segmentation_metadata(self, dataset_id):
-        url = f"{GCS_BUCKET_URL}/{dataset_id}/segmentations/metadata.json"
-        result = self.session.get(url)
-        if result.status_code != 200 or not result.text:
-            return {}
-        return json.loads(result.text)
+    def _pull_metadata(self):
+        db_data_folder = BASE_DIR / DB_RAW_DATA_FOLDER
+        datasets = json.loads((db_data_folder / "datasets.json").read_text())
+        files = {}
+        print(
+            "Pulling EM viewer and segmentation config data files from the bucket (multiplexed)..."
+        )
+        for dataset in datasets:
+            dataset_id = dataset["id"]
+            em_metadata = db_data_folder / dataset_id / "em_metadata.json"
+            segmentation_metadata = (
+                db_data_folder / dataset_id / "segmentation_metadata.json"
+            )
+            files[segmentation_metadata] = self._pull_segmentation_metadata(dataset_id)
+            files[em_metadata] = self._pull_em_metadata(dataset_id)
 
-    def get_em_metadata(self, dataset_id):
+        for file_path, result in files.items():
+            if result.status_code != 200 or not result.text:
+                print(f"  [ ] no {file_path.name} data for {file_path.parent.name}")
+                continue
+            print(
+                f"  [x] configuration found for {file_path.parent.name}, writing in {file_path}"
+            )
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            file_path.write_text(result.text)
+
+    def _pull_segmentation_metadata(self, dataset_id):
+        url = f"{GCS_BUCKET_URL}/{dataset_id}/segmentations/metadata.json"
+        print(f"  . pulling gs://{url}")
+        return self.session.get(url)
+
+    def _pull_em_metadata(self, dataset_id):
         url = f"{GCS_BUCKET_URL}/{dataset_id}/em/metadata.json"
-        result = self.session.get(url)
-        if result.status_code != 200 or not result.text:
+        print(f"  . pulling gs://{url}")
+        return self.session.get(url)
+
+    @classmethod
+    def get_segmentation_metadata(cls, dataset_id):
+        file = BASE_DIR / DB_RAW_DATA_FOLDER / dataset_id / "segmentation_metadata.json"
+        if not file.exists():
             return {}
-        return json.loads(result.text)
+        return json.loads(file.read_text())
+
+    @classmethod
+    def get_em_metadata(cls, dataset_id):
+        file = BASE_DIR / DB_RAW_DATA_FOLDER / dataset_id / "em_metadata.json"
+        if not file.exists():
+            return {}
+        return json.loads(file.read_text())
 
     def get_metadata_files(self, dataset_id):
         return (
