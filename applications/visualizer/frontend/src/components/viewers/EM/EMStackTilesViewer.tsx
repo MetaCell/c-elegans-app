@@ -17,10 +17,10 @@ import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
 import Text from "ol/style/Text";
 import { TileGrid } from "ol/tilegrid";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { SlidingRing } from "../../../helpers/slidingRing";
-import { getEMDataURL, getSegmentationURL } from "../../../models/models.ts";
+import { getEMDataURL, getSegmentationURL, ViewerType } from "../../../models/models.ts";
 import type { Dataset } from "../../../rest/index.ts";
 import SceneControls from "./SceneControls.tsx";
 
@@ -40,16 +40,12 @@ const getFeatureStyle = (feature: FeatureLike) => {
   });
 };
 
-const resetStyle = (feature: Feature) => {
-  feature.setStyle(getFeatureStyle(feature));
-};
-
-const setHighlightStyle = (feature: Feature) => {
+const getHighlightFeatureStyle = (feature: FeatureLike) => {
   const opacity = 0.5;
   const [r, g, b] = feature.get("color");
   const rgbaColor = `rgba(${r}, ${g}, ${b}, ${opacity})`;
 
-  const style = new Style({
+  return new Style({
     stroke: new Stroke({
       color: [r, g, b],
       width: 4,
@@ -62,8 +58,14 @@ const setHighlightStyle = (feature: Feature) => {
       scale: 2,
     }),
   });
+};
 
-  feature.setStyle(style);
+const resetStyle = (feature: Feature) => {
+  feature.setStyle(getFeatureStyle(feature));
+};
+
+const setHighlightStyle = (feature: Feature) => {
+  feature.setStyle(getHighlightFeatureStyle(feature));
 };
 
 const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, projection: Projection): TileLayer<XYZ> => {
@@ -75,17 +77,6 @@ const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, project
       crossOrigin: "anonymous",
     }),
     zIndex: 0,
-  });
-};
-
-const newSegLayer = (dataset: Dataset, slice: number) => {
-  return new VectorLayer({
-    source: new VectorSource({
-      url: getSegmentationURL(dataset, slice),
-      format: new GeoJSON(),
-    }),
-    style: getFeatureStyle,
-    zIndex: 1,
   });
 };
 
@@ -104,6 +95,7 @@ const interactions = defaultInteractions({
 // const EMStackViewer = ({ dataset }: EMStackViewerParameters) => {
 const EMStackViewer = () => {
   const currentWorkspace = useGlobalContext().getCurrentWorkspace();
+  const selectedNeurons = currentWorkspace.getViewerSelectedNeurons(ViewerType.EM);
 
   // We take the first active dataset at the moment (will change later)
   const firstActiveDataset = Object.values(currentWorkspace.activeDatasets)?.[0];
@@ -145,6 +137,41 @@ const EMStackViewer = () => {
       resolutions: [0.5, 1, 2, 4, 8, 16, 32].reverse(),
     });
   }, [extent, firstActiveDataset.emData.tileSize]);
+
+  const segLayerStyle = (feature: FeatureLike) => {
+    const properties = feature.getProperties();
+    if (!properties.hasOwnProperty("name")) {
+      throw Error("segment doesn't have a name property");
+    }
+    const neuronName = properties["name"];
+    if (typeof neuronName !== "string") {
+      throw Error("segment name is not a string");
+    }
+
+    if (!selectedNeurons.length) {
+      return getFeatureStyle(feature);
+    }
+
+    if (neuronName in selectedNeurons) {
+      return getHighlightFeatureStyle(feature);
+    }
+
+    return new Style({});
+  };
+
+  const newSegLayer = useCallback(
+    (dataset: Dataset, slice: number) => {
+      return new VectorLayer({
+        source: new VectorSource({
+          url: getSegmentationURL(dataset, slice),
+          format: new GeoJSON(),
+        }),
+        style: segLayerStyle,
+        zIndex: 1,
+      });
+    },
+    [selectedNeurons],
+  );
 
   // const debugLayer = new TileLayer({
   // 	source: new TileDebug({
