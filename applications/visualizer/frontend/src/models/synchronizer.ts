@@ -28,30 +28,37 @@ class Synchronizer {
     return new Synchronizer(active, pair);
   }
 
-  private canHandle(viewer: ViewerType) {
+  public canHandle(viewer: ViewerType) {
     return this.viewers.includes(viewer);
   }
 
-  sync(selection: Array<string>, initiator: ViewerType, contexts: Record<ViewerType, SynchronizerContext>) {
-    if (!this.canHandle(initiator)) {
-      return;
-    }
+  public firstViewer(): ViewerType {
+    return this.viewers[0];
+  }
 
+  public secondViewer(): ViewerType {
+    return this.viewers[1];
+  }
+
+  public otherViewer(viewer: ViewerType): ViewerType {
+    if (this.viewers[0] === viewer) {
+      return this.viewers[1];
+    }
+    return this.viewers[0];
+  }
+
+  sync(selection: Array<string>, initiator: ViewerType, contexts: Record<ViewerType, SynchronizerContext>): ViewerType {
     if (!this.active) {
-      contexts[initiator] = selection.map((n) => n);
+      contexts[initiator] = [...selection];
       return;
     }
 
     for (const viewer of this.viewers) {
-      contexts[viewer] = selection.map((n) => n);
+      contexts[viewer] = [...selection];
     }
   }
 
-  select(selection: string, initiator: ViewerType, contexts: Record<ViewerType, SynchronizerContext>) {
-    if (!this.canHandle(initiator)) {
-      return;
-    }
-
+  select(selection: string, initiator: ViewerType, contexts: Record<ViewerType, SynchronizerContext>): ViewerType {
     if (!this.active) {
       contexts[initiator] = [...new Set([...contexts[initiator], selection])];
       return;
@@ -61,11 +68,8 @@ class Synchronizer {
       contexts[viewer] = [...new Set([...contexts[viewer], selection])];
     }
   }
-  unSelect(selection: string, initiator: ViewerType, contexts: Record<ViewerType, SynchronizerContext>) {
-    if (!this.canHandle(initiator)) {
-      return;
-    }
 
+  unSelect(selection: string, initiator: ViewerType, contexts: Record<ViewerType, SynchronizerContext>): ViewerType {
     if (!this.active) {
       const storedNodes = [...contexts[initiator]];
       contexts[initiator] = storedNodes.filter((n) => n !== selection);
@@ -79,10 +83,6 @@ class Synchronizer {
   }
 
   clear(initiator: ViewerType, contexts: Record<ViewerType, SynchronizerContext>) {
-    if (!this.canHandle(initiator)) {
-      return;
-    }
-
     if (!this.active) {
       contexts[initiator] = [];
       return;
@@ -128,26 +128,50 @@ export class SynchronizerOrchestrator {
     return new SynchronizerOrchestrator(synchronizers, contexts);
   }
 
-  public select(selection: Array<string>, initiator: ViewerType) {
+  private getConnectedViewers(initiator: ViewerType): Set<Synchronizer> {
+    const synchros = new Set<Synchronizer>();
+
     for (const synchronizer of this.synchronizers) {
+      if (synchronizer.canHandle(initiator)) {
+        synchros.add(synchronizer);
+        const otherViewer = synchronizer.otherViewer(initiator);
+        for (const connectedSynchronizer of this.synchronizers) {
+          if (connectedSynchronizer === synchronizer) {
+            continue;
+          }
+          if (connectedSynchronizer.canHandle(otherViewer)) {
+            synchros.add(connectedSynchronizer);
+          }
+        }
+      }
+    }
+    return synchros;
+  }
+
+  public select(selection: Array<string>, initiator: ViewerType) {
+    const synchronizers = this.getConnectedViewers(initiator);
+    for (const synchronizer of synchronizers) {
       synchronizer.sync(selection, initiator, this.contexts);
     }
   }
 
   public selectNeuron(selection: string, initiator: ViewerType) {
-    for (const synchronizer of this.synchronizers) {
+    const synchronizers = this.getConnectedViewers(initiator);
+    for (const synchronizer of synchronizers) {
       synchronizer.select(selection, initiator, this.contexts);
     }
   }
 
   public unSelectNeuron(selection: string, initiator: ViewerType) {
-    for (const synchronizer of this.synchronizers) {
+    const synchronizers = this.getConnectedViewers(initiator);
+    for (const synchronizer of synchronizers) {
       synchronizer.unSelect(selection, initiator, this.contexts);
     }
   }
 
   public clearSelection(initiator: ViewerType) {
-    for (const synchronizer of this.synchronizers) {
+    const synchronizers = this.getConnectedViewers(initiator);
+    for (const synchronizer of synchronizers) {
       synchronizer.clear(initiator, this.contexts);
     }
   }
@@ -156,7 +180,19 @@ export class SynchronizerOrchestrator {
     return this.contexts[viewerType];
   }
   public setActive(synchronizer: ViewerSynchronizationPair, isActive: boolean) {
-    this.synchronizers[synchronizer].setActive(isActive);
+    const synchros = this.synchronizers[synchronizer];
+    synchros.setActive(isActive);
+
+    if (isActive) {
+      // When we merge the selections
+      const selection = new Set(
+        this.synchronizers
+          .filter((s) => s.canHandle(synchros.firstViewer()) || s.canHandle(synchros.secondViewer()))
+          .flatMap((s) => [...this.getSelection(s.firstViewer()), ...this.getSelection(s.secondViewer())]),
+      );
+
+      this.select([...selection], synchros.firstViewer());
+    }
   }
 
   public isActive(synchronizer: ViewerSynchronizationPair) {
@@ -164,7 +200,7 @@ export class SynchronizerOrchestrator {
   }
 
   public switchSynchronizer(syncPair: ViewerSynchronizationPair) {
-    const synchronizer = this.synchronizers[syncPair];
-    synchronizer.setActive(!synchronizer.active);
+    const active = this.synchronizers[syncPair].active;
+    this.setActive(syncPair, !active);
   }
 }
