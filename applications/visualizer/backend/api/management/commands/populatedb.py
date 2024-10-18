@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand, CommandError
-from pathlib import Path
 from api.populatedb import populate_functions
 from django.conf import settings
 
