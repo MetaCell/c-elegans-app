@@ -13,6 +13,7 @@ import {
   LIGHT_2_COLOR,
   LIGHT_2_POSITION,
   LIGHT_SCENE_BACKGROUND,
+  LIGHT_1_COLOR
 } from "../../../settings/threeDSettings.ts";
 import DatasetPicker from "./DatasetPicker.tsx";
 import Gizmo from "./Gizmo.tsx";
@@ -100,7 +101,7 @@ function ThreeDViewer() {
           />
           <CameraControls ref={cameraControlRef} />
 
-          <ambientLight color={"0x404040"} />
+          <ambientLight color={LIGHT_1_COLOR} />
           <directionalLight color={LIGHT_2_COLOR} position={LIGHT_2_POSITION} />
 
           <Gizmo />
