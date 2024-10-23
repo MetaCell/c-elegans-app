@@ -10,6 +10,7 @@ import {
   CAMERA_FOV,
   CAMERA_NEAR,
   CAMERA_POSITION,
+  LIGHT_1_COLOR,
   LIGHT_2_COLOR,
   LIGHT_2_POSITION,
   LIGHT_SCENE_BACKGROUND,
@@ -103,7 +104,7 @@ function ThreeDViewer() {
           />
           <CameraControls ref={cameraControlRef} />
 
-          <ambientLight color={"0x404040"} />
+          <ambientLight color={LIGHT_1_COLOR} />
           <directionalLight color={LIGHT_2_COLOR} position={LIGHT_2_POSITION} />
 
           <Gizmo />
