@@ -10,10 +10,10 @@ import {
   CAMERA_FOV,
   CAMERA_NEAR,
   CAMERA_POSITION,
+  LIGHT_1_COLOR,
   LIGHT_2_COLOR,
   LIGHT_2_POSITION,
   LIGHT_SCENE_BACKGROUND,
-  LIGHT_1_COLOR
 } from "../../../settings/threeDSettings.ts";
 import DatasetPicker from "./DatasetPicker.tsx";
 import Gizmo from "./Gizmo.tsx";
