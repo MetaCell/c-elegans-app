@@ -6,7 +6,6 @@ import ErrorAlert from "../components/ErrorAlert.tsx";
 import ErrorBoundary from "../components/ErrorBoundary.tsx";
 import { ViewMode } from "../models";
 import { Workspace } from "../models";
-import { GlobalError } from "../models/Error.ts";
 import { type Dataset, DatasetsService } from "../rest";
 import type { SerializedGlobalContext } from "./SerializedContext.tsx";
 
@@ -103,10 +102,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
   };
 
   const handleErrors = (error: Error) => {
-    if (error instanceof GlobalError) {
-      setErrorMessage(error.message);
-      setOpenErrorAlert(true);
-    }
+    // if (error instanceof GlobalError) {
+    setErrorMessage(error.message);
+    setOpenErrorAlert(true);
+    // }
   };
 
   const serializeGlobalContext = () => {

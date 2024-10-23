@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import type * as THREE from "three";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
 import { ViewerType, getNeuronUrlForDataset } from "../../../models/models.ts";
-import { type Dataset, OpenAPI } from "../../../rest";
+import type { Dataset } from "../../../rest";
 import {
   CAMERA_FAR,
   CAMERA_FOV,
@@ -61,12 +61,15 @@ function ThreeDViewer() {
       const viewerData = workspace.visibilities[neuronId]?.[ViewerType.ThreeD];
       const urls = getNeuronUrlForDataset(neuron, selectedDataset.id);
 
-      return urls.map((url, index) => ({
-        id: `${neuronId}-${index}`,
-        url: `${OpenAPI.BASE}/${url}`,
-        color: viewerData?.color || "#FFFFFF",
-        opacity: 1,
-      }));
+      return urls.map((url) => {
+        const neuronName = url.match(/([^/]+)(\.[^/]*)?$/)?.[1].replace(/(\.[^/]*)?$/, "");
+        return {
+          id: `${neuronName}`,
+          url,
+          color: viewerData?.color || "#FFFFFF",
+          opacity: 1,
+        };
+      });
     });
 
     setInstances(newInstances);
