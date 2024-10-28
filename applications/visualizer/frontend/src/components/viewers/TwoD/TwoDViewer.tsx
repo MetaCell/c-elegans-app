@@ -436,7 +436,7 @@ const TwoDViewer = () => {
     }
     for (const node of cyRef.current.nodes()) {
       if (node.hasClass("groupNode")) {
-        return;
+        continue;
       }
       const nodeId = node.id();
       const group = workspace.neuronGroups[nodeId];
