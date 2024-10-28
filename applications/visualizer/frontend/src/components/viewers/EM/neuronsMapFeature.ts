@@ -1,6 +1,4 @@
 import Feature, { FeatureLike } from "ol/Feature";
-import { Geometry } from "ol/geom";
-import VectorLayer from "ol/layer/Vector";
 import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
