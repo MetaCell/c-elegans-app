@@ -36,6 +36,11 @@ export interface ThreeDViewerData {
   color: string;
 }
 
+export interface EMViewerData {
+  visibility: Visibility;
+  color?: string;
+}
+
 export function getDefaultViewerData(visibility?: Visibility): ViewerData {
   return {
     [ViewerType.Graph]: {
@@ -46,13 +51,16 @@ export function getDefaultViewerData(visibility?: Visibility): ViewerData {
       visibility: visibility ?? Visibility.Hidden,
       color: "#000000",
     },
+    [ViewerType.EM]: {
+      visibility: visibility ?? Visibility.Hidden,
+    },
   };
 }
 
 export interface ViewerData {
   [ViewerType.Graph]?: GraphViewerData;
   [ViewerType.ThreeD]?: ThreeDViewerData;
-  [ViewerType.EM]?: any; // Define specific data for EM viewer if needed
+  [ViewerType.EM]?: EMViewerData;
   [ViewerType.InstanceDetails]?: any; // Define specific data for Instance Details viewer if needed
 }
 

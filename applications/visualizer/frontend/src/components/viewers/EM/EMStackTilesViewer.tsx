@@ -1,7 +1,6 @@
 import { Box } from "@mui/material";
 import "ol/ol.css";
-import { type Feature, Map as OLMap, View } from "ol";
-import type { FeatureLike } from "ol/Feature";
+import { Feature, Map as OLMap, View } from "ol";
 import ScaleLine from "ol/control/ScaleLine";
 import { shiftKeyOnly } from "ol/events/condition";
 import { getCenter } from "ol/extent";
@@ -12,60 +11,25 @@ import VectorLayer from "ol/layer/Vector";
 import { Projection } from "ol/proj";
 import { XYZ } from "ol/source";
 import VectorSource from "ol/source/Vector";
-import Fill from "ol/style/Fill";
-import Stroke from "ol/style/Stroke";
-import Style from "ol/style/Style";
-import Text from "ol/style/Text";
 import { TileGrid } from "ol/tilegrid";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { SlidingRing } from "../../../helpers/slidingRing";
 import { getEMDataURL, getSegmentationURL, ViewerType } from "../../../models/models.ts";
 import type { Dataset } from "../../../rest/index.ts";
 import SceneControls from "./SceneControls.tsx";
+import { neuronFeatureName, neuronsStyle } from "./neuronsMapFeature.ts";
+import { useSelectNeuron } from "./hooks.ts";
 
-const getFeatureStyle = (feature: FeatureLike) => {
-  const opacity = 0.2;
-  const [r, g, b] = feature.get("color");
-  const rgbaColor = `rgba(${r}, ${g}, ${b}, ${opacity})`;
-
-  return new Style({
-    stroke: new Stroke({
-      color: [r, g, b],
-      width: 2,
+const newSegLayer = (dataset: Dataset, slice: number) => {
+  return new VectorLayer({
+    source: new VectorSource({
+      url: getSegmentationURL(dataset, slice),
+      format: new GeoJSON(),
     }),
-    fill: new Fill({
-      color: rgbaColor,
-    }),
+    style: neuronsStyle,
+    zIndex: 1,
   });
-};
-
-const getHighlightFeatureStyle = (feature: FeatureLike) => {
-  const opacity = 0.5;
-  const [r, g, b] = feature.get("color");
-  const rgbaColor = `rgba(${r}, ${g}, ${b}, ${opacity})`;
-
-  return new Style({
-    stroke: new Stroke({
-      color: [r, g, b],
-      width: 4,
-    }),
-    fill: new Fill({
-      color: rgbaColor,
-    }),
-    text: new Text({
-      text: feature.get("name"),
-      scale: 2,
-    }),
-  });
-};
-
-const resetStyle = (feature: Feature) => {
-  feature.setStyle(getFeatureStyle(feature));
-};
-
-const setHighlightStyle = (feature: Feature) => {
-  feature.setStyle(getHighlightFeatureStyle(feature));
 };
 
 const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, projection: Projection): TileLayer<XYZ> => {
@@ -80,6 +44,24 @@ const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, project
   });
 };
 
+function setFlagPropertyOnNeurons(layer: VectorLayer<Feature>, property: string, neurons: string[]) {
+  const neuronSet = new Set(neurons);
+
+  const source = layer.getSource();
+  if (!source) return;
+
+  const features = source.getFeatures();
+  features.forEach((feature) => {
+    const neuronName = neuronFeatureName(feature);
+    const shouldBeEnabled = neuronSet.has(neuronName);
+
+    const currentValue = feature.get(property);
+    if (currentValue !== shouldBeEnabled) {
+      feature.set(property, shouldBeEnabled);
+    }
+  });
+}
+
 const scale = new ScaleLine({
   units: "metric",
 });
@@ -92,7 +74,6 @@ const interactions = defaultInteractions({
   }),
 ]);
 
-// const EMStackViewer = ({ dataset }: EMStackViewerParameters) => {
 const EMStackViewer = () => {
   const currentWorkspace = useGlobalContext().getCurrentWorkspace();
   const selectedNeurons = currentWorkspace.getViewerSelectedNeurons(ViewerType.EM);
@@ -105,10 +86,11 @@ const EMStackViewer = () => {
 
   const mapRef = useRef<OLMap | null>(null);
   const currSegLayer = useRef<VectorLayer<Feature> | null>(null);
-  const clickedFeature = useRef<Feature | null>(null);
 
   const ringEM = useRef<SlidingRing<TileLayer<XYZ>>>();
   const ringSeg = useRef<SlidingRing<VectorLayer<Feature>>>();
+
+  const hadleSelectNeuron = useSelectNeuron(currSegLayer);
 
   const startZoom = useMemo(() => {
     const emData = firstActiveDataset.emData;
@@ -138,47 +120,18 @@ const EMStackViewer = () => {
     });
   }, [extent, firstActiveDataset.emData.tileSize]);
 
-  const segLayerStyle = (feature: FeatureLike) => {
-    const properties = feature.getProperties();
-    if (!properties.hasOwnProperty("name")) {
-      throw Error("segment doesn't have a name property");
-    }
-    const neuronName = properties["name"];
-    if (typeof neuronName !== "string") {
-      throw Error("segment name is not a string");
-    }
-
-    if (!selectedNeurons.length) {
-      return getFeatureStyle(feature);
-    }
-
-    if (neuronName in selectedNeurons) {
-      return getHighlightFeatureStyle(feature);
-    }
-
-    return new Style({});
-  };
-
-  const newSegLayer = useCallback(
-    (dataset: Dataset, slice: number) => {
-      return new VectorLayer({
-        source: new VectorSource({
-          url: getSegmentationURL(dataset, slice),
-          format: new GeoJSON(),
-        }),
-        style: segLayerStyle,
-        zIndex: 1,
-      });
-    },
-    [selectedNeurons],
-  );
-
   // const debugLayer = new TileLayer({
   // 	source: new TileDebug({
   // 		projection: projection,
   // 		tileGrid: tilegrid,
   // 	}),
   // });
+
+  useEffect(() => {
+    if (!currSegLayer.current) return;
+
+    setFlagPropertyOnNeurons(currSegLayer.current, "active", currentWorkspace.getVisibleNeuronsInEM());
+  }, [currentWorkspace, setFlagPropertyOnNeurons]);
 
   useEffect(() => {
     if (mapRef.current) {
@@ -231,6 +184,10 @@ const EMStackViewer = () => {
       },
       onSelected: (_, layer) => {
         layer.setOpacity(1);
+
+        setFlagPropertyOnNeurons(layer, "selected", selectedNeurons);
+        setFlagPropertyOnNeurons(layer, "active", currentWorkspace.getVisibleNeuronsInEM());
+
         currSegLayer.current = layer;
       },
       onUnselected: (_, layer) => {
@@ -248,23 +205,12 @@ const EMStackViewer = () => {
       if (features.length === 0) return;
 
       const feature = features[0];
-      if (clickedFeature.current) {
-        resetStyle(clickedFeature.current);
-      }
-
       if (feature) {
-        setHighlightStyle(feature as Feature);
-        clickedFeature.current = feature as Feature;
-        console.log("Feature", feature.get("name"), feature);
+        hadleSelectNeuron(feature);
       }
     });
 
-    map.getTargetElement().addEventListener("wheel", (e) => {
-      if (e.shiftKey) {
-        return;
-      }
-
-      e.preventDefault();
+    function handleSliceScroll(e: WheelEvent) {
       const scrollUp = e.deltaY < 0;
 
       if (scrollUp) {
@@ -274,6 +220,28 @@ const EMStackViewer = () => {
         ringEM.current.prev();
         ringSeg.current.prev();
       }
+    }
+
+    function handleZoomScroll(e: WheelEvent) {
+      const scrollUp = e.deltaY < 0;
+
+      const view = map.getView();
+      const zoom = view.getZoom();
+
+      if (scrollUp) {
+        view.setZoom(view.getConstrainedZoom(zoom + 1, 1));
+      } else {
+        view.setZoom(view.getConstrainedZoom(zoom - 1, -1));
+      }
+    }
+
+    map.getTargetElement().addEventListener("wheel", (e) => {
+      e.preventDefault();
+      if (e.shiftKey) {
+        handleZoomScroll(e);
+        return;
+      }
+      handleSliceScroll(e);
     });
 
     // set map zoom to the minimum zoom possible
@@ -332,7 +300,7 @@ const EMStackViewer = () => {
 
 export default EMStackViewer;
 
-function printEMView(map: OLMap) {
+export function printEMView(map: OLMap) {
   const mapCanvas = document.createElement("canvas");
 
   const size = map.getSize();

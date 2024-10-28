@@ -116,6 +116,7 @@ export class Workspace {
     // todo: add actions for other viewers
     this.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Hidden;
     this.visibilities[neuronId][ViewerType.ThreeD].visibility = Visibility.Hidden;
+    this.visibilities[neuronId][ViewerType.EM].visibility = Visibility.Hidden;
   }
 
   @triggerUpdate
@@ -126,6 +127,7 @@ export class Workspace {
     // todo: add actions for other viewers
     this.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Visible;
     this.visibilities[neuronId][ViewerType.ThreeD].visibility = Visibility.Visible;
+    this.visibilities[neuronId][ViewerType.EM].visibility = Visibility.Visible;
   }
 
   @triggerUpdate
@@ -260,6 +262,10 @@ export class Workspace {
 
   getVisibleNeuronsInThreeD(): string[] {
     return Array.from(this.activeNeurons).filter((neuronId) => this.visibilities[neuronId]?.[ViewerType.ThreeD]?.visibility === Visibility.Visible);
+  }
+
+  getVisibleNeuronsInEM(): string[] {
+    return Array.from(this.activeNeurons).filter((neuronId) => this.visibilities[neuronId]?.[ViewerType.EM]?.visibility === Visibility.Visible);
   }
 
   changeNeuronColorForViewers(neuronId: string, color: string): void {
