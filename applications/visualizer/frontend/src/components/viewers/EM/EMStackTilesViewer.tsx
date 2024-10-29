@@ -44,6 +44,7 @@ const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, project
   });
 };
 
+// sets a property, on each feature in the layer, to true is that neuron exist in neurons, otherwise to false
 function setFlagPropertyOnNeurons(layer: VectorLayer<Feature>, property: string, neurons: string[]) {
   const neuronSet = new Set(neurons);
 
@@ -129,9 +130,9 @@ const EMStackViewer = () => {
 
   useEffect(() => {
     if (!currSegLayer.current) return;
-
-    setFlagPropertyOnNeurons(currSegLayer.current, "active", currentWorkspace.getVisibleNeuronsInEM());
-  }, [currentWorkspace, setFlagPropertyOnNeurons]);
+    const visibleNeurons = currentWorkspace.getVisibleNeuronsInEM();
+    setFlagPropertyOnNeurons(currSegLayer.current, "active", visibleNeurons);
+  }, [currentWorkspace]);
 
   useEffect(() => {
     if (mapRef.current) {
@@ -185,8 +186,18 @@ const EMStackViewer = () => {
       onSelected: (_, layer) => {
         layer.setOpacity(1);
 
-        setFlagPropertyOnNeurons(layer, "selected", selectedNeurons);
-        setFlagPropertyOnNeurons(layer, "active", currentWorkspace.getVisibleNeuronsInEM());
+        const source = layer.getSource();
+
+        // features may not have loaded in some cases (e.g. first layer paint)
+        if (!source.getFeatures().length) {
+          source.once("featuresloadend", function () {
+            setFlagPropertyOnNeurons(layer, "selected", selectedNeurons);
+            setFlagPropertyOnNeurons(layer, "active", currentWorkspace.getVisibleNeuronsInEM());
+          });
+        } else {
+          setFlagPropertyOnNeurons(layer, "selected", selectedNeurons);
+          setFlagPropertyOnNeurons(layer, "active", currentWorkspace.getVisibleNeuronsInEM());
+        }
 
         currSegLayer.current = layer;
       },
