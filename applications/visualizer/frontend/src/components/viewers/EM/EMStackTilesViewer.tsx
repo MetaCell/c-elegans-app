@@ -77,7 +77,6 @@ const interactions = defaultInteractions({
 
 const EMStackViewer = () => {
   const currentWorkspace = useGlobalContext().getCurrentWorkspace();
-  const selectedNeurons = currentWorkspace.getViewerSelectedNeurons(ViewerType.EM);
 
   // We take the first active dataset at the moment (will change later)
   const firstActiveDataset = Object.values(currentWorkspace.activeDatasets)?.[0];
@@ -186,6 +185,7 @@ const EMStackViewer = () => {
       onSelected: (_, layer) => {
         layer.setOpacity(1);
 
+        const selectedNeurons = currentWorkspace.getViewerSelectedNeurons(ViewerType.EM);
         const source = layer.getSource();
 
         // features may not have loaded in some cases (e.g. first layer paint)
