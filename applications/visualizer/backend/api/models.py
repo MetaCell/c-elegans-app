@@ -3,14 +3,12 @@ from django.db.models import (
     BooleanField,
     FloatField,
     ForeignKey,
-    IntegerField,
     JSONField,
     Model,
     CharField,
     PositiveIntegerField,
     PositiveSmallIntegerField,
     TextField,
-    SmallIntegerField,
     UniqueConstraint,
 )
 
@@ -154,3 +152,11 @@ class Synapse(Model):
                 name="unique_synapse",
             )
         ]
+
+
+class ViewerConfig(Model):
+    dataset = ForeignKey(
+        to=Dataset, on_delete=CASCADE, db_index=True, related_name="config"
+    )
+    em_config = JSONField(null=True)
+    segmentation_config = JSONField(null=True)

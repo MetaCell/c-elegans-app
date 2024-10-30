@@ -9,7 +9,7 @@ export type EMData = {
     tileSize: any[];
     sliceRange: any[];
     resourceUrl: string;
-    segmentationUrl: string;
-    segmentationSize: any[];
+    segmentationUrl: (string | null);
+    segmentationSize: (any[] | null);
 };
 

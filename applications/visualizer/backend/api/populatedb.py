@@ -1,7 +1,8 @@
 import json
 from pathlib import Path
 from operator import itemgetter
-from .models import Dataset, Neuron, Annotation, Connection, Synapse
+from .models import Dataset, Neuron, Annotation, Connection, Synapse, ViewerConfig
+from django.conf import settings
 
 
 # Will be populated by the ingest_neurons function
@@ -38,6 +39,35 @@ def populate_datasets(path, print, print_success):
         ],
         ignore_conflicts=True,
     )
+    print_success("\t\t[OK]")
+
+
+def populate_config(path: Path, print, print_success):
+    print("Populate Dataset configs...", ending="")
+    MetadataFetcher = settings.METADATA_DOWNLOADER
+
+    configs = []
+    for dataset in Dataset.objects.all():
+        dataset_id = dataset.id
+        em_config = MetadataFetcher.get_em_metadata(dataset_id)
+        segmentation_config = MetadataFetcher.get_segmentation_metadata(dataset_id)
+        if not em_config and not segmentation_config:
+            continue
+        print(f"\n   . adding config for {dataset_id}")
+        if em_config:
+            print("     identified EM config", ending="")
+        if segmentation_config:
+            print("\n     identified SEG config", ending="")
+
+        configs.append(
+            ViewerConfig(
+                em_config=em_config,
+                segmentation_config=segmentation_config,
+                dataset=Dataset.objects.get(id=dataset_id),
+            )
+        )
+
+    ViewerConfig.objects.bulk_create(configs, ignore_conflicts=True)
     print_success("\t\t[OK]")
 
 
@@ -265,6 +295,7 @@ def populate_synapses(_, print, print_success):
 populate_functions = [
     clear_db,
     populate_datasets,
+    populate_config,
     populate_neurons,
     populate_annotations,
     populate_connections,

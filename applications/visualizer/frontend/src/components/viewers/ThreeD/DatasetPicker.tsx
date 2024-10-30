@@ -23,7 +23,7 @@ const DatasetPicker: React.FC<DatasetPickerProps> = ({ datasets, selectedDataset
       onChange={(newValue) => onDatasetChange(newValue)}
       getOptionLabel={(option: Dataset) => option.name}
       renderOption={(props, option) => (
-        <li {...props}>
+        <li {...props} key={`3Dviewer_dataset_${option.name}`}>
           <CheckIcon />
           <Typography>{option.name}</Typography>
         </li>
