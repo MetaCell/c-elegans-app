@@ -12,25 +12,14 @@ import { Projection } from "ol/proj";
 import { XYZ } from "ol/source";
 import VectorSource from "ol/source/Vector";
 import { TileGrid } from "ol/tilegrid";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { SlidingRing } from "../../../helpers/slidingRing";
 import { getEMDataURL, getSegmentationURL, ViewerType } from "../../../models/models.ts";
 import type { Dataset } from "../../../rest/index.ts";
 import SceneControls from "./SceneControls.tsx";
-import { neuronFeatureName, neuronsStyle } from "./neuronsMapFeature.ts";
-import { useSelectNeuron } from "./hooks.ts";
-
-const newSegLayer = (dataset: Dataset, slice: number) => {
-  return new VectorLayer({
-    source: new VectorSource({
-      url: getSegmentationURL(dataset, slice),
-      format: new GeoJSON(),
-    }),
-    style: neuronsStyle,
-    zIndex: 1,
-  });
-};
+import { isNeuronVisible, neuronFeatureName, neuronsStyle } from "./neuronsMapFeature.ts";
+import { Geometry } from "ol/geom";
 
 const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, projection: Projection): TileLayer<XYZ> => {
   return new TileLayer({
@@ -44,7 +33,18 @@ const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, project
   });
 };
 
-// sets a property, on each feature in the layer, to true is that neuron exist in neurons, otherwise to false
+const newSegLayer = (dataset: Dataset, slice: number) => {
+  return new VectorLayer({
+    source: new VectorSource({
+      url: getSegmentationURL(dataset, slice),
+      format: new GeoJSON(),
+    }),
+    style: neuronsStyle,
+    zIndex: 1,
+  });
+};
+
+// sets a property, on each feature in the layer, to true if that neuron exists in neurons, otherwise to false
 function setFlagPropertyOnNeurons(layer: VectorLayer<Feature>, property: string, neurons: string[]) {
   const neuronSet = new Set(neurons);
 
@@ -90,8 +90,6 @@ const EMStackViewer = () => {
   const ringEM = useRef<SlidingRing<TileLayer<XYZ>>>();
   const ringSeg = useRef<SlidingRing<VectorLayer<Feature>>>();
 
-  const hadleSelectNeuron = useSelectNeuron(currSegLayer);
-
   const startZoom = useMemo(() => {
     const emData = firstActiveDataset.emData;
     if (!emData) {
@@ -128,10 +126,33 @@ const EMStackViewer = () => {
   // });
 
   useEffect(() => {
-    if (!currSegLayer.current) return;
-    const visibleNeurons = currentWorkspace.getVisibleNeuronsInEM();
-    setFlagPropertyOnNeurons(currSegLayer.current, "active", visibleNeurons);
+    if (!currSegLayer.current) {
+      return;
+    }
+
+    setFlagPropertyOnNeurons(currSegLayer.current, "active", currentWorkspace.getVisibleNeuronsInEM());
+    setFlagPropertyOnNeurons(currSegLayer.current, "selected", currentWorkspace.getViewerSelectedNeurons(ViewerType.EM));
   }, [currentWorkspace]);
+
+  const onSelectNeuron = useCallback(
+    (feature: Feature<Geometry>) => {
+      const neuronName = neuronFeatureName(feature);
+
+      // should not be able to click on hidden neurons
+      if (!isNeuronVisible(feature)) return;
+
+      const selectedNeurons = currentWorkspace.getViewerSelectedNeurons(ViewerType.EM);
+      const isSelected = selectedNeurons.includes(neuronName);
+
+      if (isSelected) {
+        currentWorkspace.removeSelection(neuronName, ViewerType.EM);
+        return;
+      }
+
+      currentWorkspace.addSelection(neuronName, ViewerType.EM);
+    },
+    [currentWorkspace],
+  );
 
   useEffect(() => {
     if (mapRef.current) {
@@ -185,18 +206,17 @@ const EMStackViewer = () => {
       onSelected: (_, layer) => {
         layer.setOpacity(1);
 
-        const selectedNeurons = currentWorkspace.getViewerSelectedNeurons(ViewerType.EM);
         const source = layer.getSource();
 
         // features may not have loaded in some cases (e.g. first layer paint)
         if (!source.getFeatures().length) {
           source.once("featuresloadend", function () {
-            setFlagPropertyOnNeurons(layer, "selected", selectedNeurons);
             setFlagPropertyOnNeurons(layer, "active", currentWorkspace.getVisibleNeuronsInEM());
+            setFlagPropertyOnNeurons(layer, "selected", currentWorkspace.getViewerSelectedNeurons(ViewerType.EM));
           });
         } else {
-          setFlagPropertyOnNeurons(layer, "selected", selectedNeurons);
           setFlagPropertyOnNeurons(layer, "active", currentWorkspace.getVisibleNeuronsInEM());
+          setFlagPropertyOnNeurons(layer, "selected", currentWorkspace.getViewerSelectedNeurons(ViewerType.EM));
         }
 
         currSegLayer.current = layer;
@@ -217,7 +237,7 @@ const EMStackViewer = () => {
 
       const feature = features[0];
       if (feature) {
-        hadleSelectNeuron(feature);
+        onSelectNeuron(feature);
       }
     });
 
