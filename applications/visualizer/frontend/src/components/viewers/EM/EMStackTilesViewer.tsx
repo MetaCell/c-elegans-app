@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import "ol/ol.css";
-import { Feature, Map as OLMap, View } from "ol";
+import { Feature, MapBrowserEvent, Map as OLMap, View } from "ol";
 import ScaleLine from "ol/control/ScaleLine";
 import { shiftKeyOnly } from "ol/events/condition";
 import { getCenter } from "ol/extent";
@@ -185,6 +185,26 @@ const EMStackViewer = () => {
     [currentWorkspace],
   );
 
+  const onClick = useCallback(
+    (evt: MapBrowserEvent<any>) => {
+      if (!currSegLayer.current) return;
+
+      const features = currSegLayer.current.getSource().getFeaturesAtCoordinate(evt.coordinate);
+      if (features.length === 0) return;
+
+      const feature = features[0];
+      if (feature) {
+        onSelectNeuron(feature);
+      }
+    },
+    [onSelectNeuron],
+  );
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    mapRef.current.on("click", onClick);
+  }, [onClick]);
+
   useEffect(() => {
     if (mapRef.current) {
       return;
@@ -248,18 +268,7 @@ const EMStackViewer = () => {
     });
 
     refreshNeuronProperties();
-
-    map.on("click", (evt) => {
-      if (!currSegLayer.current) return;
-
-      const features = currSegLayer.current.getSource().getFeaturesAtCoordinate(evt.coordinate);
-      if (features.length === 0) return;
-
-      const feature = features[0];
-      if (feature) {
-        onSelectNeuron(feature);
-      }
-    });
+    map.on("click", onClick);
 
     function handleSliceScroll(e: WheelEvent) {
       const scrollUp = e.deltaY < 0;
