@@ -18,7 +18,7 @@ import { SlidingRing } from "../../../helpers/slidingRing";
 import { getEMDataURL, getSegmentationURL, ViewerType } from "../../../models/models.ts";
 import type { Dataset } from "../../../rest/index.ts";
 import SceneControls from "./SceneControls.tsx";
-import { isNeuronVisible, neuronFeatureName, neuronsStyle } from "./neuronsMapFeature.ts";
+import { hexToRGBArray, isNeuronVisible, neuronFeatureName, neuronsStyle } from "./neuronsMapFeature.ts";
 import { Geometry } from "ol/geom";
 
 const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, projection: Projection): TileLayer<XYZ> => {
@@ -43,25 +43,6 @@ const newSegLayer = (dataset: Dataset, slice: number) => {
     zIndex: 1,
   });
 };
-
-// sets a property, on each feature in the layer, to true if that neuron exists in neurons, otherwise to false
-function setFlagPropertyOnNeurons(layer: VectorLayer<Feature>, property: string, neurons: string[]) {
-  const neuronSet = new Set(neurons);
-
-  const source = layer.getSource();
-  if (!source) return;
-
-  const features = source.getFeatures();
-  features.forEach((feature) => {
-    const neuronName = neuronFeatureName(feature);
-    const shouldBeEnabled = neuronSet.has(neuronName);
-
-    const currentValue = feature.get(property);
-    if (currentValue !== shouldBeEnabled) {
-      feature.set(property, shouldBeEnabled);
-    }
-  });
-}
 
 const scale = new ScaleLine({
   units: "metric",
@@ -132,16 +113,51 @@ const EMStackViewer = () => {
     if (!layer) return;
 
     const source = layer.getSource();
+    if (!source) return;
 
-    // features may not have loaded in some cases (e.g. first layer paint)
+    const visibilities = currentWorkspace.visibilities;
+    const visibleNeurons = new Set(currentWorkspace.getVisibleNeuronsInEM());
+    const selectedNeurons = new Set(currentWorkspace.getViewerSelectedNeurons(ViewerType.EM));
+
+    const updateNeuronFeatures = () => {
+      const features = source.getFeatures();
+      features.forEach((feature) => {
+        const neuronName = neuronFeatureName(feature);
+
+        {
+          const property = "active";
+          const shouldBeEnabled = visibleNeurons.has(neuronName);
+
+          const currentValue = feature.get(property);
+          if (currentValue !== shouldBeEnabled) {
+            feature.set(property, shouldBeEnabled);
+          }
+        }
+
+        {
+          const property = "selected";
+          const shouldBeEnabled = selectedNeurons.has(neuronName);
+
+          const currentValue = feature.get(property);
+          if (currentValue !== shouldBeEnabled) {
+            feature.set(property, shouldBeEnabled);
+          }
+        }
+
+        if (visibleNeurons.has(neuronName)) {
+          const color = visibilities[neuronName][ViewerType.EM].color;
+          feature.set("color", hexToRGBArray(color));
+        }
+      });
+    };
+
+    // features may not have loaded in some cases where this function is called
     if (!source.getFeatures().length) {
       source.once("featuresloadend", function () {
-        setFlagPropertyOnNeurons(layer, "active", currentWorkspace.getVisibleNeuronsInEM());
-        setFlagPropertyOnNeurons(layer, "selected", currentWorkspace.getViewerSelectedNeurons(ViewerType.EM));
+        updateNeuronFeatures();
       });
     } else {
-      setFlagPropertyOnNeurons(layer, "active", currentWorkspace.getVisibleNeuronsInEM());
-      setFlagPropertyOnNeurons(layer, "selected", currentWorkspace.getViewerSelectedNeurons(ViewerType.EM));
+      updateNeuronFeatures();
     }
   };
 

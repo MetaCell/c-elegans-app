@@ -38,7 +38,7 @@ export interface ThreeDViewerData {
 
 export interface EMViewerData {
   visibility: Visibility;
-  color?: string;
+  color: string;
 }
 
 export function getDefaultViewerData(visibility?: Visibility): ViewerData {
@@ -53,6 +53,7 @@ export function getDefaultViewerData(visibility?: Visibility): ViewerData {
     },
     [ViewerType.EM]: {
       visibility: visibility ?? Visibility.Hidden,
+      color: "#000000",
     },
   };
 }
