@@ -1,6 +1,6 @@
 import { Outlines } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
-import type { FC } from "react";
+import { useCallback, type FC } from "react";
 import { useSelector } from "react-redux";
 import { type BufferGeometry, DoubleSide, NormalBlending } from "three";
 import { useGlobalContext } from "../../../contexts/GlobalContext";
@@ -23,20 +23,23 @@ const STLMesh: FC<Props> = ({ id, color, opacity, renderOrder, isWireframe, stl 
   const { workspaces } = useGlobalContext();
   const workspaceId = useSelector((state: RootState) => state.workspaceId);
   const workspace: Workspace = workspaces[workspaceId];
-  const selectedNeurons = workspace.getViewerSelectedNeurons(ViewerType.Graph);
+  const selectedNeurons = workspace.getViewerSelectedNeurons(ViewerType.ThreeD);
   const isSelected = selectedNeurons.includes(id);
 
-  const onClick = (event: ThreeEvent<MouseEvent>) => {
-    const clicked = getFurthestIntersectedObject(event);
-    const { id } = clicked.userData;
-    if (clicked) {
-      if (isSelected) {
-        console.log(`Neurons selected: ${id}`);
-      } else {
-        console.log(`Neurons un selected: ${id}`);
+  const onClick = useCallback(
+    (event: ThreeEvent<MouseEvent>) => {
+      const clicked = getFurthestIntersectedObject(event);
+      const { id } = clicked.userData;
+      if (clicked) {
+        if (isSelected) {
+          workspace.removeSelection(id, ViewerType.ThreeD);
+        } else {
+          workspace.addSelection(id, ViewerType.ThreeD);
+        }
       }
-    }
-  };
+    },
+    [workspace],
+  );
 
   return (
     <mesh userData={{ id }} onClick={onClick} frustumCulled={false} renderOrder={renderOrder}>
