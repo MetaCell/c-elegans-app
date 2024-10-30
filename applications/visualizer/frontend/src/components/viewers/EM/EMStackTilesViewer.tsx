@@ -12,7 +12,7 @@ import { Projection } from "ol/proj";
 import { XYZ } from "ol/source";
 import VectorSource from "ol/source/Vector";
 import { TileGrid } from "ol/tilegrid";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { SlidingRing } from "../../../helpers/slidingRing";
 import { getEMDataURL, getSegmentationURL, ViewerType } from "../../../models/models.ts";
@@ -82,6 +82,7 @@ const EMStackViewer = () => {
   const firstActiveDataset = Object.values(currentWorkspace.activeDatasets)?.[0];
   const [minSlice, maxSlice] = firstActiveDataset.emData.sliceRange;
   const startSlice = Math.floor((maxSlice + minSlice) / 2);
+  const [segSlice, segSetSlice] = useState<number>(startSlice);
   const ringSize = 11;
 
   const mapRef = useRef<OLMap | null>(null);
@@ -125,14 +126,28 @@ const EMStackViewer = () => {
   // 	}),
   // });
 
-  useEffect(() => {
-    if (!currSegLayer.current) {
-      return;
-    }
+  // Sets the neuron feature properties for the style in the viewer.
+  const refreshNeuronProperties = () => {
+    const layer = currSegLayer.current;
+    if (!layer) return;
 
-    setFlagPropertyOnNeurons(currSegLayer.current, "active", currentWorkspace.getVisibleNeuronsInEM());
-    setFlagPropertyOnNeurons(currSegLayer.current, "selected", currentWorkspace.getViewerSelectedNeurons(ViewerType.EM));
-  }, [currentWorkspace]);
+    const source = layer.getSource();
+
+    // features may not have loaded in some cases (e.g. first layer paint)
+    if (!source.getFeatures().length) {
+      source.once("featuresloadend", function () {
+        setFlagPropertyOnNeurons(layer, "active", currentWorkspace.getVisibleNeuronsInEM());
+        setFlagPropertyOnNeurons(layer, "selected", currentWorkspace.getViewerSelectedNeurons(ViewerType.EM));
+      });
+    } else {
+      setFlagPropertyOnNeurons(layer, "active", currentWorkspace.getVisibleNeuronsInEM());
+      setFlagPropertyOnNeurons(layer, "selected", currentWorkspace.getViewerSelectedNeurons(ViewerType.EM));
+    }
+  };
+
+  useEffect(() => {
+    refreshNeuronProperties();
+  }, [currentWorkspace, segSlice]);
 
   const onSelectNeuron = useCallback(
     (feature: Feature<Geometry>) => {
@@ -203,23 +218,10 @@ const EMStackViewer = () => {
         map.addLayer(layer);
         return layer;
       },
-      onSelected: (_, layer) => {
+      onSelected: (slice, layer) => {
         layer.setOpacity(1);
-
-        const source = layer.getSource();
-
-        // features may not have loaded in some cases (e.g. first layer paint)
-        if (!source.getFeatures().length) {
-          source.once("featuresloadend", function () {
-            setFlagPropertyOnNeurons(layer, "active", currentWorkspace.getVisibleNeuronsInEM());
-            setFlagPropertyOnNeurons(layer, "selected", currentWorkspace.getViewerSelectedNeurons(ViewerType.EM));
-          });
-        } else {
-          setFlagPropertyOnNeurons(layer, "active", currentWorkspace.getVisibleNeuronsInEM());
-          setFlagPropertyOnNeurons(layer, "selected", currentWorkspace.getViewerSelectedNeurons(ViewerType.EM));
-        }
-
         currSegLayer.current = layer;
+        segSetSlice(slice);
       },
       onUnselected: (_, layer) => {
         layer.setOpacity(0);
@@ -228,6 +230,8 @@ const EMStackViewer = () => {
         map.removeLayer(layer);
       },
     });
+
+    refreshNeuronProperties();
 
     map.on("click", (evt) => {
       if (!currSegLayer.current) return;
@@ -311,6 +315,8 @@ const EMStackViewer = () => {
 
     const minZoomAvailable = view.getMinZoom();
     view.setZoom(minZoomAvailable);
+
+    refreshNeuronProperties();
   };
 
   const onPrint = () => {
