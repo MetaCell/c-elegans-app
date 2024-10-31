@@ -60,11 +60,11 @@ const STLViewer: FC<Props> = ({ instances, isWireframe }) => {
       <group frustumCulled={false}>
         {stlObjects.map((stl, idx) => (
           <STLMesh
-            key={instances[idx].id}
-            id={instances[idx].id}
+            key={instances[idx]?.id}
+            id={instances[idx]?.id}
             stl={stl}
-            opacity={instances[idx].opacity}
-            color={instances[idx].color}
+            opacity={instances[idx]?.opacity}
+            color={instances[idx]?.color}
             renderOrder={idx}
             isWireframe={isWireframe}
           />

@@ -36,6 +36,11 @@ export interface ThreeDViewerData {
   color: string;
 }
 
+function getRandomColor(): string {
+  return `#${Math.floor(Math.random() * 16777215)
+    .toString(16)
+    .padStart(6, "0")}`;
+}
 export function getDefaultViewerData(visibility?: Visibility): ViewerData {
   return {
     [ViewerType.Graph]: {
@@ -44,7 +49,7 @@ export function getDefaultViewerData(visibility?: Visibility): ViewerData {
     },
     [ViewerType.ThreeD]: {
       visibility: visibility ?? Visibility.Hidden,
-      color: "#000000",
+      color: getRandomColor(),
     },
   };
 }
