@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import "ol/ol.css";
-import { Feature, MapBrowserEvent, Map as OLMap, View } from "ol";
+import { Feature, Map as OLMap, View } from "ol";
 import ScaleLine from "ol/control/ScaleLine";
 import { shiftKeyOnly } from "ol/events/condition";
 import { getCenter } from "ol/extent";
@@ -12,14 +12,16 @@ import { Projection } from "ol/proj";
 import { XYZ } from "ol/source";
 import VectorSource from "ol/source/Vector";
 import { TileGrid } from "ol/tilegrid";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { SlidingRing } from "../../../helpers/slidingRing";
 import { getEMDataURL, getSegmentationURL, ViewerType } from "../../../models/models.ts";
 import type { Dataset } from "../../../rest/index.ts";
 import SceneControls from "./SceneControls.tsx";
-import { hexToRGBArray, isNeuronVisible, neuronFeatureName, neuronsStyle } from "./neuronsMapFeature.ts";
-import { Geometry } from "ol/geom";
+import { activeNeuronStyle, neuronFeatureName, selectedNeuronStyle } from "./neuronsMapFeature.ts";
+import { FeatureLike } from "ol/Feature";
+import { Workspace } from "../../../models/workspace.ts";
+import { Coordinate } from "ol/coordinate";
 
 const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, projection: Projection): TileLayer<XYZ> => {
   return new TileLayer({
@@ -39,10 +41,61 @@ const newSegLayer = (dataset: Dataset, slice: number) => {
       url: getSegmentationURL(dataset, slice),
       format: new GeoJSON(),
     }),
-    style: neuronsStyle,
     zIndex: 1,
   });
 };
+
+function neuronsStyle(feature: FeatureLike, workspace: Workspace) {
+  const neuronName = neuronFeatureName(feature);
+
+  const visibleNeurons = workspace.getVisibleNeuronsInEM();
+  const visibleNeuron = visibleNeurons.find((neuron) => neuron === neuronName);
+  const color = visibleNeuron ? workspace.visibilities[neuronName][ViewerType.EM].color : undefined;
+
+  let selectedNeuron = workspace.getViewerSelectedNeurons(ViewerType.EM).find((neuron) => neuron === neuronName);
+  if (selectedNeuron) {
+    return selectedNeuronStyle(feature, color);
+  }
+
+  if (visibleNeuron) {
+    return activeNeuronStyle(feature, color);
+  }
+
+  return null;
+}
+
+function isNeuronVisible(neuronId: string, workspace: Workspace): boolean {
+  const inVisibles = workspace.getVisibleNeuronsInEM().find((n) => n === neuronId);
+  if (inVisibles) {
+    return true;
+  }
+
+  return workspace.getViewerSelectedNeurons(ViewerType.EM).find((n) => n === neuronId) != undefined;
+}
+
+function onNeuronSelect(position: Coordinate, source: VectorSource<Feature> | undefined, workspace: Workspace) {
+  const features = source?.getFeaturesAtCoordinate(position);
+  if (!features || features.length === 0) {
+    return;
+  }
+
+  const feature = features[0];
+  const neuronName = neuronFeatureName(feature);
+
+  if (!isNeuronVisible(neuronName, workspace)) {
+    return;
+  }
+
+  const selectedNeurons = workspace.getViewerSelectedNeurons(ViewerType.EM);
+  const isSelected = selectedNeurons.includes(neuronName);
+
+  if (isSelected) {
+    workspace.removeSelection(neuronName, ViewerType.EM);
+    return;
+  }
+
+  workspace.addSelection(neuronName, ViewerType.EM);
+}
 
 const scale = new ScaleLine({
   units: "metric",
@@ -107,103 +160,18 @@ const EMStackViewer = () => {
   // 	}),
   // });
 
-  // Sets the neuron feature properties for the style in the viewer.
-  const refreshNeuronProperties = () => {
-    const layer = currSegLayer.current;
-    if (!layer) return;
+  const neuronsStyleRef = useRef((feature: FeatureLike) => neuronsStyle(feature, currentWorkspace));
+  const onNeuronSelectRef = useRef((position) => onNeuronSelect(position, currSegLayer.current?.getSource(), currentWorkspace));
 
-    const source = layer.getSource();
-    if (!source) return;
-
-    const visibilities = currentWorkspace.visibilities;
-    const visibleNeurons = new Set(currentWorkspace.getVisibleNeuronsInEM());
-    const selectedNeurons = new Set(currentWorkspace.getViewerSelectedNeurons(ViewerType.EM));
-
-    const updateNeuronFeatures = () => {
-      const features = source.getFeatures();
-      features.forEach((feature) => {
-        const neuronName = neuronFeatureName(feature);
-
-        {
-          const property = "active";
-          const shouldBeEnabled = visibleNeurons.has(neuronName);
-
-          const currentValue = feature.get(property);
-          if (currentValue !== shouldBeEnabled) {
-            feature.set(property, shouldBeEnabled);
-          }
-        }
-
-        {
-          const property = "selected";
-          const shouldBeEnabled = selectedNeurons.has(neuronName);
-
-          const currentValue = feature.get(property);
-          if (currentValue !== shouldBeEnabled) {
-            feature.set(property, shouldBeEnabled);
-          }
-        }
-
-        if (visibleNeurons.has(neuronName)) {
-          const color = visibilities[neuronName][ViewerType.EM].color;
-          feature.set("color", hexToRGBArray(color));
-        }
-      });
-    };
-
-    // features may not have loaded in some cases where this function is called
-    if (!source.getFeatures().length) {
-      source.once("featuresloadend", function () {
-        updateNeuronFeatures();
-      });
-    } else {
-      updateNeuronFeatures();
+  useEffect(() => {
+    if (!currSegLayer.current?.getSource()) {
+      return;
     }
-  };
 
-  useEffect(() => {
-    refreshNeuronProperties();
-  }, [currentWorkspace, segSlice]);
-
-  const onSelectNeuron = useCallback(
-    (feature: Feature<Geometry>) => {
-      const neuronName = neuronFeatureName(feature);
-
-      // should not be able to click on hidden neurons
-      if (!isNeuronVisible(feature)) return;
-
-      const selectedNeurons = currentWorkspace.getViewerSelectedNeurons(ViewerType.EM);
-      const isSelected = selectedNeurons.includes(neuronName);
-
-      if (isSelected) {
-        currentWorkspace.removeSelection(neuronName, ViewerType.EM);
-        return;
-      }
-
-      currentWorkspace.addSelection(neuronName, ViewerType.EM);
-    },
-    [currentWorkspace],
-  );
-
-  const onClick = useCallback(
-    (evt: MapBrowserEvent<any>) => {
-      if (!currSegLayer.current) return;
-
-      const features = currSegLayer.current.getSource().getFeaturesAtCoordinate(evt.coordinate);
-      if (features.length === 0) return;
-
-      const feature = features[0];
-      if (feature) {
-        onSelectNeuron(feature);
-      }
-    },
-    [onSelectNeuron],
-  );
-
-  useEffect(() => {
-    if (!mapRef.current) return;
-    mapRef.current.on("click", onClick);
-  }, [onClick]);
+    neuronsStyleRef.current = (feature: Feature) => neuronsStyle(feature, currentWorkspace);
+    onNeuronSelectRef.current = (position) => onNeuronSelect(position, currSegLayer.current?.getSource(), currentWorkspace);
+    currSegLayer.current.changed();
+  }, [currentWorkspace.getVisibleNeuronsInEM(), currentWorkspace.visibilities, currentWorkspace.getViewerSelectedNeurons(ViewerType.EM), segSlice]);
 
   useEffect(() => {
     if (mapRef.current) {
@@ -251,6 +219,7 @@ const EMStackViewer = () => {
       onPush: (slice) => {
         const layer = newSegLayer(firstActiveDataset, slice);
         layer.setOpacity(0);
+        layer.setStyle((feature) => neuronsStyleRef.current(feature));
         map.addLayer(layer);
         return layer;
       },
@@ -267,8 +236,7 @@ const EMStackViewer = () => {
       },
     });
 
-    refreshNeuronProperties();
-    map.on("click", onClick);
+    map.on("click", (e) => onNeuronSelectRef.current(e.coordinate));
 
     function handleSliceScroll(e: WheelEvent) {
       const scrollUp = e.deltaY < 0;
@@ -340,8 +308,6 @@ const EMStackViewer = () => {
 
     const minZoomAvailable = view.getMinZoom();
     view.setZoom(minZoomAvailable);
-
-    refreshNeuronProperties();
   };
 
   const onPrint = () => {
