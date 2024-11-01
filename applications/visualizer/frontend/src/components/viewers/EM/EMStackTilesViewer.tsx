@@ -1,7 +1,9 @@
 import { Box } from "@mui/material";
 import "ol/ol.css";
-import { Feature, Map as OLMap, View } from "ol";
+import { type Feature, Map as OLMap, View } from "ol";
+import type { FeatureLike } from "ol/Feature";
 import ScaleLine from "ol/control/ScaleLine";
+import type { Coordinate } from "ol/coordinate";
 import { shiftKeyOnly } from "ol/events/condition";
 import { getCenter } from "ol/extent";
 import GeoJSON from "ol/format/GeoJSON";
@@ -15,13 +17,11 @@ import { TileGrid } from "ol/tilegrid";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { SlidingRing } from "../../../helpers/slidingRing";
-import { getEMDataURL, getSegmentationURL, ViewerType } from "../../../models/models.ts";
+import { ViewerType, getEMDataURL, getSegmentationURL } from "../../../models/models.ts";
+import type { Workspace } from "../../../models/workspace.ts";
 import type { Dataset } from "../../../rest/index.ts";
 import SceneControls from "./SceneControls.tsx";
 import { activeNeuronStyle, neuronFeatureName, selectedNeuronStyle } from "./neuronsMapFeature.ts";
-import { FeatureLike } from "ol/Feature";
-import { Workspace } from "../../../models/workspace.ts";
-import { Coordinate } from "ol/coordinate";
 
 const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, projection: Projection): TileLayer<XYZ> => {
   return new TileLayer({
@@ -52,7 +52,7 @@ function neuronsStyle(feature: FeatureLike, workspace: Workspace) {
   const visibleNeuron = visibleNeurons.find((neuron) => neuron === neuronName);
   const color = visibleNeuron ? workspace.visibilities[neuronName][ViewerType.EM].color : undefined;
 
-  let selectedNeuron = workspace.getViewerSelectedNeurons(ViewerType.EM).find((neuron) => neuron === neuronName);
+  const selectedNeuron = workspace.getViewerSelectedNeurons(ViewerType.EM).find((neuron) => neuron === neuronName);
   if (selectedNeuron) {
     return selectedNeuronStyle(feature, color);
   }
@@ -169,8 +169,8 @@ const EMStackViewer = () => {
     }
 
     neuronsStyleRef.current = (feature: Feature) => neuronsStyle(feature, currentWorkspace);
-    onNeuronSelectRef.current = (position) => onNeuronSelect(position, currSegLayer.current?.getSource(), currentWorkspace);
-    currSegLayer.current.changed();
+    onNeuronSelectRef.current = (position) => onNeuronSelect(position, currSegLayer.current.getSource(), currentWorkspace);
+    currSegLayer.current.getSource().changed();
   }, [currentWorkspace.getVisibleNeuronsInEM(), currentWorkspace.visibilities, currentWorkspace.getViewerSelectedNeurons(ViewerType.EM), segSlice]);
 
   useEffect(() => {

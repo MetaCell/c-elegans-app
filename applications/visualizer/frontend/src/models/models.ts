@@ -41,13 +41,14 @@ export interface EMViewerData {
   color: string;
 }
 
-function getRandomColor(): string {
-  return `#${Math.floor(Math.random() * 16777215)
+function randomColor(): string {
+  return `#${Math.floor(Math.random() * 0xffffff)
     .toString(16)
     .padStart(6, "0")}`;
 }
 
 export function getDefaultViewerData(visibility?: Visibility): ViewerData {
+  const color = randomColor();
   return {
     [ViewerType.Graph]: {
       defaultPosition: null,
@@ -55,11 +56,11 @@ export function getDefaultViewerData(visibility?: Visibility): ViewerData {
     },
     [ViewerType.ThreeD]: {
       visibility: visibility ?? Visibility.Hidden,
-      color: getRandomColor(),
+      color,
     },
     [ViewerType.EM]: {
       visibility: visibility ?? Visibility.Hidden,
-      color: "#000000",
+      color,
     },
   };
 }
