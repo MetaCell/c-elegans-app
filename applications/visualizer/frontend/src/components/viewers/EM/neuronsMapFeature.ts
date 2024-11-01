@@ -50,14 +50,10 @@ export function selectedNeuronStyle(feature: FeatureLike, color?: string): Style
 }
 
 export function neuronFeatureName(feature: FeatureLike): string {
-  const properties = feature.getProperties();
-  if (!properties.hasOwnProperty("name")) {
-    throw Error("neuron segment doesn't have a name property");
-  }
+  const neuronName = feature.getProperties()?.name;
 
-  const neuronName = properties["name"];
   if (typeof neuronName !== "string") {
-    throw Error("neuron segment name is not a string");
+    throw Error("neuron segment doesn't have a valid name property");
   }
 
   return neuronName;

@@ -45,32 +45,32 @@ const newSegLayer = (dataset: Dataset, slice: number) => {
   });
 };
 
+function isNeuronActive(neuronId: string, workspace: Workspace): boolean {
+  return workspace.getVisibleNeuronsInEM().includes(neuronId);
+}
+
+function isNeuronSelected(neuronId: string, workspace: Workspace): boolean {
+  return workspace.getViewerSelectedNeurons(ViewerType.EM).includes(neuronId);
+}
+
+function isNeuronVisible(neuronId: string, workspace: Workspace): boolean {
+  return isNeuronActive(neuronId, workspace) || isNeuronSelected(neuronId, workspace);
+}
+
 function neuronsStyle(feature: FeatureLike, workspace: Workspace) {
   const neuronName = neuronFeatureName(feature);
 
-  const visibleNeurons = workspace.getVisibleNeuronsInEM();
-  const visibleNeuron = visibleNeurons.find((neuron) => neuron === neuronName);
-  const color = visibleNeuron ? workspace.visibilities[neuronName][ViewerType.EM].color : undefined;
+  const color = workspace.visibilities[neuronName]?.[ViewerType.EM]?.color;
 
-  const selectedNeuron = workspace.getViewerSelectedNeurons(ViewerType.EM).find((neuron) => neuron === neuronName);
-  if (selectedNeuron) {
+  if (isNeuronSelected(neuronName, workspace)) {
     return selectedNeuronStyle(feature, color);
   }
 
-  if (visibleNeuron) {
+  if (isNeuronActive(neuronName, workspace)) {
     return activeNeuronStyle(feature, color);
   }
 
   return null;
-}
-
-function isNeuronVisible(neuronId: string, workspace: Workspace): boolean {
-  const inVisibles = workspace.getVisibleNeuronsInEM().find((n) => n === neuronId);
-  if (inVisibles) {
-    return true;
-  }
-
-  return workspace.getViewerSelectedNeurons(ViewerType.EM).find((n) => n === neuronId) != undefined;
 }
 
 function onNeuronSelect(position: Coordinate, source: VectorSource<Feature> | undefined, workspace: Workspace) {
@@ -86,10 +86,7 @@ function onNeuronSelect(position: Coordinate, source: VectorSource<Feature> | un
     return;
   }
 
-  const selectedNeurons = workspace.getViewerSelectedNeurons(ViewerType.EM);
-  const isSelected = selectedNeurons.includes(neuronName);
-
-  if (isSelected) {
+  if (isNeuronSelected(neuronName, workspace)) {
     workspace.removeSelection(neuronName, ViewerType.EM);
     return;
   }
