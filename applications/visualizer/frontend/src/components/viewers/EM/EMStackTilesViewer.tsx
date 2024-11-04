@@ -46,21 +46,28 @@ const newSegLayer = (dataset: Dataset, slice: number) => {
 };
 
 function isNeuronActive(neuronId: string, workspace: Workspace): boolean {
-  return workspace.getVisibleNeuronsInEM().includes(neuronId);
+  const emViewerVisibleNeurons = workspace.getVisibleNeuronsInEM();
+  return emViewerVisibleNeurons.includes(neuronId) || emViewerVisibleNeurons.includes(workspace.getNeuronClass(neuronId));
 }
 
 function isNeuronSelected(neuronId: string, workspace: Workspace): boolean {
-  return workspace.getViewerSelectedNeurons(ViewerType.EM).includes(neuronId);
+  const emViewerSelectedNeurons = workspace.getViewerSelectedNeurons(ViewerType.EM);
+  return emViewerSelectedNeurons.includes(neuronId) || emViewerSelectedNeurons.includes(workspace.getNeuronClass(neuronId));
 }
 
 function isNeuronVisible(neuronId: string, workspace: Workspace): boolean {
   return isNeuronActive(neuronId, workspace) || isNeuronSelected(neuronId, workspace);
 }
 
+function neuronColor(neuronId, workspace: Workspace): string {
+  const neuronVisibilities = workspace.visibilities[neuronId] || workspace.visibilities[workspace.getNeuronClass(neuronId)];
+  return neuronVisibilities?.[ViewerType.EM].color;
+}
+
 function neuronsStyle(feature: FeatureLike, workspace: Workspace) {
   const neuronName = neuronFeatureName(feature);
 
-  const color = workspace.visibilities[neuronName]?.[ViewerType.EM]?.color;
+  const color = neuronColor(neuronName, workspace);
 
   if (isNeuronSelected(neuronName, workspace)) {
     return selectedNeuronStyle(feature, color);
@@ -157,7 +164,7 @@ const EMStackViewer = () => {
   // 	}),
   // });
 
-  const neuronsStyleRef = useRef((feature: FeatureLike) => neuronsStyle(feature, currentWorkspace));
+  const neuronsStyleRef = useRef((feature) => neuronsStyle(feature, currentWorkspace));
   const onNeuronSelectRef = useRef((position) => onNeuronSelect(position, currSegLayer.current?.getSource(), currentWorkspace));
 
   useEffect(() => {

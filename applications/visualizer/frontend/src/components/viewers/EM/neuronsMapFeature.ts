@@ -1,4 +1,4 @@
-import { FeatureLike } from "ol/Feature";
+import type { FeatureLike } from "ol/Feature";
 import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
@@ -6,9 +6,9 @@ import Text from "ol/style/Text";
 
 export function hexToRGBArray(hex: string): [number, number, number] {
   hex = hex.replace("#", "");
-  const r = parseInt(hex.slice(0, 2), 16);
-  const g = parseInt(hex.slice(2, 4), 16);
-  const b = parseInt(hex.slice(4, 6), 16);
+  const r = Number.parseInt(hex.slice(0, 2), 16);
+  const g = Number.parseInt(hex.slice(2, 4), 16);
+  const b = Number.parseInt(hex.slice(4, 6), 16);
 
   return [r, g, b];
 }
