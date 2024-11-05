@@ -258,6 +258,7 @@ const TwoDViewer = () => {
     const handleNodeClick = (event) => {
       const node = event.target;
       const neuronId = node.id();
+      const selectedNeurons = workspace.getSelection(ViewerType.Graph);
       const isSelected = selectedNeurons.includes(neuronId) || selectedNeurons.some((e) => workspace.getNeuronCellsByClass(neuronId).includes(e));
 
       if (isSelected) {
@@ -266,16 +267,16 @@ const TwoDViewer = () => {
         if (workspace.getNeuronClass(neuronId) === neuronId) {
           const relatedNeurons = workspace.getNeuronCellsByClass(neuronId);
           for (const neuron of relatedNeurons) {
-            workspace.forceRemoveSelection(neuron, ViewerType.EM);
-            workspace.forceRemoveSelection(neuron, ViewerType.ThreeD);
+            workspace.locallyRemoveSelection(neuron, ViewerType.EM);
+            workspace.locallyRemoveSelection(neuron, ViewerType.ThreeD);
           }
         }
       } else {
         workspace.addSelection(neuronId, ViewerType.Graph);
         const relatedNeurons = workspace.getNeuronCellsByClass(neuronId);
         for (const neuron of relatedNeurons) {
-          workspace.forceInjectSelection(neuron, ViewerType.EM);
-          workspace.forceInjectSelection(neuron, ViewerType.ThreeD);
+          workspace.locallyInjectSelection(neuron, ViewerType.EM);
+          workspace.locallyInjectSelection(neuron, ViewerType.ThreeD);
         }
       }
     };

@@ -139,7 +139,7 @@ export class SynchronizerOrchestrator {
           if (connectedSynchronizer === synchronizer) {
             continue;
           }
-          if (connectedSynchronizer.canHandle(otherViewer)) {
+          if (connectedSynchronizer.canHandle(otherViewer) && connectedSynchronizer.active) {
             synchros.add(connectedSynchronizer);
           }
         }
@@ -155,15 +155,21 @@ export class SynchronizerOrchestrator {
     }
   }
 
-  public forceInjectSelection(selection: string, target: ViewerType) {
-    this.contexts[target].push(selection);
+  public locallyInjectSelection(selection: string, target: ViewerType) {
+    const synchronizers = this.getConnectedViewers(target);
+    if ([...synchronizers].some((sync) => sync.canHandle(target) && sync.active)) {
+      this.contexts[target].push(selection);
+    }
   }
 
-  public forceRemoveSelection(selection: string, target: ViewerType) {
-    const selected = this.contexts[target];
-    const index = selected.indexOf(selection);
-    if (index > -1) {
-      selected.splice(index, 1);
+  public locallyRemoveSelection(selection: string, target: ViewerType) {
+    const synchronizers = this.getConnectedViewers(target);
+    if ([...synchronizers].some((sync) => sync.canHandle(target) && sync.active)) {
+      const selected = this.contexts[target];
+      const index = selected.indexOf(selection);
+      if (index > -1) {
+        selected.splice(index, 1);
+      }
     }
   }
 

@@ -221,13 +221,13 @@ export class Workspace {
   }
 
   @triggerUpdate
-  forceInjectSelection(selection: string, target: ViewerType) {
-    this.syncOrchestrator.forceInjectSelection(selection, target);
+  locallyInjectSelection(selection: string, target: ViewerType) {
+    this.syncOrchestrator.locallyInjectSelection(selection, target);
   }
 
   @triggerUpdate
-  forceRemoveSelection(selection: string, target: ViewerType) {
-    this.syncOrchestrator.forceRemoveSelection(selection, target);
+  locallyRemoveSelection(selection: string, target: ViewerType) {
+    this.syncOrchestrator.locallyRemoveSelection(selection, target);
   }
 
   @triggerUpdate
