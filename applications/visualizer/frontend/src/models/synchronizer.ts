@@ -155,6 +155,18 @@ export class SynchronizerOrchestrator {
     }
   }
 
+  public forceInjectSelection(selection: string, target: ViewerType) {
+    this.contexts[target].push(selection);
+  }
+
+  public forceRemoveSelection(selection: string, target: ViewerType) {
+    const selected = this.contexts[target];
+    const index = selected.indexOf(selection);
+    if (index > -1) {
+      selected.splice(index, 1);
+    }
+  }
+
   public selectNeuron(selection: string, initiator: ViewerType) {
     const synchronizers = this.getConnectedViewers(initiator);
     for (const synchronizer of synchronizers) {

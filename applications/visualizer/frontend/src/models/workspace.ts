@@ -221,6 +221,16 @@ export class Workspace {
   }
 
   @triggerUpdate
+  forceInjectSelection(selection: string, target: ViewerType) {
+    this.syncOrchestrator.forceInjectSelection(selection, target);
+  }
+
+  @triggerUpdate
+  forceRemoveSelection(selection: string, target: ViewerType) {
+    this.syncOrchestrator.forceRemoveSelection(selection, target);
+  }
+
+  @triggerUpdate
   setSelection(selection: Array<string>, initiator: ViewerType) {
     this.syncOrchestrator.select(selection, initiator);
   }
@@ -242,10 +252,6 @@ export class Workspace {
   }
 
   getSelection(viewerType: ViewerType): string[] {
-    return this.syncOrchestrator.getSelection(viewerType);
-  }
-
-  getViewerSelectedNeurons(viewerType: ViewerType): string[] {
     return this.syncOrchestrator.getSelection(viewerType);
   }
 

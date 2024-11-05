@@ -51,8 +51,7 @@ function isNeuronActive(neuronId: string, workspace: Workspace): boolean {
 }
 
 function isNeuronSelected(neuronId: string, workspace: Workspace): boolean {
-  const emViewerSelectedNeurons = workspace.getViewerSelectedNeurons(ViewerType.EM);
-  return emViewerSelectedNeurons.includes(neuronId) || emViewerSelectedNeurons.includes(workspace.getNeuronClass(neuronId));
+  return workspace.getSelection(ViewerType.EM).includes(neuronId);
 }
 
 function isNeuronVisible(neuronId: string, workspace: Workspace): boolean {
@@ -89,12 +88,19 @@ function onNeuronSelect(position: Coordinate, source: VectorSource<Feature> | un
   const feature = features[0];
   const neuronName = neuronFeatureName(feature);
 
-  if (!isNeuronVisible(neuronName, workspace)) {
+  if (isNeuronSelected(neuronName, workspace)) {
+    workspace.removeSelection(neuronName, ViewerType.EM);
+    // Is there a neuron in the selection that comes from the same class. If not, we can remove the class from the selection
+    const removeClass = !workspace
+      .getSelection(ViewerType.ThreeD)
+      .some((e) => workspace.getNeuronClass(e) !== e && workspace.getNeuronClass(e) === workspace.getNeuronClass(neuronName));
+    if (removeClass) {
+      workspace.removeSelection(workspace.getNeuronClass(neuronName), ViewerType.ThreeD);
+    }
     return;
   }
 
-  if (isNeuronSelected(neuronName, workspace)) {
-    workspace.removeSelection(neuronName, ViewerType.EM);
+  if (!isNeuronVisible(neuronName, workspace)) {
     return;
   }
 
@@ -175,7 +181,7 @@ const EMStackViewer = () => {
     neuronsStyleRef.current = (feature: Feature) => neuronsStyle(feature, currentWorkspace);
     onNeuronSelectRef.current = (position) => onNeuronSelect(position, currSegLayer.current.getSource(), currentWorkspace);
     currSegLayer.current.getSource().changed();
-  }, [currentWorkspace.getVisibleNeuronsInEM(), currentWorkspace.visibilities, currentWorkspace.getViewerSelectedNeurons(ViewerType.EM), segSlice]);
+  }, [currentWorkspace.getVisibleNeuronsInEM(), currentWorkspace.visibilities, currentWorkspace.getSelection(ViewerType.EM), segSlice]);
 
   useEffect(() => {
     if (mapRef.current) {
