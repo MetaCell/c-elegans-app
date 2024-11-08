@@ -16,7 +16,7 @@ The C-Elegans Utility CLI Tool supports the C-Elegans application by allowing us
     - [Extract segmentations from bitmap Files](#extract-segmentations-from-bitmap-files)
     - [Ingest the Segmentations](#ingest-the-segmentations)
 - [FAQ](#faq)
-  - [What should be the files names and directory structure](#what-should-be-the-files-names-and-directory-structure)
+  - [What should be the file names and directory structure for the files I want to upload](#what-should-be-the-file-names-and-directory-structure-for-the-files-i-want-to-upload)
   - [Re-upload new version of the Dataset or related data](#re-upload-new-version-of-the-dataset-or-related-data)
 - [Development](#development)
   - [Setting up the Development Environment](#setting-up-the-development-environment)
@@ -75,7 +75,7 @@ If you'd like to install the CLI from the source code, follow these steps:
 
 ### Verifying Installation
 
-To ensure the CLI tool is installed correctly, run the following command:
+To ensure the CLI tool is installed correctly, run the following command, e.g.:
 
 ```bash
 celegans --help
@@ -85,11 +85,7 @@ This will display the help menu and available commands.
 
 ## Usage
 
-You can view command usage by adding the `--help` flag to any subcommand:
-
-```
-celegans --help
-```
+You can view command usage by adding the `--help` flag to any subcommand.
 
 > [!NOTE]  
 > If at anytime, you are unsure of what the command will do, you can pass the `--dry-run` flag. Instead of executing the command, the dry run will instead describe what it would do. With this you can validate beforehand that's actually what you want to execute.
@@ -119,14 +115,14 @@ To upload a dataset and its related files, such as 3D neuron models, EM tile ima
 The root to the datasets must be provided to the `ingest` subcommand, so we can properly validate that everything is correct and within the specification of the [ingestion format](format-ingestion.md).
 All datasets have an unique identifier that must be specified throughout the ingestion (using the `--id` flag).
 
-So, for every data you want to ingest, you will specify the path to the dataset and its ID, e.g:
+So, for every data you want to ingest, you will specify the path to the datasets and the ID of the dataset related to the files you are uploading, e.g:
 
 ```bash
 celegans ingest --data /path/to/data/db-raw-data add-dataset --id witvliet_2020_2 ...
 ```
 
 > [!NOTE]  
-> The datasets files will be uploaded with the other ingestion files if they changed or never previously uploaded.
+> The datasets files will be uploaded with the other files only if they have never been previously uploaded. To force a re-upload of files you can specify the `--overwrite` flag.
 
 #### Authenticating with Google Cloud
 
@@ -139,7 +135,7 @@ While you can specify the location of this file every time you run an ingestion 
 To upload dataset files such as 3D neuron models, EM tile images and segmentations, use the `ingest add-dataset` subcommand.
 
 > [!WARNING]  
-> Ensure that your files and directories adhere to the formatting guidelines outlined in the [ingestion format specification](format-ingestion.md).
+> Ensure that your files and directories adhere to the formatting guidelines outlined in the [ingestion format specification](format-ingestion.md). We validate this, so no issues should raise if by mistake you ingest these files. 
 
 When using the `add-dataset` subcommand, don't forget to specify the dataset ID corresponding to the files you're uploading (we will remember you otherwise).
 The following flags help determine which files to upload:
@@ -196,11 +192,11 @@ In same manner as described in [Ingest Files](#ingesting-files) section, you can
 celegans ingest --data /path/to/data/db-raw-data add-dataset --id witvliet_2020_2 -s /path/to/bitmap/files
 ```
 
-Substituting the `--id` for your dataset ID and pointing to the segmentation output directory that is the same as the bitmap files directory.
+Substituting the `--id` for your dataset ID and pointing to the segmentation output directory, which is the same as the bitmap files directory.
 
 ## FAQ
 
-### What should be the files names and directory structure
+### What should be the file names and directory structure for the files I want to upload
 
 You can find the specification for those in the [ingestion format specification](format-ingestion.md).
 The specification was design around your specific data, so out of the box it is expected to be in accordance to the specification.
@@ -252,7 +248,7 @@ Where `dataset-metadata` is directory containing the datasets set of structured 
 
 ### Re-upload new version of the Dataset or related data
 
-You can simply upload the files as previously described.
+You can simply upload the files as previously described with the `--overwrite` flag.
 We will check if the files have changed and upload them accordingly, removing old data and uploading new data.
 
 > [!WARNING]  
