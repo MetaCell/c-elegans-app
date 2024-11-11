@@ -6,6 +6,7 @@ import pytest
 
 from ingestion.em_metadata import Tile
 from ingestion.storage.blob import (
+    find_longest_suffix,
     fs_3d_blob_name,
     fs_data_blob_name,
     fs_em_tile_blob_name,
@@ -87,10 +88,45 @@ def test__fs_segmentation_blob_name(dataset_id: str, file_path: Path, blob_name:
             Path("../data/the-3d-files/SDQR.stl"),  # no SEM_adult
             "witvliet_2020_1/3d/SDQR.stl",
         ),
+        (
+            "witvliet_2020_2",
+            Path("../data/the-3d-files/SDQR-ABCD.stl"),  # no SEM_adult
+            "witvliet_2020_2/3d/SDQR-ABCD.stl",
+        ),
+        (
+            "witvliet_2020_3",
+            Path("../data/the-3d-files/SDQR-ABCD-SEM_TEENAGER.stl"),
+            "witvliet_2020_3/3d/SDQR-ABCD.stl",
+        ),
+        (
+            "witvliet_2020_4",
+            Path("../data/the-3d-files/SDQR-SEM_TEENAGER.stl"),  # no SEM_adult
+            "witvliet_2020_4/3d/SDQR.stl",
+        ),
     ],
 )
 def test__fs_3d_blob_name(dataset_id: str, file_path: Path, blob_name: str):
-    assert fs_3d_blob_name(dataset_id, file_path) == blob_name
+    assert fs_3d_blob_name(dataset_id, file_path, regex="") == blob_name
+
+
+@pytest.mark.parametrize(
+    "paths, suffix",
+    [
+        (["ABC", "DEF"], ""),
+        (["ABCF", "DEF"], "F"),
+        (["ABC-DEF.stl", "DEF.stl"], "DEF.stl"),
+        (["ABC-DEF-SEM_adult.stl", "AAA-SEM_adult.stl"], "-SEM_adult.stl"),
+        (["ABC-DEF-SEM_adult.stl", "AAA-SEM_adult.stl", "DEF.stl"], "-SEM_adult.stl"),
+        (
+            ["ABC-DEF-SEM_adult.stl", "AAA-SEM_adult.stl", "DEF.stl", "AABC.stl"],
+            "-SEM_adult.stl",
+        ),
+    ],
+)
+def test__longest_common_suffix(paths: list[str], suffix: str):
+    # wrap the strings as Path first
+    file_paths = [Path(s) for s in paths]
+    assert find_longest_suffix(file_paths) == suffix
 
 
 @pytest.mark.parametrize(

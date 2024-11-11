@@ -22,6 +22,7 @@ from ingestion.errors import DataValidationError, ErrorWriter
 from ingestion.schema import Data
 from ingestion.storage.blob import (
     em_metadata_blob_name,
+    find_longest_suffix,
     fs_3d_blob_name,
     fs_data_blob_name,
     fs_em_tile_blob_name,
@@ -269,10 +270,15 @@ def upload_3d(
         logger.warning("skipping 3D files upload: no files found")
         return
 
+    longest_common_suffix = find_longest_suffix(files_3d)
     pbar = tqdm(files_3d, disable=rs.dry_run)
     for f3d in pbar:
         pbar.set_description(str(f3d))
-        rs.upload(f3d, fs_3d_blob_name(dataset_id, f3d), overwrite=overwrite)
+        rs.upload(
+            f3d,
+            fs_3d_blob_name(dataset_id, f3d, regex=longest_common_suffix),
+            overwrite=overwrite,
+        )
 
 
 def _tiles_root_path(tiles: list[Tile]) -> Path:
