@@ -80,6 +80,9 @@ docker compose -f deployment/docker-compose.yaml up
 
 Then add `visualizer.celegans.local` for `127.0.0.1` in your `/etc/hosts`, and navigate with your browser to [http://visualizer.celegans.local](http://visualizer.celegans.local).
 
+## Upload Datasets to C-Elegans Cloud Deployment
+
+You can find instructions and documentation in the [C-Elegans CLI ingestion documentation](/ingestion/README.md).
 
 ## Populate the DB
 

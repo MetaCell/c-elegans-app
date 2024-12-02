@@ -3,9 +3,35 @@
 
 The C-Elegans Utility CLI Tool supports the C-Elegans application by allowing users to extract segmentation data from their datasets and upload it into the deployment environment.
 
+- [Installation](#installation)
+  - [Using Private Access Token (PAT)](#using-private-access-token-pat)
+  - [Using SSH](#using-ssh)
+  - [From Source](#from-source)
+  - [Verifying Installation](#verifying-installation)
+- [Usage](#usage)
+  - [Uploading Datasets](#uploading-datasets)
+    - [Authenticating with Google Cloud](#authenticating-with-google-cloud)
+    - [Ingesting Files](#ingesting-files)
+  - [Ingesting Segmentations](#ingesting-segmentations)
+    - [Extract segmentations from bitmap Files](#extract-segmentations-from-bitmap-files)
+    - [Ingest the Segmentations](#ingest-the-segmentations)
+- [FAQ](#faq)
+  - [What should be the file names and directory structure for the files I want to upload](#what-should-be-the-file-names-and-directory-structure-for-the-files-i-want-to-upload)
+  - [Re-upload new version of the Dataset or related data](#re-upload-new-version-of-the-dataset-or-related-data)
+- [Development](#development)
+  - [Setting up the Development Environment](#setting-up-the-development-environment)
+  - [Running and Modifying the CLI Tool](#running-and-modifying-the-cli-tool)
+  - [Pre-Commit Checklist](#pre-commit-checklist)
+
 ## Installation
 
-### 1. Using Private Access Token (PAT)
+To install the C-Elegans CLI tool you have 3 options:
+
+1. [Using Private Access Token (PAT)](#using-private-access-token-pat)
+2. [Using SSH](#using-ssh)
+3. [From Source](#from-source)
+
+### Using Private Access Token (PAT)
 
 If you have been provided with a GitHub access token, you can install the tool by running the following command:
 
@@ -15,7 +41,7 @@ pip install "git+https://github.com/MetaCell/c-elegans-app.git@feature/CELE-78#e
 
 The access token will be prompted as the password during installation.
 
-### 2. Using SSH
+### Using SSH
 
 If you prefer using SSH for installation, ensure you have set up an SSH key on your computer. You can find the setup instructions in the GitHub documentation here: [Connecting to GitHub with SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh).
 
@@ -25,7 +51,7 @@ Once your SSH key is set up, install the CLI tool by running:
 pip install "git+ssh://git@github.com/MetaCell/c-elegans-app.git@feature/CELE-78#egg=ingestion&subdirectory=ingestion"
 ```
 
-### 3. From Source
+### From Source
 
 If you'd like to install the CLI from the source code, follow these steps:
 
@@ -49,7 +75,7 @@ If you'd like to install the CLI from the source code, follow these steps:
 
 ### Verifying Installation
 
-To ensure the CLI tool is installed correctly, run the following command:
+To ensure the CLI tool is installed correctly, run the following command, e.g.:
 
 ```bash
 celegans --help
@@ -61,22 +87,42 @@ This will display the help menu and available commands.
 
 You can view command usage by adding the `--help` flag to any subcommand.
 
-### Extracting Segmentation from Bitmap Files
-
-Assuming your bitmap images are located at `/path/to/bitmap/files` and your metadata file is at `/path/to/metadata/SEM_adult_metadata.txt`, run the following command to extract segmentation data:
-
-```bash
-celegans extract -i /path/to/bitmap/files -l /path/to/metadata/SEM_adult_metadata.txt
-```
-
-Note that the process may take a significant amount of time, depending on the number of files and the computational power of your system.
-
 > [!NOTE]  
-> To view additional flags for the `extract` subcommand, run `celegans extract --help`.
+> If at anytime, you are unsure of what the command will do, you can pass the `--dry-run` flag. Instead of executing the command, the dry run will instead describe what it would do. With this you can validate beforehand that's actually what you want to execute.
 
 ### Uploading Datasets
 
-To upload dataset files such as 3D neuron models, EM tile images, and dataset information, use the `ingest` subcommand.
+Every piece of data you ingest in to C-Elegans is related to a dataset.
+The datasets are a set of structured json files describing how neurons relate to each other:
+
+```
+.
+├── annotations
+│   ├── complete.annotations.json
+│   └── head.annotations.json
+├── connections
+│   ├── <dataset_id>.json
+│   ...
+├── datasets.json
+├── neurons.json
+└── trajectories
+    ├── <dataset_id>.json
+    ...
+```
+
+To upload a dataset and its related files, such as 3D neuron models, EM tile images and segmentations, use the `ingest` subcommand.
+
+The root to the datasets must be provided to the `ingest` subcommand, so we can properly validate that everything is correct and within the specification of the [ingestion format](format-ingestion.md).
+All datasets have an unique identifier that must be specified throughout the ingestion (using the `--id` flag).
+
+So, for every data you want to ingest, you will specify the path to the datasets and the ID of the dataset related to the files you are uploading, e.g:
+
+```bash
+celegans ingest --data /path/to/data/db-raw-data add-dataset --id witvliet_2020_2 ...
+```
+
+> [!NOTE]  
+> The datasets files will be uploaded with the other files only if they have never been previously uploaded. To force a re-upload of files you can specify the `--overwrite` flag.
 
 #### Authenticating with Google Cloud
 
@@ -86,20 +132,15 @@ While you can specify the location of this file every time you run an ingestion 
 
 #### Ingesting Files
 
-To begin uploading files, use the `add-dataset` subcommand.
+To upload dataset files such as 3D neuron models, EM tile images and segmentations, use the `ingest add-dataset` subcommand.
 
 > [!WARNING]  
-> Ensure that your files and directories adhere to the formatting guidelines outlined in the `format-ingestion.md` specification.
+> Ensure that your files and directories adhere to the formatting guidelines outlined in the [ingestion format specification](format-ingestion.md). We validate this, so no issues should raise if by mistake you ingest these files. 
 
-For ingestion, you need to specify the `--data` flag, which indicates the base folder containing JSON files about neurons, datasets, and connectivity that will be ingested into the database.
-
-> [!NOTE]  
-> To explore other flags for the `ingest` subcommand, run `celegans ingest --help` and `celegans ingest add-dataset --help`.
-
-When using the `add-dataset` subcommand, you'll need to specify the dataset ID corresponding to the files you're uploading.
+When using the `add-dataset` subcommand, don't forget to specify the dataset ID corresponding to the files you're uploading (we will remember you otherwise).
 The following flags help determine which files to upload:
 
-- `-s`/`--segmentation`: Path to the directory or files containing segmentation JSON data.
+- `-s`/`--segmentation`: Path to the directory or files containing segmentation data.
 - `-3`/`--3d`: Path to the directory or files containing 3D neuron models.
 - `-e`/`--em`: Path to the directory or files containing EM tile images.
 
@@ -117,6 +158,101 @@ You can upload multiple datasets by chaining `add-dataset` commands. For example
 celegans ingest --data /path/to/data/db-raw-data add-dataset --id witvliet_2020_2 --3d /path/to/3d/models add-dataset --id witvliet_2020_3 --em /path/to/em/images
 ```
 
+> [!NOTE]  
+> To explore other flags for the `ingest` subcommand, run `celegans ingest --help` and `celegans ingest add-dataset --help`.
+
+### Ingesting Segmentations
+
+To ingest segmentations in to C-Elegans you need to take an extra step:
+
+1. [Extract segmentations from the bitmap files](#extracting-segmentation-from-bitmap-files)
+2. [Ingest these segmentation into the C-Elegans cloud deployment](#ingesting-files)
+
+#### Extract segmentations from bitmap Files
+
+To extract the segmentation files from the bitmap files you will need a metadata file. This file contains information describing how the neurons can be identified in these bitmap file.
+
+So assuming your bitmap images are located at `/path/to/bitmap/files` and your metadata file is at `/path/to/metadata/SEM_adult_metadata.txt`, run the following command to extract the segmentations data:
+
+```bash
+celegans extract -i /path/to/bitmap/files -l /path/to/metadata/SEM_adult_metadata.txt
+```
+
+**The segmentation will be saved in the same directory as your bitmap files.**
+This process may take a significant amount of time, depending on the number of files and the computational power of your system.
+
+> [!NOTE]  
+> To view additional flags for the `extract` subcommand, run `celegans extract --help`.
+
+#### Ingest the Segmentations
+
+In same manner as described in [Ingest Files](#ingesting-files) section, you can upload the segmentation you just created by running:
+
+```bash
+celegans ingest --data /path/to/data/db-raw-data add-dataset --id witvliet_2020_2 -s /path/to/bitmap/files
+```
+
+Substituting the `--id` for your dataset ID and pointing to the segmentation output directory, which is the same as the bitmap files directory.
+
+## FAQ
+
+### What should be the file names and directory structure for the files I want to upload
+
+You can find the specification for those in the [ingestion format specification](format-ingestion.md).
+The specification was design around your specific data, so out of the box it is expected to be in accordance to the specification.
+
+Our suggestion would be to manage and store your files as follows:
+
+```console
+.
+├── dataset-metadata
+│   ├── annotations
+│   │   ├── complete.annotations.json
+│   │   └── head.annotations.json
+│   ├── connections
+│   │   ├── <dataset_id>.json
+│   │   ...
+│   ├── datasets.json
+│   ├── neurons.json
+│   └── trajectories
+│       ├── <dataset_id>.json
+│       ...
+├── dataset-1
+│   ├── 3d
+│   │   ├── nervering.stl
+│   │   ├── ADAL.stl
+│   │   ├── ADAR.stl
+│   │   ├── ADEL.stl
+│   │   │   ...
+│   ├── em
+│   │   ├── ...
+│   │   ├── 13
+│   │   │   ├── 0_0_5.jpg
+│   │   │   ├── 0_1_4.jpg
+│   │   │   ├── 0_1_5.jpg
+│   │   │   ...
+│   │   ├── ...
+│   │   ...
+│   └── segmentations
+│       ├── s000.json
+│       ├── Dataset8_seg...127.vsseg_export_s000.png
+│       ├── s001.json
+│       ├── Dataset8_seg...127.vsseg_export_s001.png
+│       └── ...
+├── dataset-2
+├── dataset-3
+...
+```
+
+Where `dataset-metadata` is directory containing the datasets set of structured json files.
+
+### Re-upload new version of the Dataset or related data
+
+You can simply upload the files as previously described with the `--overwrite` flag.
+We will check if the files have changed and upload them accordingly, removing old data and uploading new data.
+
+> [!WARNING]  
+> We check if the files have changed by its content and **NOT** by its name. So we assume that a new version of a file has the **same** name and different content.
 
 ## Development
 
