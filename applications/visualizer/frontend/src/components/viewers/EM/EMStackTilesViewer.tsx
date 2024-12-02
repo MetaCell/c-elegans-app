@@ -3,6 +3,7 @@ import "ol/ol.css";
 import { type Feature, Map as OLMap, View } from "ol";
 import type { FeatureLike } from "ol/Feature";
 import ScaleLine from "ol/control/ScaleLine";
+import type { Coordinate } from "ol/coordinate";
 import { shiftKeyOnly } from "ol/events/condition";
 import { getCenter } from "ol/extent";
 import GeoJSON from "ol/format/GeoJSON";
@@ -12,59 +13,15 @@ import VectorLayer from "ol/layer/Vector";
 import { Projection } from "ol/proj";
 import { XYZ } from "ol/source";
 import VectorSource from "ol/source/Vector";
-import Fill from "ol/style/Fill";
-import Stroke from "ol/style/Stroke";
-import Style from "ol/style/Style";
-import Text from "ol/style/Text";
 import { TileGrid } from "ol/tilegrid";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { SlidingRing } from "../../../helpers/slidingRing";
-import { getEMDataURL, getSegmentationURL } from "../../../models/models.ts";
+import { ViewerType, getEMDataURL, getSegmentationURL } from "../../../models/models.ts";
+import type { Workspace } from "../../../models/workspace.ts";
 import type { Dataset } from "../../../rest/index.ts";
 import SceneControls from "./SceneControls.tsx";
-
-const getFeatureStyle = (feature: FeatureLike) => {
-  const opacity = 0.2;
-  const [r, g, b] = feature.get("color");
-  const rgbaColor = `rgba(${r}, ${g}, ${b}, ${opacity})`;
-
-  return new Style({
-    stroke: new Stroke({
-      color: [r, g, b],
-      width: 2,
-    }),
-    fill: new Fill({
-      color: rgbaColor,
-    }),
-  });
-};
-
-const resetStyle = (feature: Feature) => {
-  feature.setStyle(getFeatureStyle(feature));
-};
-
-const setHighlightStyle = (feature: Feature) => {
-  const opacity = 0.5;
-  const [r, g, b] = feature.get("color");
-  const rgbaColor = `rgba(${r}, ${g}, ${b}, ${opacity})`;
-
-  const style = new Style({
-    stroke: new Stroke({
-      color: [r, g, b],
-      width: 4,
-    }),
-    fill: new Fill({
-      color: rgbaColor,
-    }),
-    text: new Text({
-      text: feature.get("name"),
-      scale: 2,
-    }),
-  });
-
-  feature.setStyle(style);
-};
+import { activeNeuronStyle, neuronFeatureName, selectedNeuronStyle } from "./neuronsMapFeature.ts";
 
 const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, projection: Projection): TileLayer<XYZ> => {
   return new TileLayer({
@@ -84,10 +41,71 @@ const newSegLayer = (dataset: Dataset, slice: number) => {
       url: getSegmentationURL(dataset, slice),
       format: new GeoJSON(),
     }),
-    style: getFeatureStyle,
     zIndex: 1,
   });
 };
+
+function isNeuronActive(neuronId: string, workspace: Workspace): boolean {
+  const emViewerVisibleNeurons = workspace.getVisibleNeuronsInEM();
+  return emViewerVisibleNeurons.includes(neuronId) || emViewerVisibleNeurons.includes(workspace.getNeuronClass(neuronId));
+}
+
+function isNeuronSelected(neuronId: string, workspace: Workspace): boolean {
+  return workspace.getSelection(ViewerType.EM).includes(neuronId);
+}
+
+function isNeuronVisible(neuronId: string, workspace: Workspace): boolean {
+  return isNeuronActive(neuronId, workspace) || isNeuronSelected(neuronId, workspace);
+}
+
+function neuronColor(neuronId, workspace: Workspace): string {
+  const neuronVisibilities = workspace.visibilities[neuronId] || workspace.visibilities[workspace.getNeuronClass(neuronId)];
+  return neuronVisibilities?.[ViewerType.EM].color;
+}
+
+function neuronsStyle(feature: FeatureLike, workspace: Workspace) {
+  const neuronName = neuronFeatureName(feature);
+
+  const color = neuronColor(neuronName, workspace);
+
+  if (isNeuronSelected(neuronName, workspace)) {
+    return selectedNeuronStyle(feature, color);
+  }
+
+  if (isNeuronActive(neuronName, workspace)) {
+    return activeNeuronStyle(feature, color);
+  }
+
+  return null;
+}
+
+function onNeuronSelect(position: Coordinate, source: VectorSource<Feature> | undefined, workspace: Workspace) {
+  const features = source?.getFeaturesAtCoordinate(position);
+  if (!features || features.length === 0) {
+    return;
+  }
+
+  const feature = features[0];
+  const neuronName = neuronFeatureName(feature);
+
+  if (isNeuronSelected(neuronName, workspace)) {
+    workspace.removeSelection(neuronName, ViewerType.EM);
+    // Is there a neuron in the selection that comes from the same class. If not, we can remove the class from the selection
+    const removeClass = !workspace
+      .getSelection(ViewerType.ThreeD)
+      .some((e) => workspace.getNeuronClass(e) !== e && workspace.getNeuronClass(e) === workspace.getNeuronClass(neuronName));
+    if (removeClass) {
+      workspace.removeSelection(workspace.getNeuronClass(neuronName), ViewerType.ThreeD);
+    }
+    return;
+  }
+
+  if (!isNeuronVisible(neuronName, workspace)) {
+    return;
+  }
+
+  workspace.addSelection(neuronName, ViewerType.EM);
+}
 
 const scale = new ScaleLine({
   units: "metric",
@@ -101,7 +119,6 @@ const interactions = defaultInteractions({
   }),
 ]);
 
-// const EMStackViewer = ({ dataset }: EMStackViewerParameters) => {
 const EMStackViewer = () => {
   const currentWorkspace = useGlobalContext().getCurrentWorkspace();
 
@@ -109,11 +126,11 @@ const EMStackViewer = () => {
   const firstActiveDataset = Object.values(currentWorkspace.activeDatasets)?.[0];
   const [minSlice, maxSlice] = firstActiveDataset.emData.sliceRange;
   const startSlice = Math.floor((maxSlice + minSlice) / 2);
+  const [segSlice, segSetSlice] = useState<number>(startSlice);
   const ringSize = 11;
 
   const mapRef = useRef<OLMap | null>(null);
   const currSegLayer = useRef<VectorLayer<Feature> | null>(null);
-  const clickedFeature = useRef<Feature | null>(null);
 
   const ringEM = useRef<SlidingRing<TileLayer<XYZ>>>();
   const ringSeg = useRef<SlidingRing<VectorLayer<Feature>>>();
@@ -152,6 +169,19 @@ const EMStackViewer = () => {
   // 		tileGrid: tilegrid,
   // 	}),
   // });
+
+  const neuronsStyleRef = useRef((feature) => neuronsStyle(feature, currentWorkspace));
+  const onNeuronSelectRef = useRef((position) => onNeuronSelect(position, currSegLayer.current?.getSource(), currentWorkspace));
+
+  useEffect(() => {
+    if (!currSegLayer.current?.getSource()) {
+      return;
+    }
+
+    neuronsStyleRef.current = (feature: Feature) => neuronsStyle(feature, currentWorkspace);
+    onNeuronSelectRef.current = (position) => onNeuronSelect(position, currSegLayer.current.getSource(), currentWorkspace);
+    currSegLayer.current.getSource().changed();
+  }, [currentWorkspace.getVisibleNeuronsInEM(), currentWorkspace.visibilities, currentWorkspace.getSelection(ViewerType.EM), segSlice]);
 
   useEffect(() => {
     if (mapRef.current) {
@@ -199,12 +229,14 @@ const EMStackViewer = () => {
       onPush: (slice) => {
         const layer = newSegLayer(firstActiveDataset, slice);
         layer.setOpacity(0);
+        layer.setStyle((feature) => neuronsStyleRef.current(feature));
         map.addLayer(layer);
         return layer;
       },
-      onSelected: (_, layer) => {
+      onSelected: (slice, layer) => {
         layer.setOpacity(1);
         currSegLayer.current = layer;
+        segSetSlice(slice);
       },
       onUnselected: (_, layer) => {
         layer.setOpacity(0);
@@ -214,30 +246,9 @@ const EMStackViewer = () => {
       },
     });
 
-    map.on("click", (evt) => {
-      if (!currSegLayer.current) return;
+    map.on("click", (e) => onNeuronSelectRef.current(e.coordinate));
 
-      const features = currSegLayer.current.getSource().getFeaturesAtCoordinate(evt.coordinate);
-      if (features.length === 0) return;
-
-      const feature = features[0];
-      if (clickedFeature.current) {
-        resetStyle(clickedFeature.current);
-      }
-
-      if (feature) {
-        setHighlightStyle(feature as Feature);
-        clickedFeature.current = feature as Feature;
-        console.log("Feature", feature.get("name"), feature);
-      }
-    });
-
-    map.getTargetElement().addEventListener("wheel", (e) => {
-      if (e.shiftKey) {
-        return;
-      }
-
-      e.preventDefault();
+    function handleSliceScroll(e: WheelEvent) {
       const scrollUp = e.deltaY < 0;
 
       if (scrollUp) {
@@ -247,6 +258,28 @@ const EMStackViewer = () => {
         ringEM.current.prev();
         ringSeg.current.prev();
       }
+    }
+
+    function handleZoomScroll(e: WheelEvent) {
+      const scrollUp = e.deltaY < 0;
+
+      const view = map.getView();
+      const zoom = view.getZoom();
+
+      if (scrollUp) {
+        view.setZoom(view.getConstrainedZoom(zoom + 1, 1));
+      } else {
+        view.setZoom(view.getConstrainedZoom(zoom - 1, -1));
+      }
+    }
+
+    map.getTargetElement().addEventListener("wheel", (e) => {
+      e.preventDefault();
+      if (e.shiftKey) {
+        handleZoomScroll(e);
+        return;
+      }
+      handleSliceScroll(e);
     });
 
     // set map zoom to the minimum zoom possible
@@ -305,7 +338,7 @@ const EMStackViewer = () => {
 
 export default EMStackViewer;
 
-function printEMView(map: OLMap) {
+export function printEMView(map: OLMap) {
   const mapCanvas = document.createElement("canvas");
 
   const size = map.getSize();

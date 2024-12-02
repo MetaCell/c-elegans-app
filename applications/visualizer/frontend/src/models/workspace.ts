@@ -116,6 +116,7 @@ export class Workspace {
     // todo: add actions for other viewers
     this.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Hidden;
     this.visibilities[neuronId][ViewerType.ThreeD].visibility = Visibility.Hidden;
+    this.visibilities[neuronId][ViewerType.EM].visibility = Visibility.Hidden;
   }
 
   @triggerUpdate
@@ -126,6 +127,7 @@ export class Workspace {
     // todo: add actions for other viewers
     this.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Visible;
     this.visibilities[neuronId][ViewerType.ThreeD].visibility = Visibility.Visible;
+    this.visibilities[neuronId][ViewerType.EM].visibility = Visibility.Visible;
   }
 
   @triggerUpdate
@@ -219,6 +221,16 @@ export class Workspace {
   }
 
   @triggerUpdate
+  locallyInjectSelection(selection: string, target: ViewerType) {
+    this.syncOrchestrator.locallyInjectSelection(selection, target);
+  }
+
+  @triggerUpdate
+  locallyRemoveSelection(selection: string, target: ViewerType) {
+    this.syncOrchestrator.locallyRemoveSelection(selection, target);
+  }
+
+  @triggerUpdate
   setSelection(selection: Array<string>, initiator: ViewerType) {
     this.syncOrchestrator.select(selection, initiator);
   }
@@ -243,10 +255,6 @@ export class Workspace {
     return this.syncOrchestrator.getSelection(viewerType);
   }
 
-  getViewerSelectedNeurons(viewerType: ViewerType): string[] {
-    return this.syncOrchestrator.getSelection(viewerType);
-  }
-
   getNeuronCellsByClass(neuronClassId: string): string[] {
     return Object.values(this.availableNeurons)
       .filter((neuron) => neuron.nclass === neuronClassId && neuron.nclass !== neuron.name)
@@ -255,11 +263,15 @@ export class Workspace {
 
   getNeuronClass(neuronId: string): string {
     const neuron = this.availableNeurons[neuronId];
-    return neuron.nclass;
+    return neuron?.nclass;
   }
 
   getVisibleNeuronsInThreeD(): string[] {
     return Array.from(this.activeNeurons).filter((neuronId) => this.visibilities[neuronId]?.[ViewerType.ThreeD]?.visibility === Visibility.Visible);
+  }
+
+  getVisibleNeuronsInEM(): string[] {
+    return Array.from(this.activeNeurons).filter((neuronId) => this.visibilities[neuronId]?.[ViewerType.EM]?.visibility === Visibility.Visible);
   }
 
   changeNeuronColorForViewers(neuronId: string, color: string): void {

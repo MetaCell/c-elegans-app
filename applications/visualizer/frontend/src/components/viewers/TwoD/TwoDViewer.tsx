@@ -70,7 +70,7 @@ const TwoDViewer = () => {
     unreportedNeurons: new Set<string>(),
   });
 
-  const selectedNeurons = workspace.getViewerSelectedNeurons(ViewerType.Graph);
+  const selectedNeurons = workspace.getSelection(ViewerType.Graph);
 
   const visibleActiveNeurons = useMemo(() => {
     return getVisibleActiveNeuronsIn2D(workspace);
@@ -236,6 +236,19 @@ const TwoDViewer = () => {
     };
   }, []);
 
+  useEffect(() => {
+    for (const node of cyRef.current.nodes()) {
+      const neuronId = node.id();
+      const isSelected = selectedNeurons.includes(neuronId) || selectedNeurons.some((e) => workspace.getNeuronCellsByClass(neuronId).includes(e));
+
+      if (isSelected) {
+        node.addClass(SELECTED_CLASS);
+      } else {
+        node.removeClass(SELECTED_CLASS);
+      }
+    }
+  }, [selectedNeurons]);
+
   // Add event listener for node clicks to toggle neuron selection and right-click context menu
   useEffect(() => {
     if (!cyRef.current) return;
@@ -243,16 +256,28 @@ const TwoDViewer = () => {
     const cy = cyRef.current;
 
     const handleNodeClick = (event) => {
-      const neuronId = event.target.id();
+      const node = event.target;
+      const neuronId = node.id();
       const selectedNeurons = workspace.getSelection(ViewerType.Graph);
-      const isSelected = selectedNeurons.includes(neuronId);
+      const isSelected = selectedNeurons.includes(neuronId) || selectedNeurons.some((e) => workspace.getNeuronCellsByClass(neuronId).includes(e));
 
       if (isSelected) {
         workspace.removeSelection(neuronId, ViewerType.Graph);
-        event.target.removeClass(SELECTED_CLASS);
+
+        if (workspace.getNeuronClass(neuronId) === neuronId) {
+          const relatedNeurons = workspace.getNeuronCellsByClass(neuronId);
+          for (const neuron of relatedNeurons) {
+            workspace.locallyRemoveSelection(neuron, ViewerType.EM);
+            workspace.locallyRemoveSelection(neuron, ViewerType.ThreeD);
+          }
+        }
       } else {
         workspace.addSelection(neuronId, ViewerType.Graph);
-        event.target.addClass(SELECTED_CLASS);
+        const relatedNeurons = workspace.getNeuronCellsByClass(neuronId);
+        for (const neuron of relatedNeurons) {
+          workspace.locallyInjectSelection(neuron, ViewerType.EM);
+          workspace.locallyInjectSelection(neuron, ViewerType.ThreeD);
+        }
       }
     };
 
@@ -270,7 +295,7 @@ const TwoDViewer = () => {
 
       const cyEvent = event as any; // Cast to any to access originalEvent
       const originalEvent = cyEvent.originalEvent as MouseEvent;
-      const selectedNeurons = workspace.getViewerSelectedNeurons(ViewerType.Graph);
+      const selectedNeurons = workspace.getSelection(ViewerType.Graph);
       if (selectedNeurons.length > 0) {
         setMousePosition({
           mouseX: originalEvent.clientX,

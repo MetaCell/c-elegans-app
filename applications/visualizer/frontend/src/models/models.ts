@@ -36,12 +36,19 @@ export interface ThreeDViewerData {
   color: string;
 }
 
-function getRandomColor(): string {
-  return `#${Math.floor(Math.random() * 16777215)
+export interface EMViewerData {
+  visibility: Visibility;
+  color: string;
+}
+
+function randomColor(): string {
+  return `#${Math.floor(Math.random() * 0xffffff)
     .toString(16)
     .padStart(6, "0")}`;
 }
+
 export function getDefaultViewerData(visibility?: Visibility): ViewerData {
+  const color = randomColor();
   return {
     [ViewerType.Graph]: {
       defaultPosition: null,
@@ -49,7 +56,11 @@ export function getDefaultViewerData(visibility?: Visibility): ViewerData {
     },
     [ViewerType.ThreeD]: {
       visibility: visibility ?? Visibility.Hidden,
-      color: getRandomColor(),
+      color,
+    },
+    [ViewerType.EM]: {
+      visibility: visibility ?? Visibility.Hidden,
+      color,
     },
   };
 }
@@ -57,7 +68,7 @@ export function getDefaultViewerData(visibility?: Visibility): ViewerData {
 export interface ViewerData {
   [ViewerType.Graph]?: GraphViewerData;
   [ViewerType.ThreeD]?: ThreeDViewerData;
-  [ViewerType.EM]?: any; // Define specific data for EM viewer if needed
+  [ViewerType.EM]?: EMViewerData;
   [ViewerType.InstanceDetails]?: any; // Define specific data for Instance Details viewer if needed
 }
 
