@@ -155,6 +155,9 @@ NINJA_PAGINATION_PER_PAGE = 100
 
 BASE_DATASET_URL = "resources/{dataset}"
 NEURON_REPRESENTATION_3D_URL_FORMAT = "resources/{{dataset}}/3d/{name}.stl"
+NEURON_REFERENCE_URL_FORMAT = (
+    "https://www.wormatlas.org/neurons/Individual%20Neurons/{nclass}frameset.html"
+)
 DATASET_NEURON_REPRESENTATION_3D_URL_FORMAT = "resources/{dataset}/3d/{{name}}.stl"
 # DATASET_EMDATA_URL_FORMAT = (
 #     f"resources/sem-adult/catmaid-tiles/{{index}}/{{x}}_{{y}}_{{z}}.jpg"
