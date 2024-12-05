@@ -27,6 +27,11 @@ It is important to note that the dataset identifier is related to all data in th
 Segmentation files are json files that encode positions on neuron labels.
 They MUST follow the file path naming scheme: `**/*s<slice>.json`, where slice is a positive integer.
 
+## Synapses
+
+Synapses files are json files that encode positions on synapses labels.
+They MUST follow the file path naming scheme: `**/*s<slice>.json`, where slice is a positive integer.
+
 ## EM data
 
 Electromagnetic data MUST follow the file path namming scheme: `**/<slice>/<y>_<x>_<z>.jpg`, where `slice`, `x`, `y` and `z` are positive integers.
@@ -198,11 +203,17 @@ The cloud storage of the ingested files will be organized in the following patte
 │   │   │   ...
 │   │   ├── ...
 │   │   ...
-│   └── segmentations
-│       ├── metadata.json
-│       ├── s000.json
-│       ├── s001.json
-│       └── ...
+│   ├── segmentations
+│   │   ├── metadata.json
+│   │   ├── s000.json
+│   │   ├── s001.json
+│   │   └── ...
+│   └── synapses
+│       └── segmentations
+│           ├── metadata.json
+│           ├── s000.json
+│           ├── s001.json
+│           └── ...
 ├── dataset-2
 ├── dataset-3
 ...
