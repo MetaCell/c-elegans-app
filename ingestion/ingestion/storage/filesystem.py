@@ -85,7 +85,7 @@ def load_data(files: DataContainer[Path]) -> dict:
 
 Slice: TypeAlias = int
 
-SEGMENTATION_REGEX = r".*s(\d+)\.json$"
+SEGMENTATION_REGEX = re.compile(r".*s(\d+)\.json$")
 
 
 def find_segmentation_files(paths: list[Path]) -> Generator[tuple[Slice, Path]]:
@@ -111,6 +111,32 @@ def find_segmentation_files(paths: list[Path]) -> Generator[tuple[Slice, Path]]:
     )
 
 
+SYNAPSES_REGEX = re.compile(r".*s(\d+)\.json$")
+
+
+def find_synapses_files(paths: list[Path]) -> Generator[tuple[Slice, Path]]:
+    def extract_slice(filepath: Path) -> int:
+        match = re.search(SYNAPSES_REGEX, str(filepath))
+        if match:
+            return int(match.group(1))
+        raise Exception(
+            f"unable to extract slice number from synapses file: {filepath}"
+        )
+
+    if len(paths) == 1 and paths[0].is_dir():
+        return (
+            (extract_slice(f), f)
+            for f in paths[0].rglob("*.json")
+            if re.search(SYNAPSES_REGEX, str(f))
+        )
+
+    return (
+        (extract_slice(path), path)
+        for path in paths
+        if re.search(SYNAPSES_REGEX, str(path))
+    )
+
+
 def find_segmentation_resolution_metadata_file(paths: list[Path]) -> Path | None:
     if len(paths) == 0:
         return None
@@ -125,6 +151,10 @@ def find_segmentation_resolution_metadata_file(paths: list[Path]) -> Path | None
     if not metadata_path.exists():
         return None
     return metadata_path
+
+
+def find_synapses_resolution_metadata_file(paths: list[Path]) -> Path | None:
+    return find_segmentation_resolution_metadata_file(paths)  # same namming scheme
 
 
 DEFAULT_EXCLUDED_WORDS = ["synapse"]

@@ -26,14 +26,18 @@ from ingestion.storage.blob import (
     fs_3d_blob_name,
     fs_data_blob_name,
     fs_em_tile_blob_name,
-    fs_resolutions_metadata_blob_name,
     fs_segmentation_blob_name,
+    fs_segmentations_resolutions_metadata_blob_name,
+    fs_synapses_blob_name,
+    fs_synapses_resolutions_metadata_blob_name,
 )
 from ingestion.storage.filesystem import (
     find_3d_files,
     find_data_files,
     find_segmentation_files,
     find_segmentation_resolution_metadata_file,
+    find_synapses_files,
+    find_synapses_resolution_metadata_file,
     load_data,
     load_tiles,
 )
@@ -122,9 +126,11 @@ def add_add_dataset_flags(parser: ArgumentParser):
     #         help=f"{kind} directory",
     #     )
 
-    def add_in_paths(parser: ArgumentParser, kind: str):
+    def add_in_paths(
+        parser: ArgumentParser, kind: str, *, short_flag: str | None = None
+    ):
         parser.add_argument(
-            f"-{kind.lower()[0]}",
+            "-" + (short_flag or f"{kind.lower()[0]}"),
             f"--{kind.lower()}",
             nargs="+",
             type=Path,
@@ -132,9 +138,10 @@ def add_add_dataset_flags(parser: ArgumentParser):
         )
 
     # add_in_dir(parser, "connectivity")
-    add_in_paths(parser, "segmentation")
+    add_in_paths(parser, "segmentation", short_flag="seg")
     add_in_paths(parser, "3D")
     add_in_paths(parser, "EM")
+    add_in_paths(parser, "synapses", short_flag="syn")
 
 
 def validate_and_upload_data(
@@ -253,7 +260,45 @@ def upload_segmentations(
 
     rs.upload(
         resolutions_metadata,
-        fs_resolutions_metadata_blob_name(dataset_id),
+        fs_segmentations_resolutions_metadata_blob_name(dataset_id),
+        overwrite=overwrite,
+    )
+
+
+def upload_synapses(
+    dataset_id: str,
+    synapses_paths: list[Path],
+    rs: RemoteStorage,
+    *,
+    overwrite: bool = False,
+):
+    logger.info(f"uploading synapses...")
+
+    synapses_files = find_synapses_files(synapses_paths)
+
+    syn_files = list(synapses_files)
+    if len(syn_files) == 0:
+        logger.warning("skipping synapses upload: no files found")
+        return
+
+    pbar = tqdm(syn_files, disable=rs.dry_run)
+    for _, synapses_file in pbar:
+        pbar.set_description(str(synapses_file))
+        rs.upload(
+            synapses_file,
+            fs_synapses_blob_name(dataset_id, synapses_file),
+            overwrite=overwrite,
+        )
+
+    # upload synapses images resolution metadata
+    resolutions_metadata = find_synapses_resolution_metadata_file(synapses_paths)
+    if resolutions_metadata is None:
+        logger.warning("skipping synapses resolutions metadata upload: no files found")
+        return
+
+    rs.upload(
+        resolutions_metadata,
+        fs_synapses_resolutions_metadata_blob_name(dataset_id),
         overwrite=overwrite,
     )
 
@@ -449,6 +494,11 @@ def ingest_cmd(args: Namespace):
         upload_segmentations(dataset_id, args.segmentation, rs, overwrite=overwrite)
     elif dry_run:
         logger.warning("skipping segmentation upload: flag not set")
+
+    if args.synapses:
+        upload_synapses(dataset_id, args.synapses, rs, overwrite=overwrite)
+    elif dry_run:
+        logger.warning("skipping synapses upload: flag not set")
 
     if paths := getattr(args, "3d"):
         upload_3d(dataset_id, paths, rs, overwrite=overwrite)
