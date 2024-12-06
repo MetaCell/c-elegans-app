@@ -119,6 +119,11 @@ components:
           - type: integer
           title: Slicerange
           type: array
+        synapsesSegmentationUrl:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Synapsessegmentationurl
         tileSize:
           maxItems: 2
           minItems: 2
@@ -136,6 +141,7 @@ components:
       - resourceUrl
       - segmentationUrl
       - segmentationSize
+      - synapsesSegmentationUrl
       title: EMData
       type: object
     ErrorMessage:
