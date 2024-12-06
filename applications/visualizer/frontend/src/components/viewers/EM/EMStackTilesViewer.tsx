@@ -17,7 +17,7 @@ import { TileGrid } from "ol/tilegrid";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { SlidingRing } from "../../../helpers/slidingRing";
-import { ViewerType, getEMDataURL, getSegmentationURL } from "../../../models/models.ts";
+import { ViewerType, getEMDataURL, getSegmentationURL, getSynapsesSegmentationURL } from "../../../models/models.ts";
 import type { Workspace } from "../../../models/workspace.ts";
 import type { Dataset } from "../../../rest/index.ts";
 import SceneControls from "./SceneControls.tsx";
@@ -35,13 +35,23 @@ const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, project
   });
 };
 
+const newSynapsesSegLayer = (dataset: Dataset, slice: number) => {
+  return new VectorLayer({
+    source: new VectorSource({
+      url: getSynapsesSegmentationURL(dataset, slice),
+      format: new GeoJSON(),
+    }),
+    zIndex: 1,
+  });
+};
+
 const newSegLayer = (dataset: Dataset, slice: number) => {
   return new VectorLayer({
     source: new VectorSource({
       url: getSegmentationURL(dataset, slice),
       format: new GeoJSON(),
     }),
-    zIndex: 1,
+    zIndex: 2,
   });
 };
 
@@ -131,9 +141,11 @@ const EMStackViewer = () => {
 
   const mapRef = useRef<OLMap | null>(null);
   const currSegLayer = useRef<VectorLayer<Feature> | null>(null);
+  const currSynSegLayer = useRef<VectorLayer<Feature> | null>(null);
 
   const ringEM = useRef<SlidingRing<TileLayer<XYZ>>>();
   const ringSeg = useRef<SlidingRing<VectorLayer<Feature>>>();
+  const ringSynSeg = useRef<SlidingRing<VectorLayer<Feature>>>();
 
   const startZoom = useMemo(() => {
     const emData = firstActiveDataset.emData;
@@ -248,15 +260,46 @@ const EMStackViewer = () => {
 
     map.on("click", (e) => onNeuronSelectRef.current(e.coordinate));
 
+    ringSynSeg.current = new SlidingRing({
+      cacheSize: ringSize,
+      startAt: startSlice,
+      extent: [minSlice, maxSlice],
+      onPush: (slice) => {
+        const layer = newSynapsesSegLayer(firstActiveDataset, slice);
+        layer.setOpacity(0);
+        layer.setStyle({
+          "fill-color": "blue",
+          "stroke-color": "blue",
+        });
+        map.addLayer(layer);
+        return layer;
+      },
+      onSelected: (slice, layer) => {
+        layer.setOpacity(1);
+        currSynSegLayer.current = layer;
+        segSetSlice(slice);
+      },
+      onUnselected: (_, layer) => {
+        layer.setOpacity(0);
+      },
+      onEvict: (_, layer) => {
+        map.removeLayer(layer);
+      },
+    });
+
+    newSynapsesSegLayer;
+
     function handleSliceScroll(e: WheelEvent) {
       const scrollUp = e.deltaY < 0;
 
       if (scrollUp) {
         ringEM.current.next();
         ringSeg.current.next();
+        ringSynSeg.current.next();
       } else {
         ringEM.current.prev();
         ringSeg.current.prev();
+        ringSynSeg.current.prev();
       }
     }
 
@@ -309,6 +352,7 @@ const EMStackViewer = () => {
     // reset sliding window
     ringEM.current.goto(startSlice);
     ringSeg.current.goto(startSlice);
+    ringSynSeg.current.goto(startSlice);
 
     if (!mapRef.current) return;
     const view = mapRef.current.getView();
