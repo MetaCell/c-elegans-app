@@ -374,7 +374,13 @@ const EMStackViewer = () => {
 
   return (
     <Box sx={{ position: "relative", display: "flex", width: "100%", height: "100%" }}>
-      <SceneControls onZoomIn={onControlZoomIn} onResetView={onResetView} onZoomOut={onControlZoomOut} onPrint={onPrint} />
+      <SceneControls
+        onZoomIn={onControlZoomIn}
+        onResetView={onResetView}
+        onZoomOut={onControlZoomOut}
+        onPrint={onPrint}
+        onHideLayer={(layer, checked) => console.log("toggle", layer, checked)}
+      />
       <div id="emviewer" style={{ height: "100%", width: "100%" }} />
     </Box>
   );

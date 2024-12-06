@@ -1,17 +1,36 @@
-import { FileDownloadOutlined, HomeOutlined } from "@mui/icons-material";
+import { FileDownloadOutlined, HomeOutlined, SettingsOutlined } from "@mui/icons-material";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
-import { Box, Divider, IconButton } from "@mui/material";
+import { Box, Divider, IconButton, Popover, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
+import { useState } from "react";
+import CustomFormControlLabel from "../ThreeD/CustomFormControlLabel";
+import { vars } from "../../../theme/variables.ts";
+
+const { gray500 } = vars;
 
 interface ScaleControlsHandlers {
   onZoomIn: () => void;
   onResetView: () => void;
   onZoomOut: () => void;
   onPrint: () => void;
+  onHideLayer: (layer: "neurons" | "synapses", checked: boolean) => void;
 }
 
-function SceneControls({ onZoomIn, onResetView, onZoomOut, onPrint }: ScaleControlsHandlers) {
+function SceneControls({ onZoomIn, onResetView, onZoomOut, onPrint, onHideLayer }: ScaleControlsHandlers) {
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+
+  const open = Boolean(anchorEl);
+  const id = open ? "settings-popover" : undefined;
+
+  const handleOpenSettings = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseSettings = () => {
+    setAnchorEl(null);
+  };
+
   return (
     <Box
       sx={{
@@ -29,6 +48,57 @@ function SceneControls({ onZoomIn, onResetView, onZoomOut, onPrint }: ScaleContr
         zIndex: 1,
       }}
     >
+      <Tooltip title="Change settings" placement="right-start">
+        <IconButton onClick={handleOpenSettings}>
+          <SettingsOutlined />
+        </IconButton>
+      </Tooltip>
+      <Popover
+        id={id}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleCloseSettings}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+        slotProps={{
+          paper: {
+            sx: {
+              width: "13.75rem",
+              padding: "0.25rem 0.25rem",
+              borderRadius: "0.5rem",
+              marginLeft: "10px",
+              boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+
+              "& .MuiDivider-root": {
+                margin: ".25rem 0",
+              },
+            },
+          },
+        }}
+      >
+        <Box
+          sx={{
+            padding: "0.5rem 0.25rem 0.5rem 0",
+          }}
+        >
+          <Typography color={gray500} variant="subtitle1" mb=".5rem" ml=".5rem">
+            EM viewer settings
+          </Typography>
+          <CustomFormControlLabel label="Neurons" tooltipTitle="tooltip" helpText="data.helpText" onChange={(_, checked) => onHideLayer("neurons", checked)} />
+          <CustomFormControlLabel
+            label="Synapses"
+            tooltipTitle="tooltip"
+            helpText="data.helpText"
+            onChange={(_, checked) => onHideLayer("synapses", checked)}
+          />
+        </Box>
+      </Popover>
       <Tooltip title="Zoom in" placement="right-start">
         <IconButton onClick={onZoomIn}>
           <ZoomInIcon />

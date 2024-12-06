@@ -3,13 +3,20 @@ import { Box, FormControlLabel, Stack, Tooltip, Typography } from "@mui/material
 import { vars } from "../../../theme/variables.ts"; // Adjust the import path as needed
 import CustomSwitch from "../../ViewerContainer/CustomSwitch.tsx";
 
+interface CustomFormControlLabel {
+  label: React.ReactNode;
+  tooltipTitle: React.ReactNode;
+  helpText: React.ReactNode;
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void;
+}
+
 const { gray50, gray600, gray400B } = vars;
-const CustomFormControlLabel = ({ label, tooltipTitle, helpText }) => {
+const CustomFormControlLabel = ({ label, tooltipTitle, helpText, onChange }: CustomFormControlLabel) => {
   return (
     <FormControlLabel
       control={
         <Tooltip title={helpText}>
-          <CustomSwitch />
+          <CustomSwitch onChange={onChange} />
         </Tooltip>
       }
       sx={{
