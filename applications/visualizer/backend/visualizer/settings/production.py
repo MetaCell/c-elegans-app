@@ -110,11 +110,7 @@ class DbDataDownloader:
             segmentation_metadata = (
                 db_data_folder / dataset_id / "segmentation_metadata.json"
             )
-            synapses_segmentation_metadata = ...  # TODO: understand how this should be
             files[segmentation_metadata] = self._pull_segmentation_metadata(dataset_id)
-            files[synapses_segmentation_metadata] = (
-                self._pull_synapses_segmentation_metadata(dataset_id)
-            )
             files[em_metadata] = self._pull_em_metadata(dataset_id)
 
         for file_path, result in files.items():
@@ -129,11 +125,6 @@ class DbDataDownloader:
 
     def _pull_segmentation_metadata(self, dataset_id):
         url = f"{GCS_BUCKET_URL}/{dataset_id}/segmentations/metadata.json"
-        print(f"  . pulling gs://{url}")
-        return self.session.get(url)
-
-    def _pull_synapses_segmentation_metadata(self, dataset_id):
-        url = f"{GCS_BUCKET_URL}/{dataset_id}/synapses/segmentations/metadata.json"
         print(f"  . pulling gs://{url}")
         return self.session.get(url)
 
