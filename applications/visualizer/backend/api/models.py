@@ -160,3 +160,4 @@ class ViewerConfig(Model):
     )
     em_config = JSONField(null=True)
     segmentation_config = JSONField(null=True)
+    synapses_segmentation_config = JSONField(null=True)

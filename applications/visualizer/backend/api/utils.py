@@ -16,6 +16,8 @@ async def get_dataset_viewer_config(dataset: Dataset):
     em_metadata = config.em_config
     segmentation_metadata = config.segmentation_config
     resolution = segmentation_metadata.get("resolution")
+    synapses_segmentation_metadata = config.synapses_segmentation_config
+    synapses_resolution = synapses_segmentation_metadata.get("resolution")
     return EMData(
         min_zoom=em_metadata.get("minzoom"),
         max_zoom=em_metadata.get("maxzoom"),
@@ -27,6 +29,16 @@ async def get_dataset_viewer_config(dataset: Dataset):
         segmentation_url=(
             settings.DATASET_EMDATA_SEGMENTATION_URL_FORMAT.format(dataset=dataset.id)
             if resolution
+            else None
+        ),
+        synapses_segmentation_size=(
+            tuple(synapses_resolution) if synapses_resolution else None
+        ),
+        synapses_segmentation_url=(
+            settings.DATASET_EMDATA_SYNAPSES_SEGMENTATION_URL_FORMAT.format(
+                dataset=dataset.id
+            )
+            if synapses_resolution
             else None
         ),
     )

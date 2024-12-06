@@ -30,6 +30,8 @@ class EMData(BilingualSchema):
     resource_url: str
     segmentation_url: str | None
     segmentation_size: tuple[int, int] | None
+    synapses_segmentation_url: str | None
+    synapses_segmentation_size: tuple[int, int] | None
 
 
 class Dataset(ModelSchema, BilingualSchema):
