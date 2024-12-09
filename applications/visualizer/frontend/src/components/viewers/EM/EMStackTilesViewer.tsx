@@ -16,7 +16,6 @@ import VectorSource from "ol/source/Vector";
 import { TileGrid } from "ol/tilegrid";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
-import { SlidingRing } from "../../../helpers/slidingRing";
 import { ViewerType, getEMDataURL, getSegmentationURL, getSynapsesSegmentationURL } from "../../../models/models.ts";
 import type { Workspace } from "../../../models/workspace.ts";
 import type { Dataset } from "../../../rest/index.ts";
