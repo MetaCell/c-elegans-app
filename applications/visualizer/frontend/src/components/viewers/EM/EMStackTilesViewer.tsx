@@ -89,13 +89,24 @@ function neuronsStyle(feature: FeatureLike, workspace: Workspace) {
   return null;
 }
 
-function onNeuronSelect(position: Coordinate, source: VectorSource<Feature> | undefined, workspace: Workspace) {
-  const features = source?.getFeaturesAtCoordinate(position);
-  if (!features || features.length === 0) {
-    return;
+function selectAcrossLayers(position: Coordinate, ...layers: (VectorLayer<Feature> | undefined)[]): Feature | undefined {
+  for (let i = 0; i < layers.length; i++) {
+    const source = layers[i]?.getSource();
+    const features = source?.getFeaturesAtCoordinate(position);
+    if (!features || features.length === 0) {
+      continue;
+    }
+
+    if (features.length > 1) {
+      console.warn("found overlapping neurons on the same layer");
+    }
+    return features[0];
   }
 
-  const feature = features[0];
+  return undefined;
+}
+
+function onNeuronSelect(feature: Feature, workspace: Workspace) {
   const neuronName = neuronFeatureName(feature);
 
   if (isNeuronSelected(neuronName, workspace)) {
@@ -186,7 +197,7 @@ const EMStackViewer = () => {
   // });
 
   const neuronsStyleRef = useRef((feature) => neuronsStyle(feature, currentWorkspace));
-  const onNeuronSelectRef = useRef((position) => onNeuronSelect(position, currSegLayer.current?.getSource(), currentWorkspace));
+  const onNeuronSelectRef = useRef((position) => onNeuronSelect(selectAcrossLayers(position, currSegLayer.current, currSynSegLayer.current), currentWorkspace));
 
   useEffect(() => {
     if (!currSegLayer.current?.getSource()) {
@@ -194,7 +205,7 @@ const EMStackViewer = () => {
     }
 
     neuronsStyleRef.current = (feature: Feature) => neuronsStyle(feature, currentWorkspace);
-    onNeuronSelectRef.current = (position) => onNeuronSelect(position, currSegLayer.current.getSource(), currentWorkspace);
+    onNeuronSelectRef.current = (position) => onNeuronSelect(selectAcrossLayers(position, currSegLayer.current, currSynSegLayer.current), currentWorkspace);
     currSegLayer.current.getSource().changed();
   }, [currentWorkspace.getVisibleNeuronsInEM(), currentWorkspace.visibilities, currentWorkspace.getSelection(ViewerType.EM), segSlice]);
 
@@ -260,6 +271,7 @@ const EMStackViewer = () => {
       extent: [minSlice, maxSlice],
       newLayer: (slice) => newSynapsesSegLayer(firstActiveDataset, slice),
       onSlide: (_, layer) => {
+        // TODO: change the style
         layer.setStyle({
           "fill-color": "blue",
           "stroke-color": "blue",
