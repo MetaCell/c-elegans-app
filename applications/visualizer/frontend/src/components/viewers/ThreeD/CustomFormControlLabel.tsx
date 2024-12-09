@@ -7,16 +7,17 @@ interface CustomFormControlLabel {
   label: React.ReactNode;
   tooltipTitle: React.ReactNode;
   helpText: React.ReactNode;
+  checked?: boolean;
   onChange?: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void;
 }
 
 const { gray50, gray600, gray400B } = vars;
-const CustomFormControlLabel = ({ label, tooltipTitle, helpText, onChange }: CustomFormControlLabel) => {
+const CustomFormControlLabel = ({ label, tooltipTitle, helpText, checked, onChange }: CustomFormControlLabel) => {
   return (
     <FormControlLabel
       control={
         <Tooltip title={helpText}>
-          <CustomSwitch onChange={onChange} />
+          <CustomSwitch checked={checked} onChange={onChange} />
         </Tooltip>
       }
       sx={{

@@ -31,12 +31,12 @@ export interface SlidingRingOptions<T> extends SlidingRingCb<T> {
 export class SlidingRing<T> {
   private extent: [number, number];
 
-  private ring: Array<{
+  public ring: Array<{
     n: number; // position within extent
     o: T;
   }>;
 
-  private pos: number; // current buffer position
+  public pos: number; // current buffer position
   private tail: number; // buffer tail
   private head: number; // buffer head
 

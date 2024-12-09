@@ -9,15 +9,25 @@ import { vars } from "../../../theme/variables.ts";
 
 const { gray500 } = vars;
 
+interface LayerControlHandler {
+  label: string;
+  checked: boolean;
+  onToggle: (checked: boolean) => void;
+}
+
+type LayersControlsHandlers = {
+  [key in "neurons" | "synapses"]: LayerControlHandler;
+};
+
 interface ScaleControlsHandlers {
   onZoomIn: () => void;
   onResetView: () => void;
   onZoomOut: () => void;
   onPrint: () => void;
-  onHideLayer: (layer: "neurons" | "synapses", checked: boolean) => void;
+  layers: LayersControlsHandlers;
 }
 
-function SceneControls({ onZoomIn, onResetView, onZoomOut, onPrint, onHideLayer }: ScaleControlsHandlers) {
+function SceneControls({ onZoomIn, onResetView, onZoomOut, onPrint, layers }: ScaleControlsHandlers) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   const open = Boolean(anchorEl);
@@ -30,6 +40,20 @@ function SceneControls({ onZoomIn, onResetView, onZoomOut, onPrint, onHideLayer 
   const handleCloseSettings = () => {
     setAnchorEl(null);
   };
+
+  const layersControlsElems = Object.keys(layers).map((key) => {
+    const { label, checked, onToggle } = layers[key as keyof LayersControlsHandlers];
+    return (
+      <CustomFormControlLabel
+        key={key}
+        label={label}
+        tooltipTitle="tooltip"
+        helpText="data.helpText"
+        checked={checked}
+        onChange={(_, checked) => onToggle(checked)}
+      />
+    );
+  });
 
   return (
     <Box
@@ -90,13 +114,7 @@ function SceneControls({ onZoomIn, onResetView, onZoomOut, onPrint, onHideLayer 
           <Typography color={gray500} variant="subtitle1" mb=".5rem" ml=".5rem">
             EM viewer settings
           </Typography>
-          <CustomFormControlLabel label="Neurons" tooltipTitle="tooltip" helpText="data.helpText" onChange={(_, checked) => onHideLayer("neurons", checked)} />
-          <CustomFormControlLabel
-            label="Synapses"
-            tooltipTitle="tooltip"
-            helpText="data.helpText"
-            onChange={(_, checked) => onHideLayer("synapses", checked)}
-          />
+          {layersControlsElems}
         </Box>
       </Popover>
       <Tooltip title="Zoom in" placement="right-start">

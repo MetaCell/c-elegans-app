@@ -22,6 +22,7 @@ import type { Workspace } from "../../../models/workspace.ts";
 import type { Dataset } from "../../../rest/index.ts";
 import SceneControls from "./SceneControls.tsx";
 import { activeNeuronStyle, neuronFeatureName, selectedNeuronStyle } from "./neuronsMapFeature.ts";
+import { SlidingLayer } from "./slidingLayer.ts";
 
 const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, projection: Projection): TileLayer<XYZ> => {
   return new TileLayer({
@@ -143,9 +144,12 @@ const EMStackViewer = () => {
   const currSegLayer = useRef<VectorLayer<Feature> | null>(null);
   const currSynSegLayer = useRef<VectorLayer<Feature> | null>(null);
 
-  const ringEM = useRef<SlidingRing<TileLayer<XYZ>>>();
-  const ringSeg = useRef<SlidingRing<VectorLayer<Feature>>>();
-  const ringSynSeg = useRef<SlidingRing<VectorLayer<Feature>>>();
+  const ringEM = useRef<SlidingLayer<TileLayer<XYZ>>>();
+  const ringSeg = useRef<SlidingLayer<VectorLayer<Feature>>>();
+  const ringSynSeg = useRef<SlidingLayer<VectorLayer<Feature>>>();
+
+  const [showNeurons, setShowNeurons] = useState<boolean>(true);
+  const [showSynapses, setShowSynapses] = useState<boolean>(true);
 
   const startZoom = useMemo(() => {
     const emData = firstActiveDataset.emData;
@@ -196,6 +200,20 @@ const EMStackViewer = () => {
   }, [currentWorkspace.getVisibleNeuronsInEM(), currentWorkspace.visibilities, currentWorkspace.getSelection(ViewerType.EM), segSlice]);
 
   useEffect(() => {
+    if (!ringSeg.current) {
+      return;
+    }
+    showNeurons ? ringSeg.current.enable() : ringSeg.current.disable();
+  }, [showNeurons]);
+
+  useEffect(() => {
+    if (!ringSynSeg.current) {
+      return;
+    }
+    showSynapses ? ringSynSeg.current.enable() : ringSynSeg.current.disable();
+  }, [showSynapses]);
+
+  useEffect(() => {
     if (mapRef.current) {
       return;
     }
@@ -213,77 +231,41 @@ const EMStackViewer = () => {
       interactions: interactions,
     });
 
-    ringEM.current = new SlidingRing({
+    ringEM.current = new SlidingLayer({
+      map: map,
       cacheSize: ringSize,
       startAt: startSlice,
       extent: [minSlice, maxSlice],
-      onPush: (slice) => {
-        const layer = newEMLayer(firstActiveDataset, slice, tilegrid, projection);
-        layer.setOpacity(0);
-        map.addLayer(layer);
-        return layer;
-      },
-      onSelected: (_, layer) => {
-        layer.setOpacity(1);
-      },
-      onUnselected: (_, layer) => {
-        layer.setOpacity(0);
-      },
-      onEvict: (_, layer) => {
-        map.removeLayer(layer);
-      },
+      newLayer: (slice) => newEMLayer(firstActiveDataset, slice, tilegrid, projection),
     });
 
-    ringSeg.current = new SlidingRing({
+    ringSeg.current = new SlidingLayer({
+      map: map,
       cacheSize: ringSize,
       startAt: startSlice,
       extent: [minSlice, maxSlice],
-      onPush: (slice) => {
-        const layer = newSegLayer(firstActiveDataset, slice);
-        layer.setOpacity(0);
+      newLayer: (slice) => newSegLayer(firstActiveDataset, slice),
+      onSlide: (slice, layer) => {
         layer.setStyle((feature) => neuronsStyleRef.current(feature));
-        map.addLayer(layer);
-        return layer;
-      },
-      onSelected: (slice, layer) => {
-        layer.setOpacity(1);
         currSegLayer.current = layer;
         segSetSlice(slice);
-      },
-      onUnselected: (_, layer) => {
-        layer.setOpacity(0);
-      },
-      onEvict: (_, layer) => {
-        map.removeLayer(layer);
       },
     });
 
     map.on("click", (e) => onNeuronSelectRef.current(e.coordinate));
 
-    ringSynSeg.current = new SlidingRing({
+    ringSynSeg.current = new SlidingLayer({
+      map: map,
       cacheSize: ringSize,
       startAt: startSlice,
       extent: [minSlice, maxSlice],
-      onPush: (slice) => {
-        const layer = newSynapsesSegLayer(firstActiveDataset, slice);
-        layer.setOpacity(0);
+      newLayer: (slice) => newSynapsesSegLayer(firstActiveDataset, slice),
+      onSlide: (_, layer) => {
         layer.setStyle({
           "fill-color": "blue",
           "stroke-color": "blue",
         });
-        map.addLayer(layer);
-        return layer;
-      },
-      onSelected: (slice, layer) => {
-        layer.setOpacity(1);
         currSynSegLayer.current = layer;
-        segSetSlice(slice);
-      },
-      onUnselected: (_, layer) => {
-        layer.setOpacity(0);
-      },
-      onEvict: (_, layer) => {
-        map.removeLayer(layer);
       },
     });
 
@@ -379,7 +361,18 @@ const EMStackViewer = () => {
         onResetView={onResetView}
         onZoomOut={onControlZoomOut}
         onPrint={onPrint}
-        onHideLayer={(layer, checked) => console.log("toggle", layer, checked)}
+        layers={{
+          neurons: {
+            label: "Neurons",
+            checked: showNeurons,
+            onToggle: setShowNeurons,
+          },
+          synapses: {
+            label: "Synapses",
+            checked: showSynapses,
+            onToggle: setShowSynapses,
+          },
+        }}
       />
       <div id="emviewer" style={{ height: "100%", width: "100%" }} />
     </Box>
