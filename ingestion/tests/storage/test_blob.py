@@ -113,13 +113,13 @@ def test__fs_3d_blob_name(dataset_id: str, file_path: Path, blob_name: str):
     "paths, suffix",
     [
         (["ABC", "DEF"], ""),
-        (["ABCF", "DEF"], "F"),
-        (["ABC-DEF.stl", "DEF.stl"], "DEF.stl"),
-        (["ABC-DEF-SEM_adult.stl", "AAA-SEM_adult.stl"], "-SEM_adult.stl"),
-        (["ABC-DEF-SEM_adult.stl", "AAA-SEM_adult.stl", "DEF.stl"], "-SEM_adult.stl"),
+        (["ABCF", "DEF"], ""),
+        (["ABC-DEF.stl", "DEF.stl"], "-DEF"),
+        (["ABC-DEF-SEM_adult.stl", "AAA-SEM_adult.stl"], "-SEM_adult"),
+        (["ABC-DEF-SEM_adult.stl", "AAA-SEM_adult.stl", "DEF.stl"], "-SEM_adult"),
         (
             ["ABC-DEF-SEM_adult.stl", "AAA-SEM_adult.stl", "DEF.stl", "AABC.stl"],
-            "-SEM_adult.stl",
+            "-SEM_adult",
         ),
     ],
 )
