@@ -191,6 +191,9 @@ components:
           maxLength: 10
           title: Neurotransmitter
           type: string
+        reference:
+          title: Reference
+          type: string
         type:
           maxLength: 10
           title: Type
@@ -199,6 +202,7 @@ components:
       - name
       - datasetIds
       - model3DUrls
+      - reference
       - nclass
       - neurotransmitter
       - type
