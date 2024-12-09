@@ -27,8 +27,8 @@ export class SlidingLayer<T extends Layer> {
         return layer;
       },
       onSelected: (slice, layer) => {
-        layer.setOpacity(Number(this.opaque));
         onSlide && onSlide(slice, layer);
+        layer.setOpacity(Number(this.opaque));
       },
       onUnselected: (_, layer) => {
         layer.setOpacity(0);
