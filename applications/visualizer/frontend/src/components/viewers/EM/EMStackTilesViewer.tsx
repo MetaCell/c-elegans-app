@@ -89,9 +89,10 @@ function neuronsStyle(feature: FeatureLike, workspace: Workspace) {
   return null;
 }
 
-function selectAcrossLayers(position: Coordinate, ...layers: (VectorLayer<Feature> | undefined)[]): Feature | undefined {
-  for (let i = 0; i < layers.length; i++) {
-    const source = layers[i]?.getSource();
+function selectAcrossLayers(position: Coordinate, ...selectors: [VectorLayer<Feature> | undefined, (Feature) => void][]) {
+  for (let i = 0; i < selectors.length; i++) {
+    const [layer, handler] = selectors[i];
+    const source = layer?.getSource();
     const features = source?.getFeaturesAtCoordinate(position);
     if (!features || features.length === 0) {
       continue;
@@ -100,17 +101,12 @@ function selectAcrossLayers(position: Coordinate, ...layers: (VectorLayer<Featur
     if (features.length > 1) {
       console.warn("found overlapping neurons on the same layer");
     }
-    return features[0];
-  }
 
-  return undefined;
+    handler(features[0]);
+  }
 }
 
-function onNeuronSelect(feature: Feature | undefined, workspace: Workspace) {
-  if (!feature) {
-    return;
-  }
-
+function onNeuronSelect(feature: Feature, workspace: Workspace) {
   const neuronName = neuronFeatureName(feature);
 
   if (isNeuronSelected(neuronName, workspace)) {
@@ -130,6 +126,11 @@ function onNeuronSelect(feature: Feature | undefined, workspace: Workspace) {
   }
 
   workspace.addSelection(neuronName, ViewerType.EM);
+}
+
+function onSynapseSelect(feature: Feature, _: Workspace) {
+  const synapseName = neuronFeatureName(feature);
+  console.log("synaspse click", synapseName);
 }
 
 const scale = new ScaleLine({
@@ -200,8 +201,15 @@ const EMStackViewer = () => {
   // 	}),
   // });
 
+  const makeFeatureClickHandler = () => (position) =>
+    selectAcrossLayers(
+      position,
+      [currSegLayer.current, (feature) => onNeuronSelect(feature, currentWorkspace)],
+      [currSynSegLayer.current, (feature) => onSynapseSelect(feature, currentWorkspace)],
+    );
+
   const neuronsStyleRef = useRef((feature) => neuronsStyle(feature, currentWorkspace));
-  const onNeuronSelectRef = useRef((position) => onNeuronSelect(selectAcrossLayers(position, currSegLayer.current, currSynSegLayer.current), currentWorkspace));
+  const onFeatureClickRef = useRef(makeFeatureClickHandler());
 
   useEffect(() => {
     if (!currSegLayer.current?.getSource()) {
@@ -209,7 +217,7 @@ const EMStackViewer = () => {
     }
 
     neuronsStyleRef.current = (feature: Feature) => neuronsStyle(feature, currentWorkspace);
-    onNeuronSelectRef.current = (position) => onNeuronSelect(selectAcrossLayers(position, currSegLayer.current, currSynSegLayer.current), currentWorkspace);
+    onFeatureClickRef.current = makeFeatureClickHandler();
     currSegLayer.current.getSource().changed();
   }, [currentWorkspace.getVisibleNeuronsInEM(), currentWorkspace.visibilities, currentWorkspace.getSelection(ViewerType.EM), segSlice]);
 
@@ -266,7 +274,7 @@ const EMStackViewer = () => {
       },
     });
 
-    map.on("click", (e) => onNeuronSelectRef.current(e.coordinate));
+    map.on("click", (e) => onFeatureClickRef.current(e.coordinate));
 
     ringSynSeg.current = new SlidingLayer({
       map: map,
