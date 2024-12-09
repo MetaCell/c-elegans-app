@@ -106,7 +106,11 @@ function selectAcrossLayers(position: Coordinate, ...layers: (VectorLayer<Featur
   return undefined;
 }
 
-function onNeuronSelect(feature: Feature, workspace: Workspace) {
+function onNeuronSelect(feature: Feature | undefined, workspace: Workspace) {
+  if (!feature) {
+    return;
+  }
+
   const neuronName = neuronFeatureName(feature);
 
   if (isNeuronSelected(neuronName, workspace)) {
