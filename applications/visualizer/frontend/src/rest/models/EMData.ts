@@ -11,5 +11,6 @@ export type EMData = {
     resourceUrl: string;
     segmentationUrl: (string | null);
     segmentationSize: (any[] | null);
+    synapsesSegmentationUrl: (string | null);
 };
 

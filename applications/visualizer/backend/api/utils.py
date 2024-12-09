@@ -29,4 +29,11 @@ async def get_dataset_viewer_config(dataset: Dataset):
             if resolution
             else None
         ),
+        synapses_segmentation_url=(
+            settings.DATASET_EMDATA_SYNAPSES_SEGMENTATION_URL_FORMAT.format(
+                dataset=dataset.id
+            )
+            if resolution
+            else None
+        ),
     )

@@ -555,6 +555,17 @@
               }
             ],
             "title": "Segmentationsize"
+          },
+          "synapsesSegmentationUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Synapsessegmentationurl"
           }
         },
         "required": [
@@ -565,7 +576,8 @@
           "sliceRange",
           "resourceUrl",
           "segmentationUrl",
-          "segmentationSize"
+          "segmentationSize",
+          "synapsesSegmentationUrl"
         ],
         "title": "EMData",
         "type": "object"

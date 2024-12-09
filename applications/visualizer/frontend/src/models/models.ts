@@ -92,6 +92,10 @@ export function getEMDataURL(dataset: Dataset, sliceIndex: number): string {
   return buildUrlFromFormat(dataset.emData.resourceUrl, sliceIndex?.toString());
 }
 
+export function getSynapsesSegmentationURL(dataset: Dataset, sliceIndex: number): string {
+  return buildUrlFromFormat(dataset.emData.synapsesSegmentationUrl, sliceIndex?.toString());
+}
+
 export enum Alignment {
   Left = "left",
   Right = "right",

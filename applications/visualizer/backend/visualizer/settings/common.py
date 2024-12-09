@@ -166,3 +166,6 @@ DATASET_EMDATA_URL_FORMAT = "resources/{dataset}/em/{{index}}/{{x}}_{{y}}_{{z}}.
 DATASET_EMDATA_SEGMENTATION_URL_FORMAT = (
     "resources/{dataset}/segmentations/s{{index}}.json"
 )
+DATASET_EMDATA_SYNAPSES_SEGMENTATION_URL_FORMAT = (
+    "resources/{dataset}/synapses/segmentations/s{{index}}.json"
+)
