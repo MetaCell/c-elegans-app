@@ -140,10 +140,10 @@ To upload dataset files such as 3D neuron models, EM tile images and segmentatio
 When using the `add-dataset` subcommand, don't forget to specify the dataset ID corresponding to the files you're uploading (we will remember you otherwise).
 The following flags help determine which files to upload:
 
-- `-seg`/`--segmentation`: Path to the directory or files containing segmentation data.
+- `-seg`/`--segmentation`: Path to the directory or files containing neuron segmentation data.
 - `-3`/`--3d`: Path to the directory or files containing 3D neuron models.
 - `-e`/`--em`: Path to the directory or files containing EM tile images.
-- `-syn`/`--synapses`: Path to the directory or files containin the synapses data.
+- `-syn`/`--synapses`: Path to the directory or files containin synapses segmentation data.
 
 You can specify one, two, or all flags.
 

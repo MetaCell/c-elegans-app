@@ -130,7 +130,7 @@ def add_add_dataset_flags(parser: ArgumentParser):
         parser: ArgumentParser, kind: str, *, short_flag: str | None = None
     ):
         parser.add_argument(
-            "-" + (short_flag or f"{kind.lower()[0]}"),
+            f"-{short_flag or kind.lower()[0]}",
             f"--{kind.lower()}",
             nargs="+",
             type=Path,
