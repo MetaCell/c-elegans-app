@@ -103,6 +103,7 @@ function selectAcrossLayers(position: Coordinate, ...selectors: [VectorLayer<Fea
     }
 
     handler(features[0]);
+    return;
   }
 }
 
