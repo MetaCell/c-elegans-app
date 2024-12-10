@@ -20,7 +20,7 @@ import { ViewerType, getEMDataURL, getSegmentationURL, getSynapsesSegmentationUR
 import type { Workspace } from "../../../models/workspace.ts";
 import type { Dataset } from "../../../rest/index.ts";
 import SceneControls from "./SceneControls.tsx";
-import { activeNeuronStyle, neuronFeatureName, selectedNeuronStyle } from "./neuronsMapFeature.ts";
+import { activeNeuronStyle, neuronFeatureName, selectedNeuronStyle, selectedSynapseStyle, activeSynapseStyle } from "./neuronsMapFeature.ts";
 import { SlidingLayer } from "./slidingLayer.ts";
 
 const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, projection: Projection): TileLayer<XYZ> => {
@@ -131,7 +131,16 @@ function onNeuronSelect(feature: Feature, workspace: Workspace) {
 
 function onSynapseSelect(feature: Feature, _: Workspace) {
   const synapseName = neuronFeatureName(feature);
-  console.log("synaspse click", synapseName);
+
+  const selected = feature.get("selected");
+  if (selected) {
+    feature.set("selected", false);
+    console.debug("synaspse unselected", synapseName);
+    return;
+  }
+
+  feature.set("selected", true);
+  console.debug("synaspse selected", synapseName);
 }
 
 const scale = new ScaleLine({
@@ -284,10 +293,12 @@ const EMStackViewer = () => {
       extent: [minSlice, maxSlice],
       newLayer: (slice) => newSynapsesSegLayer(firstActiveDataset, slice),
       onSlide: (_, layer) => {
-        // TODO: change the style
-        layer.setStyle({
-          "fill-color": "blue",
-          "stroke-color": "blue",
+        layer.setStyle((feature) => {
+          const isSelected = feature.get("selected");
+          if (isSelected) {
+            return selectedSynapseStyle(feature);
+          }
+          return activeSynapseStyle(feature);
         });
         currSynSegLayer.current = layer;
       },
