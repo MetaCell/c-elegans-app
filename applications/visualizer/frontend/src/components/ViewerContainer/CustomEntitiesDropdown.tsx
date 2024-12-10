@@ -1,23 +1,18 @@
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import SearchIcon from "@mui/icons-material/Search";
-import { Box, InputAdornment, Popper, TextField, Typography } from "@mui/material";
+import {Box, IconButton, InputAdornment, Popper, TextField, Typography} from "@mui/material";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import {CheckIcon, NeuronsIcon} from "../../icons";
-import type { Neuron } from "../../rest/index.ts";
+import type { Neuron } from "../../rest";
 import { vars } from "../../theme/variables.ts";
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 const { gray50, brand600 } = vars;
 
-type OptionDetail = {
-  title: string;
-  value: string;
-};
-
 type Option = {
   id: string;
   label: string;
-  content: OptionDetail[];
+  reference: string;
 };
 
 interface CustomEntitiesDropdownProps {
@@ -50,7 +45,12 @@ const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearc
     setSearchText(value);
     onSearchNeurons(value);
   };
-
+  
+  const handleInfoClick = (e, option) => {
+    e.stopPropagation();
+    e.preventDefault();
+    window.open(option.reference, "_blank");
+  }
   const id = open ? "simple-popper" : undefined;
 
   const filteredOptions = options.filter((option) => !activeNeurons.has(option.id));
@@ -169,15 +169,29 @@ const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearc
                         '&:hover': {
                           background: '#F6F5F4',
                           
-                          '& .info': {
+                          '& .MuiButtonBase-root.info': {
                             visibility: "visible",
                           }
                         },
                         
-                        '& .info': {
+                        '& .MuiButtonBase-root.info': {
                           visibility: "hidden",
                           display: "flex",
                           alignItems: "center",
+                          padding: '0.25rem',
+                          borderRadius: "0.25rem",
+                          
+                          '& .MuiSvgIcon-root': {
+                            color: vars.gray500,
+                          },
+                          
+                          '&:hover': {
+                            backgroundColor: `${vars.gray100} !important`,
+                            
+                            '& .MuiSvgIcon-root': {
+                              color: vars.gray700,
+                            },
+                          }
                         }
                       }}
                     >
@@ -198,11 +212,12 @@ const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearc
                           </Typography>
                         </Box>
                         <Box display="flex" alignItems="center" gap=".5rem">
-                          <Box
+                          <IconButton
                             className="info"
+                            onClick={(e) => handleInfoClick(e, option)}
                           >
                             <InfoOutlinedIcon />
-                          </Box>
+                          </IconButton>
                           <Box
                             sx={{
                               visibility: selectedNeurons.some((neuron) => option.id === neuron.id) ? "initial" : "hidden",
@@ -222,35 +237,6 @@ const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearc
               <Box>No options available</Box>
             )}
           </Box>
-          {/*{options.length > 0 && (*/}
-          {/*  <Box*/}
-          {/*    sx={{*/}
-          {/*      width: "50%",*/}
-          {/*      overflow: "auto",*/}
-          {/*      flexShrink: 0,*/}
-          {/*      "& .MuiTypography-body2": {*/}
-          {/*        fontSize: "0.875rem",*/}
-          {/*        fontWeight: 400,*/}
-          {/*        lineHeight: "142.857%",*/}
-          {/*        padding: 0,*/}
-          {/*      },*/}
-          {/*      "& .MuiTypography-body1": {*/}
-          {/*        fontSize: "0.75rem",*/}
-          {/*        fontWeight: 500,*/}
-          {/*        lineHeight: "150%",*/}
-          {/*        padding: 0,*/}
-          {/*      },*/}
-          {/*    }}*/}
-          {/*  >*/}
-          {/*    {hoveredOption ? (*/}
-          {/*      <Box>Content of {hoveredOption.label}</Box>*/}
-          {/*    ) : (*/}
-          {/*      <Box height={1} display="flex" alignItems="center" justifyContent="center">*/}
-          {/*        <Typography variant="body2">Hover over each item to see details</Typography>*/}
-          {/*      </Box>*/}
-          {/*    )}*/}
-          {/*  </Box>*/}
-          {/*)}*/}
         </Box>
       </Popper>
     </>
