@@ -100,7 +100,7 @@ function synapsesStyle(feature: FeatureLike, workspace: Workspace): Style {
   return activeSynapseStyle(feature);
 }
 
-// LayerSelect specified a layer for features to be selected from and an handler function to be called if features are found.
+// LayerSelect specifies a layer for features to be selected from and a handler function to be called if a feature are found.
 // The handler next function forces a jump to the next layer selector.
 type LayerSelector = [VectorLayer<Feature> | undefined, (feature: Feature, next: () => void) => void];
 
