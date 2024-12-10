@@ -279,7 +279,10 @@ export class Workspace {
     const updated = produce(this, (draft: Workspace) => {
       for (const viewerType of viewers) {
         if (viewerType in draft.visibilities[neuronId]) {
-          draft.visibilities[neuronId][viewerType].color = color;
+          const viewerData = draft.visibilities[neuronId]?.[viewerType];
+          if (viewerData && "color" in viewerData && typeof viewerData.color === "string") {
+            viewerData.color = color;
+          }
         }
       }
     });
