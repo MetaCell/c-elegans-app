@@ -100,7 +100,11 @@ function synapsesStyle(feature: FeatureLike, workspace: Workspace): Style {
   return activeSynapseStyle(feature);
 }
 
-function selectAcrossLayers(position: Coordinate, ...selectors: [VectorLayer<Feature> | undefined, (Feature) => void][]) {
+// LayerSelect specified a layer for features to be selected from and an handler function to be called if features are found.
+// The handler next function forces a jump to the next layer selector.
+type LayerSelector = [VectorLayer<Feature> | undefined, (feature: Feature, next: () => void) => void];
+
+function selectAcrossLayers(position: Coordinate, ...selectors: LayerSelector[]) {
   for (let i = 0; i < selectors.length; i++) {
     const [layer, handler] = selectors[i];
     const source = layer?.getSource();
@@ -113,8 +117,16 @@ function selectAcrossLayers(position: Coordinate, ...selectors: [VectorLayer<Fea
       console.warn("found overlapping neurons on the same layer");
     }
 
-    handler(features[0]);
-    return;
+    let shouldContinue = false;
+    const next = () => {
+      shouldContinue = true;
+    };
+
+    handler(features[0], next);
+
+    if (!shouldContinue) {
+      return;
+    }
   }
 }
 
@@ -222,7 +234,15 @@ const EMStackViewer = () => {
   const makeFeatureClickHandler = () => (position) =>
     selectAcrossLayers(
       position,
-      [currSegLayer.current, (feature) => onNeuronSelect(feature, currentWorkspace)],
+      [
+        currSegLayer.current,
+        (feature, next) => {
+          if (!isNeuronVisible(cellFeatureName(feature), currentWorkspace)) {
+            return next();
+          }
+          onNeuronSelect(feature, currentWorkspace);
+        },
+      ],
       [currSynSegLayer.current, (feature) => onSynapseSelect(feature, currentWorkspace)],
     );
 
