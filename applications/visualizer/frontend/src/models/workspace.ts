@@ -78,7 +78,6 @@ export class Workspace {
       [ViewerType.Graph]: true,
       [ViewerType.ThreeD]: false,
       [ViewerType.EM]: false,
-      [ViewerType.InstanceDetails]: false,
     };
     this.neuronGroups = neuronGroups || {};
 
