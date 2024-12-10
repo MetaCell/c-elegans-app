@@ -50,7 +50,7 @@ export function selectedNeuronStyle(feature: FeatureLike, color?: string): Style
   });
 }
 
-export function neuronFeatureName(feature: FeatureLike): string {
+export function cellFeatureName(feature: FeatureLike): string {
   const neuronName = feature.getProperties()?.name;
 
   if (typeof neuronName !== "string") {
@@ -61,7 +61,7 @@ export function neuronFeatureName(feature: FeatureLike): string {
 }
 
 function synapseColor(feature: FeatureLike): Color {
-  const neuronName = neuronFeatureName(feature);
+  const neuronName = cellFeatureName(feature);
   const colorer = new String2HexCodeColor();
   return hexToRGBArray(colorer.stringToColor(neuronName));
 }
