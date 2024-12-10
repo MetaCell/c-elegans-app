@@ -1,12 +1,12 @@
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-import {Box, IconButton, InputAdornment, Popper, TextField, Typography} from "@mui/material";
+import { Box, IconButton, InputAdornment, Popper, TextField, Typography } from "@mui/material";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
-import {CheckIcon, NeuronsIcon} from "../../icons";
+import { CheckIcon, NeuronsIcon } from "../../icons";
 import type { Neuron } from "../../rest";
 import { vars } from "../../theme/variables.ts";
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 const { gray50, brand600 } = vars;
 
 type Option = {
@@ -45,12 +45,12 @@ const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearc
     setSearchText(value);
     onSearchNeurons(value);
   };
-  
+
   const handleInfoClick = (e, option) => {
     e.stopPropagation();
     e.preventDefault();
     window.open(option.reference, "_blank");
-  }
+  };
   const id = open ? "simple-popper" : undefined;
 
   const filteredOptions = options.filter((option) => !activeNeurons.has(option.id));
@@ -155,9 +155,12 @@ const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearc
           >
             {options.length > 0 ? (
               <Box overflow="auto" height="100%">
-                <Box component='ul' sx={{
-                  p: '0.25rem 0rem'
-                }}>
+                <Box
+                  component="ul"
+                  sx={{
+                    p: "0.25rem 0rem",
+                  }}
+                >
                   {sortedOptions.map((option) => (
                     <Box
                       component="li"
@@ -166,56 +169,58 @@ const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearc
                       sx={{
                         cursor: "pointer",
                         padding: "0.125rem 0.5rem",
-                        '&:hover': {
-                          background: '#F6F5F4',
-                          
-                          '& .MuiButtonBase-root.info': {
+                        "&:hover": {
+                          background: "#F6F5F4",
+
+                          "& .MuiButtonBase-root.info": {
                             visibility: "visible",
-                          }
+                          },
                         },
-                        
-                        '& .MuiButtonBase-root.info': {
+
+                        "& .MuiButtonBase-root.info": {
                           visibility: "hidden",
                           display: "flex",
                           alignItems: "center",
-                          padding: '0.25rem',
+                          padding: "0.25rem",
                           borderRadius: "0.25rem",
-                          
-                          '& .MuiSvgIcon-root': {
+
+                          "& .MuiSvgIcon-root": {
                             color: vars.gray500,
                           },
-                          
-                          '&:hover': {
+
+                          "&:hover": {
                             backgroundColor: `${vars.gray100} !important`,
-                            
-                            '& .MuiSvgIcon-root': {
+
+                            "& .MuiSvgIcon-root": {
                               color: vars.gray700,
                             },
-                          }
-                        }
+                          },
+                        },
                       }}
                     >
-                      <Box display="flex" alignItems="center" justifyContent='space-between' gap=".5rem" p='0.5rem 0.5rem 0.5rem 0.625rem'>
-                        <Box display="flex" alignItems="center" gap=".5rem" sx={{
-                          '& svg': {
-                            width: '1rem',
-                            height: '1rem',
-                            
-                            '& path': {
-                              fill: vars.gray400,
-                            }
-                          }
-                        }}>
+                      <Box display="flex" alignItems="center" justifyContent="space-between" gap=".5rem" p="0.5rem 0.5rem 0.5rem 0.625rem">
+                        <Box
+                          display="flex"
+                          alignItems="center"
+                          gap=".5rem"
+                          sx={{
+                            "& svg": {
+                              width: "1rem",
+                              height: "1rem",
+
+                              "& path": {
+                                fill: vars.gray400,
+                              },
+                            },
+                          }}
+                        >
                           <NeuronsIcon />
-                          <Typography variant='subtitle1' color={vars.gray900}>
+                          <Typography variant="subtitle1" color={vars.gray900}>
                             {option?.label?.length > 100 ? `${option?.label.slice(0, 100)}...` : option?.label}
                           </Typography>
                         </Box>
                         <Box display="flex" alignItems="center" gap=".5rem">
-                          <IconButton
-                            className="info"
-                            onClick={(e) => handleInfoClick(e, option)}
-                          >
+                          <IconButton className="info" onClick={(e) => handleInfoClick(e, option)}>
                             <InfoOutlinedIcon />
                           </IconButton>
                           <Box

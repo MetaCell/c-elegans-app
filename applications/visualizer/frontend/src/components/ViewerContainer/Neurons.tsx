@@ -25,7 +25,7 @@ const mapNeuronsToListItem = (neuron: string, visibility: ViewerData) => ({
 const neuronToOption = (neuron: Neuron) => ({
   id: neuron.name,
   label: neuron.name,
-  reference: neuron.reference
+  reference: neuron.reference,
 });
 
 const Neurons = ({ children }) => {
