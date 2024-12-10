@@ -615,6 +615,10 @@
             "title": "Model3Durls",
             "type": "array"
           },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          },
           "nclass": {
             "maxLength": 30,
             "title": "Nclass",
@@ -650,6 +654,7 @@
           "name",
           "datasetIds",
           "model3DUrls",
+          "reference",
           "nclass",
           "neurotransmitter",
           "type"
