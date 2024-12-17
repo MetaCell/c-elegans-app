@@ -1,7 +1,7 @@
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { Box, FormControlLabel, Stack, Tooltip, Typography } from "@mui/material";
-import { vars } from "../../../theme/variables.ts"; // Adjust the import path as needed
-import CustomSwitch from "../../ViewerContainer/CustomSwitch.tsx";
+import { vars } from "./../theme/variables.ts"; // Adjust the import path as needed
+import CustomSwitch from "./ViewerContainer/CustomSwitch.tsx";
 
 interface CustomFormControlLabel {
   label: React.ReactNode;

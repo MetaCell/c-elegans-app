@@ -4,7 +4,7 @@ import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import { Box, Divider, IconButton, Popover, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { useState } from "react";
-import CustomFormControlLabel from "../ThreeD/CustomFormControlLabel";
+import CustomFormControlLabel from "../../CustomFormControlLabel";
 import { vars } from "../../../theme/variables.ts";
 
 const { gray500 } = vars;
@@ -41,8 +41,7 @@ function SceneControls({ onZoomIn, onResetView, onZoomOut, onPrint, layers }: Sc
     setAnchorEl(null);
   };
 
-  const layersControlsElems = Object.keys(layers).map((key) => {
-    const { label, checked, onToggle } = layers[key as keyof LayersControlsHandlers];
+  const layersControlsElems = Object.entries(layers).map(([key, { label, checked, onToggle }]) => {
     return (
       <CustomFormControlLabel
         key={key}

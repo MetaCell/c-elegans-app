@@ -105,8 +105,7 @@ function synapsesStyle(feature: FeatureLike, workspace: Workspace): Style {
 type LayerSelector = [VectorLayer<Feature> | undefined, (feature: Feature, next: () => void) => void];
 
 function selectAcrossLayers(position: Coordinate, ...selectors: LayerSelector[]) {
-  for (let i = 0; i < selectors.length; i++) {
-    const [layer, handler] = selectors[i];
+  for (const [layer, handler] of selectors) {
     const source = layer?.getSource();
     const features = source?.getFeaturesAtCoordinate(position);
     if (!features || features.length === 0) {
