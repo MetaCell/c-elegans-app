@@ -140,11 +140,12 @@ To upload dataset files such as 3D neuron models, EM tile images and segmentatio
 When using the `add-dataset` subcommand, don't forget to specify the dataset ID corresponding to the files you're uploading (we will remember you otherwise).
 The following flags help determine which files to upload:
 
-- `-s`/`--segmentation`: Path to the directory or files containing segmentation data.
+- `-seg`/`--segmentation`: Path to the directory or files containing neuron segmentation data.
 - `-3`/`--3d`: Path to the directory or files containing 3D neuron models.
 - `-e`/`--em`: Path to the directory or files containing EM tile images.
+- `-syn`/`--synapses`: Path to the directory or files containin synapses segmentation data.
 
-You can specify one, two, or all three flags.
+You can specify one, two, or all flags.
 
 For example, to upload 3D neuron models from `/path/to/3d/models` for the dataset `witvliet_2020_2`, use the following command:
 
@@ -168,14 +169,16 @@ To ingest segmentations in to C-Elegans you need to take an extra step:
 1. [Extract segmentations from the bitmap files](#extracting-segmentation-from-bitmap-files)
 2. [Ingest these segmentation into the C-Elegans cloud deployment](#ingesting-files)
 
+**This is valid for either neuron segmentations and synapses segmentations.**
+
 #### Extract segmentations from bitmap Files
 
-To extract the segmentation files from the bitmap files you will need a metadata file. This file contains information describing how the neurons can be identified in these bitmap file.
+To extract the segmentation files from the bitmap files you will need a metadata file. This file contains information describing how the neurons or synapses can be identified in these bitmap file.
 
-So assuming your bitmap images are located at `/path/to/bitmap/files` and your metadata file is at `/path/to/metadata/SEM_adult_metadata.txt`, run the following command to extract the segmentations data:
+So assuming your bitmap images are located at `/path/to/bitmap/files` and your metadata file is at `/path/to/metadata/the_metadata.txt`, run the following command to extract the segmentations data:
 
 ```bash
-celegans extract -i /path/to/bitmap/files -l /path/to/metadata/SEM_adult_metadata.txt
+celegans extract -i /path/to/bitmap/files -l /path/to/metadata/the_metadata.txt
 ```
 
 **The segmentation will be saved in the same directory as your bitmap files.**
@@ -189,10 +192,12 @@ This process may take a significant amount of time, depending on the number of f
 In same manner as described in [Ingest Files](#ingesting-files) section, you can upload the segmentation you just created by running:
 
 ```bash
-celegans ingest --data /path/to/data/db-raw-data add-dataset --id witvliet_2020_2 -s /path/to/bitmap/files
+celegans ingest --data /path/to/data/db-raw-data add-dataset --id witvliet_2020_2 -seg /path/to/bitmap/files
 ```
 
-Substituting the `--id` for your dataset ID and pointing to the segmentation output directory, which is the same as the bitmap files directory.
+1. Substituting the `--id` for your dataset ID
+2. Using the correct flag for either neuron segmentations (`-seg` or `--segmentation`) or the synapses segmentations (`-syn` or `--synapses`)
+3. Pointing to the segmentation output directory, which is the same as the bitmap files directory.
 
 ## FAQ
 
@@ -233,12 +238,19 @@ Our suggestion would be to manage and store your files as follows:
 │   │   │   ...
 │   │   ├── ...
 │   │   ...
-│   └── segmentations
-│       ├── s000.json
-│       ├── Dataset8_seg...127.vsseg_export_s000.png
-│       ├── s001.json
-│       ├── Dataset8_seg...127.vsseg_export_s001.png
-│       └── ...
+│   ├── segmentations
+│   │   ├── s000.json
+│   │   ├── Dataset8_seg...127.vsseg_export_s000.png
+│   │   ├── s001.json
+│   │   ├── Dataset8_seg...127.vsseg_export_s001.png
+│   │   └── ...
+│   └── synapses
+│       └── segmentations
+│           ├── s000.json
+│           ├── Dataset8_synapses__s000.png
+│           ├── s001.json
+│           ├── Dataset8_synapses__s001.png
+│           └── ...
 ├── dataset-2
 ├── dataset-3
 ...

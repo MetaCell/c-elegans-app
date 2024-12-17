@@ -1,11 +1,10 @@
 from __future__ import annotations
-
 from collections import Counter
 import re
 from pathlib import Path
 
 from ingestion.em_metadata import Tile
-from ingestion.storage.filesystem import SEGMENTATION_REGEX
+from ingestion.storage.filesystem import SEGMENTATION_REGEX, SYNAPSES_REGEX
 
 STL_FILE_REGEX = r"-[^-_]+_[^-]+\.\w+$"
 
@@ -22,8 +21,20 @@ def fs_segmentation_blob_name(dataset_id: str, p: Path) -> str:
     return f"{dataset_id}/segmentations/s{match.group(1)}.json"
 
 
-def fs_resolutions_metadata_blob_name(dataset_id: str) -> str:
+def fs_synapses_blob_name(dataset_id: str, p: Path) -> str:
+    match = re.search(SYNAPSES_REGEX, p.name)
+    if not match:
+        raise Exception(f"could not extract the slice id from synapses file: {p}")
+
+    return f"{dataset_id}/synapses/segmentations/s{match.group(1)}.json"
+
+
+def fs_segmentations_resolutions_metadata_blob_name(dataset_id: str) -> str:
     return f"{dataset_id}/segmentations/metadata.json"
+
+
+def fs_synapses_resolutions_metadata_blob_name(dataset_id: str) -> str:
+    return f"{dataset_id}/synapses/segmentations/metadata.json"
 
 
 def find_longest_suffix(paths: list[Path]) -> str:
