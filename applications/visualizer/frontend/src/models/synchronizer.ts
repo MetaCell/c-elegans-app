@@ -6,7 +6,6 @@ export type SynchronizerContext = Array<string>;
 export type Selection = Array<Neuron>;
 
 const syncViewerDefs: Record<ViewerSynchronizationPair, [ViewerType, ViewerType]> = {
-  [ViewerSynchronizationPair.Graph_InstanceDetails]: [ViewerType.Graph, ViewerType.InstanceDetails],
   [ViewerSynchronizationPair.Graph_ThreeD]: [ViewerType.Graph, ViewerType.ThreeD],
   [ViewerSynchronizationPair.ThreeD_EM]: [ViewerType.ThreeD, ViewerType.EM],
 };
@@ -112,7 +111,6 @@ export class SynchronizerOrchestrator {
       this.contexts = {
         [ViewerType.EM]: [],
         [ViewerType.Graph]: [],
-        [ViewerType.InstanceDetails]: [],
         [ViewerType.ThreeD]: [],
       };
     }
@@ -120,7 +118,6 @@ export class SynchronizerOrchestrator {
 
   public static create(activesSync?: Record<ViewerSynchronizationPair, boolean>, contexts?: Record<ViewerType, SynchronizerContext>) {
     const synchronizers = [
-      Synchronizer.create(activesSync?.[ViewerSynchronizationPair.Graph_InstanceDetails] || true, ViewerSynchronizationPair.Graph_InstanceDetails),
       Synchronizer.create(activesSync?.[ViewerSynchronizationPair.Graph_ThreeD] || true, ViewerSynchronizationPair.Graph_ThreeD),
       Synchronizer.create(activesSync?.[ViewerSynchronizationPair.ThreeD_EM] || true, ViewerSynchronizationPair.ThreeD_EM),
     ];

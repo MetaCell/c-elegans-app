@@ -1,23 +1,18 @@
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-import { Box, InputAdornment, Popper, TextField, Typography } from "@mui/material";
+import { Box, IconButton, InputAdornment, Popper, TextField, Typography } from "@mui/material";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
-import { CheckIcon } from "../../icons";
-import type { Neuron } from "../../rest/index.ts";
+import { CheckIcon, NeuronsIcon } from "../../icons";
+import type { Neuron } from "../../rest";
 import { vars } from "../../theme/variables.ts";
-
 const { gray50, brand600 } = vars;
-
-type OptionDetail = {
-  title: string;
-  value: string;
-};
 
 type Option = {
   id: string;
   label: string;
-  content: OptionDetail[];
+  reference: string;
 };
 
 interface CustomEntitiesDropdownProps {
@@ -31,7 +26,6 @@ interface CustomEntitiesDropdownProps {
 
 const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearchNeurons, setNeurons, availableNeurons }: CustomEntitiesDropdownProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [hoveredOption, setHoveredOption] = useState<Option | null>(null);
   const [open, setOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
 
@@ -52,6 +46,11 @@ const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearc
     onSearchNeurons(value);
   };
 
+  const handleInfoClick = (e, option) => {
+    e.stopPropagation();
+    e.preventDefault();
+    window.open(option.reference, "_blank");
+  };
   const id = open ? "simple-popper" : undefined;
 
   const filteredOptions = options.filter((option) => !activeNeurons.has(option.id));
@@ -139,7 +138,7 @@ const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearc
           background: "#fff",
           boxShadow: "0 0.5rem 0.5rem -0.25rem rgba(7, 8, 8, 0.03), 0 1.25rem 1.5rem -0.25rem rgba(7, 8, 8, 0.08)",
           m: "0.25rem 0  !important",
-          width: options.length > 0 ? "55.5rem" : "27.75rem",
+          width: "18rem",
           display: "flex",
           flexDirection: "column",
           zIndex: 1300,
@@ -151,72 +150,98 @@ const CustomEntitiesDropdown = ({ options, activeNeurons, onNeuronClick, onSearc
               flexShrink: 0,
               display: "flex",
               flexDirection: "column",
-              width: options.length > 0 ? "20%" : "100%",
+              width: "100%",
             }}
           >
             {options.length > 0 ? (
               <Box overflow="auto" height="100%">
-                <ul>
+                <Box
+                  component="ul"
+                  sx={{
+                    p: "0.25rem 0rem",
+                  }}
+                >
                   {sortedOptions.map((option) => (
-                    <li
+                    <Box
+                      component="li"
                       key={option.id}
-                      onMouseEnter={() => setHoveredOption(option)}
-                      onMouseLeave={() => setHoveredOption(null)}
                       onClick={() => handleOptionClick(option)}
-                      style={{
+                      sx={{
                         cursor: "pointer",
-                        padding: "0.625rem",
+                        padding: "0.125rem 0.5rem",
+                        "&:hover": {
+                          background: "#F6F5F4",
+
+                          "& .MuiButtonBase-root.info": {
+                            visibility: "visible",
+                          },
+                        },
+
+                        "& .MuiButtonBase-root.info": {
+                          visibility: "hidden",
+                          display: "flex",
+                          alignItems: "center",
+                          padding: "0.25rem",
+                          borderRadius: "0.25rem",
+
+                          "& .MuiSvgIcon-root": {
+                            color: vars.gray500,
+                          },
+
+                          "&:hover": {
+                            backgroundColor: `${vars.gray100} !important`,
+
+                            "& .MuiSvgIcon-root": {
+                              color: vars.gray700,
+                            },
+                          },
+                        },
                       }}
                     >
-                      <Box display="flex" alignItems="center" gap=".5rem">
+                      <Box display="flex" alignItems="center" justifyContent="space-between" gap=".5rem" p="0.5rem 0.5rem 0.5rem 0.625rem">
                         <Box
+                          display="flex"
+                          alignItems="center"
+                          gap=".5rem"
                           sx={{
-                            visibility: selectedNeurons.some((neuron) => option.id === neuron.id) ? "initial" : "hidden",
-                            display: "flex",
-                            alignItems: "center",
+                            "& svg": {
+                              width: "1rem",
+                              height: "1rem",
+
+                              "& path": {
+                                fill: vars.gray400,
+                              },
+                            },
                           }}
                         >
-                          <CheckIcon />
+                          <NeuronsIcon />
+                          <Typography variant="subtitle1" color={vars.gray900}>
+                            {option?.label?.length > 100 ? `${option?.label.slice(0, 100)}...` : option?.label}
+                          </Typography>
                         </Box>
-                        {option?.label?.length > 100 ? `${option?.label.slice(0, 100)}...` : option?.label}
+                        <Box display="flex" alignItems="center" gap=".5rem">
+                          <IconButton className="info" onClick={(e) => handleInfoClick(e, option)}>
+                            <InfoOutlinedIcon />
+                          </IconButton>
+                          <Box
+                            sx={{
+                              visibility: selectedNeurons.some((neuron) => option.id === neuron.id) ? "initial" : "hidden",
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            <CheckIcon />
+                          </Box>
+                        </Box>
                       </Box>
-                    </li>
+                    </Box>
                   ))}
-                </ul>
+                </Box>
               </Box>
             ) : (
               <Box>No options available</Box>
             )}
           </Box>
-          {options.length > 0 && (
-            <Box
-              sx={{
-                width: "50%",
-                overflow: "auto",
-                flexShrink: 0,
-                "& .MuiTypography-body2": {
-                  fontSize: "0.875rem",
-                  fontWeight: 400,
-                  lineHeight: "142.857%",
-                  padding: 0,
-                },
-                "& .MuiTypography-body1": {
-                  fontSize: "0.75rem",
-                  fontWeight: 500,
-                  lineHeight: "150%",
-                  padding: 0,
-                },
-              }}
-            >
-              {hoveredOption ? (
-                <Box>Content of {hoveredOption.label}</Box>
-              ) : (
-                <Box height={1} display="flex" alignItems="center" justifyContent="center">
-                  <Typography variant="body2">Hover over each item to see details</Typography>
-                </Box>
-              )}
-            </Box>
-          )}
         </Box>
       </Popper>
     </>

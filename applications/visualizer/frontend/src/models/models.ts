@@ -10,13 +10,11 @@ export enum ViewerType {
   Graph = "Graph",
   ThreeD = "3D",
   EM = "EM",
-  InstanceDetails = "Instance Details",
 }
 
 export enum ViewerSynchronizationPair {
-  Graph_InstanceDetails = 0,
-  Graph_ThreeD = 1,
-  ThreeD_EM = 2,
+  Graph_ThreeD = 0,
+  ThreeD_EM = 1,
 }
 
 export interface NeuronGroup {
@@ -69,7 +67,6 @@ export interface ViewerData {
   [ViewerType.Graph]?: GraphViewerData;
   [ViewerType.ThreeD]?: ThreeDViewerData;
   [ViewerType.EM]?: EMViewerData;
-  [ViewerType.InstanceDetails]?: any; // Define specific data for Instance Details viewer if needed
 }
 
 const buildUrlFromFormat = (s: string, param: string) => {

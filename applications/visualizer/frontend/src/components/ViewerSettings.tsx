@@ -25,11 +25,6 @@ const secondaryTypographyStyles = {
 
 const SyncViewersData = [
   {
-    primaryText: "Connectivity graph",
-    secondaryText: "Instance details",
-    syncPair: ViewerSynchronizationPair.Graph_InstanceDetails,
-  },
-  {
     primaryText: "3D viewer",
     secondaryText: "EM viewer",
     syncPair: ViewerSynchronizationPair.ThreeD_EM,
