@@ -16,7 +16,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSelectedWorkspace } from "../../../hooks/useSelectedWorkspace.ts";
 import { DARK_SCENE_BACKGROUND, LIGHT_SCENE_BACKGROUND } from "../../../settings/threeDSettings.ts";
 import { vars } from "../../../theme/variables.ts";
-import CustomFormControlLabel from "./CustomFormControlLabel.tsx";
+import CustomFormControlLabel from "../../CustomFormControlLabel.tsx";
 import { Recorder } from "./Recorder.ts";
 
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
