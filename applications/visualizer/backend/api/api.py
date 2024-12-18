@@ -1,12 +1,18 @@
+from io import StringIO
+import sys
 from collections import defaultdict
 from typing import Iterable, Optional
 
 from ninja import NinjaAPI, Router, Query, Schema
 from ninja.pagination import paginate, PageNumberPagination
+from ninja.errors import HttpError
+
 from django.shortcuts import aget_object_or_404
 from django.db.models import Q
 from django.db.models.manager import BaseManager
 from django.conf import settings
+from django.core.management import call_command
+
 
 from .utils import get_dataset_viewer_config, to_list
 
@@ -16,8 +22,9 @@ from .models import (
     Neuron as NeuronModel,
     Connection as ConnectionModel,
 )
+from .decorators.streaming import with_stdout_streaming
 from .services.connectivity import query_nematode_connections
-
+from .authenticators.basic_auth_super_user import basic_auth_superuser
 
 class ErrorMessage(Schema):
     detail: str
@@ -235,6 +242,23 @@ def get_connections(
 #             dataset_id=datasetId, pre__in=neurons, post__in=neurons
 #         ).order_by("pre", "post", "type")
 #     )
+
+
+## Ingestion
+
+
+@api.get("/populate_db", auth=basic_auth_superuser, tags=["ingestion"])
+@with_stdout_streaming
+def populate_db(request):
+    try:
+        print("Starting DB population...\n")
+        call_command("migrate")
+        call_command("populatedb")
+    except Exception as e:
+        raise HttpError(500)
+
+
+## Healthcheck
 
 
 @api.get("/live", tags=["healthcheck"])

@@ -24,6 +24,7 @@ dependencies = [
     "google-cloud-storage==2.18.2",
     "tqdm==4.66.5",
     "pillow==10.4.0",
+    "niquests==3.7.2",
 
     # extraction dependencies
     "diplib==3.5.1",
