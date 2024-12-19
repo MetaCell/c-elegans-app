@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import "ol/ol.css";
 import { type Feature, Map as OLMap, View } from "ol";
 import type { FeatureLike } from "ol/Feature";
@@ -174,11 +174,39 @@ const interactions = defaultInteractions({
   }),
 ]);
 
+const NoEMData = () => {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100%",
+      }}
+    >
+      <Typography variant="h6" color="text.secondary">
+        No EM Data Available
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+        Please select a dataset containing EM data to view
+      </Typography>
+    </Box>
+  );
+};
+
 const EMStackViewer = () => {
   const currentWorkspace = useGlobalContext().getCurrentWorkspace();
 
   // We take the first active dataset at the moment (will change later)
   const firstActiveDataset = Object.values(currentWorkspace.activeDatasets)?.[0];
+  if (!firstActiveDataset.emData) {
+    return <NoEMData />;
+  }
+
+  const hasNeuronSegmentations = !!firstActiveDataset.emData.segmentationSize;
+  const hasSynapseSegmentations = !!firstActiveDataset.emData.synapsesSegmentationUrl;
+
   const [minSlice, maxSlice] = firstActiveDataset.emData.sliceRange;
   const startSlice = Math.floor((maxSlice + minSlice) / 2);
   const [segSlice, segSetSlice] = useState<number>(startSlice);
@@ -195,15 +223,16 @@ const EMStackViewer = () => {
   const [showNeurons, setShowNeurons] = useState<boolean>(true);
   const [showSynapses, setShowSynapses] = useState<boolean>(true);
 
-  const startZoom = useMemo(() => {
-    const emData = firstActiveDataset.emData;
-    if (!emData) {
-      return undefined;
-    }
-    return emData.minZoom;
-  }, [firstActiveDataset.emData]);
+  // EM tiles reverse the maximum and minimum zooms
+  // lower numbers are more zoomed in (0 is max zoom possible)
+  // In OpenLayers, 0 is the minimum zoom and higher number are
+  // more zoomed in.
+  const startZoom = firstActiveDataset.emData.maxZoom;
 
-  const extent = useMemo(() => [0, 0, ...firstActiveDataset.emData.segmentationSize], [firstActiveDataset.emData.segmentationSize]);
+  const extent = useMemo(
+    () => [0, 0, ...(firstActiveDataset.emData.segmentationSize || firstActiveDataset.emData.maxResolution)],
+    [firstActiveDataset.emData.segmentationSize],
+  );
 
   const projection = useMemo(() => {
     return new Projection({
@@ -309,46 +338,48 @@ const EMStackViewer = () => {
       newLayer: (slice) => newEMLayer(firstActiveDataset, slice, tilegrid, projection),
     });
 
-    ringSeg.current = new SlidingLayer({
-      map: map,
-      cacheSize: ringSize,
-      startAt: startSlice,
-      extent: [minSlice, maxSlice],
-      newLayer: (slice) => newSegLayer(firstActiveDataset, slice),
-      onSlide: (slice, layer) => {
-        layer.setStyle((feature) => neuronsStyleRef.current(feature));
-        currSegLayer.current = layer;
-        segSetSlice(slice);
-      },
-    });
+    if (hasNeuronSegmentations) {
+      ringSeg.current = new SlidingLayer({
+        map: map,
+        cacheSize: ringSize,
+        startAt: startSlice,
+        extent: [minSlice, maxSlice],
+        newLayer: (slice) => newSegLayer(firstActiveDataset, slice),
+        onSlide: (slice, layer) => {
+          layer.setStyle((feature) => neuronsStyleRef.current(feature));
+          currSegLayer.current = layer;
+          segSetSlice(slice);
+        },
+      });
 
-    map.on("click", (e) => onFeatureClickRef.current(e.coordinate));
+      map.on("click", (e) => onFeatureClickRef.current(e.coordinate));
+    }
 
-    ringSynSeg.current = new SlidingLayer({
-      map: map,
-      cacheSize: ringSize,
-      startAt: startSlice,
-      extent: [minSlice, maxSlice],
-      newLayer: (slice) => newSynapsesSegLayer(firstActiveDataset, slice),
-      onSlide: (_, layer) => {
-        layer.setStyle((feature) => synapsesStyleRef.current(feature));
-        currSynSegLayer.current = layer;
-      },
-    });
-
-    newSynapsesSegLayer;
+    if (hasSynapseSegmentations) {
+      ringSynSeg.current = new SlidingLayer({
+        map: map,
+        cacheSize: ringSize,
+        startAt: startSlice,
+        extent: [minSlice, maxSlice],
+        newLayer: (slice) => newSynapsesSegLayer(firstActiveDataset, slice),
+        onSlide: (_, layer) => {
+          layer.setStyle((feature) => synapsesStyleRef.current(feature));
+          currSynSegLayer.current = layer;
+        },
+      });
+    }
 
     function handleSliceScroll(e: WheelEvent) {
       const scrollUp = e.deltaY < 0;
 
       if (scrollUp) {
         ringEM.current.next();
-        ringSeg.current.next();
-        ringSynSeg.current.next();
+        ringSeg.current?.next();
+        ringSynSeg.current?.next();
       } else {
         ringEM.current.prev();
-        ringSeg.current.prev();
-        ringSynSeg.current.prev();
+        ringSeg.current?.prev();
+        ringSynSeg.current?.prev();
       }
     }
 
@@ -400,8 +431,8 @@ const EMStackViewer = () => {
   const onResetView = () => {
     // reset sliding window
     ringEM.current.goto(startSlice);
-    ringSeg.current.goto(startSlice);
-    ringSynSeg.current.goto(startSlice);
+    ringSeg.current?.goto(startSlice);
+    ringSynSeg.current?.goto(startSlice);
 
     if (!mapRef.current) return;
     const view = mapRef.current.getView();
