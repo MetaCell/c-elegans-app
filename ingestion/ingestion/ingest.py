@@ -46,7 +46,7 @@ from ingestion.xdg import xdg_config_celegans, xdg_gcloud_config
 logger = logging.getLogger(__name__)
 
 
-def _done_message(dataset_name: str | None, dry_run: bool) -> str:
+def _done_message(dataset_name: str | None, dry_run: bool = False) -> str:
     """Generate a completion message for the ingestion process."""
     if dataset_name:
         return f"==> Done {'upload simulation for' if dry_run else 'uploading'} dataset '{dataset_name}'! ✨"
