@@ -5,7 +5,6 @@ import json
 import logging
 import os
 import sys
-import tempfile
 from argparse import ArgumentParser, Namespace
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
@@ -14,7 +13,6 @@ from pathlib import Path
 from google.api_core.exceptions import PreconditionFailed
 from google.cloud import storage
 from pydantic import ValidationError
-import niquests
 from tqdm import tqdm
 
 from ingestion.cli import ask, type_directory, type_file
@@ -476,7 +474,6 @@ def upload_em_tiles(
 
         pbar.close()
 
-
 def trigger_populate_db(args):
     try:
         api_url = args.populate_db_url
@@ -495,27 +492,27 @@ def trigger_populate_db(args):
             )
             return
 
-        # Make a GET request to the streaming endpoint with basic auth
-        r = niquests.get(f"{api_url}", auth=(client_id, private_key_id), stream=True, timeout=None)
+        import subprocess
 
-        if r.status_code == 200:
-            for line in r.iter_lines():
-                # filter out keep-alive new lines
-                if line:
-                    decoded_line = line.decode("utf-8")
-                    print(decoded_line)
-        else:
-            print(
-                f"Error triggering DB population: {r.status_code} {r.text}",
-                file=sys.stderr,
-            )
+        command = [
+            "curl",
+            "-u", f"{client_id}:{private_key_id}",
+            f"{api_url}"
+        ]
+
+        with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as proc:
+            try:
+                for line in proc.stdout:
+                    print(line, end='')  # Print each line as received
+            except KeyboardInterrupt:
+                proc.terminate()
+                print("\nStreaming interrupted by user.", file=sys.stderr)
+
 
     except FileNotFoundError as e:
         print(f"Error: Credentials file not found. {e}", file=sys.stderr)
     except json.JSONDecodeError as e:
         print(f"Error: Invalid JSON in the credentials file. {e}", file=sys.stderr)
-    except niquests.RequestException as e:
-        print(f"Error: Failed to make a request to the server. {e}", file=sys.stderr)
     except Exception as e:
         print(f"Unexpected error: {e}", file=sys.stderr)
 

@@ -23,7 +23,7 @@ def with_stdout_streaming(func):
             class QueueWriter:
                 def write(self, data):
                     if data:
-                        q.put(data)  # Push data into the thread-safe queue
+                        q.put(data)
 
                 def flush(self):
                     pass  # For compatibility with print
@@ -46,16 +46,12 @@ def with_stdout_streaming(func):
         # Async generator to yield lines from the queue
         async def line_generator():
             while True:
-                line = await asyncio.to_thread(q.get)  # Get item from thread-safe queue
+                line = await asyncio.to_thread(q.get)
                 if line is None:  # End signal
                     break
                 yield line
-                await asyncio.sleep(0)  # Yield control to event loop
 
         # Return a streaming response that sends data asynchronously
-        response = StreamingHttpResponse(line_generator(), content_type="text/plain")
-        response['Cache-Control'] = 'no-cache'
-        response['X-Accel-Buffering'] = 'no'  # Disable nginx buffering if using nginx
-        return response
+        return StreamingHttpResponse(line_generator(), content_type="text/plain")
 
     return wrapper
