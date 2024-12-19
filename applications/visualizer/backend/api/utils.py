@@ -22,6 +22,7 @@ async def get_dataset_viewer_config(dataset: Dataset):
         nb_slices=em_metadata.get("number_slices"),
         tile_size=tuple(em_metadata.get("tile_size")),
         slice_range=tuple(em_metadata.get("slice_range")),
+        max_resolution=tuple(em_metadata.get("resolution")),
         segmentation_size=tuple(resolution) if resolution else None,
         resource_url=settings.DATASET_EMDATA_URL_FORMAT.format(dataset=dataset.id),
         segmentation_url=(
