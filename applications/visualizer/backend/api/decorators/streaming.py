@@ -5,6 +5,7 @@ from queue import Queue
 from functools import wraps
 from django.http import StreamingHttpResponse
 
+
 def with_stdout_streaming(func):
     """
     A decorator that:
@@ -12,6 +13,7 @@ def with_stdout_streaming(func):
     - Captures anything it prints to stdout,
     - Streams that output asynchronously line-by-line as it's produced.
     """
+
     @wraps(func)
     def wrapper(request, *args, **kwargs):
         q = Queue()

@@ -9,5 +9,6 @@ class BasicAuthSuperUser(HttpBasicAuth):
         if user and user.is_superuser:  # Ensure the user is a superuser
             return user
         return None
-    
+
+
 basic_auth_superuser = BasicAuthSuperUser()

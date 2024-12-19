@@ -26,6 +26,7 @@ from .decorators.streaming import with_stdout_streaming
 from .services.connectivity import query_nematode_connections
 from .authenticators.basic_auth_super_user import basic_auth_superuser
 
+
 class ErrorMessage(Schema):
     detail: str
 
