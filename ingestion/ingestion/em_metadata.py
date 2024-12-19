@@ -19,7 +19,7 @@ class Tile:
 
     @property
     @lru_cache(1)
-    def size(self) -> tuple[int, int]:
+    def size(self) -> tuple[int, int]:  # (w, h)
         with Image.open(self.path) as img:
             return img.size
 
@@ -30,7 +30,7 @@ class TileGrid:
 
     zoom: int
     size: tuple[int, int]  # rows and columns
-    matrix: list[list[Tile | None]]  # tiles organized in a matrix
+    matrix: list[list[Tile | None]]  # tiles organized in a matrix [row][col]
 
     @staticmethod
     def _matrix_size(tiles: list[Tile]) -> tuple[int, int]:
@@ -41,7 +41,7 @@ class TileGrid:
                 maxx = x
             if y > maxy:
                 maxy = y
-        return (maxx + 1, maxy + 1)
+        return (maxy + 1, maxx + 1)
 
     @staticmethod
     def _are_tiles_size_eq(tiles: list[Tile]) -> bool:
@@ -73,30 +73,30 @@ class TileGrid:
         """Resolution of the grid in pixels"""
         n_rows, n_cols = self.size
         width, height = self.tile_dimensions
-        return (height * n_rows, width * n_cols)
+        return (width * n_cols, height * n_rows)
 
     @classmethod
     def from_tiles(cls, tiles: list[Tile]) -> TileGrid:
         if len(tiles) == 0:
             raise Exception("tiles can not be an empty list")
 
-        size = cls._matrix_size(tiles)
+        n_rows, n_cols = cls._matrix_size(tiles)
         # It's not necessary to test all the tiles size in a same slice
         # We consider that they have the same size
         # assert cls._are_tiles_size_eq(tiles)
 
         zoom = tiles[0].zoom
 
-        matrix: list[list[Tile | None]] = [[None] * size[1] for _ in range(size[0])]
+        matrix: list[list[Tile | None]] = [[None] * n_cols for _ in range(n_rows)]
         for tile in tiles:
             x, y = tile.position
-            matrix[x][y] = tile
+            matrix[y][x] = tile
 
-        return cls(zoom=zoom, size=size, matrix=matrix)
+        return cls(zoom=zoom, size=(n_rows, n_cols), matrix=matrix)
 
 
 @dataclass
-class Piramid:
+class Pyramid:
     """A piramid structure with a tile matrix for each zoom level"""
 
     levels: dict[int, TileGrid]
@@ -107,10 +107,8 @@ class Piramid:
     @property
     def extent(self) -> tuple[int, int, int, int]:
         maxX, maxY = (0, 0)
-        for lvl in self.levels.values():
-            if lvl is not None:
-                maxX, maxY = lvl.resolution
-                break
+        if self.zooms:
+            maxX, maxY = self.levels[self.maxzoom].resolution
 
         # TODO: this may be optimized further to excluse black tiles from being requested
         minX, minY = (0, 0)
@@ -123,23 +121,36 @@ class Piramid:
     @property
     def minzoom(self) -> int:
         """Minimum zoom value that exits in the piramid"""
-        return min(self.zooms)
+        return max(self.zooms)
 
     @property
     def maxzoom(self) -> int:
         """Maximum zoom value that exits in the piramid"""
-        return max(self.zooms)
+        return min(self.zooms)
 
     @property
     def tile_dimensions(self) -> tuple[int, int]:
         # it assumes that tile size is the same across zoom levels
         zooms = self.zooms
-        if zooms == 0:
+        if len(zooms) == 0:
             return (0, 0)  # no data
         return self.levels[zooms[0]].tile_dimensions
 
+    @property
+    def resolution(self) -> tuple[int, int]:
+        """Resolution of the maxzoom tiles"""
+        zooms = self.zooms
+        if len(zooms) == 0:
+            return (0, 0)  # no data
+
+        tile_grid = self.levels[self.maxzoom]
+        [w, h] = self.tile_dimensions
+        [r, c] = tile_grid.size
+
+        return (c * w, r * h)
+
     @classmethod
-    def build(cls, tiles: list[Tile]) -> Piramid:
+    def build(cls, tiles: list[Tile]) -> Pyramid:
         levels: dict[int, TileGrid] = {}
 
         tiles.sort(key=operator.attrgetter("zoom"))  # groupby expects things sorted
@@ -163,6 +174,7 @@ class EMMetadata(BaseModel):
     minzoom: int
     maxzoom: int
     tile_size: tuple[int, int]
+    resolution: tuple[int, int]
     slices: list[int]
 
     @classmethod
@@ -173,7 +185,7 @@ class EMMetadata(BaseModel):
         tiles.sort(key=operator.attrgetter("slice"))  # groupby expects things sorted
         previous_piramid = None
         for slice, stiles in groupby(tiles, lambda t: t.slice):
-            piramid = Piramid.build(list(stiles))
+            piramid = Pyramid.build(list(stiles))
             available_slices.append(slice)
             assert (
                 not previous_piramid
@@ -187,6 +199,7 @@ class EMMetadata(BaseModel):
             minzoom=piramid.minzoom,
             maxzoom=piramid.maxzoom,
             tile_size=piramid.tile_dimensions,
+            resolution=piramid.resolution,
         )
 
     def merge(self, emm2: EMMetadata) -> EMMetadata:
@@ -209,6 +222,7 @@ class EMMetadata(BaseModel):
             minzoom=self.minzoom,
             maxzoom=self.maxzoom,
             tile_size=self.tile_size,
+            resolution=self.resolution,
         )
 
 

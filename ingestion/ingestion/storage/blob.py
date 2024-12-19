@@ -1,6 +1,7 @@
 from __future__ import annotations
-from collections import Counter
+
 import re
+from collections import Counter
 from pathlib import Path
 
 from ingestion.em_metadata import Tile
