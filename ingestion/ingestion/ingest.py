@@ -4,6 +4,7 @@ import concurrent.futures
 import json
 import logging
 import os
+import subprocess
 import sys
 from argparse import ArgumentParser, Namespace
 from concurrent.futures import ThreadPoolExecutor
@@ -474,6 +475,7 @@ def upload_em_tiles(
 
         pbar.close()
 
+
 def trigger_populate_db(args):
     try:
         api_url = args.populate_db_url
@@ -492,29 +494,28 @@ def trigger_populate_db(args):
             )
             return
 
-        import subprocess
-
+        # Add `stdbuf` to ensure curl is unbuffered
         command = [
+            "stdbuf",
+            "-oL",  # Force line buffering
             "curl",
-            "-u", f"{client_id}:{private_key_id}",
-            f"{api_url}"
+            "-N",  # Disable buffering in curl
+            "-u",
+            f"{client_id}:{private_key_id}",
+            f"{api_url}",
         ]
 
-        with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as proc:
+        with subprocess.Popen(
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        ) as proc:
             try:
                 for line in proc.stdout:
-                    print(line, end='')  # Print each line as received
+                    print(line, end="", flush=True)  # Real-time output
             except KeyboardInterrupt:
                 proc.terminate()
                 print("\nStreaming interrupted by user.", file=sys.stderr)
-
-
-    except FileNotFoundError as e:
-        print(f"Error: Credentials file not found. {e}", file=sys.stderr)
-    except json.JSONDecodeError as e:
-        print(f"Error: Invalid JSON in the credentials file. {e}", file=sys.stderr)
     except Exception as e:
-        print(f"Unexpected error: {e}", file=sys.stderr)
+        print(f"An error occurred: {e}", file=sys.stderr)
 
 
 def ingest_cmd(args: Namespace):
