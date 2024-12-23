@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from itertools import chain, groupby
 from pathlib import Path
+from typing import Iterator
 
 from PIL import Image
 from pydantic import BaseModel
@@ -31,6 +32,9 @@ class TileGrid:
     zoom: int
     size: tuple[int, int]  # rows and columns
     matrix: list[list[Tile | None]]  # tiles organized in a matrix [row][col]
+
+    def __iter__(self) -> Iterator[Tile | None]:
+        return (tile for row in self.matrix for tile in row)
 
     @staticmethod
     def _matrix_size(tiles: list[Tile]) -> tuple[int, int]:
@@ -97,7 +101,7 @@ class TileGrid:
 
 @dataclass
 class Pyramid:
-    """A piramid structure with a tile matrix for each zoom level"""
+    """A pyramid structure with a tile matrix for each zoom level"""
 
     levels: dict[int, TileGrid]
 
@@ -120,12 +124,12 @@ class Pyramid:
 
     @property
     def minzoom(self) -> int:
-        """Minimum zoom value that exits in the piramid"""
+        """Minimum zoom value that exits in the pyramid"""
         return max(self.zooms)
 
     @property
     def maxzoom(self) -> int:
-        """Maximum zoom value that exits in the piramid"""
+        """Maximum zoom value that exits in the pyramid"""
         return min(self.zooms)
 
     @property
@@ -160,7 +164,7 @@ class Pyramid:
         return cls(levels)
 
 
-class SliceMetadata(BaseModel):
+class SliceMetadata:
     slice: int
     zooms: list[int]
     minzoom: int
@@ -181,25 +185,25 @@ class EMMetadata(BaseModel):
     def from_tiles(cls, tiles: list[Tile]) -> EMMetadata:
         available_slices = []
 
-        piramid = None
+        pyramid = None
         tiles.sort(key=operator.attrgetter("slice"))  # groupby expects things sorted
-        previous_piramid = None
+        previous_pyramid = None
         for slice, stiles in groupby(tiles, lambda t: t.slice):
-            piramid = Pyramid.build(list(stiles))
+            pyramid = Pyramid.build(list(stiles))
             available_slices.append(slice)
             assert (
-                not previous_piramid
-                or previous_piramid.tile_dimensions == piramid.tile_dimensions
+                not previous_pyramid
+                or previous_pyramid.tile_dimensions == pyramid.tile_dimensions
             )
-        assert piramid
+        assert pyramid
         return cls(
             number_slices=len(available_slices),
             slice_range=(min(available_slices), max(available_slices)),
             slices=available_slices,
-            minzoom=piramid.minzoom,
-            maxzoom=piramid.maxzoom,
-            tile_size=piramid.tile_dimensions,
-            resolution=piramid.resolution,
+            minzoom=pyramid.minzoom,
+            maxzoom=pyramid.maxzoom,
+            tile_size=pyramid.tile_dimensions,
+            resolution=pyramid.resolution,
         )
 
     def merge(self, emm2: EMMetadata) -> EMMetadata:
@@ -227,9 +231,13 @@ class EMMetadata(BaseModel):
 
 
 if __name__ == "__main__":
-    import sys
+    import logging
     from argparse import ArgumentParser
+    from dataclasses import fields, is_dataclass
+    from inspect import getmembers, isdatadescriptor
+    from sys import maxsize
 
+    from ingestion.log import setup_logger
     from ingestion.storage.filesystem import load_tiles
 
     parser = ArgumentParser(description="computed EM tiles metadata")
@@ -240,13 +248,153 @@ if __name__ == "__main__":
         help=f"directory, files or glob match for EM data",
     )
     parser.add_argument(
-        "--indent",
-        type=int,
-        help="indentation to use in the JSON output.",
-        default=None,
+        "--debug",
+        help="runs with debug logs",
+        default=False,
+        action="store_true",
     )
 
     args = parser.parse_args()
-    tiles = load_tiles(args.em_paths)
-    metadata = EMMetadata.from_tiles(list(tiles))
-    print(metadata.model_dump_json(indent=args.indent), file=sys.stdout)
+
+    setup_logger(args.debug)
+    logger = logging.getLogger("em_data")
+
+    tiles = list(load_tiles(args.em_paths))
+    logger.debug(f"found {len(tiles)} tiles")
+
+    def print_dataclass(dc, *, exclude: set[str] | None = None):
+        if not is_dataclass(dc):
+            raise ValueError("Input must be a dataclass instance")
+
+        exclude = exclude or set()
+
+        attrs = []
+        attrs.extend(
+            (field.name, getattr(dc, field.name))
+            for field in fields(dc)
+            if field.name not in exclude
+        )
+        properties = getmembers(type(dc), isdatadescriptor)
+        attrs.extend(
+            (name, getattr(dc, name))
+            for name, _ in properties
+            if isinstance(getattr(type(dc), name), property) and name not in exclude
+        )
+
+        if not attrs:
+            return
+
+        max_length = max(len(name) for name, _ in attrs)
+        for name, val in attrs:
+            print(f"{name:<{max_length}}: {val}")
+
+    def print_basemodel(model: BaseModel, exclude: set[str] | None = None):
+        if not isinstance(model, BaseModel):
+            raise ValueError("Input must be a Pydantic BaseModel instance")
+
+        exclude = exclude or set()
+
+        fields = [
+            (field_name, getattr(model, field_name))
+            for field_name in model.model_fields.keys()
+            if field_name not in exclude
+        ]
+
+        if not fields:
+            return
+
+        max_length = max(len(name) for name, _ in fields)
+        for name, val in fields:
+            print(f"{name:<{max_length}}: {val}")
+
+    print("========= EM metadata =========")
+
+    em_meta = EMMetadata.from_tiles(tiles)
+    print_basemodel(em_meta)
+
+    def print_slice_variations():
+        pyramids: dict[int, Pyramid] = {}
+        tiles.sort(key=operator.attrgetter("slice"))
+        for slice, stiles in groupby(tiles, lambda t: t.slice):
+            pyramids[slice] = Pyramid.build(list(stiles))
+
+        min_extent: tuple[int, int, int, int] = (maxsize, maxsize, maxsize, maxsize)
+        min_extent_slice: int = -1
+
+        max_extent: tuple[int, int, int, int] = (-1, -1, -1, -1)
+        max_extent_slice: int = -1
+
+        min_resolution: tuple[int, int] = (maxsize, maxsize)
+        min_resolution_slice: int = -1
+
+        max_resolution: tuple[int, int] = (-1, -1)
+        max_resolution_slice: int = -1
+
+        for slice, pyr in pyramids.items():
+            extent = pyr.extent[2:]
+            if extent < min_extent:
+                min_extent = pyr.extent
+                min_extent_slice = slice
+            elif extent > max_extent:
+                max_extent = pyr.extent
+                max_extent_slice = slice
+
+            resolution = pyr.resolution
+            if resolution < min_resolution:
+                min_resolution = resolution
+                min_resolution_slice = slice
+            elif resolution > max_resolution:
+                max_resolution = resolution
+                max_resolution_slice = slice
+
+        @dataclass
+        class PyramidVariationsStats:
+            min_extent: tuple[int, int, int, int]
+            min_extent_slice: int
+            max_extent: tuple[int, int, int, int]
+            max_extent_slice: int
+
+            min_resolution: tuple[int, int]
+            min_resolution_slice: int
+            max_resolution: tuple[int, int]
+            max_resolution_slice: int
+
+        print_dataclass(
+            PyramidVariationsStats(
+                min_extent=min_extent,
+                min_extent_slice=min_extent_slice,
+                max_extent=max_extent,
+                max_extent_slice=max_extent_slice,
+                min_resolution=min_resolution,
+                min_resolution_slice=min_resolution_slice,
+                max_resolution=max_resolution,
+                max_resolution_slice=max_resolution_slice,
+            )
+        )
+
+    print("~~~~~ Deviation")
+
+    print_slice_variations()
+
+    print("\n====== Pyramid metadata =======")
+
+    pyramid = Pyramid.build(tiles)
+
+    def validate_pyramid(pyramid: Pyramid):
+        for lvl, grid in pyramid.levels.items():
+            for tile in grid:
+                if tile is None:
+                    continue
+                assert tile.zoom == lvl
+
+        assert pyramid.maxzoom == min(pyramid.levels.keys())
+        assert pyramid.minzoom == max(pyramid.levels.keys())
+
+    validate_pyramid(pyramid)
+    print_dataclass(pyramid, exclude={"levels"})
+
+    print("\n======= Pyramid Levels ========")
+
+    for lvl, grid in pyramid.levels.items():
+        print(f"~~~{lvl}~~~")
+        print_dataclass(grid, exclude={"matrix"})
