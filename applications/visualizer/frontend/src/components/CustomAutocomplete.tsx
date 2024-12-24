@@ -49,6 +49,7 @@ const CommonAutocomplete = <T,>({
   // @ts-ignore
   return (
     <Autocomplete
+      disableCloseOnSelect={true}
       value={value}
       multiple={multiple}
       className={className}

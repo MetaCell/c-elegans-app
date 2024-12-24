@@ -194,6 +194,23 @@ const theme = createTheme({
             borderColor: primaryPurple100,
             padding: "0.125rem 0.625rem",
           },
+
+          "&.basic": {
+            background: "transparent",
+            border: `1px solid ${gray200}`,
+            padding: "0.5rem 0.75rem",
+            borderRadius: "1.5rem",
+            color: gray600,
+            height: "initial",
+            fontSize: "0.875rem",
+            fontWeight: 500,
+            lineHeight: "1.25rem",
+
+            "& .MuiChip-icon": {
+              margin: 0,
+              marginRight: ".38rem",
+            },
+          },
         },
       },
     },
@@ -637,7 +654,7 @@ const theme = createTheme({
           fontSize: "0.875rem",
           fontWeight: 600,
           height: "2.25rem",
-          padding: "0 0.75rem",
+          padding: "0.5rem 0.75rem",
         },
         outlinedSecondary: {
           borderColor: gray200,
@@ -664,9 +681,10 @@ const theme = createTheme({
           },
         },
         outlined: {
-          border: `0.0625rem solid ${gray100}`,
+          border: `0.0625rem solid ${gray200}`,
           background: white,
-          color: gray600,
+          color: gray700,
+          boxShadow: "0px 1px 2px 0px rgba(16, 24, 40, 0.05)",
           "& .MuiSvgIcon-root": {
             fontSize: "1.25rem",
           },
@@ -677,7 +695,12 @@ const theme = createTheme({
         },
         text: {
           boxShadow: "none",
-          color: gray500,
+          color: gray600,
+
+          "&:hover": {
+            background: gray100,
+            color: gray700,
+          },
         },
         textPrimary: {
           "&:hover": {
@@ -708,6 +731,10 @@ const theme = createTheme({
 
           "&:focus": {
             boxShadow: "0rem 0.0625rem 0.125rem 0rem rgba(16, 24, 40, 0.05), 0rem 0rem 0rem 0.25rem rgba(33, 85, 186, 0.24)",
+          },
+
+          "& .MuiSvgIcon-root": {
+            color: white,
           },
         },
       },
