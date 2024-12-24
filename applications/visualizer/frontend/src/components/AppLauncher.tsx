@@ -99,7 +99,12 @@ function AppLauncher() {
                 About Nemanode
               </Button>
             </Box>
-            <Chip icon={<BarChart />} label="40 datasets, 302 neurons" variant="outlined" className="basic" />
+            <Chip
+              icon={<BarChart />}
+              label={`${TEMPLATE_ACTIVE_DATASETS.length} datasets, ${neuronNames.length} neurons`}
+              variant="outlined"
+              className="basic"
+            />
           </Toolbar>
         </AppBar>
         <Box className="MuiBox-container">
