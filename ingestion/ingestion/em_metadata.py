@@ -335,7 +335,7 @@ if __name__ == "__main__":
             if extent < min_extent:
                 min_extent = pyr.extent
                 min_extent_slice = slice
-            elif extent > max_extent:
+            if extent > max_extent:
                 max_extent = pyr.extent
                 max_extent_slice = slice
 
@@ -343,7 +343,7 @@ if __name__ == "__main__":
             if resolution < min_resolution:
                 min_resolution = resolution
                 min_resolution_slice = slice
-            elif resolution > max_resolution:
+            if resolution > max_resolution:
                 max_resolution = resolution
                 max_resolution_slice = slice
 
