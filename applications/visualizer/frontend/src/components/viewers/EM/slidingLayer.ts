@@ -1,7 +1,7 @@
-import { Map } from "ol";
-import Layer from "ol/layer/Layer";
+import type { Map } from "ol";
+import type Layer from "ol/layer/Layer";
 import { SlidingRing } from "../../../helpers/slidingRing";
-import { type SlidingRingOptions } from "../../../helpers/slidingRing";
+import type { SlidingRingOptions } from "../../../helpers/slidingRing";
 
 interface SlidingLayerOptions<T extends Layer> extends Pick<SlidingRingOptions<T>, "cacheSize" | "startAt" | "extent"> {
   map: Map;
@@ -11,8 +11,8 @@ interface SlidingLayerOptions<T extends Layer> extends Pick<SlidingRingOptions<T
 
 export class SlidingLayer<T extends Layer> {
   private swindow: SlidingRing<T>;
-  private opaque: boolean = true; // loaded but is transparent
-  private visible: boolean = true; // not loaded and can not be seen
+  private opaque = true; // loaded but is transparent
+  private visible = true; // not loaded and can not be seen
 
   constructor(options: SlidingLayerOptions<T>) {
     const { map, newLayer, onSlide, ...ringOpts } = options;
@@ -27,7 +27,7 @@ export class SlidingLayer<T extends Layer> {
         return layer;
       },
       onSelected: (slice, layer) => {
-        onSlide && onSlide(slice, layer);
+        onSlide?.(slice, layer);
         layer.setOpacity(Number(this.opaque));
       },
       onUnselected: (_, layer) => {
@@ -52,27 +52,23 @@ export class SlidingLayer<T extends Layer> {
   }
 
   disable() {
-    if (!this.visible) {
-      return;
-    }
-
-    this.swindow.ring.forEach(({ o }) => {
-      o.setVisible(false);
-    });
-
-    this.visible = false;
+    this.setVisibility(false);
   }
 
   enable() {
-    if (this.visible) {
+    this.setVisibility(true);
+  }
+
+  setVisibility(isVisible: boolean) {
+    if (this.visible === isVisible) {
       return;
     }
 
-    this.swindow.ring.forEach(({ o }) => {
-      o.setVisible(true);
-    });
+    for (const { o } of this.swindow.ring) {
+      o.setVisible(isVisible);
+    }
 
-    this.visible = true;
+    this.visible = isVisible;
   }
 
   next() {

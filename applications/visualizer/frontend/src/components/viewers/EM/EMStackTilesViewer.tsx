@@ -13,16 +13,16 @@ import VectorLayer from "ol/layer/Vector";
 import { Projection } from "ol/proj";
 import { XYZ } from "ol/source";
 import VectorSource from "ol/source/Vector";
+import type Style from "ol/style/Style";
 import { TileGrid } from "ol/tilegrid";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
-import { ViewerType, getEMDataURL, getSegmentationURL, getSynapsesSegmentationURL } from "../../../models/models.ts";
+import { ViewerType, getEMDataURL, getEMResolution, getSegmentationURL, getSynapsesSegmentationURL } from "../../../models/models.ts";
 import type { Workspace } from "../../../models/workspace.ts";
 import type { Dataset } from "../../../rest/index.ts";
 import SceneControls from "./SceneControls.tsx";
-import { activeNeuronStyle, cellFeatureName, selectedNeuronStyle, selectedSynapseStyle, activeSynapseStyle } from "./neuronsMapFeature.ts";
+import { activeNeuronStyle, activeSynapseStyle, cellFeatureName, selectedNeuronStyle, selectedSynapseStyle } from "./neuronsMapFeature.ts";
 import { SlidingLayer } from "./slidingLayer.ts";
-import Style from "ol/style/Style";
 
 const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, projection: Projection): TileLayer<XYZ> => {
   return new TileLayer({
@@ -204,9 +204,6 @@ const EMStackViewer = () => {
     return <NoEMData />;
   }
 
-  const hasNeuronSegmentations = !!firstActiveDataset.emData.segmentationSize;
-  const hasSynapseSegmentations = !!firstActiveDataset.emData.synapsesSegmentationUrl;
-
   const [minSlice, maxSlice] = firstActiveDataset.emData.sliceRange;
   const startSlice = Math.floor((maxSlice + minSlice) / 2);
   const [segSlice, segSetSlice] = useState<number>(startSlice);
@@ -223,16 +220,7 @@ const EMStackViewer = () => {
   const [showNeurons, setShowNeurons] = useState<boolean>(true);
   const [showSynapses, setShowSynapses] = useState<boolean>(true);
 
-  // EM tiles reverse the maximum and minimum zooms
-  // lower numbers are more zoomed in (0 is max zoom possible)
-  // In OpenLayers, 0 is the minimum zoom and higher number are
-  // more zoomed in.
-  const startZoom = firstActiveDataset.emData.maxZoom;
-
-  const extent = useMemo(
-    () => [0, 0, ...(firstActiveDataset.emData.segmentationSize || firstActiveDataset.emData.maxResolution)],
-    [firstActiveDataset.emData.segmentationSize],
-  );
+  const extent = useMemo(() => [0, 0, ...getEMResolution(firstActiveDataset)], [firstActiveDataset]);
 
   const projection = useMemo(() => {
     return new Projection({
@@ -242,22 +230,6 @@ const EMStackViewer = () => {
       metersPerUnit: 2e-9, // 2 nm voxels
     });
   }, [extent]);
-
-  const tilegrid = useMemo(() => {
-    return new TileGrid({
-      minZoom: 1, // tiles for zoom 0 not available in the dataset
-      extent: extent,
-      tileSize: firstActiveDataset.emData.tileSize[0],
-      resolutions: [0.5, 1, 2, 4, 8, 16, 32].reverse(),
-    });
-  }, [extent, firstActiveDataset.emData.tileSize]);
-
-  // const debugLayer = new TileLayer({
-  // 	source: new TileDebug({
-  // 		projection: projection,
-  // 		tileGrid: tilegrid,
-  // 	}),
-  // });
 
   const makeFeatureClickHandler = () => (position) =>
     selectAcrossLayers(
@@ -298,24 +270,26 @@ const EMStackViewer = () => {
     currSynSegLayer.current.getSource().changed();
   }, [currentWorkspace.getSelection(ViewerType.EM), segSlice]);
 
-  useEffect(() => {
-    if (!ringSeg.current) {
-      return;
-    }
-    showNeurons ? ringSeg.current.enable() : ringSeg.current.disable();
-  }, [showNeurons]);
+  useEffect(() => ringSeg.current?.setVisibility(showNeurons), [showNeurons]);
+  useEffect(() => ringSynSeg.current?.setVisibility(showSynapses), [showSynapses]);
 
   useEffect(() => {
-    if (!ringSynSeg.current) {
-      return;
-    }
-    showSynapses ? ringSynSeg.current.enable() : ringSynSeg.current.disable();
-  }, [showSynapses]);
+    const hasNeuronSegmentations = !!firstActiveDataset.emData.segmentationSize;
+    const hasSynapseSegmentations = !!firstActiveDataset.emData.synapsesSegmentationUrl;
 
-  useEffect(() => {
-    if (mapRef.current) {
-      return;
-    }
+    const tilegrid = new TileGrid({
+      minZoom: firstActiveDataset.emData.minZoom, // tiles for zoom 0 not available in the dataset
+      extent: extent,
+      tileSize: firstActiveDataset.emData.tileSize[0],
+      resolutions: [0.5, 1, 2, 4, 8, 16, 32].reverse(),
+    });
+
+    // const debugLayer = new TileLayer({
+    // 	source: new TileDebug({
+    // 		projection: projection,
+    // 		tileGrid: tilegrid,
+    // 	}),
+    // });
 
     const map = new OLMap({
       target: "emviewer",
@@ -354,7 +328,6 @@ const EMStackViewer = () => {
 
       map.on("click", (e) => onFeatureClickRef.current(e.coordinate));
     }
-
     if (hasSynapseSegmentations) {
       ringSynSeg.current = new SlidingLayer({
         map: map,
@@ -406,13 +379,14 @@ const EMStackViewer = () => {
     });
 
     // set map zoom to the minimum zoom possible
-    // const minZoomAvailable = tilegrid.getMinZoom();
-    map.getView().setZoom(startZoom);
+    const minZoomAvailable = tilegrid.getMinZoom();
+    // const startZoom = firstActiveDataset.emData.minZoom;
+    map.getView().setZoom(minZoomAvailable);
 
     mapRef.current = map;
 
     return () => map.setTarget(null);
-  }, []);
+  }, [firstActiveDataset, extent, projection, startSlice, maxSlice, minSlice]);
 
   const onControlZoomIn = () => {
     if (!mapRef.current) return;
