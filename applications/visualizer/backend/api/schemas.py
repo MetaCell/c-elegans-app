@@ -27,7 +27,7 @@ class EMData(BilingualSchema):
     nb_slices: int
     tile_size: tuple[int, int]
     slice_range: tuple[int, int]
-    max_resolution: tuple[int, int]  # EM tiles maximum resolution
+    max_resolution: tuple[int, int] | None  # EM tiles maximum resolution
     resource_url: str
     segmentation_url: str | None
     segmentation_size: tuple[int, int] | None

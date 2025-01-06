@@ -3,6 +3,10 @@ from django.conf import settings
 from .schemas import EMData
 from .models import Dataset
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 ## Some util functions
 async def to_list(q):
@@ -15,26 +19,33 @@ async def get_dataset_viewer_config(dataset: Dataset):
         return None
     em_metadata = config.em_config
     segmentation_metadata = config.segmentation_config
-    resolution = segmentation_metadata.get("resolution")
+    segmentation_resolution = segmentation_metadata.get("resolution")
+    tiled_img_resolution = em_metadata.get("resolution")
+    if not tiled_img_resolution and not segmentation_resolution:
+        logger.warning(
+            f"There is no img resolution computed from the tiles for the dataset '{dataset.id}', there is probably missing information in your metadata file"
+        )
     return EMData(
         min_zoom=em_metadata.get("minzoom"),
         max_zoom=em_metadata.get("maxzoom"),
         nb_slices=em_metadata.get("number_slices"),
         tile_size=tuple(em_metadata.get("tile_size")),
         slice_range=tuple(em_metadata.get("slice_range")),
-        max_resolution=tuple(em_metadata.get("resolution")),
-        segmentation_size=tuple(resolution) if resolution else None,
+        max_resolution=tuple(tiled_img_resolution) if tiled_img_resolution else None,
+        segmentation_size=(
+            tuple(segmentation_resolution) if segmentation_resolution else None
+        ),
         resource_url=settings.DATASET_EMDATA_URL_FORMAT.format(dataset=dataset.id),
         segmentation_url=(
             settings.DATASET_EMDATA_SEGMENTATION_URL_FORMAT.format(dataset=dataset.id)
-            if resolution
+            if segmentation_resolution
             else None
         ),
         synapses_segmentation_url=(
             settings.DATASET_EMDATA_SYNAPSES_SEGMENTATION_URL_FORMAT.format(
                 dataset=dataset.id
             )
-            if resolution
+            if segmentation_resolution
             else None
         ),
     )
