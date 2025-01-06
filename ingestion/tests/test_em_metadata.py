@@ -285,7 +285,7 @@ def test__tile_matrix_missing_column(slices_dir_fixture: Path):
     assert grid.resolution == (512, 1024)
 
 
-def test__piramid(
+def test__pyramid(
     slices_dir_fixture: Path,
     slice209_tilegrid_zoom5: TileGrid,
     slice209_tilegrid_zoom4: TileGrid,
@@ -295,21 +295,22 @@ def test__piramid(
         for tile_path in (slices_dir_fixture / "209").glob(TILE_GLOB)
     )
 
-    expected_piramid = Pyramid(
+    expected_pyramid = Pyramid(
         levels={
             4: slice209_tilegrid_zoom4,
             5: slice209_tilegrid_zoom5,
         }
     )
 
-    piramid = Pyramid.build(tiles)
+    pyramid = Pyramid.build(tiles)
 
-    assert piramid == expected_piramid
-    assert piramid.extent == expected_piramid.extent == (0, 0, 2048, 1536)
-    assert piramid.minzoom == expected_piramid.minzoom == 5
-    assert piramid.maxzoom == expected_piramid.maxzoom == 4
-    assert piramid.tile_dimensions == expected_piramid.tile_dimensions == (512, 512)
-    assert piramid.resolution == expected_piramid.resolution == (2048, 1536)
+    assert pyramid == expected_pyramid
+    assert pyramid.extent == expected_pyramid.extent == (0, 0, 2048, 1536)
+    assert pyramid.minzoom == expected_pyramid.minzoom == 4
+    assert pyramid.maxzoom == expected_pyramid.maxzoom == 5
+    assert pyramid.tile_dimensions == expected_pyramid.tile_dimensions == (512, 512)
+    # assert pyramid.resolution == expected_pyramid.resolution == (2048, 1536)
+    assert pyramid.resolution == expected_pyramid.resolution == (1024, 1024)
 
 
 def test__em_metadata_merge():

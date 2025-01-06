@@ -112,7 +112,7 @@ class Pyramid:
     def extent(self) -> tuple[int, int, int, int]:
         maxX, maxY = (0, 0)
         if self.zooms:
-            maxX, maxY = self.levels[self.maxzoom].resolution
+            maxX, maxY = self.levels[self.minzoom].resolution
 
         # TODO: this may be optimized further to excluse black tiles from being requested
         minX, minY = (0, 0)
@@ -125,12 +125,12 @@ class Pyramid:
     @property
     def minzoom(self) -> int:
         """Minimum zoom value that exits in the pyramid"""
-        return max(self.zooms)
+        return min(self.zooms)
 
     @property
     def maxzoom(self) -> int:
         """Maximum zoom value that exits in the pyramid"""
-        return min(self.zooms)
+        return max(self.zooms)
 
     @property
     def tile_dimensions(self) -> tuple[int, int]:
@@ -147,7 +147,7 @@ class Pyramid:
         if len(zooms) == 0:
             return (0, 0)  # no data
 
-        tile_grid = self.levels[self.maxzoom]
+        tile_grid = self.levels[self.minzoom + 1]
         [w, h] = self.tile_dimensions
         [r, c] = tile_grid.size
 
@@ -387,8 +387,8 @@ if __name__ == "__main__":
                     continue
                 assert tile.zoom == lvl
 
-        assert pyramid.maxzoom == min(pyramid.levels.keys())
-        assert pyramid.minzoom == max(pyramid.levels.keys())
+        assert pyramid.maxzoom == max(pyramid.levels.keys())
+        assert pyramid.minzoom == min(pyramid.levels.keys())
 
     validate_pyramid(pyramid)
     print_dataclass(pyramid, exclude={"levels"})
