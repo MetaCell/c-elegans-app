@@ -85,7 +85,7 @@ export class Workspace {
     this.layoutManager = layoutManager;
     this.syncOrchestrator = SynchronizerOrchestrator.create(activeSynchronizers, contexts);
 
-    this.visibilities = visibilities || Object.fromEntries([...activeNeurons].map((n) => [n, getDefaultViewerData(Visibility.Visible)]));
+    this.visibilities = visibilities || Object.fromEntries([...(activeNeurons || [])].map((n) => [n, getDefaultViewerData(Visibility.Visible)]));
 
     this.store = store;
     this.updateContext = updateContext;
