@@ -17,19 +17,18 @@ maintainers = [
     { name = "Diogo Correia", email = "diogo@metacell.us" },
 ]
 dependencies = [
-    "pydantic==2.8.2",
-    "json_source_map==1.0.5",
-    "crc32c==2.7.post1",
     "colorama==0.4.6",
-    "google-cloud-storage==2.18.2",
-    "tqdm==4.66.5",
-    "pillow==10.4.0",
-
-    # extraction dependencies
+    "crc32c==2.7.post1",
     "diplib==3.5.1",
     "geojson==3.1.0",
     "geojson-rewind==1.1.0",
+    "google-cloud-storage==2.18.2",
+    "json_source_map==1.0.5",
+    "niquests==3.7.2",
     "numpy==2.0.0",
+    "pillow==10.4.0",
+    "pydantic==2.8.2",
+    "tqdm==4.66.5",
 ]
 
 [project.optional-dependencies]
