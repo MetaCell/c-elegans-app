@@ -10,11 +10,11 @@ from argparse import ArgumentParser, Namespace
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-
 from google.api_core.exceptions import PreconditionFailed
 from google.cloud import storage
 from pydantic import ValidationError
 from tqdm import tqdm
+import niquests
 
 from ingestion.cli import ask, type_directory, type_file
 from ingestion.em_metadata import EMMetadata, Tile
@@ -494,25 +494,24 @@ def trigger_populate_db(args):
             )
             return
 
-        # Add `stdbuf` to ensure curl is unbuffered
-        command = [
-            "stdbuf",
-            "-oL",  # Force line buffering
-            "curl",
-            "-N",  # Disable buffering in curl
-            "-u",
-            f"{client_id}:{private_key_id}",
-            f"{api_url}",
-        ]
+        session = niquests.Session(resolver="doh+google://", multiplexed=True)
 
-        with subprocess.Popen(
-            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-        ) as proc:
+        with session.get(
+            api_url, auth=(client_id, private_key_id), stream=True, timeout=None
+        ) as response:
+            if response.status_code != 200:
+                print(
+                    f"Error: Received status code {response.status_code}",
+                    file=sys.stderr,
+                )
+                return
             try:
-                for line in proc.stdout:
-                    print(line, end="", flush=True)  # Real-time output
+                for line in response.iter_lines(decode_unicode=True):
+                    if line:
+                        if isinstance(line, bytes):
+                            line = line.decode("utf-8")
+                        print(line, flush=True) 
             except KeyboardInterrupt:
-                proc.terminate()
                 print("\nStreaming interrupted by user.", file=sys.stderr)
     except Exception as e:
         print(f"An error occurred: {e}", file=sys.stderr)

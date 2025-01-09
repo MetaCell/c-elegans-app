@@ -54,6 +54,7 @@ def with_stdout_streaming(func):
                 yield line
 
         # Return a streaming response that sends data asynchronously
-        return StreamingHttpResponse(line_generator(), content_type="text/plain")
+        return StreamingHttpResponse(line_generator(), content_type="text/plain", headers={"Content-Encoding": "identity"})
+
 
     return wrapper
