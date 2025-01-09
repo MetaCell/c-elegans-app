@@ -510,7 +510,7 @@ def trigger_populate_db(args):
                     if line:
                         if isinstance(line, bytes):
                             line = line.decode("utf-8")
-                        print(line, flush=True) 
+                        print(line, flush=True)
             except KeyboardInterrupt:
                 print("\nStreaming interrupted by user.", file=sys.stderr)
     except Exception as e:
