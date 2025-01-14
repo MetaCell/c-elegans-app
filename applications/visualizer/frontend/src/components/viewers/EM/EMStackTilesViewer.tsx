@@ -15,7 +15,7 @@ import { XYZ } from "ol/source";
 import VectorSource from "ol/source/Vector";
 import type Style from "ol/style/Style";
 import { TileGrid } from "ol/tilegrid";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { ViewerType, getEMDataURL, getSegmentationURL, getSynapsesSegmentationURL } from "../../../models/models.ts";
 import type { Workspace } from "../../../models/workspace.ts";
