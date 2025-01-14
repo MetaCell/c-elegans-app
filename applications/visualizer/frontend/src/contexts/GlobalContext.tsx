@@ -176,6 +176,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
         ws.visibilities,
         ws.neuronGroups,
         ws.emViewerSettings,
+        ws.viewers,
       );
       workspace.viewers = ws.viewers;
 

@@ -78,13 +78,14 @@ export class Workspace {
     visibilities?: Record<string, ViewerData>,
     neuronGroups?: Record<string, NeuronGroup>,
     emViewerSettings?: EMViewerSettings,
+    viewers?: Record<ViewerType, boolean>,
   ) {
     this.id = id;
     this.name = name;
     this.activeDatasets = activeDatasets;
     this.availableNeurons = {};
     this.activeNeurons = activeNeurons || new Set();
-    this.viewers = {
+    this.viewers = viewers || {
       [ViewerType.Graph]: true,
       [ViewerType.ThreeD]: false,
       [ViewerType.EM]: false,
