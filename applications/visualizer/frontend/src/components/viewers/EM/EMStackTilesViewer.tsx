@@ -278,7 +278,7 @@ const EMStackViewer = () => {
     const hasSynapseSegmentations = !!firstActiveDataset.emData.synapsesSegmentationUrl;
 
     const tilegrid = new TileGrid({
-      minZoom: firstActiveDataset.emData.minZoom, // tiles for zoom 0 not available in the dataset
+      minZoom: firstActiveDataset.emData.minZoom + 1,
       extent: extent,
       tileSize: firstActiveDataset.emData.tileSize[0],
       resolutions: [0.5, 1, 2, 4, 8, 16, 32].reverse(),
@@ -295,10 +295,14 @@ const EMStackViewer = () => {
       target: "emviewer",
       layers: [],
       view: new View({
+        zoom: firstActiveDataset.emData.minZoom + 1,
+        minZoom: firstActiveDataset.emData.minZoom + 1,
+        maxZoom: firstActiveDataset.emData.maxZoom + 1,
         projection: projection,
         center: getCenter(extent),
         extent: extent,
         resolutions: tilegrid.getResolutions(), // forces view zoom options
+        constrainOnlyCenter: true,
       }),
       controls: [scale],
       interactions: interactions,
