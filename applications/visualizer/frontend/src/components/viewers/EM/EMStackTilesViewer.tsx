@@ -181,7 +181,6 @@ const EMStackViewer = () => {
   const firstActiveDataset = Object.values(currentWorkspace.activeDatasets)?.[0];
   const [minSlice, maxSlice] = firstActiveDataset.emData.sliceRange;
   const startSlice = currentWorkspace.emViewerSettings.startSlice;
-  // const [segSlice, segSetSlice] = useState<number>(startSlice);
   const segSlice = currentWorkspace.emViewerSettings.startSlice;
   const ringSize = 11;
 
@@ -193,8 +192,6 @@ const EMStackViewer = () => {
   const ringSeg = useRef<SlidingLayer<VectorLayer<Feature>>>();
   const ringSynSeg = useRef<SlidingLayer<VectorLayer<Feature>>>();
 
-  // const [showNeurons, setShowNeurons] = useState<boolean>(currentWorkspace.emViewerSettings.showNeurons);
-  // const [showSynapses, setShowSynapses] = useState<boolean>(currentWorkspace.emViewerSettings.showSynapses);
   const showNeurons = currentWorkspace.emViewerSettings.showNeurons;
   const showSynapses = currentWorkspace.emViewerSettings.showSynapses;
 
@@ -321,7 +318,6 @@ const EMStackViewer = () => {
       onSlide: (slice, layer) => {
         layer.setStyle((feature) => neuronsStyleRef.current(feature));
         currSegLayer.current = layer;
-        // segSetSlice(slice);
         currentWorkspace.setEmviewerSlice(slice);
       },
     });
@@ -437,7 +433,6 @@ const EMStackViewer = () => {
             label: "Neurons",
             checked: showNeurons,
             onToggle: (value) => {
-              // setShowNeurons(value)
               currentWorkspace.emViewerShowNeurons(value);
             },
           },
@@ -445,7 +440,6 @@ const EMStackViewer = () => {
             label: "Synapses",
             checked: showSynapses,
             onToggle: (value) => {
-              // setShowSynapses
               currentWorkspace.emViewerShowSynapses(value);
             },
           },
