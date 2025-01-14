@@ -39,6 +39,12 @@ export interface EMViewerData {
   color: string;
 }
 
+export interface EMViewerSettings {
+  showNeurons: boolean;
+  showSynapses: boolean;
+  startSlice: number;
+}
+
 function randomColor(): string {
   return `#${Math.floor(Math.random() * 0xffffff)
     .toString(16)

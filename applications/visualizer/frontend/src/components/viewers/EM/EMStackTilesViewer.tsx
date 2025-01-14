@@ -13,6 +13,7 @@ import VectorLayer from "ol/layer/Vector";
 import { Projection } from "ol/proj";
 import { XYZ } from "ol/source";
 import VectorSource from "ol/source/Vector";
+import type Style from "ol/style/Style";
 import { TileGrid } from "ol/tilegrid";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
@@ -20,9 +21,8 @@ import { ViewerType, getEMDataURL, getSegmentationURL, getSynapsesSegmentationUR
 import type { Workspace } from "../../../models/workspace.ts";
 import type { Dataset } from "../../../rest/index.ts";
 import SceneControls from "./SceneControls.tsx";
-import { activeNeuronStyle, cellFeatureName, selectedNeuronStyle, selectedSynapseStyle, activeSynapseStyle } from "./neuronsMapFeature.ts";
+import { activeNeuronStyle, activeSynapseStyle, cellFeatureName, selectedNeuronStyle, selectedSynapseStyle } from "./neuronsMapFeature.ts";
 import { SlidingLayer } from "./slidingLayer.ts";
-import Style from "ol/style/Style";
 
 const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, projection: Projection): TileLayer<XYZ> => {
   return new TileLayer({
@@ -180,8 +180,9 @@ const EMStackViewer = () => {
   // We take the first active dataset at the moment (will change later)
   const firstActiveDataset = Object.values(currentWorkspace.activeDatasets)?.[0];
   const [minSlice, maxSlice] = firstActiveDataset.emData.sliceRange;
-  const startSlice = Math.floor((maxSlice + minSlice) / 2);
-  const [segSlice, segSetSlice] = useState<number>(startSlice);
+  const startSlice = currentWorkspace.emViewerSettings.startSlice;
+  // const [segSlice, segSetSlice] = useState<number>(startSlice);
+  const segSlice = currentWorkspace.emViewerSettings.startSlice;
   const ringSize = 11;
 
   const mapRef = useRef<OLMap | null>(null);
@@ -192,8 +193,10 @@ const EMStackViewer = () => {
   const ringSeg = useRef<SlidingLayer<VectorLayer<Feature>>>();
   const ringSynSeg = useRef<SlidingLayer<VectorLayer<Feature>>>();
 
-  const [showNeurons, setShowNeurons] = useState<boolean>(true);
-  const [showSynapses, setShowSynapses] = useState<boolean>(true);
+  // const [showNeurons, setShowNeurons] = useState<boolean>(currentWorkspace.emViewerSettings.showNeurons);
+  // const [showSynapses, setShowSynapses] = useState<boolean>(currentWorkspace.emViewerSettings.showSynapses);
+  const showNeurons = currentWorkspace.emViewerSettings.showNeurons;
+  const showSynapses = currentWorkspace.emViewerSettings.showSynapses;
 
   const startZoom = useMemo(() => {
     const emData = firstActiveDataset.emData;
@@ -318,7 +321,8 @@ const EMStackViewer = () => {
       onSlide: (slice, layer) => {
         layer.setStyle((feature) => neuronsStyleRef.current(feature));
         currSegLayer.current = layer;
-        segSetSlice(slice);
+        // segSetSlice(slice);
+        currentWorkspace.setEmviewerSlice(slice);
       },
     });
 
@@ -432,12 +436,18 @@ const EMStackViewer = () => {
           neurons: {
             label: "Neurons",
             checked: showNeurons,
-            onToggle: setShowNeurons,
+            onToggle: (value) => {
+              // setShowNeurons(value)
+              currentWorkspace.emViewerShowNeurons(value);
+            },
           },
           synapses: {
             label: "Synapses",
             checked: showSynapses,
-            onToggle: setShowSynapses,
+            onToggle: (value) => {
+              // setShowSynapses
+              currentWorkspace.emViewerShowSynapses(value);
+            },
           },
         }}
       />

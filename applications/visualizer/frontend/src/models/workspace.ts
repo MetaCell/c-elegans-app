@@ -4,7 +4,15 @@ import { createDraft, finishDraft, immerable, isDraft, produce } from "immer";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
 import { type Dataset, type Neuron, NeuronsService } from "../rest";
 import { GlobalError } from "./Error.ts";
-import { type NeuronGroup, type ViewerData, type ViewerSynchronizationPair, ViewerType, Visibility, getDefaultViewerData } from "./models";
+import {
+  type EMViewerSettings,
+  type NeuronGroup,
+  type ViewerData,
+  type ViewerSynchronizationPair,
+  ViewerType,
+  Visibility,
+  getDefaultViewerData,
+} from "./models";
 import { type SynchronizerContext, SynchronizerOrchestrator } from "./synchronizer";
 
 function triggerUpdate<T extends Workspace>(_prototype: any, _key: string, descriptor: PropertyDescriptor) {
@@ -51,6 +59,7 @@ export class Workspace {
   visibilities: Record<string, ViewerData>;
   viewers: Record<ViewerType, boolean>;
   neuronGroups: Record<string, NeuronGroup>;
+  emViewerSettings: EMViewerSettings;
 
   store: ReturnType<typeof configureStore>;
   layoutManager: LayoutManager;
@@ -68,6 +77,7 @@ export class Workspace {
     contexts?: Record<ViewerType, SynchronizerContext>,
     visibilities?: Record<string, ViewerData>,
     neuronGroups?: Record<string, NeuronGroup>,
+    emViewerSettings?: EMViewerSettings,
   ) {
     this.id = id;
     this.name = name;
@@ -80,6 +90,20 @@ export class Workspace {
       [ViewerType.EM]: false,
     };
     this.neuronGroups = neuronGroups || {};
+
+    // Set EM viewer settings
+    if (!emViewerSettings) {
+      const firstActiveDataset = Object.values(activeDatasets)?.[0];
+      const [minSlice, maxSlice] = firstActiveDataset.emData.sliceRange;
+      const startSlice = Math.floor((maxSlice + minSlice) / 2);
+      this.emViewerSettings = {
+        showNeurons: true,
+        showSynapses: true,
+        startSlice: startSlice,
+      };
+    } else {
+      this.emViewerSettings = emViewerSettings;
+    }
 
     const { layoutManager, store } = getLayoutManagerAndStore(id);
     this.layoutManager = layoutManager;
@@ -285,6 +309,30 @@ export class Workspace {
           }
         }
       }
+    });
+
+    this.updateContext(updated);
+  }
+
+  emViewerShowNeurons(show: boolean) {
+    const updated = produce(this, (draft: Workspace) => {
+      draft.emViewerSettings.showNeurons = show;
+    });
+
+    this.updateContext(updated);
+  }
+
+  emViewerShowSynapses(show: boolean) {
+    const updated = produce(this, (draft: Workspace) => {
+      draft.emViewerSettings.showSynapses = show;
+    });
+
+    this.updateContext(updated);
+  }
+
+  setEmviewerSlice(slice: number) {
+    const updated = produce(this, (draft: Workspace) => {
+      draft.emViewerSettings.startSlice = slice;
     });
 
     this.updateContext(updated);

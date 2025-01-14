@@ -159,10 +159,17 @@
   dependencies:
     "@babel/helper-plugin-utils" "^7.25.7"
 
-"@babel/runtime@^7.11.2", "@babel/runtime@^7.12.5", "@babel/runtime@^7.15.4", "@babel/runtime@^7.17.8", "@babel/runtime@^7.18.3", "@babel/runtime@^7.23.9", "@babel/runtime@^7.25.0", "@babel/runtime@^7.3.1", "@babel/runtime@^7.4.4", "@babel/runtime@^7.5.5", "@babel/runtime@^7.8.3", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.2":
+"@babel/runtime@^7.11.2", "@babel/runtime@^7.12.5", "@babel/runtime@^7.17.8", "@babel/runtime@^7.18.3", "@babel/runtime@^7.23.9", "@babel/runtime@^7.25.0", "@babel/runtime@^7.5.5", "@babel/runtime@^7.8.7":
   version "7.25.7"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.25.7.tgz#7ffb53c37a8f247c8c4d335e89cdf16a2e0d0fb6"
   integrity sha512-FjoyLe754PMiYsFaN5C94ttGiOmBNYTf6pLr4xXHAT5uctHb092PBszndLDR5XA/jghQvn4n7JMHl7dmTgbm9w==
+  dependencies:
+    regenerator-runtime "^0.14.0"
+
+"@babel/runtime@^7.15.4", "@babel/runtime@^7.3.1", "@babel/runtime@^7.4.4", "@babel/runtime@^7.8.3", "@babel/runtime@^7.9.2":
+  version "7.26.0"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.26.0.tgz#8600c2f595f277c60815256418b85356a65173c1"
+  integrity sha512-FDSOghenHTiToteC/QRlv2q3DhPZ/oOXTBoirfWNx1Cx3TMVcGWQtMMmQcSvb/JjpNeGzx8Pq/b4fKEJuWm1sw==
   dependencies:
     regenerator-runtime "^0.14.0"
 
@@ -616,10 +623,10 @@
   resolved "https://registry.yarnpkg.com/@mediapipe/tasks-vision/-/tasks-vision-0.10.8.tgz#a78e137018a19933b7a1d0e887d553d4ab833d10"
   integrity sha512-Rp7ll8BHrKB3wXaRFKhrltwZl1CiXGdibPxuWXvqGnKTnv8fqa/nvftYNuSbf+pbJWKYCXdBtYTITdAUTGGh0Q==
 
-"@metacell/geppetto-meta-client@^1.2.8":
-  version "1.2.8"
-  resolved "https://registry.yarnpkg.com/@metacell/geppetto-meta-client/-/geppetto-meta-client-1.2.8.tgz#84c3b791288452f987cb3a1e56a47c9a8952bd59"
-  integrity sha512-pDORhlNYv5HILPaGPuJGFV5xLgvdtrtHklBfTW3jMfBAzbXO5qxRyslfpES2VxdcFGONW5Gr6KCbRWBmm2My+g==
+"@metacell/geppetto-meta-client@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@metacell/geppetto-meta-client/-/geppetto-meta-client-2.0.0.tgz#4568b7208b3e069d576c11c3a129ed9ebe3937f0"
+  integrity sha512-R0dYojiM6EyvCjphlNnMeOXUbPW47filu/5JmQNJHGIK3tQA66YaZJJ6DnxIvpLS4hsSe27EO2vIdkAQv0NbSQ==
   dependencies:
     "@material-ui/core" "^4.1.3"
     pako "^1.0.3"
@@ -629,15 +636,15 @@
     redux "^4.1.0"
     url-join "^4.0.0"
 
-"@metacell/geppetto-meta-core@^1.2.8":
-  version "1.2.8"
-  resolved "https://registry.yarnpkg.com/@metacell/geppetto-meta-core/-/geppetto-meta-core-1.2.8.tgz#34e991feb099bb63d3737b7f8495df5b8b1f3425"
-  integrity sha512-1AMhQLw3+3YFufG2YUsgsxi3YGZx94VKloXq5aENZo5ZLW+aLvlSAUcRUl68LUPt/Axd+6xc1R7qGNOghv7Irw==
+"@metacell/geppetto-meta-core@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@metacell/geppetto-meta-core/-/geppetto-meta-core-2.0.0.tgz#040d0c16adc5f535c824d4638b7a2eb7a8729d2a"
+  integrity sha512-pweZ4i32NraIRf9W0Q5Kh6xVy1eyJmCOGOh/Sh1yARLts7cdNocHp5yj4V6TX9BLfHXL59bK8sRxEpo78tsnvQ==
 
-"@metacell/geppetto-meta-ui@^1.2.8":
-  version "1.2.8"
-  resolved "https://registry.yarnpkg.com/@metacell/geppetto-meta-ui/-/geppetto-meta-ui-1.2.8.tgz#3a6b34e561de88e88b892ae8bc80a32cc2e4b2a1"
-  integrity sha512-wiC7GiJZWp66wUG4jIGcP1wieAi4fEtyncpEcNjwssuURSddixFnCkH0dSX5KwJ3PjDbHEyco6/M6nG+DYFJlw==
+"@metacell/geppetto-meta-ui@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@metacell/geppetto-meta-ui/-/geppetto-meta-ui-2.0.0.tgz#1537bd072e8e74e69f9d444164044297e5ddb41a"
+  integrity sha512-0C1F1VwMq/kjPJSGqoD/AyJqBKlMqINkcS0cvsq5HNBgXKuVqnffdnVTWvZo+adIXaA33bS/pXmBKi/l+LmMIQ==
 
 "@monogrid/gainmap-js@^3.0.5":
   version "3.0.6"
@@ -1008,9 +1015,9 @@
   integrity sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==
 
 "@types/hoist-non-react-statics@^3.3.0":
-  version "3.3.5"
-  resolved "https://registry.yarnpkg.com/@types/hoist-non-react-statics/-/hoist-non-react-statics-3.3.5.tgz#dab7867ef789d87e2b4b0003c9d65c49cc44a494"
-  integrity sha512-SbcrWzkKBw2cdwRTwQAswfpB9g9LJWfjtUeW/jvNwbhC8cpmmNYVePa+ncbUe0rGTQ7G3Ff6mYUN2VMfLVr+Sg==
+  version "3.3.6"
+  resolved "https://registry.yarnpkg.com/@types/hoist-non-react-statics/-/hoist-non-react-statics-3.3.6.tgz#6bba74383cdab98e8db4e20ce5b4a6b98caed010"
+  integrity sha512-lPByRJUer/iN/xa4qpyL0qmL11DqNW81iU/IG1S3uvRUq4oKagz8VCxZjiWkumgt66YT3vOdDgZ0o32sGKtCEw==
   dependencies:
     "@types/react" "*"
     hoist-non-react-statics "^3.3.0"
@@ -1066,7 +1073,12 @@
     hoist-non-react-statics "^3.3.0"
     redux "^4.0.0"
 
-"@types/react-transition-group@^4.2.0", "@types/react-transition-group@^4.4.10":
+"@types/react-transition-group@^4.2.0":
+  version "4.4.12"
+  resolved "https://registry.yarnpkg.com/@types/react-transition-group/-/react-transition-group-4.4.12.tgz#b5d76568485b02a307238270bfe96cb51ee2a044"
+  integrity sha512-8TV6R3h2j7a91c+1DXdJi3Syo69zzIZbz7Lg5tORM5LEJG7X/E6a1V3drRyBRZq7/utz7A+c4OgYLiLcYGHG6w==
+
+"@types/react-transition-group@^4.4.10":
   version "4.4.11"
   resolved "https://registry.yarnpkg.com/@types/react-transition-group/-/react-transition-group-4.4.11.tgz#d963253a611d757de01ebb241143b1017d5d63d5"
   integrity sha512-RM05tAniPZ5DZPzzNFP+DmrcOdD0efDUxMy3145oljWSl3x9ZV5vhme98gTxFrj2lhXvmGNnUiuDyJgY9IKkNA==
