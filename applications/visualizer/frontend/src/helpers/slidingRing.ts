@@ -89,9 +89,9 @@ export class SlidingRing<T> {
     // this account for that adjustment
     const [min, max] = this.extent;
     if (tailN < min) tailN = min;
-    if (headN > max) {
+    if (headN >= max) {
       headN = max;
-      tailN = headN - this.ring.length - 1;
+      tailN = headN - this.ring.length + 1;
     }
 
     // populate the ring
