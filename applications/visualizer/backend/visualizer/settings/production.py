@@ -135,14 +135,20 @@ class DbDataDownloader:
 
     @classmethod
     def get_segmentation_metadata(cls, dataset_id):
-        file = BASE_DIR / DB_RAW_DATA_FOLDER / dataset_id / "segmentation_metadata.json"
+        file = (
+            BASE_DIR
+            / DB_RAW_DATA_FOLDER
+            / dataset_id
+            / "segmentations"
+            / "metadata.json"
+        )
         if not file.exists():
             return {}
         return json.loads(file.read_text())
 
     @classmethod
     def get_em_metadata(cls, dataset_id):
-        file = BASE_DIR / DB_RAW_DATA_FOLDER / dataset_id / "em_metadata.json"
+        file = BASE_DIR / DB_RAW_DATA_FOLDER / dataset_id / "em" / "metadata.json"
         if not file.exists():
             return {}
         return json.loads(file.read_text())

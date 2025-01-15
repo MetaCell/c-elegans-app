@@ -35,7 +35,7 @@ TILE_SIZE = 512  # Should be computed
 BLACK_TILE = Image.new("RGB", (TILE_SIZE, TILE_SIZE))
 BLACK_TILE_BUFFER = io.BytesIO()
 BLACK_TILE.save(BLACK_TILE_BUFFER, format="JPEG")
-MAX_ZOOM = 6  # Should be set
+MAX_ZOOM = 5  # Should be set
 
 
 def get_tile(request, dataset, slice, x, y, zoom):

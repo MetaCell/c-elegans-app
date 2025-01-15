@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from ingestion.em_metadata import EMMetadata, Piramid, SliceMetadata, Tile, TileGrid
+from ingestion.em_metadata import EMMetadata, Pyramid, Tile, TileGrid
 from ingestion.storage.filesystem import TILE_GLOB, extract_tile_metadata
 
 
@@ -31,17 +31,17 @@ def slice209_tilegrid_zoom5(slices_dir_fixture: Path) -> TileGrid:
                     slice=209,
                 ),
                 Tile(
-                    position=(0, 1),
+                    position=(1, 0),
                     zoom=5,
-                    path=dir_path / "1_0_5.jpg",
+                    path=dir_path / "0_1_5.jpg",
                     slice=209,
                 ),
             ],
             [
                 Tile(
-                    position=(1, 0),
+                    position=(0, 1),
                     zoom=5,
-                    path=dir_path / "0_1_5.jpg",
+                    path=dir_path / "1_0_5.jpg",
                     slice=209,
                 ),
                 Tile(
@@ -63,10 +63,10 @@ def slice209_tilegrid_zoom4(slices_dir_fixture: Path) -> TileGrid:
     dir_path = slices_dir_fixture / "209"
     return TileGrid(
         zoom=4,
-        size=(4, 3),
+        size=(3, 4),
         matrix=[
-            [None, None, None],
             [
+                None,
                 Tile(
                     position=(1, 0),
                     zoom=4,
@@ -74,23 +74,24 @@ def slice209_tilegrid_zoom4(slices_dir_fixture: Path) -> TileGrid:
                     slice=209,
                 ),
                 Tile(
-                    position=(1, 1),
+                    position=(2, 0),
                     zoom=4,
-                    path=dir_path / "1_1_4.jpg",
+                    path=dir_path / "0_2_4.jpg",
                     slice=209,
                 ),
                 Tile(
-                    position=(1, 2),
+                    position=(3, 0),
                     zoom=4,
-                    path=dir_path / "2_1_4.jpg",
+                    path=dir_path / "0_3_4.jpg",
                     slice=209,
                 ),
             ],
             [
+                None,
                 Tile(
-                    position=(2, 0),
+                    position=(1, 1),
                     zoom=4,
-                    path=dir_path / "0_2_4.jpg",
+                    path=dir_path / "1_1_4.jpg",
                     slice=209,
                 ),
                 Tile(
@@ -100,23 +101,24 @@ def slice209_tilegrid_zoom4(slices_dir_fixture: Path) -> TileGrid:
                     slice=209,
                 ),
                 Tile(
-                    position=(2, 2),
+                    position=(3, 1),
                     zoom=4,
-                    path=dir_path / "2_2_4.jpg",
+                    path=dir_path / "1_3_4.jpg",
                     slice=209,
                 ),
             ],
             [
+                None,
                 Tile(
-                    position=(3, 0),
+                    position=(1, 2),
                     zoom=4,
-                    path=dir_path / "0_3_4.jpg",
+                    path=dir_path / "2_1_4.jpg",
                     slice=209,
                 ),
                 Tile(
-                    position=(3, 1),
+                    position=(2, 2),
                     zoom=4,
-                    path=dir_path / "1_3_4.jpg",
+                    path=dir_path / "2_2_4.jpg",
                     slice=209,
                 ),
                 Tile(
@@ -169,15 +171,15 @@ def test__tile_matrix_with_holes(slices_dir_fixture: Path):
                     path=slice_209_path / "0_0_5.jpg",
                     slice=209,
                 ),
-                None,  # the hole
-            ],
-            [
                 Tile(
                     position=(1, 0),
                     zoom=5,
                     path=slice_209_path / "0_1_5.jpg",
                     slice=209,
                 ),
+            ],
+            [
+                None,  # the hole
                 Tile(
                     position=(1, 1),
                     zoom=5,
@@ -209,7 +211,7 @@ def test__tile_matrix_missing_row(slices_dir_fixture: Path):
     slice_209_path = slices_dir_fixture / "209"
     expected_matrix_zoom_5 = TileGrid(
         zoom=5,
-        size=(2, 1),
+        size=(1, 2),
         matrix=[
             [
                 Tile(
@@ -218,15 +220,13 @@ def test__tile_matrix_missing_row(slices_dir_fixture: Path):
                     path=slice_209_path / "0_0_5.jpg",
                     slice=209,
                 ),
-            ],
-            [
                 Tile(
                     position=(1, 0),
                     zoom=5,
                     path=slice_209_path / "0_1_5.jpg",
                     slice=209,
                 ),
-            ],
+            ]
         ],
     )
 
@@ -249,7 +249,7 @@ def test__tile_matrix_missing_column(slices_dir_fixture: Path):
     slice_209_path = slices_dir_fixture / "209"
     expected_matrix_zoom_5 = TileGrid(
         zoom=5,
-        size=(1, 2),
+        size=(2, 1),
         matrix=[
             [
                 Tile(
@@ -258,13 +258,15 @@ def test__tile_matrix_missing_column(slices_dir_fixture: Path):
                     path=slice_209_path / "0_0_5.jpg",
                     slice=209,
                 ),
+            ],
+            [
                 Tile(
                     position=(0, 1),
                     zoom=5,
                     path=slice_209_path / "1_0_5.jpg",
                     slice=209,
                 ),
-            ]
+            ],
         ],
     )
 
@@ -283,7 +285,7 @@ def test__tile_matrix_missing_column(slices_dir_fixture: Path):
     assert grid.resolution == (512, 1024)
 
 
-def test__piramid(
+def test__pyramid(
     slices_dir_fixture: Path,
     slice209_tilegrid_zoom5: TileGrid,
     slice209_tilegrid_zoom4: TileGrid,
@@ -293,20 +295,22 @@ def test__piramid(
         for tile_path in (slices_dir_fixture / "209").glob(TILE_GLOB)
     )
 
-    expected_piramid = Piramid(
+    expected_pyramid = Pyramid(
         levels={
             4: slice209_tilegrid_zoom4,
             5: slice209_tilegrid_zoom5,
         }
     )
 
-    piramid = Piramid.build(tiles)
+    pyramid = Pyramid.build(tiles)
 
-    assert piramid == expected_piramid
-    assert piramid.extent == expected_piramid.extent
-    assert piramid.minzoom == expected_piramid.minzoom
-    assert piramid.maxzoom == expected_piramid.maxzoom
-    assert piramid.tile_dimensions == expected_piramid.tile_dimensions
+    assert pyramid == expected_pyramid
+    assert pyramid.extent == expected_pyramid.extent == (0, 0, 2048, 1536)
+    assert pyramid.minzoom == expected_pyramid.minzoom == 4
+    assert pyramid.maxzoom == expected_pyramid.maxzoom == 5
+    assert pyramid.tile_dimensions == expected_pyramid.tile_dimensions == (512, 512)
+    # assert pyramid.resolution == expected_pyramid.resolution == (2048, 1536)
+    assert pyramid.resolution == expected_pyramid.resolution == (1024, 1024)
 
 
 def test__em_metadata_merge():
@@ -316,6 +320,7 @@ def test__em_metadata_merge():
         minzoom=1,
         maxzoom=5,
         tile_size=(512, 512),
+        resolution=(512, 512),  # TODO: make better tests for resolution
         slices=[1, 2, 3],
     )
     mt2 = EMMetadata(
@@ -325,6 +330,7 @@ def test__em_metadata_merge():
         minzoom=1,
         maxzoom=5,
         tile_size=(512, 512),
+        resolution=(512, 512),
     )
 
     expected_merge = EMMetadata(
@@ -334,6 +340,7 @@ def test__em_metadata_merge():
         minzoom=1,
         maxzoom=5,
         tile_size=(512, 512),
+        resolution=(512, 512),
     )
 
     assert mt1.merge(mt2) == expected_merge

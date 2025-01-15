@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import "ol/ol.css";
 import { type Feature, Map as OLMap, View } from "ol";
 import type { FeatureLike } from "ol/Feature";
@@ -17,7 +17,7 @@ import type Style from "ol/style/Style";
 import { TileGrid } from "ol/tilegrid";
 import { useEffect, useMemo, useRef } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
-import { ViewerType, getEMDataURL, getSegmentationURL, getSynapsesSegmentationURL } from "../../../models/models.ts";
+import { ViewerType, getEMDataURL, getEMResolution, getSegmentationURL, getSynapsesSegmentationURL } from "../../../models/models.ts";
 import type { Workspace } from "../../../models/workspace.ts";
 import type { Dataset } from "../../../rest/index.ts";
 import SceneControls from "./SceneControls.tsx";
@@ -174,11 +174,36 @@ const interactions = defaultInteractions({
   }),
 ]);
 
+const NoEMData = () => {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100%",
+      }}
+    >
+      <Typography variant="h6" color="text.secondary">
+        No EM Data Available
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+        Please select a dataset containing EM data to view
+      </Typography>
+    </Box>
+  );
+};
+
 const EMStackViewer = () => {
   const currentWorkspace = useGlobalContext().getCurrentWorkspace();
 
   // We take the first active dataset at the moment (will change later)
   const firstActiveDataset = Object.values(currentWorkspace.activeDatasets)?.[0];
+  if (!firstActiveDataset.emData) {
+    return <NoEMData />;
+  }
+
   const [minSlice, maxSlice] = firstActiveDataset.emData.sliceRange;
   const startSlice = currentWorkspace.emViewerSettings.startSlice;
   const segSlice = currentWorkspace.emViewerSettings.startSlice;
@@ -195,15 +220,7 @@ const EMStackViewer = () => {
   const showNeurons = currentWorkspace.emViewerSettings.showNeurons;
   const showSynapses = currentWorkspace.emViewerSettings.showSynapses;
 
-  const startZoom = useMemo(() => {
-    const emData = firstActiveDataset.emData;
-    if (!emData) {
-      return undefined;
-    }
-    return emData.minZoom;
-  }, [firstActiveDataset.emData]);
-
-  const extent = useMemo(() => [0, 0, ...firstActiveDataset.emData.segmentationSize], [firstActiveDataset.emData.segmentationSize]);
+  const extent = useMemo(() => [0, 0, ...getEMResolution(firstActiveDataset)], [firstActiveDataset]);
 
   const projection = useMemo(() => {
     return new Projection({
@@ -213,22 +230,6 @@ const EMStackViewer = () => {
       metersPerUnit: 2e-9, // 2 nm voxels
     });
   }, [extent]);
-
-  const tilegrid = useMemo(() => {
-    return new TileGrid({
-      minZoom: 1, // tiles for zoom 0 not available in the dataset
-      extent: extent,
-      tileSize: firstActiveDataset.emData.tileSize[0],
-      resolutions: [0.5, 1, 2, 4, 8, 16, 32].reverse(),
-    });
-  }, [extent, firstActiveDataset.emData.tileSize]);
-
-  // const debugLayer = new TileLayer({
-  // 	source: new TileDebug({
-  // 		projection: projection,
-  // 		tileGrid: tilegrid,
-  // 	}),
-  // });
 
   const makeFeatureClickHandler = () => (position) =>
     selectAcrossLayers(
@@ -269,33 +270,40 @@ const EMStackViewer = () => {
     currSynSegLayer.current.getSource().changed();
   }, [currentWorkspace.getSelection(ViewerType.EM), segSlice]);
 
-  useEffect(() => {
-    if (!ringSeg.current) {
-      return;
-    }
-    showNeurons ? ringSeg.current.enable() : ringSeg.current.disable();
-  }, [showNeurons]);
+  useEffect(() => ringSeg.current?.setVisibility(showNeurons), [showNeurons]);
+  useEffect(() => ringSynSeg.current?.setVisibility(showSynapses), [showSynapses]);
 
   useEffect(() => {
-    if (!ringSynSeg.current) {
-      return;
-    }
-    showSynapses ? ringSynSeg.current.enable() : ringSynSeg.current.disable();
-  }, [showSynapses]);
+    const hasNeuronSegmentations = !!firstActiveDataset.emData.segmentationSize;
+    const hasSynapseSegmentations = !!firstActiveDataset.emData.synapsesSegmentationUrl;
 
-  useEffect(() => {
-    if (mapRef.current) {
-      return;
-    }
+    const tilegrid = new TileGrid({
+      minZoom: firstActiveDataset.emData.minZoom,
+      extent: extent,
+      tileSize: firstActiveDataset.emData.tileSize[0],
+      // resolutions: [0.5, 1, 2, 4, 8, 16, 32].reverse(),
+      resolutions: [0.25, 0.5, 1, 2, 4, 8, 16].reverse(),
+    });
+
+    // const debugLayer = new TileLayer({
+    // 	source: new TileDebug({
+    // 		projection: projection,
+    // 		tileGrid: tilegrid,
+    // 	}),
+    // });
 
     const map = new OLMap({
       target: "emviewer",
       layers: [],
       view: new View({
+        zoom: firstActiveDataset.emData.minZoom,
+        minZoom: firstActiveDataset.emData.minZoom,
+        maxZoom: firstActiveDataset.emData.maxZoom,
         projection: projection,
         center: getCenter(extent),
         extent: extent,
         resolutions: tilegrid.getResolutions(), // forces view zoom options
+        constrainOnlyCenter: true,
       }),
       controls: [scale],
       interactions: interactions,
@@ -308,47 +316,49 @@ const EMStackViewer = () => {
       extent: [minSlice, maxSlice],
       newLayer: (slice) => newEMLayer(firstActiveDataset, slice, tilegrid, projection),
     });
+    
+    if (hasNeuronSegmentations) {
+      ringSeg.current = new SlidingLayer({
+        map: map,
+        cacheSize: ringSize,
+        startAt: startSlice,
+        extent: [minSlice, maxSlice],
+        newLayer: (slice) => newSegLayer(firstActiveDataset, slice),
+        onSlide: (slice, layer) => {
+          layer.setStyle((feature) => neuronsStyleRef.current(feature));
+          currSegLayer.current = layer;
+          currentWorkspace.setEmviewerSlice(slice);
+        },
+      });
 
-    ringSeg.current = new SlidingLayer({
-      map: map,
-      cacheSize: ringSize,
-      startAt: startSlice,
-      extent: [minSlice, maxSlice],
-      newLayer: (slice) => newSegLayer(firstActiveDataset, slice),
-      onSlide: (slice, layer) => {
-        layer.setStyle((feature) => neuronsStyleRef.current(feature));
-        currSegLayer.current = layer;
-        currentWorkspace.setEmviewerSlice(slice);
-      },
-    });
-
-    map.on("click", (e) => onFeatureClickRef.current(e.coordinate));
-
-    ringSynSeg.current = new SlidingLayer({
-      map: map,
-      cacheSize: ringSize,
-      startAt: startSlice,
-      extent: [minSlice, maxSlice],
-      newLayer: (slice) => newSynapsesSegLayer(firstActiveDataset, slice),
-      onSlide: (_, layer) => {
-        layer.setStyle((feature) => synapsesStyleRef.current(feature));
-        currSynSegLayer.current = layer;
-      },
-    });
-
-    newSynapsesSegLayer;
+      map.on("click", (e) => onFeatureClickRef.current(e.coordinate));
+    }
+    
+    if (hasSynapseSegmentations) {
+      ringSynSeg.current = new SlidingLayer({
+        map: map,
+        cacheSize: ringSize,
+        startAt: startSlice,
+        extent: [minSlice, maxSlice],
+        newLayer: (slice) => newSynapsesSegLayer(firstActiveDataset, slice),
+        onSlide: (_, layer) => {
+          layer.setStyle((feature) => synapsesStyleRef.current(feature));
+          currSynSegLayer.current = layer;
+        },
+      });
+    }
 
     function handleSliceScroll(e: WheelEvent) {
       const scrollUp = e.deltaY < 0;
 
       if (scrollUp) {
         ringEM.current.next();
-        ringSeg.current.next();
-        ringSynSeg.current.next();
+        ringSeg.current?.next();
+        ringSynSeg.current?.next();
       } else {
         ringEM.current.prev();
-        ringSeg.current.prev();
-        ringSynSeg.current.prev();
+        ringSeg.current?.prev();
+        ringSynSeg.current?.prev();
       }
     }
 
@@ -375,13 +385,14 @@ const EMStackViewer = () => {
     });
 
     // set map zoom to the minimum zoom possible
-    // const minZoomAvailable = tilegrid.getMinZoom();
-    map.getView().setZoom(startZoom);
+    const minZoomAvailable = tilegrid.getMinZoom();
+    // const startZoom = firstActiveDataset.emData.minZoom;
+    map.getView().setZoom(minZoomAvailable);
 
     mapRef.current = map;
 
     return () => map.setTarget(null);
-  }, []);
+  }, [firstActiveDataset, extent, projection, startSlice, maxSlice, minSlice]);
 
   const onControlZoomIn = () => {
     if (!mapRef.current) return;
@@ -400,8 +411,8 @@ const EMStackViewer = () => {
   const onResetView = () => {
     // reset sliding window
     ringEM.current.goto(startSlice);
-    ringSeg.current.goto(startSlice);
-    ringSynSeg.current.goto(startSlice);
+    ringSeg.current?.goto(startSlice);
+    ringSynSeg.current?.goto(startSlice);
 
     if (!mapRef.current) return;
     const view = mapRef.current.getView();

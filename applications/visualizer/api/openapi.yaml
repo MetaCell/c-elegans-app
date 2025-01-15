@@ -84,6 +84,14 @@ components:
       type: object
     EMData:
       properties:
+        maxResolution:
+          maxItems: 2
+          minItems: 2
+          prefixItems:
+          - type: integer
+          - type: integer
+          title: Maxresolution
+          type: array
         maxZoom:
           title: Maxzoom
           type: integer
@@ -138,6 +146,7 @@ components:
       - nbSlices
       - tileSize
       - sliceRange
+      - maxResolution
       - resourceUrl
       - segmentationUrl
       - segmentationSize
