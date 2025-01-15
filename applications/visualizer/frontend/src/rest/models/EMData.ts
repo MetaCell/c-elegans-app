@@ -8,6 +8,7 @@ export type EMData = {
     nbSlices: number;
     tileSize: any[];
     sliceRange: any[];
+    maxResolution: any[];
     resourceUrl: string;
     segmentationUrl: (string | null);
     segmentationSize: (any[] | null);

@@ -520,6 +520,20 @@
             "title": "Slicerange",
             "type": "array"
           },
+          "maxResolution": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Maxresolution",
+            "type": "array"
+          },
           "resourceUrl": {
             "title": "Resourceurl",
             "type": "string"
@@ -574,6 +588,7 @@
           "nbSlices",
           "tileSize",
           "sliceRange",
+          "maxResolution",
           "resourceUrl",
           "segmentationUrl",
           "segmentationSize",

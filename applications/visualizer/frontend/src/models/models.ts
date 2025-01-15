@@ -93,6 +93,10 @@ export function getSynapsesSegmentationURL(dataset: Dataset, sliceIndex: number)
   return buildUrlFromFormat(dataset.emData.synapsesSegmentationUrl, sliceIndex?.toString());
 }
 
+export function getEMResolution(dataset: Dataset) {
+  return dataset.emData?.segmentationSize || dataset.emData?.maxResolution;
+}
+
 export enum Alignment {
   Left = "left",
   Right = "right",
