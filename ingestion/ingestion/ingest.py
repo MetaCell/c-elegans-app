@@ -4,17 +4,17 @@ import concurrent.futures
 import json
 import logging
 import os
+import subprocess
 import sys
-import tempfile
 from argparse import ArgumentParser, Namespace
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-
 from google.api_core.exceptions import PreconditionFailed
 from google.cloud import storage
 from pydantic import ValidationError
 from tqdm import tqdm
+import niquests
 
 from ingestion.cli import ask, type_directory, type_file
 from ingestion.em_metadata import EMMetadata, Tile
@@ -47,8 +47,12 @@ from ingestion.xdg import xdg_config_celegans, xdg_gcloud_config
 logger = logging.getLogger(__name__)
 
 
-def _done_message(dataset_name: str, dry_run: bool = False) -> str:
-    return f"==> Done {'upload simulation for' if dry_run else 'uploading'} dataset '{dataset_name}'! ✨"
+def _done_message(dataset_name: str | None, dry_run: bool = False) -> str:
+    """Generate a completion message for the ingestion process."""
+    if dataset_name:
+        return f"==> Done {'upload simulation for' if dry_run else 'uploading'} dataset '{dataset_name}'! ✨"
+    else:
+        return "==> Ingestion completed! ✨"
 
 
 def add_flags(parser: ArgumentParser):
@@ -106,6 +110,18 @@ def add_flags(parser: ArgumentParser):
             "GOOGLE_APPLICATION_CREDENTIALS",
             f"{xdg_gcloud_config() / 'application_default_credentials.json'}",
         ),
+    )
+
+    parser.add_argument(
+        "--populate-db",
+        action="store_true",
+        help="Trigger DB population via the API endpoint",
+    )
+
+    parser.add_argument(
+        "--populate-db-url",
+        default="https://celegans.dev.metacell.us/api/populate_db",
+        help="The API URL to trigger DB population",
     )
 
 
@@ -460,6 +476,47 @@ def upload_em_tiles(
         pbar.close()
 
 
+def trigger_populate_db(args):
+    try:
+        api_url = args.populate_db_url
+
+        # Load service account credentials from gcp_credentials
+        with open(args.gcp_credentials, "r") as f:
+            gcp_creds = json.load(f)
+
+        client_id = gcp_creds.get("client_id")
+        private_key_id = gcp_creds.get("private_key_id")
+
+        if not client_id or not private_key_id:
+            print(
+                "Error: Could not extract client_id or private_key_id from gcp_credentials",
+                file=sys.stderr,
+            )
+            return
+
+        session = niquests.Session(resolver="doh+google://", multiplexed=True)
+
+        with session.get(
+            api_url, auth=(client_id, private_key_id), stream=True, timeout=None
+        ) as response:
+            if response.status_code != 200:
+                print(
+                    f"Error: Received status code {response.status_code}",
+                    file=sys.stderr,
+                )
+                return
+            try:
+                for line in response.iter_lines(decode_unicode=True):
+                    if line:
+                        if isinstance(line, bytes):
+                            line = line.decode("utf-8")
+                        print(line, flush=True)
+            except KeyboardInterrupt:
+                print("\nStreaming interrupted by user.", file=sys.stderr)
+    except Exception as e:
+        print(f"An error occurred: {e}", file=sys.stderr)
+
+
 def ingest_cmd(args: Namespace):
     """Runs the ingestion command."""
 
@@ -471,7 +528,7 @@ def ingest_cmd(args: Namespace):
         bucket = storage_client.get_bucket(args.gcp_bucket)
     rs = RemoteStorage(bucket, dry_run=args.dry_run)
 
-    dataset_id = args.id
+    dataset_id = getattr(args, "id", None)
     overwrite = args.overwrite
 
     if args.prune:
@@ -485,29 +542,35 @@ def ingest_cmd(args: Namespace):
         elif dry_run:
             logger.info(f"skipped prunning files from the bucket")
 
-    if args.data:
-        validate_and_upload_data(dataset_id, args.data, rs, overwrite=overwrite)
-    elif dry_run:
-        logger.warning(f"skipping neurons data validation and upload")
+    if dataset_id:
+        if args.data:
+            validate_and_upload_data(dataset_id, args.data, rs, overwrite=overwrite)
+        elif dry_run:
+            logger.warning(f"skipping neurons data validation and upload")
 
-    if args.segmentation:
-        upload_segmentations(dataset_id, args.segmentation, rs, overwrite=overwrite)
-    elif dry_run:
-        logger.warning("skipping segmentation upload: flag not set")
+        if args.segmentation:
+            upload_segmentations(dataset_id, args.segmentation, rs, overwrite=overwrite)
+        elif dry_run:
+            logger.warning("skipping segmentation upload: flag not set")
 
-    if args.synapses:
-        upload_synapses(dataset_id, args.synapses, rs, overwrite=overwrite)
-    elif dry_run:
-        logger.warning("skipping synapses upload: flag not set")
+        if args.synapses:
+            upload_synapses(dataset_id, args.synapses, rs, overwrite=overwrite)
+        elif dry_run:
+            logger.warning("skipping synapses upload: flag not set")
 
-    if paths := getattr(args, "3d"):
-        upload_3d(dataset_id, paths, rs, overwrite=overwrite)
-    elif dry_run:
-        logger.warning("skipping 3D files upload: flag not set")
+        if paths := getattr(args, "3d"):
+            upload_3d(dataset_id, paths, rs, overwrite=overwrite)
+        elif dry_run:
+            logger.warning("skipping 3D files upload: flag not set")
 
-    if args.em:
-        upload_em_tiles(dataset_id, args.em, rs, overwrite=overwrite)
+        if args.em:
+            upload_em_tiles(dataset_id, args.em, rs, overwrite=overwrite)
+        elif dry_run:
+            logger.warning("skipping EM tiles upload: flag not set")
+
+    if args.populate_db:
+        trigger_populate_db(args)
     elif dry_run:
-        logger.warning("skipping EM tiles upload: flag not set")
+        logger.warning("skipping populate DB: flag not set")
 
     print(_done_message(dataset_id, dry_run))
