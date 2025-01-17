@@ -36,7 +36,7 @@ To install the C-Elegans CLI tool you have 3 options:
 If you have been provided with a GitHub access token, you can install the tool by running the following command:
 
 ```bash
-pip install "git+https://github.com/MetaCell/c-elegans-app.git@feature/CELE-78#egg=ingestion&subdirectory=ingestion"
+pip install "git+https://github.com/MetaCell/c-elegans-app.git@develop#egg=ingestion&subdirectory=ingestion"
 ```
 
 The access token will be prompted as the password during installation.
@@ -48,7 +48,7 @@ If you prefer using SSH for installation, ensure you have set up an SSH key on y
 Once your SSH key is set up, install the CLI tool by running:
 
 ```bash
-pip install "git+ssh://git@github.com/MetaCell/c-elegans-app.git@feature/CELE-78#egg=ingestion&subdirectory=ingestion"
+pip install "git+ssh://git@github.com/MetaCell/c-elegans-app.git@develop#egg=ingestion&subdirectory=ingestion"
 ```
 
 ### From Source
