@@ -1,5 +1,5 @@
 import type { NeuronGroup, ViewMode, ViewerType } from "../models";
-import type { ViewerData, ViewerSynchronizationPair } from "../models/models";
+import type { EMViewerSettings, ViewerData, ViewerSynchronizationPair } from "../models/models";
 import type { SynchronizerContext } from "../models/synchronizer";
 
 type SerializedWorkspace = {
@@ -13,6 +13,7 @@ type SerializedWorkspace = {
   contexts: Record<ViewerType, SynchronizerContext>;
   activeSyncs: Record<ViewerSynchronizationPair, boolean>;
   visibilities: Record<string, ViewerData>;
+  emViewerSettings: EMViewerSettings;
 };
 
 export type SerializedGlobalContext = {

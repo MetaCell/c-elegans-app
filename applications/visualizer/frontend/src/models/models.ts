@@ -69,6 +69,12 @@ export interface ViewerData {
   [ViewerType.EM]?: EMViewerData;
 }
 
+export interface EMViewerSettings {
+  showNeurons: boolean;
+  showSynapses: boolean;
+  startSlice: number;
+}
+
 const buildUrlFromFormat = (s: string, param: string) => {
   return s.replace(s.match("{[^}]+}")?.[0], param);
 };
