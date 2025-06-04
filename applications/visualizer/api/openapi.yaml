@@ -32,6 +32,19 @@ components:
       - type
       title: Connection
       type: object
+    ConnectionGroup:
+      properties:
+        post:
+          title: Post
+          type: string
+        pre:
+          title: Pre
+          type: string
+      required:
+      - pre
+      - post
+      title: ConnectionGroup
+      type: object
     Dataset:
       properties:
         axes:
@@ -85,13 +98,15 @@ components:
     EMData:
       properties:
         maxResolution:
-          maxItems: 2
-          minItems: 2
-          prefixItems:
-          - type: integer
-          - type: integer
+          anyOf:
+          - maxItems: 2
+            minItems: 2
+            prefixItems:
+            - type: integer
+            - type: integer
+            type: array
+          - type: 'null'
           title: Maxresolution
-          type: array
         maxZoom:
           title: Maxzoom
           type: integer
@@ -162,6 +177,21 @@ components:
       - detail
       title: ErrorMessage
       type: object
+    GroupedConnection:
+      properties:
+        connections:
+          items:
+            $ref: '#/components/schemas/ConnectionGroup'
+          title: Connections
+          type: array
+        neuron:
+          title: Neuron
+          type: string
+      required:
+      - neuron
+      - connections
+      title: GroupedConnection
+      type: object
     Input:
       properties:
         page:
@@ -169,6 +199,12 @@ components:
           minimum: 1
           title: Page
           type: integer
+        page_size:
+          anyOf:
+          - minimum: 1
+            type: integer
+          - type: 'null'
+          title: Page Size
       title: Input
       type: object
     Neuron:
@@ -238,6 +274,34 @@ components:
       - count
       title: PagedNeuron
       type: object
+    RawConnection:
+      properties:
+        post:
+          maxLength: 30
+          title: Post
+          type: string
+        pre:
+          maxLength: 30
+          title: Pre
+          type: string
+        synapses:
+          title: Synapses
+          type: integer
+        type:
+          maxLength: 20
+          title: Type
+          type: string
+      required:
+      - pre
+      - post
+      - type
+      - synapses
+      title: RawConnection
+      type: object
+  securitySchemes:
+    BasicAuthSuperUser:
+      scheme: basic
+      type: http
 info:
   description: ''
   title: C. Elegans Visualizer
@@ -267,6 +331,15 @@ paths:
           minimum: 1
           title: Page
           type: integer
+      - in: query
+        name: page_size
+        required: false
+        schema:
+          anyOf:
+          - minimum: 1
+            type: integer
+          - type: 'null'
+          title: Page Size
       responses:
         '200':
           content:
@@ -376,6 +449,45 @@ paths:
       summary: Get Connections
       tags:
       - connectivity
+  /api/connections/{dataset}:
+    get:
+      description: Gets the connections of a dedicated Dataset and/or for a dedicated
+        set or neurons
+      operationId: get_dataset_connections
+      parameters:
+      - in: path
+        name: dataset
+        required: true
+        schema:
+          title: Dataset
+          type: string
+      - in: query
+        name: neurons
+        required: false
+        schema:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Neurons
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - items:
+                    $ref: '#/components/schemas/RawConnection'
+                  type: array
+                - items:
+                    $ref: '#/components/schemas/GroupedConnection'
+                  type: array
+                title: Response
+          description: OK
+      summary: Get Dataset Connections
+      tags:
+      - connectivity
   /api/datasets:
     get:
       description: Returns all datasets or a filtered list based on provided IDs
@@ -483,6 +595,18 @@ paths:
       summary: Ping
       tags:
       - healthcheck
+  /api/populate_db:
+    get:
+      operationId: populate_db
+      parameters: []
+      responses:
+        '200':
+          description: OK
+      security:
+      - BasicAuthSuperUser: []
+      summary: Populate Db
+      tags:
+      - ingestion
   /api/ready:
     get:
       description: Test if application is ready to take requests

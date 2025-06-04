@@ -4,5 +4,6 @@
 /* eslint-disable */
 export type Input = {
     page?: number;
+    page_size?: (number | null);
 };
 

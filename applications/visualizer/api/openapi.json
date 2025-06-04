@@ -239,6 +239,23 @@
               "type": "integer"
             },
             "required": false
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
+            },
+            "required": false
           }
         ],
         "responses": {
@@ -351,6 +368,92 @@
         "description": "Gets the connections of a dedicated Dataset",
         "tags": [
           "connectivity"
+        ]
+      }
+    },
+    "/api/connections/{dataset}": {
+      "get": {
+        "operationId": "get_dataset_connections",
+        "summary": "Get Dataset Connections",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dataset",
+            "schema": {
+              "title": "Dataset",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "neurons",
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Neurons"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "items": {
+                        "$ref": "#/components/schemas/RawConnection"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "items": {
+                        "$ref": "#/components/schemas/GroupedConnection"
+                      },
+                      "type": "array"
+                    }
+                  ],
+                  "title": "Response"
+                }
+              }
+            }
+          }
+        },
+        "description": "Gets the connections of a dedicated Dataset and/or for a dedicated set or neurons",
+        "tags": [
+          "connectivity"
+        ]
+      }
+    },
+    "/api/populate_db": {
+      "get": {
+        "operationId": "populate_db",
+        "summary": "Populate Db",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "ingestion"
+        ],
+        "security": [
+          {
+            "BasicAuthSuperUser": []
+          }
         ]
       }
     },
@@ -521,18 +624,25 @@
             "type": "array"
           },
           "maxResolution": {
-            "maxItems": 2,
-            "minItems": 2,
-            "prefixItems": [
+            "anyOf": [
               {
-                "type": "integer"
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "type": "array"
               },
               {
-                "type": "integer"
+                "type": "null"
               }
             ],
-            "title": "Maxresolution",
-            "type": "array"
+            "title": "Maxresolution"
           },
           "resourceUrl": {
             "title": "Resourceurl",
@@ -684,6 +794,18 @@
             "minimum": 1,
             "title": "Page",
             "type": "integer"
+          },
+          "page_size": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Size"
           }
         },
         "title": "Input",
@@ -751,6 +873,82 @@
         ],
         "title": "Connection",
         "type": "object"
+      },
+      "ConnectionGroup": {
+        "properties": {
+          "pre": {
+            "title": "Pre",
+            "type": "string"
+          },
+          "post": {
+            "title": "Post",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pre",
+          "post"
+        ],
+        "title": "ConnectionGroup",
+        "type": "object"
+      },
+      "GroupedConnection": {
+        "properties": {
+          "neuron": {
+            "title": "Neuron",
+            "type": "string"
+          },
+          "connections": {
+            "items": {
+              "$ref": "#/components/schemas/ConnectionGroup"
+            },
+            "title": "Connections",
+            "type": "array"
+          }
+        },
+        "required": [
+          "neuron",
+          "connections"
+        ],
+        "title": "GroupedConnection",
+        "type": "object"
+      },
+      "RawConnection": {
+        "properties": {
+          "pre": {
+            "maxLength": 30,
+            "title": "Pre",
+            "type": "string"
+          },
+          "post": {
+            "maxLength": 30,
+            "title": "Post",
+            "type": "string"
+          },
+          "type": {
+            "maxLength": 20,
+            "title": "Type",
+            "type": "string"
+          },
+          "synapses": {
+            "title": "Synapses",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "pre",
+          "post",
+          "type",
+          "synapses"
+        ],
+        "title": "RawConnection",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BasicAuthSuperUser": {
+        "type": "http",
+        "scheme": "basic"
       }
     }
   },

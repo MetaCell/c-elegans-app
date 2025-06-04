@@ -139,7 +139,9 @@ class Connection(Model):
 #   INDEX idx_synapses_post_tid (post_tid)
 # );
 class Synapse(Model):
-    connection = ForeignKey(to=Connection, on_delete=CASCADE, db_index=True)
+    connection = ForeignKey(
+        to=Connection, related_name="synapse_entities", on_delete=CASCADE, db_index=True
+    )
     connector_id = PositiveIntegerField(db_index=True)
     weight = PositiveIntegerField(db_index=True)
     pre_tid = PositiveIntegerField(db_index=True)

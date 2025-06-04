@@ -3,6 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { Connection } from '../models/Connection';
+import type { GroupedConnection } from '../models/GroupedConnection';
+import type { RawConnection } from '../models/RawConnection';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -41,6 +43,30 @@ export class ConnectivityService {
                 'threshold_electrical': thresholdElectrical,
                 'include_neighboring_cells': includeNeighboringCells,
                 'include_annotations': includeAnnotations,
+            },
+        });
+    }
+    /**
+     * Get Dataset Connections
+     * Gets the connections of a dedicated Dataset and/or for a dedicated set or neurons
+     * @returns any OK
+     * @throws ApiError
+     */
+    public static getDatasetConnections({
+        dataset,
+        neurons,
+    }: {
+        dataset: string,
+        neurons?: (Array<string> | null),
+    }): CancelablePromise<(Array<RawConnection> | Array<GroupedConnection>)> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/connections/{dataset}',
+            path: {
+                'dataset': dataset,
+            },
+            query: {
+                'neurons': neurons,
             },
         });
     }
