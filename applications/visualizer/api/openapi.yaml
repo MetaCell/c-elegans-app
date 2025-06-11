@@ -85,13 +85,15 @@ components:
     EMData:
       properties:
         maxResolution:
-          maxItems: 2
-          minItems: 2
-          prefixItems:
-          - type: integer
-          - type: integer
+          anyOf:
+          - maxItems: 2
+            minItems: 2
+            prefixItems:
+            - type: integer
+            - type: integer
+            type: array
+          - type: 'null'
           title: Maxresolution
-          type: array
         maxZoom:
           title: Maxzoom
           type: integer
@@ -169,6 +171,12 @@ components:
           minimum: 1
           title: Page
           type: integer
+        page_size:
+          anyOf:
+          - minimum: 1
+            type: integer
+          - type: 'null'
+          title: Page Size
       title: Input
       type: object
     Neuron:
@@ -238,6 +246,10 @@ components:
       - count
       title: PagedNeuron
       type: object
+  securitySchemes:
+    BasicAuthSuperUser:
+      scheme: basic
+      type: http
 info:
   description: ''
   title: C. Elegans Visualizer
@@ -267,6 +279,15 @@ paths:
           minimum: 1
           title: Page
           type: integer
+      - in: query
+        name: page_size
+        required: false
+        schema:
+          anyOf:
+          - minimum: 1
+            type: integer
+          - type: 'null'
+          title: Page Size
       responses:
         '200':
           content:
@@ -275,6 +296,22 @@ paths:
                 $ref: '#/components/schemas/PagedNeuron'
           description: OK
       summary: Get All Cells
+      tags:
+      - neurons
+  /api/cells/count:
+    get:
+      description: Returns the cells (neurons) count  from the DB
+      operationId: get_cells_count
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                title: Response
+                type: integer
+          description: OK
+      summary: Get Cells Count
       tags:
       - neurons
   /api/cells/search:
@@ -404,6 +441,22 @@ paths:
       summary: Get Datasets
       tags:
       - datasets
+  /api/datasets/count:
+    get:
+      description: Returns the number of known datasets
+      operationId: get_datasets_count
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                title: Response
+                type: integer
+          description: OK
+      summary: Get Datasets Count
+      tags:
+      - datasets
   /api/datasets/{dataset}:
     get:
       description: Returns a specific dataset
@@ -483,6 +536,18 @@ paths:
       summary: Ping
       tags:
       - healthcheck
+  /api/populate_db:
+    get:
+      operationId: populate_db
+      parameters: []
+      responses:
+        '200':
+          description: OK
+      security:
+      - BasicAuthSuperUser: []
+      summary: Populate Db
+      tags:
+      - ingestion
   /api/ready:
     get:
       description: Test if application is ready to take requests

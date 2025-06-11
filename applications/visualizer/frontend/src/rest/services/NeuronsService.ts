@@ -38,9 +38,11 @@ export class NeuronsService {
     public static getAllCells({
         datasetIds,
         page = 1,
+        pageSize,
     }: {
         datasetIds?: (Array<string> | null),
         page?: number,
+        pageSize?: (number | null),
     }): CancelablePromise<PagedNeuron> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -48,7 +50,20 @@ export class NeuronsService {
             query: {
                 'dataset_ids': datasetIds,
                 'page': page,
+                'page_size': pageSize,
             },
+        });
+    }
+    /**
+     * Get Cells Count
+     * Returns the cells (neurons) count  from the DB
+     * @returns number OK
+     * @throws ApiError
+     */
+    public static getCellsCount(): CancelablePromise<number> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/cells/count',
         });
     }
 }
