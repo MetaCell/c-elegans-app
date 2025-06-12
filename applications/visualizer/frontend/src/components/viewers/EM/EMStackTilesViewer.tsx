@@ -469,11 +469,11 @@ export function printEMView(map: OLMap) {
 
   const mapContext = mapCanvas.getContext("2d");
 
-  Array.prototype.forEach.call(map.getViewport().querySelectorAll(".ol-layer canvas, canvas.ol-layer"), (canvas) => {
+  for (const canvas of map.getViewport().querySelectorAll(".ol-layer canvas, canvas.ol-layer") as NodeListOf<HTMLCanvasElement>) {
     if (canvas.width > 0) {
-      const opacity = canvas.parentNode.style.opacity || canvas.style.opacity;
+      const opacity = (canvas.parentNode as HTMLElement).style.opacity || canvas.style.opacity;
       mapContext.globalAlpha = opacity === "" ? 1 : Number(opacity);
-      let matrix: Array<number>;
+      let matrix: number[];
       const transform = canvas.style.transform;
       if (transform) {
         // Get the transform parameters from the style's transform matrix
@@ -486,14 +486,14 @@ export function printEMView(map: OLMap) {
       }
       // Apply the transform to the export map context
       CanvasRenderingContext2D.prototype.setTransform.apply(mapContext, matrix);
-      const backgroundColor = canvas.parentNode.style.backgroundColor;
+      const backgroundColor = (canvas.parentNode as HTMLElement).style.backgroundColor;
       if (backgroundColor) {
         mapContext.fillStyle = backgroundColor;
         mapContext.fillRect(0, 0, canvas.width, canvas.height);
       }
       mapContext.drawImage(canvas, 0, 0);
     }
-  });
+  }
 
   mapContext.globalAlpha = 1;
   mapContext.setTransform(1, 0, 0, 1, 0, 0);
