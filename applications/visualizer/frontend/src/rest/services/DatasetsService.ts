@@ -28,6 +28,18 @@ export class DatasetsService {
         });
     }
     /**
+     * Get Datasets Count
+     * Returns the number of known datasets
+     * @returns number OK
+     * @throws ApiError
+     */
+    public static getDatasetsCount(): CancelablePromise<number> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/datasets/count',
+        });
+    }
+    /**
      * Get Dataset
      * Returns a specific dataset
      * @returns Dataset OK

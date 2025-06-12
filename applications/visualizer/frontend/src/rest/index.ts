@@ -18,4 +18,5 @@ export type { PagedNeuron } from './models/PagedNeuron';
 export { ConnectivityService } from './services/ConnectivityService';
 export { DatasetsService } from './services/DatasetsService';
 export { HealthcheckService } from './services/HealthcheckService';
+export { IngestionService } from './services/IngestionService';
 export { NeuronsService } from './services/NeuronsService';

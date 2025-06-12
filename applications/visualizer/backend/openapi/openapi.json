@@ -53,6 +53,30 @@
         ]
       }
     },
+    "/api/datasets/count": {
+      "get": {
+        "operationId": "get_datasets_count",
+        "summary": "Get Datasets Count",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response",
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "description": "Returns the number of known datasets",
+        "tags": [
+          "datasets"
+        ]
+      }
+    },
     "/api/datasets/{dataset}": {
       "get": {
         "operationId": "get_dataset",
@@ -239,6 +263,23 @@
               "type": "integer"
             },
             "required": false
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
+            },
+            "required": false
           }
         ],
         "responses": {
@@ -254,6 +295,30 @@
           }
         },
         "description": "Returns all the cells (neurons) from the DB",
+        "tags": [
+          "neurons"
+        ]
+      }
+    },
+    "/api/cells/count": {
+      "get": {
+        "operationId": "get_cells_count",
+        "summary": "Get Cells Count",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response",
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "description": "Returns the cells (neurons) count  from the DB",
         "tags": [
           "neurons"
         ]
@@ -351,6 +416,26 @@
         "description": "Gets the connections of a dedicated Dataset",
         "tags": [
           "connectivity"
+        ]
+      }
+    },
+    "/api/populate_db": {
+      "get": {
+        "operationId": "populate_db",
+        "summary": "Populate Db",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "ingestion"
+        ],
+        "security": [
+          {
+            "BasicAuthSuperUser": []
+          }
         ]
       }
     },
@@ -521,18 +606,25 @@
             "type": "array"
           },
           "maxResolution": {
-            "maxItems": 2,
-            "minItems": 2,
-            "prefixItems": [
+            "anyOf": [
               {
-                "type": "integer"
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "type": "array"
               },
               {
-                "type": "integer"
+                "type": "null"
               }
             ],
-            "title": "Maxresolution",
-            "type": "array"
+            "title": "Maxresolution"
           },
           "resourceUrl": {
             "title": "Resourceurl",
@@ -684,6 +776,18 @@
             "minimum": 1,
             "title": "Page",
             "type": "integer"
+          },
+          "page_size": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Size"
           }
         },
         "title": "Input",
@@ -751,6 +855,12 @@
         ],
         "title": "Connection",
         "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BasicAuthSuperUser": {
+        "type": "http",
+        "scheme": "basic"
       }
     }
   },

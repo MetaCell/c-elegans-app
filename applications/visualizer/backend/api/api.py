@@ -78,23 +78,13 @@ async def get_datasets(request, ids: Optional[list[str]] = Query(None)):
     return datasets
 
 
-# @api.get("/datasets/{dataset}/full", response=FullDataset, tags=["datasets"])
-# async def get_full_dataset(request, dataset: str):
-#     return await DatasetModel.objects.prefetch_related("connections").aget(id=dataset)
-
-
-## V1
-# @api.get("/datasets/{dataset}", response={200: Dataset, 404: ErrorMessage}, tags=["datasets"])
-# async def get_dataset(request, dataset: str):
-#     """Returns a specific dataset"""
-#     try:
-#         dataset_object = await DatasetModel.objects.aget(id=dataset)
-#         return 200, dataset_object
-#     except DatasetModel.DoesNotExist:
-#         return 404, {"detail": f'Dataset "{dataset}" does not exist'}
-
-
 ## V2
+@api.get("/datasets/count", response=int, tags=["datasets"])
+def get_datasets_count(request):
+    """Returns the number of known datasets"""
+    return DatasetModel.objects.all().count()
+
+
 @api.get(
     "/datasets/{dataset}", response={200: Dataset, 404: ErrorMessage}, tags=["datasets"]
 )
@@ -193,6 +183,12 @@ def get_all_cells(request, dataset_ids: Optional[list[str]] = Query(None)):
 
     annotate_neurons(neurons)
     return neurons
+
+
+@api.get("/cells/count", response=int, tags=["neurons"])
+def get_cells_count(request):
+    """Returns the cells (neurons) count  from the DB"""
+    return NeuronModel.objects.all().count()
 
 
 # # @api.post("/connections", response=list[Connection], tags=["connectivity"])
