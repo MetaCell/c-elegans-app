@@ -33,14 +33,14 @@ export const alignNeurons = (alignment: Alignment, selectedNeurons: string[], cy
 
   // Align nodes in Cytoscape
   cy.batch(() => {
-    cyNodes.forEach((node) => {
+    for (const node of cyNodes) {
       const currentPos = node.position();
       if (alignment === Alignment.Left || alignment === Alignment.Right) {
-        node.position({ x: targetX!, y: currentPos.y });
+        node.position({ x: targetX, y: currentPos.y });
       } else {
-        node.position({ x: currentPos.x, y: targetY! });
+        node.position({ x: currentPos.x, y: targetY });
       }
-    });
+    }
   });
 };
 
@@ -60,9 +60,8 @@ export const distributeNeurons = (alignment: Alignment, selectedNeurons: string[
   cyNodes.sort((a, b) => {
     if (alignment === Alignment.Horizontal) {
       return a.position("x") - b.position("x");
-    } else {
-      return a.position("y") - b.position("y");
     }
+    return a.position("y") - b.position("y");
   });
 
   // Get the range of positions along the distribution axis

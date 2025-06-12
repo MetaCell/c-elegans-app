@@ -12,7 +12,7 @@ export function getConcentricLayoutPositions(cy: Core) {
   const outerNodes = cy.nodes().not(".searchedfor");
   const edgeTypes: Record<string, number> = {};
 
-  outerNodes.forEach((node) => {
+  for (const node of outerNodes) {
     const edges = node.edgesWith(innerNodes);
     const edgesElectrical = edges.filter('[type="electrical"]');
     const edgesChemical = edges.filter('[type="chemical"]');
@@ -28,7 +28,7 @@ export function getConcentricLayoutPositions(cy: Core) {
     }
 
     edgeTypes[node.id()] = idx;
-  });
+  }
 
   const outerNodeIds = outerNodes
     .map((n) => n.id())
