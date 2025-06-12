@@ -37,7 +37,7 @@ const {
   brand300,
   brand200,
   gray900,
-  gray900A
+  gray900A,
 } = vars;
 
 const theme = createTheme({

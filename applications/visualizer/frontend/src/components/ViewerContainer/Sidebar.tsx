@@ -1,4 +1,5 @@
-import { Box, Divider, Drawer, Stack, Dialog, DialogTitle, DialogContent, DialogActions, Button, colors, Typography } from "@mui/material";
+import { ChevronLeft, ChevronRight } from "@mui/icons-material";
+import { Box, Button, DialogActions, DialogContent, Divider, Drawer, Stack, Typography } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import type { CSSObject, Theme } from "@mui/material/styles";
 import React, { useState, useCallback } from "react";
@@ -6,11 +7,10 @@ import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
 import { DataSetsIcon, LogoIcon, NeuronsIcon } from "../../icons";
 import { ViewMode } from "../../models";
 import { vars } from "../../theme/variables.ts";
+import CustomDialog from "../CustomDialog.tsx";
 import DataSets from "./DataSets.tsx";
 import Neurons from "./Neurons.tsx";
 import WorkspaceSelector from "./WorkspaceSelector";
-import { ChevronLeft, ChevronRight } from "@mui/icons-material";
-import CustomDialog from "../CustomDialog.tsx";
 
 const { gray100, gray50 } = vars;
 
@@ -37,7 +37,7 @@ const DrawerHeader = ({
 }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const { setAllWorkspaces, setCurrentWorkspace, setSelectedWorkspacesIds, setViewMode, removeWorkspace, currentWorkspaceId } = useGlobalContext();
-  
+
   const handleReset = useCallback(() => {
     setAllWorkspaces({});
     setCurrentWorkspace(undefined);
@@ -54,7 +54,7 @@ const DrawerHeader = ({
   const handleCloseDialog = useCallback(() => {
     setOpenDialog(false);
   }, []);
-  
+
   return (
     <>
       <Box
@@ -63,56 +63,50 @@ const DrawerHeader = ({
           borderBottom: `0.0625rem solid ${gray100}`,
         }}
       >
-        <Box sx={{
-          width: "3.5rem",
-          borderRight: `0.0625rem solid ${gray100}`,
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: ".75rem",
-        }}> 
+        <Box
+          sx={{
+            width: "3.5rem",
+            borderRight: `0.0625rem solid ${gray100}`,
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: ".75rem",
+          }}
+        >
           <IconButton
             onClick={handleLogoClick}
             sx={{
               padding: "0",
             }}
-            >
+          >
             <LogoIcon />
           </IconButton>
         </Box>
       </Box>
 
-      <CustomDialog
-        showModal={openDialog}
-        onClose={handleCloseDialog}
-        title="Your data will not be saved"
-      >
+      <CustomDialog showModal={openDialog} onClose={handleCloseDialog} title="Your data will not be saved">
         <DialogContent>
           <Stack spacing={1}>
-            <Typography variant="subtitle2">
-              Are you sure you want to exit?
-            </Typography>
-            <Typography variant="body1">
-            Your data will not be saved upon exiting the viewer. Are you sure?
-            </Typography>
+            <Typography variant="subtitle2">Are you sure you want to exit?</Typography>
+            <Typography variant="body1">Your data will not be saved upon exiting the viewer. Are you sure?</Typography>
           </Stack>
         </DialogContent>
-        <DialogActions 
+        <DialogActions
           sx={{
             borderTop: `0.0625rem solid ${gray100}`,
             px: "1rem",
             py: "0.75rem",
             gap: 0.5,
             display: "flex",
-            justifyContent: "flex-end"
+            justifyContent: "flex-end",
           }}
         >
           <Button onClick={handleCloseDialog} variant="outlined">
             Cancel
           </Button>
           <Button onClick={handleReset} color="info" variant="contained">
-          Exit anyway 
+            Exit anyway
           </Button>
         </DialogActions>
       </CustomDialog>
@@ -195,46 +189,46 @@ const Sidebar = ({
       >
         <Stack spacing=".75rem" borderRight={`0.0625rem solid ${gray100}`} p=".75rem" width="3.5rem" justifyContent="space-between">
           <Stack spacing=".75rem">
-          <IconButton
-            sx={{
-              padding: ".38rem",
-              borderRadius: content === "dataSets" ? "0.5rem" : "initial",
-              background: content === "dataSets" ? gray50 : "initial",
-              "&:hover": {
-                borderRadius: "0.5rem",
-                background: gray50,
-              },
-            }}
-            onClick={(e) => handleToggleContent(e, "dataSets")}
-          >
-            <DataSetsIcon />
-          </IconButton>
-          <IconButton
-            sx={{
-              padding: ".38rem",
-              borderRadius: content === "neurons" ? "0.5rem" : "initial",
-              background: content === "neurons" ? gray50 : "initial",
-              "&:hover": {
-                borderRadius: "0.5rem",
-                background: gray50,
-              },
-            }}
-            onClick={(e) => handleToggleContent(e, "neurons")}
-          >
-            <NeuronsIcon />
-          </IconButton>
+            <IconButton
+              sx={{
+                padding: ".38rem",
+                borderRadius: content === "dataSets" ? "0.5rem" : "initial",
+                background: content === "dataSets" ? gray50 : "initial",
+                "&:hover": {
+                  borderRadius: "0.5rem",
+                  background: gray50,
+                },
+              }}
+              onClick={(e) => handleToggleContent(e, "dataSets")}
+            >
+              <DataSetsIcon />
+            </IconButton>
+            <IconButton
+              sx={{
+                padding: ".38rem",
+                borderRadius: content === "neurons" ? "0.5rem" : "initial",
+                background: content === "neurons" ? gray50 : "initial",
+                "&:hover": {
+                  borderRadius: "0.5rem",
+                  background: gray50,
+                },
+              }}
+              onClick={(e) => handleToggleContent(e, "neurons")}
+            >
+              <NeuronsIcon />
+            </IconButton>
           </Stack>
           <IconButton
-              onClick={sidebarOpen ? handleDrawerClose : handleDrawerOpen}
-                sx={{
-                  padding: ".38rem",
-                  background: "transparent",
-                  "&:hover": {
-                    background: gray50,
-                  },
-                }}
-              >
-                {sidebarOpen ? <ChevronLeft /> : <ChevronRight />}
+            onClick={sidebarOpen ? handleDrawerClose : handleDrawerOpen}
+            sx={{
+              padding: ".38rem",
+              background: "transparent",
+              "&:hover": {
+                background: gray50,
+              },
+            }}
+          >
+            {sidebarOpen ? <ChevronLeft /> : <ChevronRight />}
           </IconButton>
         </Stack>
         {sidebarOpen && (
