@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "format": "biome format --write .",
+    "format": "biome format --write src/",
     "lint": "biome lint .",
     "lint-fix": "biome lint --write .",
     "generate-client": "openapi --input ../backend/openapi/openapi.json --output ./src/rest --useOptions --useUnionTypes --client xhr",

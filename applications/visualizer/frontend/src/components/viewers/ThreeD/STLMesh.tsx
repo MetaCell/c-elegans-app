@@ -36,18 +36,19 @@ const STLMesh: FC<Props> = ({ id, color, opacity, renderOrder, isWireframe, stl 
         return;
       }
       const { id } = clicked.userData;
+      let wspace = workspace;
       if (clicked) {
         if (isSelected) {
-          workspace.removeSelection(id, ViewerType.ThreeD);
+          wspace = wspace.removeSelection(id, ViewerType.ThreeD);
           // Is there a neuron in the selection that comes from the same class. If not, we can remove the class from the selection
           const removeClass = !workspace
             .getSelection(ViewerType.ThreeD)
             .some((e) => workspace.getNeuronClass(e) !== e && workspace.getNeuronClass(e) === workspace.getNeuronClass(id));
           if (removeClass) {
-            workspace.removeSelection(workspace.getNeuronClass(id), ViewerType.ThreeD);
+            wspace = wspace.removeSelection(workspace.getNeuronClass(id), ViewerType.ThreeD);
           }
         } else {
-          workspace.addSelection(id, ViewerType.ThreeD);
+          wspace = wspace.addSelection(id, ViewerType.ThreeD);
         }
       }
     },

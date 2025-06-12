@@ -13,26 +13,26 @@ function triggerUpdate<T extends Workspace>(_prototype: any, _key: string, descr
   if (originalMethod.constructor.name === "AsyncFunction") {
     descriptor.value = async function (this: T, ...args: any[]): Promise<any> {
       if (isDraft(this)) {
-        return await originalMethod.apply(this, args);
+        return this;
       }
       const draft = createDraft(this);
       await originalMethod.apply(draft, args);
       const updated = finishDraft(draft) as T;
       this.updateContext(updated);
-      return await originalMethod.apply(this, args);
+      return updated;
     };
     return descriptor;
   }
   // Implementation for normal-sync methods
   descriptor.value = function (this: T, ...args: any[]): any {
     if (isDraft(this)) {
-      return originalMethod.apply(this, args);
+      return this;
     }
     const updated = produce(this, (draft: any) => {
       originalMethod.apply(draft, args);
     });
     this.updateContext(updated);
-    return originalMethod.apply(this, args);
+    return updated;
   };
   return descriptor;
 }
@@ -94,20 +94,21 @@ export class Workspace {
   }
 
   @triggerUpdate
-  activateNeuron(neuron: Neuron): Workspace {
+  activateNeuron(neuron: Neuron) {
     this.activeNeurons.add(neuron.name);
     this.visibilities[neuron.name] = getDefaultViewerData();
     return this;
   }
 
   @triggerUpdate
-  deactivateNeuron(neuronId: string): void {
+  deactivateNeuron(neuronId: string) {
     this.activeNeurons.delete(neuronId);
     delete this.visibilities[neuronId];
+    return this;
   }
 
   @triggerUpdate
-  hideNeuron(neuronId: string): void {
+  hideNeuron(neuronId: string) {
     if (!(neuronId in this.visibilities)) {
       this.visibilities[neuronId] = getDefaultViewerData(Visibility.Hidden);
       this.removeSelection(neuronId, ViewerType.Graph);
@@ -116,10 +117,11 @@ export class Workspace {
     this.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Hidden;
     this.visibilities[neuronId][ViewerType.ThreeD].visibility = Visibility.Hidden;
     this.visibilities[neuronId][ViewerType.EM].visibility = Visibility.Hidden;
+    return this;
   }
 
   @triggerUpdate
-  showNeuron(neuronId: string): void {
+  showNeuron(neuronId: string) {
     if (!(neuronId in this.visibilities)) {
       this.visibilities[neuronId] = getDefaultViewerData(Visibility.Visible);
     }
@@ -127,38 +129,44 @@ export class Workspace {
     this.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Visible;
     this.visibilities[neuronId][ViewerType.ThreeD].visibility = Visibility.Visible;
     this.visibilities[neuronId][ViewerType.EM].visibility = Visibility.Visible;
+    return this;
   }
 
   @triggerUpdate
-  async activateDataset(dataset: Dataset): Promise<void> {
+  async activateDataset(dataset: Dataset) {
     this.activeDatasets[dataset.id] = dataset;
     await this._getAvailableNeurons();
+    return this;
   }
 
   @triggerUpdate
-  async deactivateDataset(datasetId: string): Promise<void> {
+  async deactivateDataset(datasetId: string) {
     delete this.activeDatasets[datasetId];
 
     await this._getAvailableNeurons();
+    return this;
   }
 
   @triggerUpdate
-  setActiveNeurons(newActiveNeurons: Set<string>): void {
+  setActiveNeurons(newActiveNeurons: Set<string>) {
     this.activeNeurons = newActiveNeurons;
+    return this;
   }
 
   @triggerUpdate
-  updateViewerSynchronizationStatus(pair: ViewerSynchronizationPair, isActive: boolean): void {
+  updateViewerSynchronizationStatus(pair: ViewerSynchronizationPair, isActive: boolean) {
     this.syncOrchestrator.setActive(pair, isActive);
+    return this;
   }
 
   @triggerUpdate
-  switchViewerSynchronizationStatus(pair: ViewerSynchronizationPair): void {
+  switchViewerSynchronizationStatus(pair: ViewerSynchronizationPair) {
     this.syncOrchestrator.switchSynchronizer(pair);
+    return this;
   }
 
   @triggerUpdate
-  addNeuronToGroup(neuronId: string, groupId: string): void {
+  addNeuronToGroup(neuronId: string, groupId: string) {
     if (!this.activeNeurons[neuronId]) {
       throw new Error("Neuron not found");
     }
@@ -167,19 +175,22 @@ export class Workspace {
       throw new Error("Neuron group not found");
     }
     group.neurons.add(neuronId);
+    return this;
   }
 
   @triggerUpdate
-  createNeuronGroup(neuronGroup: NeuronGroup): void {
+  createNeuronGroup(neuronGroup: NeuronGroup): this {
     this.neuronGroups[neuronGroup.id] = neuronGroup;
+    return this;
   }
 
   @triggerUpdate
-  changeViewerVisibility(viewerId: ViewerType, isVisible: boolean): void {
+  changeViewerVisibility(viewerId: ViewerType, isVisible: boolean): this {
     if (this.viewers[viewerId] === undefined) {
       throw new Error("Viewer not found");
     }
     this.viewers[viewerId] = isVisible;
+    return this;
   }
 
   async _initializeAvailableNeurons() {
@@ -187,7 +198,7 @@ export class Workspace {
   }
 
   @triggerUpdate
-  async _getAvailableNeurons(): Promise<void> {
+  async _getAvailableNeurons() {
     try {
       const datasetIds = Object.keys(this.activeDatasets);
       const neuronArrays = await NeuronsService.searchCells({ datasetIds });
@@ -209,6 +220,7 @@ export class Workspace {
       }
 
       this.availableNeurons = Object.fromEntries([...uniqueNeurons].map((n) => [n.name, n]));
+      return this;
     } catch (error) {
       throw new GlobalError("Failed to fetch neurons:");
     }
@@ -222,16 +234,19 @@ export class Workspace {
   @triggerUpdate
   locallyInjectSelection(selection: string, target: ViewerType) {
     this.syncOrchestrator.locallyInjectSelection(selection, target);
+    return this;
   }
 
   @triggerUpdate
   locallyRemoveSelection(selection: string, target: ViewerType) {
     this.syncOrchestrator.locallyRemoveSelection(selection, target);
+    return this;
   }
 
   @triggerUpdate
   setSelection(selection: Array<string>, initiator: ViewerType) {
     this.syncOrchestrator.select(selection, initiator);
+    return this;
   }
 
   @triggerUpdate
@@ -243,11 +258,13 @@ export class Workspace {
   @triggerUpdate
   addSelection(selection: string, initiator: ViewerType) {
     this.syncOrchestrator.selectNeuron(selection, initiator);
+    return this;
   }
 
   @triggerUpdate
   removeSelection(selection: string, initiator: ViewerType) {
     this.syncOrchestrator.unSelectNeuron(selection, initiator);
+    return this;
   }
 
   getSelection(viewerType: ViewerType): string[] {

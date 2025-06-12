@@ -23,23 +23,23 @@ class Synchronizer {
     this.pair = pair;
   }
 
-  public static create(active: boolean, pair: ViewerSynchronizationPair) {
+  static create(active: boolean, pair: ViewerSynchronizationPair) {
     return new Synchronizer(active, pair);
   }
 
-  public canHandle(viewer: ViewerType) {
+  canHandle(viewer: ViewerType) {
     return this.viewers.includes(viewer);
   }
 
-  public firstViewer(): ViewerType {
+  firstViewer(): ViewerType {
     return this.viewers[0];
   }
 
-  public secondViewer(): ViewerType {
+  secondViewer(): ViewerType {
     return this.viewers[1];
   }
 
-  public otherViewer(viewer: ViewerType): ViewerType {
+  otherViewer(viewer: ViewerType): ViewerType {
     if (this.viewers[0] === viewer) {
       return this.viewers[1];
     }
@@ -116,7 +116,7 @@ export class SynchronizerOrchestrator {
     }
   }
 
-  public static create(activesSync?: Record<ViewerSynchronizationPair, boolean>, contexts?: Record<ViewerType, SynchronizerContext>) {
+  static create(activesSync?: Record<ViewerSynchronizationPair, boolean>, contexts?: Record<ViewerType, SynchronizerContext>) {
     const synchronizers = [
       Synchronizer.create(activesSync?.[ViewerSynchronizationPair.Graph_ThreeD] || true, ViewerSynchronizationPair.Graph_ThreeD),
       Synchronizer.create(activesSync?.[ViewerSynchronizationPair.ThreeD_EM] || true, ViewerSynchronizationPair.ThreeD_EM),
@@ -145,21 +145,21 @@ export class SynchronizerOrchestrator {
     return synchros;
   }
 
-  public select(selection: Array<string>, initiator: ViewerType) {
+  select(selection: Array<string>, initiator: ViewerType) {
     const synchronizers = this.getConnectedViewers(initiator);
     for (const synchronizer of synchronizers) {
       synchronizer.sync(selection, initiator, this.contexts);
     }
   }
 
-  public locallyInjectSelection(selection: string, target: ViewerType) {
+  locallyInjectSelection(selection: string, target: ViewerType) {
     const synchronizers = this.getConnectedViewers(target);
     if ([...synchronizers].some((sync) => sync.canHandle(target) && sync.active)) {
       this.contexts[target].push(selection);
     }
   }
 
-  public locallyRemoveSelection(selection: string, target: ViewerType) {
+  locallyRemoveSelection(selection: string, target: ViewerType) {
     const synchronizers = this.getConnectedViewers(target);
     if ([...synchronizers].some((sync) => sync.canHandle(target) && sync.active)) {
       const selected = this.contexts[target];
@@ -170,31 +170,31 @@ export class SynchronizerOrchestrator {
     }
   }
 
-  public selectNeuron(selection: string, initiator: ViewerType) {
+  selectNeuron(selection: string, initiator: ViewerType) {
     const synchronizers = this.getConnectedViewers(initiator);
     for (const synchronizer of synchronizers) {
       synchronizer.select(selection, initiator, this.contexts);
     }
   }
 
-  public unSelectNeuron(selection: string, initiator: ViewerType) {
+  unSelectNeuron(selection: string, initiator: ViewerType) {
     const synchronizers = this.getConnectedViewers(initiator);
     for (const synchronizer of synchronizers) {
       synchronizer.unSelect(selection, initiator, this.contexts);
     }
   }
 
-  public clearSelection(initiator: ViewerType) {
+  clearSelection(initiator: ViewerType) {
     const synchronizers = this.getConnectedViewers(initiator);
     for (const synchronizer of synchronizers) {
       synchronizer.clear(initiator, this.contexts);
     }
   }
 
-  public getSelection(viewerType: ViewerType): SynchronizerContext {
+  getSelection(viewerType: ViewerType): SynchronizerContext {
     return this.contexts[viewerType];
   }
-  public setActive(synchronizer: ViewerSynchronizationPair, isActive: boolean) {
+  setActive(synchronizer: ViewerSynchronizationPair, isActive: boolean) {
     const synchros = this.synchronizers[synchronizer];
     synchros.setActive(isActive);
 
@@ -210,11 +210,11 @@ export class SynchronizerOrchestrator {
     }
   }
 
-  public isActive(synchronizer: ViewerSynchronizationPair) {
+  isActive(synchronizer: ViewerSynchronizationPair) {
     return this.synchronizers[synchronizer].active;
   }
 
-  public switchSynchronizer(syncPair: ViewerSynchronizationPair) {
+  switchSynchronizer(syncPair: ViewerSynchronizationPair) {
     const active = this.synchronizers[syncPair].active;
     this.setActive(syncPair, !active);
   }
