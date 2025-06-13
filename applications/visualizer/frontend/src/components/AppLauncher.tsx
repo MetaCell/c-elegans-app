@@ -22,7 +22,7 @@ function AppLauncher() {
   const [searchedNeuron, setSearchedNeuron] = useState("");
   const isActive = (path) => location.pathname === path;
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
-  
+
   const handleTemplateClick = async () => {
     const workspaceId = `workspace-${Date.now()}`;
     const workspaceName = `Template Workspace ${Object.keys(workspaces).length + 1}`;
@@ -40,7 +40,10 @@ function AppLauncher() {
   };
   const fetchNeurons = async () => {
     try {
-      const neuronArrays = await NeuronsService.searchCells({ name: searchedNeuron, datasetIds: TEMPLATE_ACTIVE_DATASETS });
+      const neuronArrays = await NeuronsService.searchCells({
+        name: searchedNeuron,
+        datasetIds: TEMPLATE_ACTIVE_DATASETS,
+      });
       const uniqueNeurons = new Set<string>();
       for (const neuron of neuronArrays.flat()) {
         uniqueNeurons.add(neuron.name);

@@ -1,17 +1,17 @@
-import React from "react"
+import type React from "react";
 
 export interface TabPanelProps {
-  children?: React.ReactNode
-  index: number
-  value: number
+  children?: React.ReactNode;
+  index: number;
+  value: number;
 }
 
 export interface DatasetEntryProps {
-  title: string
-  children: React.ReactNode
+  title: string;
+  children: React.ReactNode;
 }
 
 export interface TabsProps {
-  value: number
-  onChange: (event: React.SyntheticEvent, newValue: number) => void
-} 
+  value: number;
+  onChange: (event: React.SyntheticEvent, newValue: number) => void;
+}

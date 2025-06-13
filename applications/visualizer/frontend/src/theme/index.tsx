@@ -299,8 +299,7 @@ const theme = createTheme({
           fontSize: "0.75rem",
           fontWeight: 600,
           lineHeight: "150%",
-          boxShadow:
-            "0rem 0.25rem 0.375rem -0.125rem rgba(16, 24, 40, 0.03), 0rem 0.75rem 1rem -0.25rem rgba(16, 24, 40, 0.08)",
+          boxShadow: "0rem 0.25rem 0.375rem -0.125rem rgba(16, 24, 40, 0.03), 0rem 0.75rem 1rem -0.25rem rgba(16, 24, 40, 0.08)",
         },
       },
     },
@@ -431,8 +430,7 @@ const theme = createTheme({
           border: `0.0625rem solid ${gray100}`,
           background: white,
           width: "18.75rem",
-          boxShadow:
-            "0rem 0.25rem 0.5rem -0.125rem rgba(16, 24, 40, 0.10), 0rem 0.125rem 0.25rem -0.125rem rgba(16, 24, 40, 0.06)",
+          boxShadow: "0rem 0.25rem 0.5rem -0.125rem rgba(16, 24, 40, 0.10), 0rem 0.125rem 0.25rem -0.125rem rgba(16, 24, 40, 0.06)",
         },
 
         list: {
@@ -561,8 +559,7 @@ const theme = createTheme({
         paper: {
           borderRadius: "0.5rem",
           border: `0.0625rem solid ${gray100}`,
-          boxShadow:
-            "0rem 0.25rem 0.5rem -0.125rem rgba(16, 24, 40, 0.10), 0rem 0.125rem 0.25rem -0.125rem rgba(16, 24, 40, 0.06)",
+          boxShadow: "0rem 0.25rem 0.5rem -0.125rem rgba(16, 24, 40, 0.10), 0rem 0.125rem 0.25rem -0.125rem rgba(16, 24, 40, 0.06)",
         },
         root: {
           "&.secondary": {
@@ -737,8 +734,7 @@ const theme = createTheme({
           },
 
           "&:focus": {
-            boxShadow:
-              "0rem 0.0625rem 0.125rem 0rem rgba(16, 24, 40, 0.05), 0rem 0rem 0rem 0.25rem rgba(33, 85, 186, 0.24)",
+            boxShadow: "0rem 0.0625rem 0.125rem 0rem rgba(16, 24, 40, 0.05), 0rem 0rem 0rem 0.25rem rgba(33, 85, 186, 0.24)",
           },
 
           "& .MuiSvgIcon-root": {
@@ -962,8 +958,7 @@ const theme = createTheme({
             "& .MuiOutlinedInput-notchedOutline": {
               borderWidth: "0.0625rem",
               borderColor: brand300,
-              boxShadow:
-                "0rem 0.0625rem 0.125rem 0rem rgba(16, 24, 40, 0.05), 0rem 0rem 0rem 0.25rem rgba(33, 85, 186, 0.24)",
+              boxShadow: "0rem 0.0625rem 0.125rem 0rem rgba(16, 24, 40, 0.05), 0rem 0rem 0rem 0.25rem rgba(33, 85, 186, 0.24)",
             },
           },
         },

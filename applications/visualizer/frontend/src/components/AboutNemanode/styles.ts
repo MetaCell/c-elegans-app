@@ -1,4 +1,4 @@
-import { vars } from "../../theme/variables"
+import { vars } from "../../theme/variables";
 
 export const tab_styles = {
   primary: {
@@ -10,14 +10,14 @@ export const tab_styles = {
     textTransform: "none",
     fontWeight: 600,
   },
-}
+};
 
 export const styles = {
   primaryTabsContainer: {
     borderBottom: 1,
     borderColor: `${vars.gray100}`,
     px: 2,
-    py: 1
+    py: 1,
   },
   primaryTabs: {
     "& .MuiTabs-flexContainer": {
@@ -48,20 +48,20 @@ export const styles = {
   },
   datasetEntry: {
     display: "flex",
-    alignItems: "center"
+    alignItems: "center",
   },
   citationBox: {
     fontFamily: "monospace",
     p: 2,
     bgcolor: vars.gray50,
-    borderRadius: 1
+    borderRadius: 1,
   },
   infoBox: {
     bgcolor: vars.gray50,
-    borderRadius: 1
+    borderRadius: 1,
   },
   subtitle: {
-    fontWeight: "bold"
+    fontWeight: "bold",
   },
   secondaryTabsContainer: {
     position: "sticky",
@@ -69,6 +69,6 @@ export const styles = {
     zIndex: 1,
     bgcolor: "background.paper",
     borderBottom: 1,
-    borderColor: "divider"
-  }
-} 
+    borderColor: "divider",
+  },
+};

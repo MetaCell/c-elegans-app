@@ -1,9 +1,9 @@
-import { Box, Typography, Stack } from "@mui/material";
-import { DatasetEntryProps } from "./types";
-import { styles } from "../styles";
-import content from "../content.json";
-import { vars } from "../../../theme/variables";
 import DatasetOutlinedIcon from "@mui/icons-material/DatasetOutlined";
+import { Box, Stack, Typography } from "@mui/material";
+import { vars } from "../../../theme/variables";
+import content from "../content.json";
+import { styles } from "../styles";
+import type { DatasetEntryProps } from "./types";
 
 export const DatasetEntry = ({ title, children }: DatasetEntryProps) => (
   <Stack spacing={1}>
