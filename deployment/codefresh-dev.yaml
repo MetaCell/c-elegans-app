@@ -1,77 +1,66 @@
-version: '1.0'
+version: "1.0"
 stages:
-- prepare
-- build
-- unittest
-- deploy
-- qa
-- publish
+  - prepare
+  - build
+  - unittest
+  - deploy
+  - qa
+  - publish
 steps:
   main_clone:
     title: Clone main repository
     type: git-clone
     stage: prepare
-    repo: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
-    revision: '${{CF_BRANCH}}'
+    repo: "${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}"
+    revision: "${{CF_BRANCH}}"
     git: github
   post_main_clone:
     title: Post main clone
     type: parallel
     stage: prepare
     steps:
-    - title: Cloning cloud-harness repository...
-      type: git-clone
-      stage: prepare
-      repo: https://github.com/MetaCell/cloud-harness.git
-      revision: '${{CLOUDHARNESS_BRANCH}}'
-      working_directory: .
-      git: github
+      clone_cloud_harness:
+        title: Cloning cloud-harness repository...
+        type: git-clone
+        stage: prepare
+        repo: "https://github.com/MetaCell/cloud-harness.git"
+        revision: "${{CLOUDHARNESS_BRANCH}}"
+        working_directory: .
+        git: github
   prepare_deployment:
-    title: Prepare helm chart
-    image: python:3.9.10
+    title: "Prepare helm chart"
+    image: python:3.12
     stage: prepare
     working_directory: .
     commands:
-    - bash cloud-harness/install.sh
-    - harness-deployment cloud-harness . -d ${{DOMAIN}} -r ${{REGISTRY}} -rs ${{REGISTRY_SECRET}}
-      -n ${{NAMESPACE}} --write-env -e dev -i visualizer
-    - cat deployment/.env >> ${{CF_VOLUME_PATH}}/env_vars_to_export
-    - cat ${{CF_VOLUME_PATH}}/env_vars_to_export
+      - bash cloud-harness/install.sh
+      - harness-deployment $PATHS -d ${{DOMAIN}} -r ${{REGISTRY}} -rs ${{REGISTRY_SECRET}} -n ${{NAMESPACE}} --write-env -e $ENV --cache-url ${{IMAGE_CACHE_URL}} $PARAMS
+      - cat deployment/.env >> ${{CF_VOLUME_PATH}}/env_vars_to_export
+      - cat ${{CF_VOLUME_PATH}}/env_vars_to_export
   prepare_deployment_view:
     commands:
-    - helm template ./deployment/helm --debug -n ${{NAMESPACE}}
+      - "helm template ./deployment/helm --debug -n ${{NAMESPACE}}"
     environment:
-    - ACTION=auth
-    - KUBE_CONTEXT=${{NAMESPACE}}
+      - ACTION=auth
+      - KUBE_CONTEXT=${{NAMESPACE}}
     image: codefresh/cfstep-helm:3.6.2
     stage: prepare
-    title: View helm chart
+    title: "View helm chart"
   build_application_images:
     type: parallel
     stage: build
-    steps:
-      visualizer:
-        type: build
-        stage: build
-        dockerfile: Dockerfile
-        registry: '${{CODEFRESH_REGISTRY}}'
-        buildkit: true
-        build_arguments:
-        - DOMAIN=${{DOMAIN}}
-        - NOCACHE=${{CF_BUILD_ID}}
-        - REGISTRY=${{REGISTRY}}/celegans/
-        - NO_SOURCEMAP=${{NO_SOURCEMAP}}
-        image_name: celegans/visualizer
-        title: Visualizer
-        working_directory: ./applications/visualizer
-        tag: '${{VISUALIZER_TAG}}'
-        when:
-          condition:
-            any:
-              buildDoesNotExist: includes('${{VISUALIZER_TAG_EXISTS}}', '{{VISUALIZER_TAG_EXISTS}}')
-                == true
-              forceNoCache: includes('${{VISUALIZER_TAG_FORCE_BUILD}}', '{{VISUALIZER_TAG_FORCE_BUILD}}')
-                == false
+    steps: {}
+  # placeholders for sequential build steps
+  build_application_images_0:
+  build_application_images_1:
+  build_application_images_2:
+  build_application_images_3:
+  build_application_images_4:
+  build_application_images_5:
+  tests_unit:
+    stage: unittest
+    type: parallel
+    steps: {}
   deployment:
     stage: deploy
     type: helm
@@ -80,14 +69,62 @@ steps:
     arguments:
       helm_version: 3.6.2
       chart_name: deployment/helm
-      release_name: '${{NAMESPACE}}'
-      kube_context: '${{CLUSTER_NAME}}'
-      namespace: '${{NAMESPACE}}'
-      chart_version: '${{CF_BUILD_ID}}'
+      release_name: ${{NAMESPACE}}
+      kube_context: ${{CLUSTER_NAME}}
+      namespace: ${{NAMESPACE}}
+      chart_version: ${{CF_BUILD_ID}}
       cmd_ps: --wait --timeout 600s --create-namespace
       custom_value_files:
-      - ./deployment/helm/values.yaml
-      custom_values: []
+        - ./deployment/helm/values.yaml
+  build_test_images:
+    title: Build test images
+    type: parallel
+    stage: qa
+    steps: []
+    when:
+      condition:
+        all:
+          whenVarExists: 'includes("${{SKIP_TESTS}}", "{{SKIP_TESTS}}") == true'
+  wait_deployment:
+    stage: qa
+    title: Wait deployment to be ready
+    image: codefresh/kubectl
+    commands:
+      - kubectl config use-context ${{CLUSTER_NAME}}
+      - kubectl config set-context --current --namespace=${{NAMESPACE}}
+    when:
+      condition:
+        all:
+          whenVarExists: 'includes("${{SKIP_TESTS}}", "{{SKIP_TESTS}}") == true'
+
+  tests_api:
+    stage: qa
+    title: Api tests
+    working_directory: /home/test
+    image: "${{test-api}}"
+    fail_fast: false
+    commands:
+      - echo $APP_NAME
+    scale: {}
+    when:
+      condition:
+        all:
+          whenVarExists: 'includes("${{SKIP_TESTS}}", "{{SKIP_TESTS}}") == true'
+  tests_e2e:
+    stage: qa
+    title: End to end tests
+    working_directory: /home/test
+    image: "${{test-e2e}}"
+    fail_fast: false
+    commands:
+      - npx puppeteer browsers install chrome
+      - yarn test
+    scale: {}
+    when:
+      condition:
+        all:
+          whenVarExists: 'includes("${{SKIP_TESTS}}", "{{SKIP_TESTS}}") == true'
+
   approval:
     type: pending-approval
     stage: publish
@@ -99,17 +136,8 @@ steps:
   publish:
     type: parallel
     stage: publish
-    steps:
-      publish_visualizer:
-        stage: publish
-        type: push
-        title: Visualizer
-        candidate: '${{REGISTRY}}/celegans/visualizer:${{VISUALIZER_TAG}}'
-        tags:
-        - '${{DEPLOYMENT_PUBLISH_TAG}}'
-        registry: '${{REGISTRY_PUBLISH_URL}}'
+    steps: {}
     when:
       condition:
         all:
-          whenVarExists: includes("${{DEPLOYMENT_PUBLISH_TAG}}", "{{DEPLOYMENT_PUBLISH_TAG}}")
-            == false
+          whenVarExists: 'includes("${{DEPLOYMENT_PUBLISH_TAG}}", "{{DEPLOYMENT_PUBLISH_TAG}}") == false'
