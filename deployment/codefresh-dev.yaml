@@ -1,18 +1,18 @@
-version: "1.0"
+version: '1.0'
 stages:
-  - prepare
-  - build
-  - unittest
-  - deploy
-  - qa
-  - publish
+- prepare
+- build
+- unittest
+- deploy
+- qa
+- publish
 steps:
   main_clone:
     title: Clone main repository
     type: git-clone
     stage: prepare
-    repo: "${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}"
-    revision: "${{CF_BRANCH}}"
+    repo: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
+    revision: '${{CF_BRANCH}}'
     git: github
   post_main_clone:
     title: Post main clone
@@ -23,47 +23,30 @@ steps:
         title: Cloning cloud-harness repository...
         type: git-clone
         stage: prepare
-        repo: "https://github.com/MetaCell/cloud-harness.git"
-        revision: "${{CLOUDHARNESS_BRANCH}}"
+        repo: https://github.com/MetaCell/cloud-harness.git
+        revision: '${{CLOUDHARNESS_BRANCH}}'
         working_directory: .
         git: github
   prepare_deployment:
-    title: "Prepare helm chart"
+    title: Prepare helm chart
     image: python:3.12
     stage: prepare
     working_directory: .
     commands:
-      - bash cloud-harness/install.sh
-      - harness-deployment $PATHS -d ${{DOMAIN}} -r ${{REGISTRY}} -rs ${{REGISTRY_SECRET}} -n ${{NAMESPACE}} --write-env -e $ENV $PARAMS
-      - cat deployment/.env >> ${{CF_VOLUME_PATH}}/env_vars_to_export
-      - cat ${{CF_VOLUME_PATH}}/env_vars_to_export
+    - bash cloud-harness/install.sh
+    - harness-deployment cloud-harness . -d ${{DOMAIN}} -r ${{REGISTRY}} -rs ${{REGISTRY_SECRET}}
+      -n ${{NAMESPACE}} --write-env -e dev -i visualizer
+    - cat deployment/.env >> ${{CF_VOLUME_PATH}}/env_vars_to_export
+    - cat ${{CF_VOLUME_PATH}}/env_vars_to_export
   prepare_deployment_view:
     commands:
-      - "helm template ./deployment/helm --debug -n ${{NAMESPACE}}"
+    - helm template ./deployment/helm --debug -n ${{NAMESPACE}}
     environment:
-      - ACTION=auth
-      - KUBE_CONTEXT=${{NAMESPACE}}
+    - ACTION=auth
+    - KUBE_CONTEXT=${{NAMESPACE}}
     image: codefresh/cfstep-helm:3.6.2
     stage: prepare
-    title: "View helm chart"
-  build_base_images:
-    title: Build base images
-    type: parallel
-    stage: build
-    steps: {}
-  build_static_images:
-    title: Build static images
-    type: parallel
-    stage: build
-    steps: {}
-  build_application_images:
-    type: parallel
-    stage: build
-    steps: {}
-  tests_unit:
-    stage: unittest
-    type: parallel
-    steps: {}
+    title: View helm chart
   deployment:
     stage: deploy
     type: helm
@@ -72,62 +55,27 @@ steps:
     arguments:
       helm_version: 3.6.2
       chart_name: deployment/helm
-      release_name: ${{NAMESPACE}}
-      kube_context: ${{CLUSTER_NAME}}
-      namespace: ${{NAMESPACE}}
-      chart_version: ${{CF_BUILD_ID}}
+      release_name: '${{NAMESPACE}}'
+      kube_context: '${{CLUSTER_NAME}}'
+      namespace: '${{NAMESPACE}}'
+      chart_version: '${{CF_BUILD_ID}}'
       cmd_ps: --wait --timeout 600s --create-namespace
       custom_value_files:
-        - ./deployment/helm/values.yaml
-  build_test_images:
-    title: Build test images
-    type: parallel
-    stage: qa
-    steps: []
-    when:
-      condition:
-        all:
-          whenVarExists: 'includes("${{SKIP_TESTS}}", "{{SKIP_TESTS}}") == true'
+      - ./deployment/helm/values.yaml
+      custom_values: []
   wait_deployment:
     stage: qa
     title: Wait deployment to be ready
     image: codefresh/kubectl
     commands:
-      - kubectl config use-context ${{CLUSTER_NAME}}
-      - kubectl config set-context --current --namespace=${{NAMESPACE}}
+    - kubectl config use-context ${{CLUSTER_NAME}}
+    - kubectl config set-context --current --namespace=${{NAMESPACE}}
+    - kubectl rollout status deployment/visualizer
+    - sleep 60
     when:
       condition:
         all:
-          whenVarExists: 'includes("${{SKIP_TESTS}}", "{{SKIP_TESTS}}") == true'
-
-  tests_api:
-    stage: qa
-    title: Api tests
-    working_directory: /home/test
-    image: "${{test-api}}"
-    fail_fast: false
-    commands:
-      - echo $APP_NAME
-    scale: {}
-    when:
-      condition:
-        all:
-          whenVarExists: 'includes("${{SKIP_TESTS}}", "{{SKIP_TESTS}}") == true'
-  tests_e2e:
-    stage: qa
-    title: End to end tests
-    working_directory: /home/test
-    image: "${{test-e2e}}"
-    fail_fast: false
-    commands:
-      - npx puppeteer browsers install chrome
-      - yarn test
-    scale: {}
-    when:
-      condition:
-        all:
-          whenVarExists: 'includes("${{SKIP_TESTS}}", "{{SKIP_TESTS}}") == true'
-
+          whenVarExists: includes("${{SKIP_TESTS}}", "{{SKIP_TESTS}}") == true
   approval:
     type: pending-approval
     stage: publish
@@ -136,11 +84,3 @@ steps:
     timeout:
       duration: 168
       finalState: denied
-  publish:
-    type: parallel
-    stage: publish
-    steps: {}
-    when:
-      condition:
-        all:
-          whenVarExists: 'includes("${{DEPLOYMENT_PUBLISH_TAG}}", "{{DEPLOYMENT_PUBLISH_TAG}}") == false'
