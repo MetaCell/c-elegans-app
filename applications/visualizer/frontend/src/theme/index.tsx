@@ -152,6 +152,11 @@ const theme = createTheme({
           margin-top: 3rem
         }
       }
+
+      a {
+        color: #63625F;
+        text-decoration: none;
+      }
       `,
     },
 
@@ -629,7 +634,6 @@ const theme = createTheme({
           borderColor: gray100,
           borderBottom: 0,
           "& .MuiBox-root": {
-            margin: "0.4rem 0 1rem",
             "&.MuiBoxMetacell-footer": {
               display: "flex",
               margin: 0,

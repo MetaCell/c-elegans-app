@@ -1,0 +1,38 @@
+{
+  "dataSources": {
+    "title": "Data Sources",
+    "entries": [
+      {
+        "title": "White et al., 1986, compilation",
+        "content": "This dataset is a compilation of multiple partially overlapping animals. The cells making up the somatic nervous system were reconstructed by <a target='_blank' href='https://royalsocietypublishing.org/doi/10.1098/rstb.1986.0056'><strong>White et al., 1986</strong></a> and compiled by <a target='_blank' href='https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1001066'><strong>Varshney et al., 2011</strong></a>. The cells making up the pharyngeal nervous systems were reconstructed by <a target='_blank' href='https://royalsocietypublishing.org/doi/10.1098/rstb.1976.0085'><strong>Albertson and Thomson, 1976</strong></a> and cleaned up by Nikhil Bhatla, developer of <a target='_blank' href='http://wormweb.org/'><strong>WormWeb.org</strong></a>. Non-neuronal cells were not annotated individually but are grouped by cell type (e.g. Body wall muscles)."
+      },
+      {
+        "title": "Witvliet et al., 2020, datasets 1-8",
+        "content": "Chemical synapses for all eight datasets were acquired from <a target='_blank' href='https://www.biorxiv.org/content/10.1101/2020.04.30.066209v3'><strong>Witvliet et al., 2020</strong></a>. Chemical synapses were annotated independently by three annotators and only chemical synapses that at least two annotators agreed to were included in the final dataset. Gap junctions were not thoroughly annotated but have been provided by the authors for anyone interested. The gap junction annotation is by no means exhaustive, and should not be treated as such."
+      },
+      {
+        "title": "White et al., 1986, JSH and N2U",
+        "content": "The two datasets were reconstructed by <a target='_blank' href='https://royalsocietypublishing.org/doi/10.1098/rstb.1986.0056'><strong>White et al., 1986</strong></a> and compiled by <a target='_blank' href='https://www.sciencedirect.com/science/article/pii/002228368790001X'><strong>Durbin, 1987</strong></a>. Individual muscle cells were not annotated by <a target='_blank' href='https://royalsocietypublishing.org/doi/10.1098/rstb.1986.0056'><strong>White et al., 1986</strong></a>. To allow comparison to other datasets, individual muscle cells (and synapses onto them) were annotated in scans of the original EM micrographs by the Zhen Lab. These synapses have been added to the datasets instead of the originally listed anonymous neuromuscular junctions."
+      },
+      {
+        "title": "White et al., 1986, JSE",
+        "content": "The dataset was reconstructed by <a target='_blank' href='https://royalsocietypublishing.org/doi/10.1098/rstb.1986.0056'><strong>White et al., 1986</strong></a> and compiled by <a target='_blank' href='https://www.jneurosci.org/content/11/1/1'><strong>Hall and Russell, 1991</strong></a>."
+      }
+    ]
+  },
+  "connectionTypes": {
+    "description": "Connections were classified by their change in synapse number across developmental stages by <a target='_blank' href='https://doi.org/10.1101/2020.04.30.066209'><strong>Witvliet et al., 2020</strong></a>. \n \n <span style=\"color: #21201C; font-weight: 500; margin-bottom: 8px; display: inline-block\">Stable connections</span> \n Present from birth to adulthood. \n \n <span style=\"color: #21201C; font-weight: 500; margin-bottom: 8px; display: inline-block\">Developmentally dynamic connections</span> \n Significantly increase or decrease their relative strength in a stereotyped manner, sometimes even forming new connections or eliminating existing connections at specific life stages. \n \n <span style=\"color: #21201C; font-weight: 500; margin-bottom: 8px; display: inline-block\">Variable connections</span> \n Exhibit no consistent trend in their changing synapse numbers, and are not present in every animal. \n \n <span style=\"color: #21201C; font-weight: 500; margin-bottom: 8px; display: inline-block\">Post-embryonic connections</span> \n Present in post-embryonic animals, but not in embryonic animals. \n \n <span style=\"color: #21201C; font-weight: 500; margin-bottom: 8px; display: inline-block\">Not classified connections</span> \n Were not found in any of the datasets reconstructed by <a target='_blank' href='https://doi.org/10.1101/2020.04.30.066209'><strong>Witvliet et al., 2020</strong></a>. Likely a gap junction or variable connection."
+  },
+  "downloadData": {
+    "description": "Connections were classified by their change in synapse number across developmental stages by <a target='_blank' href='https://doi.org/10.1101/2020.04.30.066209'><strong>Witvliet et al., 2020</strong></a>. \n <strong>Stable connections</strong> \n Present from birth to adulthood. \n \n <strong>Developmentally dynamic connections</strong>"
+  },
+  "citeUs": {
+    "description": "If you use NemaNode, please cite <a target='_blank' href='https://doi.org/10.1101/2020.04.30.066209'><strong>Witvliet et al., 2020</strong></a>. \n \n In addition, please cite the original data sources for the datasets you are examining."
+  },
+  "contribute": {
+    "description": "To contribute, fork us on <a target='_blank' href='https://github.com/zhenlab-ltri/NemaNode'><strong>GitHub</strong></a> and submit a pull request."
+  },
+  "contact": {
+    "description": "NemaNode is developed by the <a target='_blank' href='https://zhenlab.com/'><strong>Zhen</strong></a> and <a target='_blank' href='https://scholar.harvard.edu/aravisamuel'><strong>Samuel</strong></a> labs.\n \n To report a bug or feature request, open a new issue on GitHub. There you can also see, follow, and comment on known bugs and feature requests. \n \n Alternatively, send us an <a target='_blank' href='mailto:daniel.witvliet@gmail.com'><strong>email</strong></a>."
+  }
+}
