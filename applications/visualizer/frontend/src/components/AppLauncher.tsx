@@ -11,6 +11,7 @@ import { GlobalError } from "../models/Error.ts";
 import { NeuronsService } from "../rest";
 import { TEMPLATE_ACTIVE_DATASETS } from "../settings/templateWorkspaceSettings.ts";
 import { vars } from "../theme/variables.ts";
+import AboutModal from "./AboutNemanode/AboutModal.tsx";
 import CustomAutocomplete from "./CustomAutocomplete.tsx";
 
 function AppLauncher() {
@@ -20,6 +21,8 @@ function AppLauncher() {
   const [neuronNames, setNeuronsNames] = useState<string[]>([]);
   const [searchedNeuron, setSearchedNeuron] = useState("");
   const isActive = (path) => location.pathname === path;
+  const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+  
   const handleTemplateClick = async () => {
     const workspaceId = `workspace-${Date.now()}`;
     const workspaceName = `Template Workspace ${Object.keys(workspaces).length + 1}`;
@@ -70,6 +73,10 @@ function AppLauncher() {
     return Array.from(uniqueNeurons);
   };
 
+  const openAboutModal = () => {
+    setIsAboutModalOpen(true);
+  };
+
   return (
     <>
       <Box>
@@ -95,7 +102,7 @@ function AppLauncher() {
               <Button color="secondary" variant="text" onClick={handleBlankClick}>
                 Viewer
               </Button>
-              <Button color="secondary" variant="text">
+              <Button color="secondary" variant="text" onClick={openAboutModal}>
                 About Nemanode
               </Button>
             </Box>
@@ -171,6 +178,7 @@ function AppLauncher() {
           </Container>
         </Box>
       </Box>
+      <AboutModal showModal={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
     </>
   );
 }
