@@ -261,22 +261,23 @@ const TwoDViewer = () => {
       const selectedNeurons = workspace.getSelection(ViewerType.Graph);
       const isSelected = selectedNeurons.includes(neuronId) || selectedNeurons.some((e) => workspace.getNeuronCellsByClass(neuronId).includes(e));
 
+      let wspace = workspace;
       if (isSelected) {
-        workspace.removeSelection(neuronId, ViewerType.Graph);
+        wspace = wspace.removeSelection(neuronId, ViewerType.Graph);
 
         if (workspace.getNeuronClass(neuronId) === neuronId) {
           const relatedNeurons = workspace.getNeuronCellsByClass(neuronId);
           for (const neuron of relatedNeurons) {
-            workspace.locallyRemoveSelection(neuron, ViewerType.EM);
-            workspace.locallyRemoveSelection(neuron, ViewerType.ThreeD);
+            wspace = wspace.locallyRemoveSelection(neuron, ViewerType.EM);
+            wspace = wspace.locallyRemoveSelection(neuron, ViewerType.ThreeD);
           }
         }
       } else {
-        workspace.addSelection(neuronId, ViewerType.Graph);
+        wspace = wspace.addSelection(neuronId, ViewerType.Graph);
         const relatedNeurons = workspace.getNeuronCellsByClass(neuronId);
         for (const neuron of relatedNeurons) {
-          workspace.locallyInjectSelection(neuron, ViewerType.EM);
-          workspace.locallyInjectSelection(neuron, ViewerType.ThreeD);
+          wspace = wspace.locallyInjectSelection(neuron, ViewerType.EM);
+          wspace = wspace.locallyInjectSelection(neuron, ViewerType.ThreeD);
         }
       }
     };

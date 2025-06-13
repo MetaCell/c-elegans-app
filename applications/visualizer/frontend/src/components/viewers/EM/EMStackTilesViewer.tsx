@@ -132,14 +132,15 @@ function selectAcrossLayers(position: Coordinate, ...selectors: LayerSelector[])
 function onNeuronSelect(feature: Feature, workspace: Workspace) {
   const neuronName = cellFeatureName(feature);
 
+  let wspace = workspace;
   if (isCellSelected(neuronName, workspace)) {
-    workspace.removeSelection(neuronName, ViewerType.EM);
+    wspace = wspace.removeSelection(neuronName, ViewerType.EM);
     // Is there a neuron in the selection that comes from the same class. If not, we can remove the class from the selection
     const removeClass = !workspace
       .getSelection(ViewerType.ThreeD)
       .some((e) => workspace.getNeuronClass(e) !== e && workspace.getNeuronClass(e) === workspace.getNeuronClass(neuronName));
     if (removeClass) {
-      workspace.removeSelection(workspace.getNeuronClass(neuronName), ViewerType.ThreeD);
+      wspace = wspace.removeSelection(workspace.getNeuronClass(neuronName), ViewerType.ThreeD);
     }
     return;
   }
@@ -148,18 +149,19 @@ function onNeuronSelect(feature: Feature, workspace: Workspace) {
     return;
   }
 
-  workspace.addSelection(neuronName, ViewerType.EM);
+  wspace = wspace.addSelection(neuronName, ViewerType.EM); // keeping the call as this for reference
 }
 
 function onSynapseSelect(feature: Feature, workspace: Workspace) {
   const synapseName = cellFeatureName(feature);
 
+  let wspace = workspace;
   if (isCellSelected(synapseName, workspace)) {
-    workspace.removeSelection(synapseName, ViewerType.EM);
+    wspace = wspace.removeSelection(synapseName, ViewerType.EM);
     return;
   }
 
-  workspace.addSelection(synapseName, ViewerType.EM);
+  wspace = wspace.addSelection(synapseName, ViewerType.EM); // keeping the cass as this for reference
 }
 
 const scale = new ScaleLine({
@@ -482,16 +484,16 @@ export function printEMView(map: OLMap) {
 
   const mapContext = mapCanvas.getContext("2d");
 
-  Array.prototype.forEach.call(map.getViewport().querySelectorAll(".ol-layer canvas, canvas.ol-layer"), (canvas) => {
+  for (const canvas of map.getViewport().querySelectorAll(".ol-layer canvas, canvas.ol-layer") as NodeListOf<HTMLCanvasElement>) {
     if (canvas.width > 0) {
-      const opacity = canvas.parentNode.style.opacity || canvas.style.opacity;
+      const opacity = (canvas.parentNode as HTMLElement).style.opacity || canvas.style.opacity;
       mapContext.globalAlpha = opacity === "" ? 1 : Number(opacity);
-      let matrix: Array<number>;
+      let matrix: number[];
       const transform = canvas.style.transform;
       if (transform) {
         // Get the transform parameters from the style's transform matrix
         matrix = transform
-          .match(/^matrix\(([^\(]*)\)$/)[1]
+          .match(/^matrix\(([^(]*)\)$/)[1]
           .split(",")
           .map(Number);
       } else {
@@ -499,14 +501,14 @@ export function printEMView(map: OLMap) {
       }
       // Apply the transform to the export map context
       CanvasRenderingContext2D.prototype.setTransform.apply(mapContext, matrix);
-      const backgroundColor = canvas.parentNode.style.backgroundColor;
+      const backgroundColor = (canvas.parentNode as HTMLElement).style.backgroundColor;
       if (backgroundColor) {
         mapContext.fillStyle = backgroundColor;
         mapContext.fillRect(0, 0, canvas.width, canvas.height);
       }
       mapContext.drawImage(canvas, 0, 0);
     }
-  });
+  }
 
   mapContext.globalAlpha = 1;
   mapContext.setTransform(1, 0, 0, 1, 0, 0);
