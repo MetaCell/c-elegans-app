@@ -205,7 +205,11 @@ const EMStackViewer = () => {
   }
 
   const [minSlice, maxSlice] = firstActiveDataset.emData.sliceRange;
-  const startSlice = Math.floor((maxSlice + minSlice) / 2);
+  // const startSlice = Math.floor((maxSlice + minSlice) / 2);
+  const startSlice = useMemo(() => {
+    return currentWorkspace.emViewerSettings.startSlice;
+  }, [currentWorkspace]);
+
   const [segSlice, segSetSlice] = useState<number>(startSlice);
   const ringSize = 11;
 
@@ -217,8 +221,8 @@ const EMStackViewer = () => {
   const ringSeg = useRef<SlidingLayer<VectorLayer<Feature>>>();
   const ringSynSeg = useRef<SlidingLayer<VectorLayer<Feature>>>();
 
-  const [showNeurons, setShowNeurons] = useState<boolean>(true);
-  const [showSynapses, setShowSynapses] = useState<boolean>(true);
+  const [showNeurons, setShowNeurons] = useState<boolean>(currentWorkspace.emViewerSettings.showNeurons);
+  const [showSynapses, setShowSynapses] = useState<boolean>(currentWorkspace.emViewerSettings.showSynapses);
 
   const extent = useMemo(() => [0, 0, ...getEMResolution(firstActiveDataset)], [firstActiveDataset]);
 
@@ -315,6 +319,9 @@ const EMStackViewer = () => {
       startAt: startSlice,
       extent: [minSlice, maxSlice],
       newLayer: (slice) => newEMLayer(firstActiveDataset, slice, tilegrid, projection),
+      onSlide: (slice) => {
+        currentWorkspace.setEmviewerSlice(slice);
+      },
     });
 
     if (hasNeuronSegmentations) {
@@ -330,6 +337,7 @@ const EMStackViewer = () => {
           segSetSlice(slice);
         },
       });
+      ringSeg.current?.setVisibility(showNeurons);
 
       map.on("click", (e) => onFeatureClickRef.current(e.coordinate));
     }
@@ -345,6 +353,7 @@ const EMStackViewer = () => {
           currSynSegLayer.current = layer;
         },
       });
+      ringSynSeg.current?.setVisibility(showSynapses);
     }
 
     function handleSliceScroll(e: WheelEvent) {
@@ -442,12 +451,18 @@ const EMStackViewer = () => {
           neurons: {
             label: "Neurons",
             checked: showNeurons,
-            onToggle: setShowNeurons,
+            onToggle: (show) => {
+              setShowNeurons(show);
+              currentWorkspace.emViewerShowNeurons(show);
+            },
           },
           synapses: {
             label: "Synapses",
             checked: showSynapses,
-            onToggle: setShowSynapses,
+            onToggle: (show) => {
+              setShowSynapses(show);
+              currentWorkspace.emViewerShowSynapses(show);
+            },
           },
         }}
       />

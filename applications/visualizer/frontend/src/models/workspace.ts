@@ -4,7 +4,15 @@ import { createDraft, finishDraft, immerable, isDraft, produce } from "immer";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
 import { type Dataset, type Neuron, NeuronsService } from "../rest";
 import { GlobalError } from "./Error.ts";
-import { type NeuronGroup, type ViewerData, type ViewerSynchronizationPair, ViewerType, Visibility, getDefaultViewerData } from "./models";
+import {
+  type EMViewerSettings,
+  type NeuronGroup,
+  type ViewerData,
+  type ViewerSynchronizationPair,
+  ViewerType,
+  Visibility,
+  getDefaultViewerData,
+} from "./models";
 import { type SynchronizerContext, SynchronizerOrchestrator } from "./synchronizer";
 
 function triggerUpdate<T extends Workspace>(_prototype: any, _key: string, descriptor: PropertyDescriptor) {
@@ -51,6 +59,7 @@ export class Workspace {
   visibilities: Record<string, ViewerData>;
   viewers: Record<ViewerType, boolean>;
   neuronGroups: Record<string, NeuronGroup>;
+  emViewerSettings: EMViewerSettings;
 
   store: ReturnType<typeof configureStore>;
   layoutManager: LayoutManager;
@@ -68,18 +77,33 @@ export class Workspace {
     contexts?: Record<ViewerType, SynchronizerContext>,
     visibilities?: Record<string, ViewerData>,
     neuronGroups?: Record<string, NeuronGroup>,
+    emViewerSettings?: EMViewerSettings,
+    viewers?: Record<ViewerType, boolean>,
   ) {
     this.id = id;
     this.name = name;
     this.activeDatasets = activeDatasets;
     this.availableNeurons = {};
     this.activeNeurons = activeNeurons || new Set();
-    this.viewers = {
+    this.viewers = viewers || {
       [ViewerType.Graph]: true,
       [ViewerType.ThreeD]: false,
       [ViewerType.EM]: false,
     };
     this.neuronGroups = neuronGroups || {};
+    // Set EM viewer settings
+    if (!emViewerSettings) {
+      const firstActiveDataset = Object.values(activeDatasets)?.[0];
+      const [minSlice, maxSlice] = firstActiveDataset.emData.sliceRange;
+      const startSlice = Math.floor((maxSlice + minSlice) / 2);
+      this.emViewerSettings = {
+        showNeurons: true,
+        showSynapses: true,
+        startSlice: startSlice,
+      };
+    } else {
+      this.emViewerSettings = { ...emViewerSettings };
+    }
 
     const { layoutManager, store } = getLayoutManagerAndStore(id);
     this.layoutManager = layoutManager;
@@ -288,5 +312,19 @@ export class Workspace {
     });
 
     this.updateContext(updated);
+  }
+
+  // Those methods do not trigger updates as they are only here to store settings for the share function
+  // We don't want to trigger re-renderings of the full app
+  setEmviewerSlice(slice: number) {
+    this.emViewerSettings.startSlice = slice;
+  }
+
+  emViewerShowNeurons(show: boolean) {
+    this.emViewerSettings.showNeurons = show;
+  }
+
+  emViewerShowSynapses(show: boolean) {
+    this.emViewerSettings.showSynapses = show;
   }
 }

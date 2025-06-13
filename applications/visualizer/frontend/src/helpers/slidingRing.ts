@@ -91,7 +91,7 @@ export class SlidingRing<T> {
     if (tailN < min) tailN = min;
     if (headN > max) {
       headN = max;
-      tailN = headN - this.ring.length - 1;
+      tailN = headN - this.ring.length + 1;
     }
 
     // populate the ring
