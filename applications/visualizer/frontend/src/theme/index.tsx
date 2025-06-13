@@ -37,6 +37,7 @@ const {
   brand300,
   brand200,
   gray900,
+  gray900A,
 } = vars;
 
 const theme = createTheme({
@@ -92,6 +93,11 @@ const theme = createTheme({
       fontSize: "0.875rem",
       fontWeight: 500,
       color: gray700A,
+    },
+    subtitle2: {
+      fontSize: "0.875rem",
+      fontWeight: 500,
+      color: gray900A,
     },
     button: {
       fontSize: "0.875rem",
