@@ -48,7 +48,7 @@ export const styles = {
   },
   datasetEntry: {
     display: "flex",
-    alignItems: "flex-start"
+    alignItems: "center"
   },
   citationBox: {
     fontFamily: "monospace",

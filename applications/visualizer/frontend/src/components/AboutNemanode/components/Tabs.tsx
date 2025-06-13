@@ -1,6 +1,6 @@
-import { Tabs as MuiTabs, Tab } from "@mui/material"
-import { TabsProps } from "./types"
-import { styles } from "../styles"
+import { Tabs as MuiTabs, Tab } from "@mui/material";
+import { TabsProps } from "./types";
+import { styles } from "../styles";
 
 export const PrimaryTabs = ({ value, onChange }: TabsProps) => (
   <MuiTabs
@@ -11,14 +11,10 @@ export const PrimaryTabs = ({ value, onChange }: TabsProps) => (
     sx={styles.primaryTabs}
   >
     {["Data info", "Contribute", "Contact us"].map((label, index) => (
-      <Tab
-        key={label}
-        label={label}
-        sx={styles.primaryTab(value === index)}
-      />
+      <Tab key={label} label={label} sx={styles.primaryTab(value === index)} />
     ))}
   </MuiTabs>
-)
+);
 
 export const SecondaryTabs = ({ value, onChange }: TabsProps) => (
   <MuiTabs
@@ -28,7 +24,12 @@ export const SecondaryTabs = ({ value, onChange }: TabsProps) => (
     TabIndicatorProps={{ style: { backgroundColor: "#1568D5", height: "2px" } }}
     sx={styles.secondaryTabs}
   >
-    {["Data sources", "Types of connection", "Download data", "Cite us"].map((label, index) => (
+    {[
+      "Data sources",
+      "Types of connection",
+      // "Download data",
+      "Cite us",
+    ].map((label, index) => (
       <Tab
         key={label}
         label={label}
@@ -36,4 +37,4 @@ export const SecondaryTabs = ({ value, onChange }: TabsProps) => (
       />
     ))}
   </MuiTabs>
-) 
+);

@@ -1,40 +1,56 @@
-import React, { useState, useCallback } from "react"
-import { DialogContent, Box } from "@mui/material"
-import CustomDialog from "../CustomDialog"
-import { styles } from "./styles"
-import { TabPanel, SecondaryTabPanel } from "./components/TabPanels"
-import { PrimaryTabs, SecondaryTabs } from "./components/Tabs"
+import React, { useState, useCallback } from "react";
+import { DialogContent, Box } from "@mui/material";
+import CustomDialog from "../CustomDialog";
+import { styles } from "./styles";
+import { TabPanel, SecondaryTabPanel } from "./components/TabPanels";
+import { PrimaryTabs, SecondaryTabs } from "./components/Tabs";
 import {
   DataSourcesContent,
   ConnectionTypesContent,
   DownloadDataContent,
   CiteUsContent,
   ContributeContent,
-  ContactContent
-} from "./components/ContentComponents"
+  ContactContent,
+} from "./components/ContentComponents";
 
-const AboutModal = ({ showModal, onClose }: { showModal: boolean; onClose: () => void }) => {
-  const [primaryTabValue, setPrimaryTabValue] = useState(0)
-  const [secondaryTabValue, setSecondaryTabValue] = useState(0)
+const AboutModal = ({
+  showModal,
+  onClose,
+}: {
+  showModal: boolean;
+  onClose: () => void;
+}) => {
+  const [primaryTabValue, setPrimaryTabValue] = useState(0);
+  const [secondaryTabValue, setSecondaryTabValue] = useState(0);
 
   const handlePrimaryTabChange = useCallback((_, newValue: number) => {
-    setPrimaryTabValue(newValue)
-  }, [])
+    setPrimaryTabValue(newValue);
+  }, []);
 
   const handleSecondaryTabChange = useCallback((_, newValue: number) => {
-    setSecondaryTabValue(newValue)
-  }, [])
+    setSecondaryTabValue(newValue);
+  }, []);
 
   return (
-    <CustomDialog showModal={showModal} onClose={onClose} title="About Nemanode">
+    <CustomDialog
+      showModal={showModal}
+      onClose={onClose}
+      title="About Nemanode"
+    >
       <Box sx={styles.primaryTabsContainer}>
-        <PrimaryTabs value={primaryTabValue} onChange={handlePrimaryTabChange} />
+        <PrimaryTabs
+          value={primaryTabValue}
+          onChange={handlePrimaryTabChange}
+        />
       </Box>
 
       <DialogContent sx={styles.dialogContent}>
         <TabPanel value={primaryTabValue} index={0}>
           <Box sx={styles.secondaryTabsContainer}>
-            <SecondaryTabs value={secondaryTabValue} onChange={handleSecondaryTabChange} />
+            <SecondaryTabs
+              value={secondaryTabValue}
+              onChange={handleSecondaryTabChange}
+            />
           </Box>
 
           <SecondaryTabPanel value={secondaryTabValue} index={0}>
@@ -45,11 +61,11 @@ const AboutModal = ({ showModal, onClose }: { showModal: boolean; onClose: () =>
             <ConnectionTypesContent />
           </SecondaryTabPanel>
 
-          <SecondaryTabPanel value={secondaryTabValue} index={2}>
+          {/* <SecondaryTabPanel value={secondaryTabValue} index={2}>
             <DownloadDataContent />
-          </SecondaryTabPanel>
+          </SecondaryTabPanel> */}
 
-          <SecondaryTabPanel value={secondaryTabValue} index={3}>
+          <SecondaryTabPanel value={secondaryTabValue} index={2}>
             <CiteUsContent />
           </SecondaryTabPanel>
         </TabPanel>
@@ -63,7 +79,7 @@ const AboutModal = ({ showModal, onClose }: { showModal: boolean; onClose: () =>
         </TabPanel>
       </DialogContent>
     </CustomDialog>
-  )
-}
+  );
+};
 
-export default AboutModal
+export default AboutModal;
