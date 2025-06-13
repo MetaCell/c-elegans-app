@@ -1,13 +1,7 @@
 import { Box, DialogContent } from "@mui/material";
 import { useCallback, useState } from "react";
 import CustomDialog from "../CustomDialog";
-import {
-  CiteUsContent,
-  ConnectionTypesContent,
-  ContactContent,
-  ContributeContent,
-  DataSourcesContent,
-} from "./components/ContentComponents";
+import { CiteUsContent, ConnectionTypesContent, ContactContent, ContributeContent, DataSourcesContent } from "./components/ContentComponents";
 import { SecondaryTabPanel, TabPanel } from "./components/TabPanels";
 import { PrimaryTabs, SecondaryTabs } from "./components/Tabs";
 import { styles } from "./styles";
@@ -31,25 +25,15 @@ const AboutModal = ({
   }, []);
 
   return (
-    <CustomDialog
-      showModal={showModal}
-      onClose={onClose}
-      title="About Nemanode"
-    >
+    <CustomDialog showModal={showModal} onClose={onClose} title="About Nemanode">
       <Box sx={styles.primaryTabsContainer}>
-        <PrimaryTabs
-          value={primaryTabValue}
-          onChange={handlePrimaryTabChange}
-        />
+        <PrimaryTabs value={primaryTabValue} onChange={handlePrimaryTabChange} />
       </Box>
 
       <DialogContent sx={styles.dialogContent}>
         <TabPanel value={primaryTabValue} index={0}>
           <Box sx={styles.secondaryTabsContainer}>
-            <SecondaryTabs
-              value={secondaryTabValue}
-              onChange={handleSecondaryTabChange}
-            />
+            <SecondaryTabs value={secondaryTabValue} onChange={handleSecondaryTabChange} />
           </Box>
 
           <SecondaryTabPanel value={secondaryTabValue} index={0}>
