@@ -19,16 +19,17 @@ steps:
     type: parallel
     stage: prepare
     steps:
-    - title: Cloning cloud-harness repository...
-      type: git-clone
-      stage: prepare
-      repo: https://github.com/MetaCell/cloud-harness.git
-      revision: '${{CLOUDHARNESS_BRANCH}}'
-      working_directory: .
-      git: github
+      clone_cloud_harness:
+        title: Cloning cloud-harness repository...
+        type: git-clone
+        stage: prepare
+        repo: https://github.com/MetaCell/cloud-harness.git
+        revision: '${{CLOUDHARNESS_BRANCH}}'
+        working_directory: .
+        git: github
   prepare_deployment:
     title: Prepare helm chart
-    image: python:3.9.10
+    image: python:3.12
     stage: prepare
     working_directory: .
     commands:
@@ -46,32 +47,50 @@ steps:
     image: codefresh/cfstep-helm:3.6.2
     stage: prepare
     title: View helm chart
-  build_application_images:
+  build_application_images_0:
     type: parallel
     stage: build
     steps:
-      visualizer:
+      test-api:
+        type: build
+        stage: build
+        dockerfile: test/test-api/Dockerfile
+        registry: '${{CODEFRESH_REGISTRY}}'
+        buildkit: true
+        build_arguments:
+        - NOCACHE=${{CF_BUILD_ID}}
+        - CLOUDHARNESS_BASE=${{REGISTRY}}/cloud-harness/cloudharness-base:${{CLOUDHARNESS_BASE_TAG}}
+        image_name: cloud-harness/test-api
+        title: Test api
+        working_directory: ./cloud-harness
+        tag: '${{TEST_API_TAG}}'
+        when:
+          condition:
+            any:
+              buildDoesNotExist: includes('${{TEST_API_TAG_EXISTS}}', '{{TEST_API_TAG_EXISTS}}')
+                == true
+              forceNoCache: includes('${{TEST_API_TAG_FORCE_BUILD}}', '{{TEST_API_TAG_FORCE_BUILD}}')
+                == false
+      test-e2e:
         type: build
         stage: build
         dockerfile: Dockerfile
         registry: '${{CODEFRESH_REGISTRY}}'
         buildkit: true
         build_arguments:
-        - DOMAIN=${{DOMAIN}}
         - NOCACHE=${{CF_BUILD_ID}}
-        - REGISTRY=${{REGISTRY}}/celegans/
-        - NO_SOURCEMAP=${{NO_SOURCEMAP}}
-        image_name: celegans/visualizer
-        title: Visualizer
-        working_directory: ./applications/visualizer
-        tag: '${{VISUALIZER_TAG}}'
+        image_name: cloud-harness/test-e2e
+        title: Test e2e
+        working_directory: ./cloud-harness/test/test-e2e
+        tag: '${{TEST_E2E_TAG}}'
         when:
           condition:
             any:
-              buildDoesNotExist: includes('${{VISUALIZER_TAG_EXISTS}}', '{{VISUALIZER_TAG_EXISTS}}')
+              buildDoesNotExist: includes('${{TEST_E2E_TAG_EXISTS}}', '{{TEST_E2E_TAG_EXISTS}}')
                 == true
-              forceNoCache: includes('${{VISUALIZER_TAG_FORCE_BUILD}}', '{{VISUALIZER_TAG_FORCE_BUILD}}')
+              forceNoCache: includes('${{TEST_E2E_TAG_FORCE_BUILD}}', '{{TEST_E2E_TAG_FORCE_BUILD}}')
                 == false
+    title: Build parallel step 1
   deployment:
     stage: deploy
     type: helm
@@ -88,6 +107,19 @@ steps:
       custom_value_files:
       - ./deployment/helm/values.yaml
       custom_values: []
+  wait_deployment:
+    stage: qa
+    title: Wait deployment to be ready
+    image: codefresh/kubectl
+    commands:
+    - kubectl config use-context ${{CLUSTER_NAME}}
+    - kubectl config set-context --current --namespace=${{NAMESPACE}}
+    - kubectl rollout status deployment/visualizer
+    - sleep 60
+    when:
+      condition:
+        all:
+          whenVarExists: includes("${{SKIP_TESTS}}", "{{SKIP_TESTS}}") == true
   approval:
     type: pending-approval
     stage: publish
@@ -96,20 +128,3 @@ steps:
     timeout:
       duration: 168
       finalState: denied
-  publish:
-    type: parallel
-    stage: publish
-    steps:
-      publish_visualizer:
-        stage: publish
-        type: push
-        title: Visualizer
-        candidate: '${{REGISTRY}}/celegans/visualizer:${{VISUALIZER_TAG}}'
-        tags:
-        - '${{DEPLOYMENT_PUBLISH_TAG}}'
-        registry: '${{REGISTRY_PUBLISH_URL}}'
-    when:
-      condition:
-        all:
-          whenVarExists: includes("${{DEPLOYMENT_PUBLISH_TAG}}", "{{DEPLOYMENT_PUBLISH_TAG}}")
-            == false
