@@ -127,6 +127,9 @@ export const getEdgeId = (conn: Connection, includeAnnotations: boolean): string
 };
 
 export const extractNeuronAttributes = (neuron) => {
+  if (!neuron) {
+    return [];
+  }
   const cellAttributes = neuron.type
     .split("")
     .map((char) => cellConfig[char]?.type)
