@@ -34,8 +34,9 @@ steps:
     working_directory: .
     commands:
     - bash cloud-harness/install.sh
-    - harness-deployment cloud-harness . -d ${{DOMAIN}} -r ${{REGISTRY}} -rs ${{REGISTRY_SECRET}}
-      -n ${{NAMESPACE}} --write-env -e dev -i visualizer
+    - harness-deployment ./cloud-harness . -d ${{DOMAIN}} -r ${{REGISTRY}} -rs
+      ${{REGISTRY_SECRET}} -n ${{NAMESPACE}} --write-env -e dev --cache-url ${{IMAGE_CACHE_URL}}
+      -i visualizer
     - cat deployment/.env >> ${{CF_VOLUME_PATH}}/env_vars_to_export
     - cat ${{CF_VOLUME_PATH}}/env_vars_to_export
   prepare_deployment_view:
@@ -48,6 +49,68 @@ steps:
     stage: prepare
     title: View helm chart
   build_application_images_0:
+    type: parallel
+    stage: build
+    steps:
+      visualizer:
+        type: build
+        stage: build
+        dockerfile: Dockerfile
+        registry: '${{CODEFRESH_REGISTRY}}'
+        buildkit: true
+        build_arguments:
+        - NOCACHE=${{CF_BUILD_ID}}
+        image_name: c-elegans-app/visualizer
+        title: Visualizer
+        working_directory: ./applications/visualizer
+        tag: '${{VISUALIZER_TAG}}'
+        when:
+          condition:
+            any:
+              buildDoesNotExist: includes('${{VISUALIZER_TAG_EXISTS}}', '{{VISUALIZER_TAG_EXISTS}}')
+                == true
+              forceNoCache: includes('${{VISUALIZER_TAG_FORCE_BUILD}}', '{{VISUALIZER_TAG_FORCE_BUILD}}')
+                == false
+      cloudharness-base:
+        type: build
+        stage: build
+        dockerfile: infrastructure/base-images/cloudharness-base/Dockerfile
+        registry: '${{CODEFRESH_REGISTRY}}'
+        buildkit: true
+        build_arguments:
+        - NOCACHE=${{CF_BUILD_ID}}
+        image_name: cloud-harness/cloudharness-base
+        title: Cloudharness base
+        working_directory: ./cloud-harness
+        tag: '${{CLOUDHARNESS_BASE_TAG}}'
+        when:
+          condition:
+            any:
+              buildDoesNotExist: includes('${{CLOUDHARNESS_BASE_TAG_EXISTS}}', '{{CLOUDHARNESS_BASE_TAG_EXISTS}}')
+                == true
+              forceNoCache: includes('${{CLOUDHARNESS_BASE_TAG_FORCE_BUILD}}', '{{CLOUDHARNESS_BASE_TAG_FORCE_BUILD}}')
+                == false
+      test-e2e:
+        type: build
+        stage: build
+        dockerfile: Dockerfile
+        registry: '${{CODEFRESH_REGISTRY}}'
+        buildkit: true
+        build_arguments:
+        - NOCACHE=${{CF_BUILD_ID}}
+        image_name: cloud-harness/test-e2e
+        title: Test e2e
+        working_directory: ./cloud-harness/test/test-e2e
+        tag: '${{TEST_E2E_TAG}}'
+        when:
+          condition:
+            any:
+              buildDoesNotExist: includes('${{TEST_E2E_TAG_EXISTS}}', '{{TEST_E2E_TAG_EXISTS}}')
+                == true
+              forceNoCache: includes('${{TEST_E2E_TAG_FORCE_BUILD}}', '{{TEST_E2E_TAG_FORCE_BUILD}}')
+                == false
+    title: Build parallel step 1
+  build_application_images_1:
     type: parallel
     stage: build
     steps:
@@ -71,26 +134,7 @@ steps:
                 == true
               forceNoCache: includes('${{TEST_API_TAG_FORCE_BUILD}}', '{{TEST_API_TAG_FORCE_BUILD}}')
                 == false
-      test-e2e:
-        type: build
-        stage: build
-        dockerfile: Dockerfile
-        registry: '${{CODEFRESH_REGISTRY}}'
-        buildkit: true
-        build_arguments:
-        - NOCACHE=${{CF_BUILD_ID}}
-        image_name: cloud-harness/test-e2e
-        title: Test e2e
-        working_directory: ./cloud-harness/test/test-e2e
-        tag: '${{TEST_E2E_TAG}}'
-        when:
-          condition:
-            any:
-              buildDoesNotExist: includes('${{TEST_E2E_TAG_EXISTS}}', '{{TEST_E2E_TAG_EXISTS}}')
-                == true
-              forceNoCache: includes('${{TEST_E2E_TAG_FORCE_BUILD}}', '{{TEST_E2E_TAG_FORCE_BUILD}}')
-                == false
-    title: Build parallel step 1
+    title: Build parallel step 2
   deployment:
     stage: deploy
     type: helm
@@ -128,3 +172,28 @@ steps:
     timeout:
       duration: 168
       finalState: denied
+  publish:
+    type: parallel
+    stage: publish
+    steps:
+      publish_cloudharness-base:
+        stage: publish
+        type: push
+        title: Cloudharness base
+        candidate: '${{REGISTRY}}/cloud-harness/cloudharness-base:${{CLOUDHARNESS_BASE_TAG}}'
+        tags:
+        - '${{DEPLOYMENT_PUBLISH_TAG}}'
+        registry: '${{REGISTRY_PUBLISH_URL}}'
+      publish_visualizer:
+        stage: publish
+        type: push
+        title: Visualizer
+        candidate: '${{REGISTRY}}/c-elegans-app/visualizer:${{VISUALIZER_TAG}}'
+        tags:
+        - '${{DEPLOYMENT_PUBLISH_TAG}}'
+        registry: '${{REGISTRY_PUBLISH_URL}}'
+    when:
+      condition:
+        all:
+          whenVarExists: includes("${{DEPLOYMENT_PUBLISH_TAG}}", "{{DEPLOYMENT_PUBLISH_TAG}}")
+            == false

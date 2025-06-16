@@ -1,6 +1,6 @@
 skaffold.yaml
 docker-compose.yaml
-# deployment/
+deployment/helm
 cloud-harness/
 .vscode/
 node_modules

@@ -10,7 +10,7 @@ harness:
       requests:
         cpu: '0.25'
   dependencies:
-    build: []
+    build: [cloudharness-base]
     hard: []
   deployment:
     auto: true
