@@ -1,5 +1,5 @@
 import { Box, DialogContent } from "@mui/material";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import CustomDialog from "../CustomDialog";
 import { CiteUsContent, ConnectionTypesContent, ContactContent, ContributeContent, DataSourcesContent } from "./components/ContentComponents";
 import { SecondaryTabPanel, TabPanel } from "./components/TabPanels";
@@ -15,6 +15,25 @@ const AboutModal = ({
 }) => {
   const [primaryTabValue, setPrimaryTabValue] = useState(0);
   const [secondaryTabValue, setSecondaryTabValue] = useState(0);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest("a[data-navigate]");
+      if (link) {
+        const navigateTo = link.getAttribute("data-navigate");
+        if (navigateTo === "dataSources") {
+          setPrimaryTabValue(0);
+          setSecondaryTabValue(0);
+        }
+      }
+    };
+
+    document.addEventListener("click", handleClick);
+    return () => {
+      document.removeEventListener("click", handleClick);
+    };
+  }, []);
 
   const handlePrimaryTabChange = useCallback((_, newValue: number) => {
     setPrimaryTabValue(newValue);
