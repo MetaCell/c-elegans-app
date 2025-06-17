@@ -27,12 +27,12 @@
     "description": "Connections were classified by their change in synapse number across developmental stages by <a target='_blank' href='https://doi.org/10.1101/2020.04.30.066209'><strong>Witvliet et al., 2020</strong></a>. \n <strong>Stable connections</strong> \n Present from birth to adulthood. \n \n <strong>Developmentally dynamic connections</strong>"
   },
   "citeUs": {
-    "description": "If you use NemaNode, please cite <a target='_blank' href='https://doi.org/10.1101/2020.04.30.066209'><strong>Witvliet et al., 2020</strong></a>. \n \n In addition, please cite the original data sources for the datasets you are examining."
+    "description": "If you use NemaNode, please cite <a target='_blank' href='https://doi.org/10.1101/2020.04.30.066209'><strong>Witvliet et al., 2020</strong></a>. \n \n In addition, please cite the original <a data-navigate='dataSources' style='cursor: pointer;'>  <strong> data sources </strong> </a> for the datasets you are examining."
   },
   "contribute": {
     "description": "To contribute, fork us on <a target='_blank' href='https://github.com/zhenlab-ltri/NemaNode'><strong>GitHub</strong></a> and submit a pull request."
   },
   "contact": {
-    "description": "NemaNode is developed by the <a target='_blank' href='https://zhenlab.com/'><strong>Zhen</strong></a> and <a target='_blank' href='https://scholar.harvard.edu/aravisamuel'><strong>Samuel</strong></a> labs.\n \n To report a bug or feature request, open a new issue on GitHub. There you can also see, follow, and comment on known bugs and feature requests. \n \n Alternatively, send us an <a target='_blank' href='mailto:daniel.witvliet@gmail.com'><strong>email</strong></a>."
+    "description": "NemaNode is developed by the <a target='_blank' href='https://zhenlab.com/'><strong>Zhen</strong></a> and <a target='_blank' href='https://scholar.harvard.edu/aravisamuel'><strong>Samuel</strong></a> labs.\n \n To report a bug or feature request, open a new issue on <a target='_blank' href='https://github.com/zhenlab-ltri/NemaNode/issues'><strong>GitHub</strong></a>. There you can also see, follow, and comment on known bugs and feature requests. \n \n Alternatively, send us an <a target='_blank' href='mailto:daniel.witvliet@gmail.com'><strong>email</strong></a>."
   }
 }
