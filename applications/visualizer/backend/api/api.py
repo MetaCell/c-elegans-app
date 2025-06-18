@@ -237,7 +237,7 @@ async def get_connections_excluding_neuron_classes(
     )
 
 
-@api.get("/connections/{dataset}/download", tags=["connectivity"])
+@api.get("/connections/{datasetId}/download", tags=["connectivity"])
 async def get_dataset_connectivity(
     request, datasetId: str, format: Literal["csv", "json"] = "csv"
 ):
@@ -269,7 +269,9 @@ async def get_dataset_connectivity(
     return response
 
 
-@api.get("/connections/{dataset}", response=list[RawConnection], tags=["connectivity"])
+@api.get(
+    "/connections/{datasetId}", response=list[RawConnection], tags=["connectivity"]
+)
 # @paginate
 async def get_dataset_connections(request, datasetId: str, exclude_class: bool = False):
     """Gets the connections of a dedicated Dataset

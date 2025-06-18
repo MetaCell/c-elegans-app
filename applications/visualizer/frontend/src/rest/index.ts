@@ -14,6 +14,7 @@ export type { ErrorMessage } from './models/ErrorMessage';
 export type { Input } from './models/Input';
 export type { Neuron } from './models/Neuron';
 export type { PagedNeuron } from './models/PagedNeuron';
+export type { RawConnection } from './models/RawConnection';
 
 export { ConnectivityService } from './services/ConnectivityService';
 export { DatasetsService } from './services/DatasetsService';
