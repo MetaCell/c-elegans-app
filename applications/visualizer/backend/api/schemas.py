@@ -79,6 +79,12 @@ class Connection(ModelSchema, BilingualSchema):
         fields = ["pre", "post", "type"]
 
 
+class RawConnection(ModelSchema, BilingualSchema):
+    class Meta:
+        model = ConnectionModel
+        fields = ["pre", "post", "type", "synapses"]
+
+
 class FullDataset(Dataset):
     connections: list[Connection]
 
