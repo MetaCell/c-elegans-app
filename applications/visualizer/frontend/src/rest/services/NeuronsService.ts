@@ -38,11 +38,9 @@ export class NeuronsService {
     public static getAllCells({
         datasetIds,
         page = 1,
-        pageSize,
     }: {
         datasetIds?: (Array<string> | null),
         page?: number,
-        pageSize?: (number | null),
     }): CancelablePromise<PagedNeuron> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -50,7 +48,6 @@ export class NeuronsService {
             query: {
                 'dataset_ids': datasetIds,
                 'page': page,
-                'page_size': pageSize,
             },
         });
     }
