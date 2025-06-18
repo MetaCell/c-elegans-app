@@ -8,7 +8,7 @@ import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import { CaretIcon, CheckIcon, CloseIcon } from "../icons";
 import Logo from "../icons/Logo.svg";
 import { GlobalError } from "../models/Error.ts";
-import { NeuronsService } from "../rest";
+import { DatasetsService, NeuronsService } from "../rest";
 import { TEMPLATE_ACTIVE_DATASETS } from "../settings/templateWorkspaceSettings.ts";
 import { vars } from "../theme/variables.ts";
 import AboutModal from "./AboutNemanode/AboutModal.tsx";
@@ -22,6 +22,8 @@ function AppLauncher() {
   const [searchedNeuron, setSearchedNeuron] = useState("");
   const isActive = (path) => location.pathname === path;
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+  const [dataSetsCount, setDataSetsCount] = useState(0);
+  const [neuronsCount, setNeuronsCount] = useState(0);
 
   const handleTemplateClick = async () => {
     const workspaceId = `workspace-${Date.now()}`;
@@ -56,6 +58,18 @@ function AppLauncher() {
     }
   };
 
+  const fetchDatasetsCount = async () => {
+    try {
+      const cellsCount = await NeuronsService.getCellsCount();
+      const dataSetsCount = await DatasetsService.getDatasetsCount();
+      setNeuronsCount(cellsCount);
+      setDataSetsCount(dataSetsCount);
+    } catch (error) {
+      handleErrors(new GlobalError(error.message));
+      return 0;
+    }
+  };
+
   const onSearchNeurons = (value) => {
     setSearchedNeuron(value);
     debouncedFetchNeurons(value, TEMPLATE_ACTIVE_DATASETS);
@@ -69,6 +83,7 @@ function AppLauncher() {
 
   useEffect(() => {
     debouncedFetchNeurons();
+    fetchDatasetsCount();
   }, []);
 
   const getSortedNeuronNames = () => {
@@ -109,12 +124,7 @@ function AppLauncher() {
                 About Nemanode
               </Button>
             </Box>
-            <Chip
-              icon={<BarChart />}
-              label={`${TEMPLATE_ACTIVE_DATASETS.length} datasets, ${neuronNames.length} neurons`}
-              variant="outlined"
-              className="basic"
-            />
+            <Chip icon={<BarChart />} label={`${dataSetsCount} datasets, ${neuronsCount} neurons`} variant="outlined" className="basic" />
           </Toolbar>
         </AppBar>
         <Box className="MuiBox-container">
