@@ -58,7 +58,7 @@ function AppLauncher() {
     }
   };
 
-  const fetchDatasetsCount = async () => {
+  const fetchCounts = async () => {
     try {
       const cellsCount = await NeuronsService.getCellsCount();
       const dataSetsCount = await DatasetsService.getDatasetsCount();
@@ -83,7 +83,7 @@ function AppLauncher() {
 
   useEffect(() => {
     debouncedFetchNeurons();
-    fetchDatasetsCount();
+    fetchCounts();
   }, []);
 
   const getSortedNeuronNames = () => {
