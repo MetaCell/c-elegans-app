@@ -66,7 +66,6 @@ function AppLauncher() {
       setDataSetsCount(dataSetsCount);
     } catch (error) {
       handleErrors(new GlobalError(error.message));
-      return 0;
     }
   };
 
