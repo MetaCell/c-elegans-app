@@ -200,17 +200,23 @@ const NoEMData = () => {
 const EMStackViewer = () => {
   const currentWorkspace = useGlobalContext().getCurrentWorkspace();
 
-  // We take the first active dataset at the moment (will change later)
-  const firstActiveDataset = Object.values(currentWorkspace.activeDatasets)?.[0];
+  // We take the first active dataset that have segmentation data. If none, we pass to the max resolution
+  let firstActiveDataset = Object.values(currentWorkspace.activeDatasets).find((d) => d.emData?.segmentationSize);
+  if (!firstActiveDataset) {
+    firstActiveDataset = Object.values(currentWorkspace.activeDatasets).find((d) => d.emData?.maxResolution);
+  }
   if (!firstActiveDataset.emData) {
     return <NoEMData />;
   }
 
   const [minSlice, maxSlice] = firstActiveDataset.emData.sliceRange;
-  // const startSlice = Math.floor((maxSlice + minSlice) / 2);
   const startSlice = useMemo(() => {
-    return currentWorkspace.emViewerSettings.startSlice;
-  }, [currentWorkspace]);
+    const storedSlice = currentWorkspace.emViewerSettings.startSlice;
+    if (minSlice <= storedSlice && storedSlice <= maxSlice) {
+      return storedSlice;
+    }
+    return Math.floor((maxSlice + minSlice) / 2);
+  }, [currentWorkspace, minSlice, maxSlice]);
 
   const [segSlice, segSetSlice] = useState<number>(startSlice);
   const ringSize = 11;
