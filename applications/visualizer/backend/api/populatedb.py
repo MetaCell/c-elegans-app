@@ -52,6 +52,7 @@ def populate_config(path: Path, print, print_success):
         em_config = MetadataFetcher.get_em_metadata(dataset_id)
         segmentation_config = MetadataFetcher.get_segmentation_metadata(dataset_id)
         if not em_config and not segmentation_config:
+            print(f"\n   . no EM config or SEG config found for {dataset_id}")
             continue
         print(f"\n   . adding config for {dataset_id}")
         if em_config:
