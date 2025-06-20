@@ -2,9 +2,9 @@ harness:
   deployment:
     replicas: 3
     resources:
-      limits:
-        # cpu: '0.75'
-        # memory: 500M
+      # limits:
+      #   cpu: '0.75'
+      #   memory: 500M
       requests:
         cpu: '0.25'
         memory: 32M
