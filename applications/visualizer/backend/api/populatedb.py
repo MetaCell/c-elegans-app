@@ -21,7 +21,7 @@ def translate(translation_map, data):
 
 def clear_db(_, print, print_success):
     print("Cleaning all the entries from the tables...")
-    for table in (Synapse, Connection, Annotation, Neuron, Dataset):
+    for table in (Synapse, Connection, Annotation, Neuron, Dataset, ViewerConfig):
         print(f"  . removing entries from {table.__name__}...", ending="")
         table.objects.all().delete()
         print_success("\t[OK]")
