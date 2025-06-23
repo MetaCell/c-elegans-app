@@ -22,8 +22,8 @@ function AppLauncher() {
   const [searchedNeuron, setSearchedNeuron] = useState("");
   const isActive = (path) => location.pathname === path;
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
-  const [dataSetsCount, setDataSetsCount] = useState(0);
-  const [neuronsCount, setNeuronsCount] = useState(0);
+  const [dataSetsCount, setDataSetsCount] = useState<number | undefined>(undefined);
+  const [neuronsCount, setNeuronsCount] = useState<number | undefined>(undefined);
 
   const handleTemplateClick = async () => {
     const workspaceId = `workspace-${Date.now()}`;
@@ -65,6 +65,8 @@ function AppLauncher() {
       setNeuronsCount(cellsCount);
       setDataSetsCount(dataSetsCount);
     } catch (error) {
+      setNeuronsCount(0);
+      setDataSetsCount(0);
       handleErrors(new GlobalError(error.message));
     }
   };
@@ -123,7 +125,7 @@ function AppLauncher() {
                 About Nemanode
               </Button>
             </Box>
-            <Chip icon={<BarChart />} label={`${dataSetsCount} datasets, ${neuronsCount} neurons`} variant="outlined" className="basic" />
+            <Chip icon={<BarChart />} label={`${dataSetsCount === undefined ? '-' : dataSetsCount} datasets, ${neuronsCount === undefined ? '-' : neuronsCount} neurons`} variant="outlined" className="basic" />
           </Toolbar>
         </AppBar>
         <Box className="MuiBox-container">
