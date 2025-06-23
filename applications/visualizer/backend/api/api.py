@@ -1,8 +1,12 @@
+import csv
 from io import StringIO
+import io
+import json
 import sys
 from collections import defaultdict
-from typing import Iterable, Optional
+from typing import Iterable, Literal, Optional
 
+from django.http import HttpResponse
 from ninja import NinjaAPI, Router, Query, Schema
 from ninja.pagination import paginate, PageNumberPagination
 from ninja.errors import HttpError
@@ -16,7 +20,7 @@ from django.core.management import call_command
 
 from .utils import get_dataset_viewer_config, to_list
 
-from .schemas import Dataset, EMData, Neuron, Connection
+from .schemas import Dataset, EMData, Neuron, Connection, RawConnection
 from .models import (
     Dataset as DatasetModel,
     Neuron as NeuronModel,
@@ -222,23 +226,61 @@ def get_connections(
     )
 
 
-# @api.get("/connections/{dataset}", response=list[Connection], tags=["connectivity"])
-# # @paginate
-# async def get_dataset_connections(request, dataset: str):
-#     """Gets the connections of a dedicated Dataset"""
-#     # res = ConnectionModel.objects.filter(dataset_id=dataset))
-#     # # import ipdb; ipdb.set_trace()  # fmt: skip
-#     return await to_list(ConnectionModel.objects.filter(dataset_id=dataset))
+async def get_connections_excluding_neuron_classes(
+    dataset_id: str,
+) -> list[ConnectionModel]:
+    neurons = {x.name async for x in NeuronModel.objects.all()}
+    return await to_list(
+        ConnectionModel.objects.filter(
+            dataset_id=dataset_id, pre__in=neurons, post__in=neurons
+        ).order_by("pre", "post", "type")
+    )
 
 
-# @api.get("/download-connectivity", response=list[Connection], tags=["connectivity"])
-# async def get_dataset_connectivity(request, datasetId: str):
-#     neurons = {x.name async for x in NeuronModel.objects.all()}
-#     return await to_list(
-#         ConnectionModel.objects.filter(
-#             dataset_id=datasetId, pre__in=neurons, post__in=neurons
-#         ).order_by("pre", "post", "type")
-#     )
+@api.get("/connections/{datasetId}/download", tags=["connectivity"])
+async def get_dataset_connectivity(
+    request, datasetId: str, format: Literal["csv", "json"] = "csv"
+):
+    """Download the connections of a dedicated Dataset in either CSV or JSON format (default CSV)."""
+    connections = await get_connections_excluding_neuron_classes(dataset_id=datasetId)
+
+    content_type = "application/json" if format == "json" else "text/csv"
+    content_disposition = f'attachment; filename="{datasetId}.{format}"'
+    if not connections:
+        response = HttpResponse("", content_type=content_type)
+        response["Content-Disposition"] = content_disposition
+        return response
+
+    buffer = io.StringIO()
+
+    connections = [RawConnection.from_orm(c).model_dump() for c in connections]
+    if format == "json":
+        json.dump(connections, buffer, indent=2)
+    else:
+        fieldnames = connections[0].keys()
+        writer = csv.DictWriter(buffer, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(connections)
+
+    response = HttpResponse(
+        buffer.getvalue(), content_type=f"{content_type}; charset=utf-8"
+    )
+    response["Content-Disposition"] = content_disposition
+    return response
+
+
+@api.get(
+    "/connections/{datasetId}", response=list[RawConnection], tags=["connectivity"]
+)
+# @paginate
+async def get_dataset_connections(request, datasetId: str, exclude_class: bool = False):
+    """Gets the connections of a dedicated Dataset
+    Connections includes connection towards the neurons and their classes by default.
+    if exclude_class is set to true: the neuron classes (higher level neuron) is not included.
+    """
+    if exclude_class:
+        return get_connections_excluding_neuron_classes(dataset_id=datasetId)
+    return await to_list(ConnectionModel.objects.filter(dataset_id=datasetId))
 
 
 ## Ingestion

@@ -263,23 +263,6 @@
               "type": "integer"
             },
             "required": false
-          },
-          {
-            "in": "query",
-            "name": "page_size",
-            "schema": {
-              "anyOf": [
-                {
-                  "minimum": 1,
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Page Size"
-            },
-            "required": false
           }
         ],
         "responses": {
@@ -414,6 +397,93 @@
           }
         },
         "description": "Gets the connections of a dedicated Dataset",
+        "tags": [
+          "connectivity"
+        ]
+      }
+    },
+    "/api/connections/{datasetId}/download": {
+      "get": {
+        "operationId": "get_dataset_connectivity",
+        "summary": "Get Dataset Connectivity",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "datasetId",
+            "schema": {
+              "title": "Datasetid",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "default": "csv",
+              "enum": [
+                "csv",
+                "json"
+              ],
+              "title": "Format",
+              "type": "string"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Download the connections of a dedicated Dataset in either CSV or JSON format (default CSV).",
+        "tags": [
+          "connectivity"
+        ]
+      }
+    },
+    "/api/connections/{datasetId}": {
+      "get": {
+        "operationId": "get_dataset_connections",
+        "summary": "Get Dataset Connections",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "datasetId",
+            "schema": {
+              "title": "Datasetid",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "exclude_class",
+            "schema": {
+              "default": false,
+              "title": "Exclude Class",
+              "type": "boolean"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RawConnection"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "Gets the connections of a dedicated Dataset\nConnections includes connection towards the neurons and their classes by default.\nif exclude_class is set to true: the neuron classes (higher level neuron) is not included.",
         "tags": [
           "connectivity"
         ]
@@ -776,18 +846,6 @@
             "minimum": 1,
             "title": "Page",
             "type": "integer"
-          },
-          "page_size": {
-            "anyOf": [
-              {
-                "minimum": 1,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Page Size"
           }
         },
         "title": "Input",
@@ -854,6 +912,37 @@
           "type"
         ],
         "title": "Connection",
+        "type": "object"
+      },
+      "RawConnection": {
+        "properties": {
+          "pre": {
+            "maxLength": 30,
+            "title": "Pre",
+            "type": "string"
+          },
+          "post": {
+            "maxLength": 30,
+            "title": "Post",
+            "type": "string"
+          },
+          "type": {
+            "maxLength": 20,
+            "title": "Type",
+            "type": "string"
+          },
+          "synapses": {
+            "title": "Synapses",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "pre",
+          "post",
+          "type",
+          "synapses"
+        ],
+        "title": "RawConnection",
         "type": "object"
       }
     },

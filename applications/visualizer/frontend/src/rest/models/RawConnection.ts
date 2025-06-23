@@ -2,7 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type Input = {
-    page?: number;
+export type RawConnection = {
+    pre: string;
+    post: string;
+    type: string;
+    synapses: number;
 };
 

@@ -171,12 +171,6 @@ components:
           minimum: 1
           title: Page
           type: integer
-        page_size:
-          anyOf:
-          - minimum: 1
-            type: integer
-          - type: 'null'
-          title: Page Size
       title: Input
       type: object
     Neuron:
@@ -246,6 +240,30 @@ components:
       - count
       title: PagedNeuron
       type: object
+    RawConnection:
+      properties:
+        post:
+          maxLength: 30
+          title: Post
+          type: string
+        pre:
+          maxLength: 30
+          title: Pre
+          type: string
+        synapses:
+          title: Synapses
+          type: integer
+        type:
+          maxLength: 20
+          title: Type
+          type: string
+      required:
+      - pre
+      - post
+      - type
+      - synapses
+      title: RawConnection
+      type: object
   securitySchemes:
     BasicAuthSuperUser:
       scheme: basic
@@ -279,15 +297,6 @@ paths:
           minimum: 1
           title: Page
           type: integer
-      - in: query
-        name: page_size
-        required: false
-        schema:
-          anyOf:
-          - minimum: 1
-            type: integer
-          - type: 'null'
-          title: Page Size
       responses:
         '200':
           content:
@@ -411,6 +420,70 @@ paths:
                 type: array
           description: OK
       summary: Get Connections
+      tags:
+      - connectivity
+  /api/connections/{datasetId}:
+    get:
+      description: 'Gets the connections of a dedicated Dataset
+
+        Connections includes connection towards the neurons and their classes by default.
+
+        if exclude_class is set to true: the neuron classes (higher level neuron)
+        is not included.'
+      operationId: get_dataset_connections
+      parameters:
+      - in: path
+        name: datasetId
+        required: true
+        schema:
+          title: Datasetid
+          type: string
+      - in: query
+        name: exclude_class
+        required: false
+        schema:
+          default: false
+          title: Exclude Class
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RawConnection'
+                title: Response
+                type: array
+          description: OK
+      summary: Get Dataset Connections
+      tags:
+      - connectivity
+  /api/connections/{datasetId}/download:
+    get:
+      description: Download the connections of a dedicated Dataset in either CSV or
+        JSON format (default CSV).
+      operationId: get_dataset_connectivity
+      parameters:
+      - in: path
+        name: datasetId
+        required: true
+        schema:
+          title: Datasetid
+          type: string
+      - in: query
+        name: format
+        required: false
+        schema:
+          default: csv
+          enum:
+          - csv
+          - json
+          title: Format
+          type: string
+      responses:
+        '200':
+          description: OK
+      summary: Get Dataset Connectivity
       tags:
       - connectivity
   /api/datasets:
