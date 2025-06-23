@@ -31,12 +31,12 @@ export interface SlidingRingOptions<T> extends SlidingRingCb<T> {
 export class SlidingRing<T> {
   private extent: [number, number];
 
-  public ring: Array<{
+  ring: Array<{
     n: number; // position within extent
     o: T;
   }>;
 
-  public pos: number; // current buffer position
+  pos: number; // current buffer position
   private tail: number; // buffer tail
   private head: number; // buffer head
 
@@ -49,21 +49,19 @@ export class SlidingRing<T> {
 
     const [min, max] = options.extent;
 
-    if (min >= max) {
-      throw Error("extent should be [min,max], where min < max");
+    if (min > max) {
+      throw Error("extent should be [min,max], where min <= max");
     }
 
     if (options.startAt > max || options.startAt < min) {
       throw Error("startAt must be within extent");
     }
 
-    const extentSize = max - min;
-    if (extentSize < 3) {
-      throw Error("extent size is too small, should be greater than 3");
-    }
+    const nbSlices = max - min;
+    const extentSize = nbSlices === 0 ? 1 : nbSlices;
 
     if (extentSize < options.cacheSize) {
-      options.cacheSize = max - min;
+      options.cacheSize = extentSize;
     }
 
     this.ring = new Array(options.cacheSize);
@@ -81,7 +79,7 @@ export class SlidingRing<T> {
 
   private initRing(at: number) {
     // initialize ring
-    const halfSize = Math.floor(this.ring.length / 2);
+    const halfSize = Math.ceil(this.ring.length / 2);
     let tailN = at - halfSize;
     let headN = at + halfSize;
 
