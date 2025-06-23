@@ -8,7 +8,7 @@ import { useGlobalContext } from "../contexts/GlobalContext.tsx";
 import { CaretIcon, CheckIcon, CloseIcon } from "../icons";
 import Logo from "../icons/Logo.svg";
 import { GlobalError } from "../models/Error.ts";
-import { NeuronsService } from "../rest";
+import { DatasetsService, NeuronsService } from "../rest";
 import { TEMPLATE_ACTIVE_DATASETS } from "../settings/templateWorkspaceSettings.ts";
 import { vars } from "../theme/variables.ts";
 import AboutModal from "./AboutNemanode/AboutModal.tsx";
@@ -22,6 +22,8 @@ function AppLauncher() {
   const [searchedNeuron, setSearchedNeuron] = useState("");
   const isActive = (path) => location.pathname === path;
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+  const [dataSetsCount, setDataSetsCount] = useState<number | undefined>(undefined);
+  const [neuronsCount, setNeuronsCount] = useState<number | undefined>(undefined);
 
   const handleTemplateClick = async () => {
     const workspaceId = `workspace-${Date.now()}`;
@@ -56,6 +58,19 @@ function AppLauncher() {
     }
   };
 
+  const fetchCounts = async () => {
+    try {
+      const cellsCount = await NeuronsService.getCellsCount();
+      const dataSetsCount = await DatasetsService.getDatasetsCount();
+      setNeuronsCount(cellsCount);
+      setDataSetsCount(dataSetsCount);
+    } catch (error) {
+      setNeuronsCount(0);
+      setDataSetsCount(0);
+      handleErrors(new GlobalError(error.message));
+    }
+  };
+
   const onSearchNeurons = (value) => {
     setSearchedNeuron(value);
     debouncedFetchNeurons(value, TEMPLATE_ACTIVE_DATASETS);
@@ -69,6 +84,7 @@ function AppLauncher() {
 
   useEffect(() => {
     debouncedFetchNeurons();
+    fetchCounts();
   }, []);
 
   const getSortedNeuronNames = () => {
@@ -111,7 +127,7 @@ function AppLauncher() {
             </Box>
             <Chip
               icon={<BarChart />}
-              label={`${TEMPLATE_ACTIVE_DATASETS.length} datasets, ${neuronNames.length} neurons`}
+              label={`${dataSetsCount === undefined ? "-" : dataSetsCount} datasets, ${neuronsCount === undefined ? "-" : neuronsCount} neurons`}
               variant="outlined"
               className="basic"
             />
