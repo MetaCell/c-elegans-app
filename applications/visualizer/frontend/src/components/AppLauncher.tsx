@@ -125,7 +125,12 @@ function AppLauncher() {
                 About Nemanode
               </Button>
             </Box>
-            <Chip icon={<BarChart />} label={`${dataSetsCount === undefined ? '-' : dataSetsCount} datasets, ${neuronsCount === undefined ? '-' : neuronsCount} neurons`} variant="outlined" className="basic" />
+            <Chip
+              icon={<BarChart />}
+              label={`${dataSetsCount === undefined ? "-" : dataSetsCount} datasets, ${neuronsCount === undefined ? "-" : neuronsCount} neurons`}
+              variant="outlined"
+              className="basic"
+            />
           </Toolbar>
         </AppBar>
         <Box className="MuiBox-container">
