@@ -181,8 +181,6 @@ const TwoDViewer = () => {
 
   useEffect(() => {
     if (cyRef.current) {
-      const w = workspace;
-      console.log(w);
       const selectedNeuronEntities = Object.values(workspace.availableNeurons).filter((n) => selectedNeurons.includes(n.name));
       const visibleNeurons = Object.values(workspace.availableNeurons).filter((n) => visibleActiveNeurons.has(n.name));
       updateHighlighted(cyRef.current, visibleNeurons, selectedNeuronEntities, legendHighlights);
