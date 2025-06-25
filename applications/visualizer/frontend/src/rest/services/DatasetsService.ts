@@ -83,4 +83,26 @@ export class DatasetsService {
             },
         });
     }
+    /**
+     * Download Dataset
+     * Downloads a specific dataset
+     * @returns string OK
+     * @throws ApiError
+     */
+    public static downloadDataset({
+        dataset,
+    }: {
+        dataset: string,
+    }): CancelablePromise<string> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/datasets/{dataset}/download',
+            path: {
+                'dataset': dataset,
+            },
+            errors: {
+                404: `Not Found`,
+            },
+        });
+    }
 }

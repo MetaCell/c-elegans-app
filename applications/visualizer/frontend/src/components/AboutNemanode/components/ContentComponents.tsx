@@ -79,8 +79,6 @@ export const DownloadDataContent = () => {
 
     fetchDatasets();
   }, []);
-  console.log(datasets);
-
   // Group datasets by the first part of their ID (before first underscore)
   const groupedDatasets = datasets.reduce(
     (groups, dataset) => {
@@ -113,6 +111,28 @@ export const DownloadDataContent = () => {
     );
   }
 
+  const handleDownLoad = async (id: string) => {
+    if (id) {
+      try {
+        // Get the file data from the service (returns string)
+        const fileData = await DatasetsService.downloadDataset({ dataset: id });
+
+        // Create blob from the string data
+        const blob = new Blob([fileData], { type: "text/csv" });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${id}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Failed to download dataset:", error);
+      }
+    }
+  };
+
   return (
     <Stack spacing={2} p={2}>
       <Stack spacing={3}>
@@ -127,7 +147,7 @@ export const DownloadDataContent = () => {
                   // Remove the group name from the dataset name to avoid repetition
                   const specificName = groupDatasets.length > 1 ? dataset.name.replace(`${groupKey}, `, "") : dataset.name;
                   return (
-                    <Box sx={styles.datasetDownloadItem}>
+                    <Box sx={styles.datasetDownloadItem} onClick={() => handleDownLoad(dataset.id)} key={dataset.id}>
                       <Box sx={styles.datasetDownloadIcon} className="datasetDownloadIcon">
                         <FileDownloadOutlinedIcon fontSize="small" sx={{ color: "#535350" }} />
                       </Box>
