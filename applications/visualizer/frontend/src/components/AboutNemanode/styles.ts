@@ -71,4 +71,52 @@ export const styles = {
     borderBottom: 1,
     borderColor: "divider",
   },
+  datasetDownloadItem: {
+    borderRadius: "0.5rem",
+    border: `1px solid ${vars.gray100}`,
+    background: vars.gray50,
+    p: 1,
+    display: "flex",
+    alignItems: "center",
+    gap: 1,
+    cursor: "pointer",
+
+    "&:hover": {
+      background: vars.gray100,
+      border: `1px solid ${vars.gray200}`,
+
+      "& .MuiTypography-root": {
+        color: `${vars.gray900} !important`,
+      },
+
+      "& .datasetDownloadIcon": {
+        background: vars.gray200,
+        border: `1px solid ${vars.gray200}`,
+
+        "& .MuiSvgIcon-root": {
+          color: vars.gray900,
+        },
+      },
+    },
+  },
+  datasetDownloadIcon: {
+    borderRadius: "0.5rem",
+    border: `1px solid ${vars.gray100}`,
+    background: vars.gray100,
+    p: ".25rem",
+    width: "1.75rem",
+    height: "1.75rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+
+    "& .MuiSvgIcon-root": {
+      width: "1.25rem !important",
+      height: "1.25rem !important",
+    },
+  },
+  datasetDownloadText: {
+    fontWeight: "500 !important",
+    color: `${vars.gray500} !important`,
+  },
 };

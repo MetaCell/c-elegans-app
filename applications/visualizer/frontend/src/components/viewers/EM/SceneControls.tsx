@@ -4,8 +4,8 @@ import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import { Box, Divider, IconButton, Popover, Typography } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { useState } from "react";
-import CustomFormControlLabel from "../../CustomFormControlLabel";
 import { vars } from "../../../theme/variables.ts";
+import CustomFormControlLabel from "../../CustomFormControlLabel";
 
 const { gray500 } = vars;
 

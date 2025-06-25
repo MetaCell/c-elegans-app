@@ -18,12 +18,7 @@ export const SecondaryTabs = ({ value, onChange }: TabsProps) => (
     TabIndicatorProps={{ style: { backgroundColor: "#1568D5", height: "2px" } }}
     sx={styles.secondaryTabs}
   >
-    {[
-      "Data sources",
-      "Types of connection",
-      // "Download data",
-      "Cite us",
-    ].map((label, index) => (
+    {["Data sources", "Types of connection", "Download data", "Cite us"].map((label, index) => (
       <Tab key={label} label={label} sx={styles.secondaryTab(value === index)} />
     ))}
   </MuiTabs>
