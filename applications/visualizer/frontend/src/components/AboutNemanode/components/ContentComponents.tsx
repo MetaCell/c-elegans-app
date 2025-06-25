@@ -1,6 +1,6 @@
 import DatasetOutlinedIcon from "@mui/icons-material/DatasetOutlined";
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
-import { Alert, Box, CircularProgress, IconButton, Stack, Typography } from "@mui/material";
+import { Alert, Box, CircularProgress, Stack, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import type { Dataset } from "../../../rest/models/Dataset";
 import { DatasetsService } from "../../../rest/services/DatasetsService";
