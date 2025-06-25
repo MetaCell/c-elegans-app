@@ -397,15 +397,28 @@ const shouldRemoveEdge = (pre: string, post: string, expectedNodes: Set<string>)
   return !expectedNodes.has(pre) || !expectedNodes.has(post);
 };
 
-export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights) => {
+export const updateHighlighted = (cy, inputNeurons, selectedNeurons, legendHighlights) => {
   // Remove all highlights and return if nothing is selected and no legend item activated.
   cy.elements().removeClass("faded");
-  if (selectedIds.length === 0 && legendHighlights.size === 0) {
+  if (selectedNeurons.length === 0 && legendHighlights.size === 0) {
     return;
   }
 
   // Use selected nodes as source if present, otherwise use input nodes.
-  const sourceIds = selectedIds.length ? selectedIds : inputIds;
+  const inputIdNames = inputNeurons.map((n) => n.name);
+  const sourceIds = selectedNeurons.length
+    ? selectedNeurons
+        .map((n) => {
+          if (inputIdNames.includes(n.name)) {
+            return n.name;
+          }
+          if (inputIdNames.includes(n.nclass)) {
+            return n.nclass;
+          }
+          return undefined;
+        })
+        .filter((n) => n !== undefined)
+    : inputNeurons.map((n) => n.name);
   let sourceNodes = cy.collection();
 
   for (const id of sourceIds) {
@@ -438,7 +451,7 @@ export const updateHighlighted = (cy, inputIds, selectedIds, legendHighlights) =
   });
 
   // Filter to the neighborhood of the selected nodes.
-  if (selectedIds.length > 0) {
+  if (selectedNeurons.length > 0) {
     let allowedNodes = cy.collection();
 
     for (let i = 0; i < sourceNodes.length; i++) {
