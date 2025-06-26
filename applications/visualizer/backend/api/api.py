@@ -12,7 +12,7 @@ from ninja.pagination import paginate, PageNumberPagination
 from ninja.errors import HttpError
 
 from django.shortcuts import aget_object_or_404
-from django.db.models import Q
+from django.db.models import Q, F
 from django.db.models.manager import BaseManager
 from django.conf import settings
 from django.core.management import call_command
@@ -99,7 +99,7 @@ async def get_dataset(request, dataset: str):
     return obj
 
 
-def annotate_neurons(neurons: BaseManager[NeuronModel]) -> None:
+def annotate_neurons(neurons) -> None:
     """Queries the datasets ids for each neuron."""
     neuron_names = neurons.values_list("name", flat=True).distinct()
     pre = (
@@ -126,9 +126,7 @@ def annotate_neurons(neurons: BaseManager[NeuronModel]) -> None:
         neuron.reference = settings.NEURON_REFERENCE_URL_FORMAT.format(nclass=neuron.nclass)  # type: ignore
 
 
-def neurons_from_datasets(
-    neurons: BaseManager[NeuronModel], dataset_ids: list[str]
-) -> BaseManager[NeuronModel]:
+def neurons_from_datasets(neurons, dataset_ids):
     """Filters neurons belonging to specific datasets."""
     neurons = neurons.filter(
         Q(
@@ -192,7 +190,13 @@ def get_all_cells(request, dataset_ids: Optional[list[str]] = Query(None)):
 @api.get("/cells/count", response=int, tags=["neurons"])
 def get_cells_count(request):
     """Returns the cells (neurons) count  from the DB"""
-    return NeuronModel.objects.all().count()
+    dataset_ids = DatasetModel.objects.all().values_list("id", flat=True).distinct()
+    neurons = neurons_from_datasets(NeuronModel.objects, dataset_ids)
+    return (
+        neurons.values_list("name", flat=True)
+        .union(neurons.values_list("nclass", flat=True))
+        .count()
+    )
 
 
 # # @api.post("/connections", response=list[Connection], tags=["connectivity"])

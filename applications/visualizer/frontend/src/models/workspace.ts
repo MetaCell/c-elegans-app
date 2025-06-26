@@ -6,12 +6,12 @@ import { type Dataset, type Neuron, NeuronsService } from "../rest";
 import { GlobalError } from "./Error.ts";
 import {
   type EMViewerSettings,
+  getDefaultViewerData,
   type NeuronGroup,
   type ViewerData,
   type ViewerSynchronizationPair,
   ViewerType,
   Visibility,
-  getDefaultViewerData,
 } from "./models";
 import { type SynchronizerContext, SynchronizerOrchestrator } from "./synchronizer";
 
@@ -221,7 +221,6 @@ export class Workspace {
     await this._getAvailableNeurons();
   }
 
-  @triggerUpdate
   async _getAvailableNeurons() {
     try {
       const datasetIds = Object.keys(this.activeDatasets);
@@ -235,7 +234,12 @@ export class Workspace {
 
         const className = neuron.nclass;
         if (!(className in neuronsClass)) {
-          const neuronClass = { ...neuron, name: className, model3DUrls: [...neuron.model3DUrls], datasetIds: [...neuron.datasetIds] };
+          const neuronClass = {
+            ...neuron,
+            name: className,
+            model3DUrls: [...neuron.model3DUrls],
+            datasetIds: [...neuron.datasetIds],
+          };
           neuronsClass[className] = neuronClass;
           uniqueNeurons.add(neuronClass);
         } else {
@@ -244,7 +248,6 @@ export class Workspace {
       }
 
       this.availableNeurons = Object.fromEntries([...uniqueNeurons].map((n) => [n.name, n]));
-      return this;
     } catch (error) {
       throw new GlobalError("Failed to fetch neurons:");
     }
