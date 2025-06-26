@@ -1,7 +1,14 @@
 import { Box, DialogContent } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import CustomDialog from "../CustomDialog";
-import { CiteUsContent, ConnectionTypesContent, ContactContent, ContributeContent, DataSourcesContent } from "./components/ContentComponents";
+import {
+  CiteUsContent,
+  ConnectionTypesContent,
+  ContactContent,
+  ContributeContent,
+  DataSourcesContent,
+  DownloadDataContent,
+} from "./components/ContentComponents";
 import { SecondaryTabPanel, TabPanel } from "./components/TabPanels";
 import { PrimaryTabs, SecondaryTabs } from "./components/Tabs";
 import { styles } from "./styles";
@@ -63,11 +70,11 @@ const AboutModal = ({
             <ConnectionTypesContent />
           </SecondaryTabPanel>
 
-          {/* <SecondaryTabPanel value={secondaryTabValue} index={2}>
-            <DownloadDataContent />
-          </SecondaryTabPanel> */}
-
           <SecondaryTabPanel value={secondaryTabValue} index={2}>
+            <DownloadDataContent />
+          </SecondaryTabPanel>
+
+          <SecondaryTabPanel value={secondaryTabValue} index={3}>
             <CiteUsContent />
           </SecondaryTabPanel>
         </TabPanel>

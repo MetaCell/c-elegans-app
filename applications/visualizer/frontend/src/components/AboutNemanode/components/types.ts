@@ -8,7 +8,8 @@ export interface TabPanelProps {
 
 export interface DatasetEntryProps {
   title: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  icon?: boolean;
 }
 
 export interface TabsProps {

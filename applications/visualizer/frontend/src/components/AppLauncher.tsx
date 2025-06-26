@@ -89,7 +89,7 @@ function AppLauncher() {
 
   const getSortedNeuronNames = () => {
     const uniqueNeurons = new Set(selectedNeurons.concat(neuronNames));
-    return Array.from(uniqueNeurons);
+    return Array.from(uniqueNeurons).sort((a, b) => a.localeCompare(b));
   };
 
   const openAboutModal = () => {

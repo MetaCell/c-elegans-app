@@ -1,5 +1,5 @@
-import { Color } from "ol/color";
 import type { FeatureLike } from "ol/Feature";
+import type { Color } from "ol/color";
 import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
@@ -114,7 +114,7 @@ class String2HexCodeColor {
     if (!percent) {
       percent = this.defaultShadePercentage;
     }
-    const f = parseInt(color.slice(1), 16);
+    const f = Number.parseInt(color.slice(1), 16);
     const t = percent < 0 ? 0 : 255;
     const p = percent < 0 ? percent * -1 : percent;
     const R = f >> 16;

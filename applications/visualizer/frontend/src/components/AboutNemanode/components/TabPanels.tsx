@@ -8,7 +8,14 @@ export const TabPanel = ({ children, value, index, ...other }: TabPanelProps) =>
 );
 
 export const SecondaryTabPanel = ({ children, value, index, ...other }: TabPanelProps) => (
-  <div role="tabpanel" hidden={value !== index} id={`secondary-tabpanel-${index}`} aria-labelledby={`secondary-tab-${index}`} {...other}>
+  <div
+    role="tabpanel"
+    hidden={value !== index}
+    id={`secondary-tabpanel-${index}`}
+    aria-labelledby={`secondary-tab-${index}`}
+    style={{ paddingTop: ".5rem", paddingBottom: ".5rem" }}
+    {...other}
+  >
     {value === index && <Box>{children}</Box>}
   </div>
 );

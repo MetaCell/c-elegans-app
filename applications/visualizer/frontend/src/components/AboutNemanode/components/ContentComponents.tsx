@@ -1,31 +1,42 @@
 import DatasetOutlinedIcon from "@mui/icons-material/DatasetOutlined";
-import { Box, Stack, Typography } from "@mui/material";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+import { Box, CircularProgress, Stack, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
+import { useGlobalContext } from "../../../contexts/GlobalContext";
+import { GlobalError } from "../../../models/Error";
+import { ConnectivityService } from "../../../rest";
+import type { Dataset } from "../../../rest/models/Dataset";
+import { DatasetsService } from "../../../rest/services/DatasetsService";
 import { vars } from "../../../theme/variables";
 import content from "../content.json";
 import { styles } from "../styles";
 import type { DatasetEntryProps } from "./types";
 
-export const DatasetEntry = ({ title, children }: DatasetEntryProps) => (
+export const DatasetEntry = ({ title, children, icon = true }: DatasetEntryProps) => (
   <Stack spacing={1}>
     <Box sx={styles.datasetEntry}>
-      <DatasetOutlinedIcon
-        sx={{
-          mr: 1,
-          width: "1.25rem !important",
-          height: "1.25rem !important",
-        }}
-      />
+      {icon && (
+        <DatasetOutlinedIcon
+          sx={{
+            mr: 1,
+            width: "1.25rem !important",
+            height: "1.25rem !important",
+          }}
+        />
+      )}
       <Typography variant="subtitle1" color={vars.gray900} lineHeight={1}>
         {title}
       </Typography>
     </Box>
-    <Typography
-      variant="body1"
-      paragraph
-      dangerouslySetInnerHTML={{
-        __html: String(children).replace(/\n/g, "<br />"),
-      }}
-    />
+    {children && (
+      <Typography
+        variant="body1"
+        paragraph
+        dangerouslySetInnerHTML={{
+          __html: String(children).replace(/\n/g, "<br />"),
+        }}
+      />
+    )}
   </Stack>
 );
 
@@ -51,13 +62,98 @@ export const ConnectionTypesContent = () => (
   </Stack>
 );
 
-export const DownloadDataContent = () => (
-  <Stack spacing={2} p={2}>
-    <Typography variant="body1" paragraph>
-      {content.downloadData.description}
-    </Typography>
-  </Stack>
-);
+export const DownloadDataContent = () => {
+  const [datasets, setDatasets] = useState<Dataset[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { handleErrors } = useGlobalContext();
+
+  useEffect(() => {
+    const fetchDatasets = async () => {
+      try {
+        setLoading(true);
+        const datasetsData = await DatasetsService.getDatasets({});
+        setDatasets(datasetsData);
+      } catch (error) {
+        handleErrors(new GlobalError(error.message));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDatasets();
+  }, []);
+  // Group datasets by the first part of their ID (before first underscore)
+  const groupedDatasets = datasets.reduce(
+    (groups, dataset) => {
+      const groupKey = dataset.name.split(",").slice(0, 2).join(",").trim();
+      if (!groups[groupKey]) {
+        groups[groupKey] = [];
+      }
+      groups[groupKey].push(dataset);
+      return groups;
+    },
+    {} as Record<string, Dataset[]>,
+  );
+
+  if (loading) {
+    return (
+      <Stack spacing={2} p={2} alignItems="center" justifyContent="center" minHeight="10rem">
+        <CircularProgress size={24} />
+      </Stack>
+    );
+  }
+
+  const handleDownLoad = async (id: string, name: string) => {
+    if (id) {
+      try {
+        // Get the file data from the service (returns string)
+        const fileData = await ConnectivityService.getDatasetConnectivity({ datasetId: id });
+
+        // Create blob from the string data
+        const blob = new Blob([fileData], { type: "text/csv" });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${name}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        handleErrors(new GlobalError(error.message));
+      }
+    }
+  };
+
+  return (
+    <Stack spacing={2} p={2}>
+      <Stack spacing={3}>
+        {Object.entries(groupedDatasets)
+          .reverse()
+          .map(([groupKey, groupDatasets]) => (
+            <Stack key={groupKey} spacing={2}>
+              {groupDatasets.length > 1 && <DatasetEntry key={groupKey} title={groupKey} icon={false} />}
+
+              <Stack spacing={1}>
+                {groupDatasets.map((dataset) => {
+                  // Remove the group name from the dataset name to avoid repetition
+                  const specificName = groupDatasets.length > 1 ? dataset.name.replace(`${groupKey}, `, "") : dataset.name;
+                  return (
+                    <Box sx={styles.datasetDownloadItem} onClick={() => handleDownLoad(dataset.id, specificName)} key={dataset.id}>
+                      <Box sx={styles.datasetDownloadIcon} className="datasetDownloadIcon">
+                        <FileDownloadOutlinedIcon fontSize="small" sx={{ color: "#535350" }} />
+                      </Box>
+                      <Typography sx={styles.datasetDownloadText}>{specificName}</Typography>
+                    </Box>
+                  );
+                })}
+              </Stack>
+            </Stack>
+          ))}
+      </Stack>
+    </Stack>
+  );
+};
 
 export const CiteUsContent = () => (
   <Stack spacing={2} p={2}>
