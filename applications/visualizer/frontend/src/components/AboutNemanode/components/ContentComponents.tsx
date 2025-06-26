@@ -2,6 +2,8 @@ import DatasetOutlinedIcon from "@mui/icons-material/DatasetOutlined";
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import { Box, CircularProgress, Stack, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
+import { useGlobalContext } from "../../../contexts/GlobalContext";
+import { GlobalError } from "../../../models/Error";
 import { ConnectivityService } from "../../../rest";
 import type { Dataset } from "../../../rest/models/Dataset";
 import { DatasetsService } from "../../../rest/services/DatasetsService";
@@ -9,8 +11,6 @@ import { vars } from "../../../theme/variables";
 import content from "../content.json";
 import { styles } from "../styles";
 import type { DatasetEntryProps } from "./types";
-import { GlobalError } from "../../../models/Error";
-import { useGlobalContext } from "../../../contexts/GlobalContext";
 
 export const DatasetEntry = ({ title, children, icon = true }: DatasetEntryProps) => (
   <Stack spacing={1}>
