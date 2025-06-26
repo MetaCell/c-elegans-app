@@ -1,13 +1,13 @@
 import { Box, Typography } from "@mui/material";
 import "ol/ol.css";
 import { type Feature, Map as OLMap, View } from "ol";
-import type { FeatureLike } from "ol/Feature";
 import ScaleLine from "ol/control/ScaleLine";
 import type { Coordinate } from "ol/coordinate";
 import { shiftKeyOnly } from "ol/events/condition";
 import { getCenter } from "ol/extent";
+import type { FeatureLike } from "ol/Feature";
 import GeoJSON from "ol/format/GeoJSON";
-import { MouseWheelZoom, defaults as defaultInteractions } from "ol/interaction.js";
+import { defaults as defaultInteractions, MouseWheelZoom } from "ol/interaction.js";
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
 import { Projection } from "ol/proj";
@@ -17,11 +17,11 @@ import type Style from "ol/style/Style";
 import { TileGrid } from "ol/tilegrid";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
-import { ViewerType, getEMDataURL, getEMResolution, getSegmentationURL, getSynapsesSegmentationURL } from "../../../models/models.ts";
+import { getEMDataURL, getEMResolution, getSegmentationURL, getSynapsesSegmentationURL, ViewerType } from "../../../models/models.ts";
 import type { Workspace } from "../../../models/workspace.ts";
 import type { Dataset } from "../../../rest/index.ts";
-import SceneControls from "./SceneControls.tsx";
 import { activeNeuronStyle, activeSynapseStyle, cellFeatureName, selectedNeuronStyle, selectedSynapseStyle } from "./neuronsMapFeature.ts";
+import SceneControls from "./SceneControls.tsx";
 import { SlidingLayer } from "./slidingLayer.ts";
 
 const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, projection: Projection): TileLayer<XYZ> => {
@@ -205,7 +205,7 @@ const EMStackViewer = () => {
   if (!firstActiveDataset) {
     firstActiveDataset = Object.values(currentWorkspace.activeDatasets).find((d) => d.emData?.maxResolution);
   }
-  if (!firstActiveDataset.emData) {
+  if (!firstActiveDataset?.emData) {
     return <NoEMData />;
   }
 
@@ -449,7 +449,14 @@ const EMStackViewer = () => {
   };
 
   return (
-    <Box sx={{ position: "relative", display: "flex", width: "100%", height: "100%" }}>
+    <Box
+      sx={{
+        position: "relative",
+        display: "flex",
+        width: "100%",
+        height: "100%",
+      }}
+    >
       <SceneControls
         onZoomIn={onControlZoomIn}
         onResetView={onResetView}
