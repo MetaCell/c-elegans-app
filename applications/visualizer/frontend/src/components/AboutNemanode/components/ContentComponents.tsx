@@ -1,6 +1,6 @@
 import DatasetOutlinedIcon from "@mui/icons-material/DatasetOutlined";
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
-import { Alert, Box, CircularProgress, Stack, Typography } from "@mui/material";
+import { Box, CircularProgress, Stack, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { ConnectivityService } from "../../../rest";
 import type { Dataset } from "../../../rest/models/Dataset";
@@ -9,6 +9,8 @@ import { vars } from "../../../theme/variables";
 import content from "../content.json";
 import { styles } from "../styles";
 import type { DatasetEntryProps } from "./types";
+import { GlobalError } from "../../../models/Error";
+import { useGlobalContext } from "../../../contexts/GlobalContext";
 
 export const DatasetEntry = ({ title, children, icon = true }: DatasetEntryProps) => (
   <Stack spacing={1}>
@@ -63,7 +65,7 @@ export const ConnectionTypesContent = () => (
 export const DownloadDataContent = () => {
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { handleErrors } = useGlobalContext();
 
   useEffect(() => {
     const fetchDatasets = async () => {
@@ -71,8 +73,8 @@ export const DownloadDataContent = () => {
         setLoading(true);
         const datasetsData = await DatasetsService.getDatasets({});
         setDatasets(datasetsData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch datasets");
+      } catch (error) {
+        handleErrors(new GlobalError(error.message));
       } finally {
         setLoading(false);
       }
@@ -101,14 +103,6 @@ export const DownloadDataContent = () => {
     );
   }
 
-  if (error) {
-    return (
-      <Stack spacing={2} p={2}>
-        <Alert severity="error">Failed to load datasets: {error}</Alert>
-      </Stack>
-    );
-  }
-
   const handleDownLoad = async (id: string, name: string) => {
     if (id) {
       try {
@@ -126,7 +120,7 @@ export const DownloadDataContent = () => {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
       } catch (error) {
-        console.error("Failed to download dataset:", error);
+        handleErrors(new GlobalError(error.message));
       }
     }
   };
