@@ -2,6 +2,7 @@ import DatasetOutlinedIcon from "@mui/icons-material/DatasetOutlined";
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import { Alert, Box, CircularProgress, Stack, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
+import { ConnectivityService } from "../../../rest";
 import type { Dataset } from "../../../rest/models/Dataset";
 import { DatasetsService } from "../../../rest/services/DatasetsService";
 import { vars } from "../../../theme/variables";
@@ -94,11 +95,8 @@ export const DownloadDataContent = () => {
 
   if (loading) {
     return (
-      <Stack spacing={2} p={2} alignItems="center">
+      <Stack spacing={2} p={2} alignItems="center" justifyContent="center" minHeight="10rem">
         <CircularProgress size={24} />
-        <Typography variant="body2" color="text.secondary">
-          Loading datasets...
-        </Typography>
       </Stack>
     );
   }
@@ -111,18 +109,18 @@ export const DownloadDataContent = () => {
     );
   }
 
-  const handleDownLoad = async (id: string) => {
+  const handleDownLoad = async (id: string, name: string) => {
     if (id) {
       try {
         // Get the file data from the service (returns string)
-        const fileData = await DatasetsService.downloadDataset({ dataset: id });
+        const fileData = await ConnectivityService.getDatasetConnectivity({ datasetId: id });
 
         // Create blob from the string data
         const blob = new Blob([fileData], { type: "text/csv" });
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `${id}.csv`;
+        link.download = `${name}.csv`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -147,7 +145,7 @@ export const DownloadDataContent = () => {
                   // Remove the group name from the dataset name to avoid repetition
                   const specificName = groupDatasets.length > 1 ? dataset.name.replace(`${groupKey}, `, "") : dataset.name;
                   return (
-                    <Box sx={styles.datasetDownloadItem} onClick={() => handleDownLoad(dataset.id)} key={dataset.id}>
+                    <Box sx={styles.datasetDownloadItem} onClick={() => handleDownLoad(dataset.id, specificName)} key={dataset.id}>
                       <Box sx={styles.datasetDownloadIcon} className="datasetDownloadIcon">
                         <FileDownloadOutlinedIcon fontSize="small" sx={{ color: "#535350" }} />
                       </Box>
