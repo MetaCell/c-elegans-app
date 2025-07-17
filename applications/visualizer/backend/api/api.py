@@ -1,8 +1,7 @@
 import csv
-from io import StringIO
 import io
 import json
-import sys
+from asgiref.sync import sync_to_async
 from collections import defaultdict
 from typing import Iterable, Literal, Optional
 
@@ -12,15 +11,21 @@ from ninja.pagination import paginate, PageNumberPagination
 from ninja.errors import HttpError
 
 from django.shortcuts import aget_object_or_404
-from django.db.models import Q, F
-from django.db.models.manager import BaseManager
+from django.db.models import Q
 from django.conf import settings
 from django.core.management import call_command
 
 
 from .utils import get_dataset_viewer_config, to_list
 
-from .schemas import Dataset, EMData, Neuron, Connection, RawConnection
+from .schemas import (
+    Dataset,
+    EMData,
+    GroupedConnection,
+    Neuron,
+    Connection,
+    RawConnection,
+)
 from .models import (
     Dataset as DatasetModel,
     Neuron as NeuronModel,
@@ -71,7 +76,7 @@ async def annotate_dataset(datasets: Iterable[DatasetModel]):
 
 
 @api.get("/datasets", response=list[Dataset], tags=["datasets"])
-async def get_datasets(request, ids: Optional[list[str]] = Query(None)):
+async def get_datasets(request, ids: Optional[list[str]] = Query(None)):  # type: ignore the Query type error
     """Returns all datasets or a filtered list based on provided IDs"""
     if ids:
         datasets = await to_list(DatasetModel.objects.filter(id__in=ids))
@@ -159,8 +164,8 @@ def get_dataset_neurons(request, dataset: str):
 @api.get("/cells/search", response=list[Neuron], tags=["neurons"])
 def search_cells(
     request,
-    name: Optional[str] = Query(None),
-    dataset_ids: Optional[list[str]] = Query(None),
+    name: Optional[str] = Query(None),  # type: ignore the Query type error
+    dataset_ids: Optional[list[str]] = Query(None),  # type: ignore the Query type error
 ):
     neurons = NeuronModel.objects.all()
 
@@ -176,7 +181,7 @@ def search_cells(
 
 @api.get("/cells", response=list[Neuron], tags=["neurons"])
 @paginate(PageNumberPagination, page_size=50)  # BUG: this is not being applied
-def get_all_cells(request, dataset_ids: Optional[list[str]] = Query(None)):
+def get_all_cells(request, dataset_ids: Optional[list[str]] = Query(None)):  # type: ignore the Query type error
     """Returns all the cells (neurons) from the DB"""
     neurons = NeuronModel.objects.all()
 
@@ -273,20 +278,60 @@ async def get_dataset_connectivity(
     return response
 
 
+@sync_to_async
+def get_specific_connections(dataset, neurons):
+    queryset = (
+        ConnectionModel.objects.filter(
+            Q(dataset_id=dataset) & (Q(pre__in=neurons) | Q(post__in=neurons))
+        )
+        .values("pre", "post")
+        .order_by("pre", "post")
+    )
+
+    grouped_connections = defaultdict(list)
+
+    for entry in queryset:
+        if entry["pre"] in neurons:
+            neuron = entry["pre"]
+        elif entry["post"] in neurons:
+            neuron = entry["post"]
+        else:
+            # Shouldn't happen, but just in case
+            print(f"Neuron {entry['pre']} or {entry['post']} is not in {neurons}")
+            continue
+
+        grouped_connections[neuron].append(entry)
+
+    return [
+        GroupedConnection(neuron=n, connections=c)
+        for n, c in grouped_connections.items()
+    ]
+
+
 @api.get(
-    "/connections/{datasetId}", response=list[RawConnection], tags=["connectivity"]
+    "/connections/{datasetId}",
+    response=list[RawConnection] | list[GroupedConnection],
+    tags=["connectivity"],
 )
 # @paginate
-async def get_dataset_connections(request, datasetId: str, exclude_class: bool = False):
+async def get_dataset_connections(
+    request,
+    datasetId: str,
+    exclude_class: bool = False,
+    neurons: Optional[list[str]] = Query(None),  # type: ignore the Query type error
+):
     """Gets the connections of a dedicated Dataset
     Connections includes connection towards the neurons and their classes by default.
     if exclude_class is set to true: the neuron classes (higher level neuron) is not included.
     """
+    if neurons:
+        return await get_specific_connections(datasetId, neurons)
     if exclude_class:
         return get_connections_excluding_neuron_classes(dataset_id=datasetId)
     return await to_list(ConnectionModel.objects.filter(dataset_id=datasetId))
 
 
+## ***********************
 ## Ingestion
 
 
@@ -298,9 +343,10 @@ def populate_db(request):
         call_command("migrate")
         call_command("populatedb")
     except Exception as e:
-        raise HttpError(500)
+        raise HttpError(500)  # type: ignore type error
 
 
+## ***********************
 ## Healthcheck
 
 

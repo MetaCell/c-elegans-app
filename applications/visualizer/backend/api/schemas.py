@@ -85,6 +85,16 @@ class RawConnection(ModelSchema, BilingualSchema):
         fields = ["pre", "post", "type", "synapses"]
 
 
+class ConnectionGroup(BilingualSchema):
+    pre: str
+    post: str
+
+
+class GroupedConnection(BilingualSchema):
+    neuron: str
+    connections: list[ConnectionGroup]
+
+
 class FullDataset(Dataset):
     connections: list[Connection]
 
