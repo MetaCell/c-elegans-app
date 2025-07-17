@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { Connection } from '../models/Connection';
+import type { GroupedConnection } from '../models/GroupedConnection';
 import type { RawConnection } from '../models/RawConnection';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -74,16 +75,18 @@ export class ConnectivityService {
      * Gets the connections of a dedicated Dataset
      * Connections includes connection towards the neurons and their classes by default.
      * if exclude_class is set to true: the neuron classes (higher level neuron) is not included.
-     * @returns RawConnection OK
+     * @returns any OK
      * @throws ApiError
      */
     public static getDatasetConnections({
         datasetId,
         excludeClass = false,
+        neurons,
     }: {
         datasetId: string,
         excludeClass?: boolean,
-    }): CancelablePromise<Array<RawConnection>> {
+        neurons?: (Array<string> | null),
+    }): CancelablePromise<(Array<RawConnection> | Array<GroupedConnection>)> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/connections/{datasetId}',
@@ -92,6 +95,7 @@ export class ConnectivityService {
             },
             query: {
                 'exclude_class': excludeClass,
+                'neurons': neurons,
             },
         });
     }

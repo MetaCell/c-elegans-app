@@ -465,6 +465,25 @@
               "type": "boolean"
             },
             "required": false
+          },
+          {
+            "in": "query",
+            "name": "neurons",
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Neurons"
+            },
+            "required": false
           }
         ],
         "responses": {
@@ -473,11 +492,21 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/RawConnection"
-                  },
-                  "title": "Response",
-                  "type": "array"
+                  "anyOf": [
+                    {
+                      "items": {
+                        "$ref": "#/components/schemas/RawConnection"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "items": {
+                        "$ref": "#/components/schemas/GroupedConnection"
+                      },
+                      "type": "array"
+                    }
+                  ],
+                  "title": "Response"
                 }
               }
             }
@@ -912,6 +941,45 @@
           "type"
         ],
         "title": "Connection",
+        "type": "object"
+      },
+      "ConnectionGroup": {
+        "properties": {
+          "pre": {
+            "title": "Pre",
+            "type": "string"
+          },
+          "post": {
+            "title": "Post",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pre",
+          "post"
+        ],
+        "title": "ConnectionGroup",
+        "type": "object"
+      },
+      "GroupedConnection": {
+        "properties": {
+          "neuron": {
+            "title": "Neuron",
+            "type": "string"
+          },
+          "connections": {
+            "items": {
+              "$ref": "#/components/schemas/ConnectionGroup"
+            },
+            "title": "Connections",
+            "type": "array"
+          }
+        },
+        "required": [
+          "neuron",
+          "connections"
+        ],
+        "title": "GroupedConnection",
         "type": "object"
       },
       "RawConnection": {

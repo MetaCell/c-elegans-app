@@ -32,6 +32,19 @@ components:
       - type
       title: Connection
       type: object
+    ConnectionGroup:
+      properties:
+        post:
+          title: Post
+          type: string
+        pre:
+          title: Pre
+          type: string
+      required:
+      - pre
+      - post
+      title: ConnectionGroup
+      type: object
     Dataset:
       properties:
         axes:
@@ -163,6 +176,21 @@ components:
       required:
       - detail
       title: ErrorMessage
+      type: object
+    GroupedConnection:
+      properties:
+        connections:
+          items:
+            $ref: '#/components/schemas/ConnectionGroup'
+          title: Connections
+          type: array
+        neuron:
+          title: Neuron
+          type: string
+      required:
+      - neuron
+      - connections
+      title: GroupedConnection
       type: object
     Input:
       properties:
@@ -445,15 +473,29 @@ paths:
           default: false
           title: Exclude Class
           type: boolean
+      - in: query
+        name: neurons
+        required: false
+        schema:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Neurons
       responses:
         '200':
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/RawConnection'
+                anyOf:
+                - items:
+                    $ref: '#/components/schemas/RawConnection'
+                  type: array
+                - items:
+                    $ref: '#/components/schemas/GroupedConnection'
+                  type: array
                 title: Response
-                type: array
           description: OK
       summary: Get Dataset Connections
       tags:

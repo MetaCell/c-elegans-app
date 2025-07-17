@@ -8,9 +8,11 @@ export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { Connection } from './models/Connection';
+export type { ConnectionGroup } from './models/ConnectionGroup';
 export type { Dataset } from './models/Dataset';
 export type { EMData } from './models/EMData';
 export type { ErrorMessage } from './models/ErrorMessage';
+export type { GroupedConnection } from './models/GroupedConnection';
 export type { Input } from './models/Input';
 export type { Neuron } from './models/Neuron';
 export type { PagedNeuron } from './models/PagedNeuron';
