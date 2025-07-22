@@ -1,9 +1,10 @@
 import csv
+from ctypes import cast
 import io
 import json
 from asgiref.sync import sync_to_async
 from collections import defaultdict
-from typing import Iterable, Literal, Optional
+from typing import DefaultDict, Iterable, Literal, Optional
 
 from django.http import HttpResponse
 from ninja import NinjaAPI, Router, Query, Schema
@@ -14,6 +15,7 @@ from django.shortcuts import aget_object_or_404
 from django.db.models import Q
 from django.conf import settings
 from django.core.management import call_command
+from traitlets import default
 
 
 from .utils import get_dataset_viewer_config, to_list
@@ -22,14 +24,18 @@ from .schemas import (
     Dataset,
     EMData,
     GroupedConnection,
+    GroupedSynapse,
     Neuron,
     Connection,
+    PrePostEntry,
     RawConnection,
+    SynapseEntry,
 )
 from .models import (
     Dataset as DatasetModel,
     Neuron as NeuronModel,
     Connection as ConnectionModel,
+    Synapse as SynapseModel,
 )
 from .decorators.streaming import with_stdout_streaming
 from .services.connectivity import query_nematode_connections
@@ -329,6 +335,118 @@ async def get_dataset_connections(
     if exclude_class:
         return get_connections_excluding_neuron_classes(dataset_id=datasetId)
     return await to_list(ConnectionModel.objects.filter(dataset_id=datasetId))
+
+
+@api.get(
+    "/synapses",
+    response=GroupedSynapse,
+    tags=["synapses"],
+)
+@sync_to_async
+def get_dataset_synapses(
+    request,
+    datasetIds: list[str] = Query(None),  # type: ignore the Query type error
+    neurons: list[str] = Query(None),  # type: ignore the Query type error
+):
+    neurons_of_interest = neurons
+    datasets_of_interest = datasetIds
+
+    ## Build subneuron <-> neuron map and expand selection to "brothers" of subneurons
+    # Gets the classes of the neurons of interest
+    classes_of_interest = set(
+        NeuronModel.objects.filter(name__in=neurons_of_interest).values_list(
+            "nclass", flat=True
+        )
+    )
+
+    # Build the neuro <-> neuron class map
+    neuron_name_to_class = dict(
+        NeuronModel.objects.filter(nclass__in=classes_of_interest).values_list(
+            "name", "nclass"
+        )
+    )
+
+    # Expand the selection to the "bothers" of the neurons of interest
+    expanded_neurons_of_interest = (
+        NeuronModel.objects.filter(nclass__in=classes_of_interest)
+        .values_list("name", flat=True)
+        .distinct()
+    )
+
+    # Get al the neuron classes to remove them from the synapses entries (not used)
+    neuron_classes = NeuronModel.objects.values_list("nclass", flat=True)
+
+    # PRE-syn COMPUTATION
+    # Get all the synapses where the expanded list of neurons of interest is "pre"
+    # and get for each of those the connector_id, which is the id of the connection they are part of
+    # the pre and post values
+    # if we look for "ADAL" => we will have something like [{"connector_id": xxx, "connection__pre": "ADAL", "connection__post": YYY}]
+    synapses = (
+        SynapseModel.objects.filter(
+            connection__pre__in=expanded_neurons_of_interest,
+            connection__dataset__in=datasets_of_interest,
+        )
+        .exclude(connection__post__in=neuron_classes)
+        .select_related("connection")
+        .values("connector_id", "connection__pre", "connection__post")
+    )
+
+    # POST-syn COMPUTATION
+    # Get all the connector_id where one of the item of the expanded list of neurons of interest is "post"
+    # and from the retrieved list, we get then all the related synapses
+    # again we take the corrector_id, pre and post
+    # if we look for "ADAL" => we will have something like [{"connector_id": xxx, "connection__pre": YYY, "connection__post": ADAL}]
+    connector_ids = (
+        SynapseModel.objects.filter(
+            connection__post__in=expanded_neurons_of_interest,
+            connection__dataset__in=datasets_of_interest,
+        )
+        .exclude(connection__pre__in=neuron_classes)
+        .values_list("connector_id", flat=True)
+        .distinct()
+    )
+
+    synapses_related = (
+        SynapseModel.objects.filter(connector_id__in=connector_ids)
+        .select_related("connection")
+        .values("connector_id", "connection__pre", "connection__post")
+    )
+
+    # We now group the synapses by connector_id
+    grouped_synapses = defaultdict(list)
+    for syn in synapses.union(synapses_related):
+        grouped_synapses[syn["connector_id"]].append(syn)
+
+    # We shape the result
+    existing = set()
+    result = GroupedSynapse(synapses={})
+    synapses = result.synapses
+    for coid, syns in grouped_synapses.items():
+        pres = set(s["connection__pre"] for s in syns)
+        posts = set(s["connection__post"] for s in syns)
+        pre = "".join(pres)  # We know there is only 1
+        entry = SynapseEntry(id=coid, pre=pre, posts=sorted(posts))
+        # We have to filter manually duplicates as "DISTINCT" using a field is not implemented for the test DB that uses SQLite
+        if coid in existing:
+            continue
+        existing.add(coid)
+
+        if pre in expanded_neurons_of_interest:
+            ncls = neuron_name_to_class[pre]
+            if ncls not in synapses:
+                synapses[ncls] = PrePostEntry(pre={}, post={})
+            synapses[ncls].post.setdefault(pre, {}).setdefault(pre, []).append(entry)
+        else:
+            for n in expanded_neurons_of_interest:
+                if n in entry.posts:
+                    ncls = neuron_name_to_class[n]
+                    if ncls not in synapses:
+                        synapses[ncls] = PrePostEntry(pre={}, post={})
+                    synapses[ncls].pre.setdefault(n, {}).setdefault(pre, []).append(
+                        entry
+                    )
+
+    return result
 
 
 ## ***********************

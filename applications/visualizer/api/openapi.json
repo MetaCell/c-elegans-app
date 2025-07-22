@@ -518,6 +518,53 @@
         ]
       }
     },
+    "/api/synapses": {
+      "get": {
+        "operationId": "get_dataset_synapses",
+        "summary": "Get Dataset Synapses",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "datasetIds",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Datasetids",
+              "type": "array"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "neurons",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Neurons",
+              "type": "array"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupedSynapse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "synapses"
+        ]
+      }
+    },
     "/api/populate_db": {
       "get": {
         "operationId": "populate_db",
@@ -1011,6 +1058,84 @@
           "synapses"
         ],
         "title": "RawConnection",
+        "type": "object"
+      },
+      "GroupedSynapse": {
+        "properties": {
+          "synapses": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PrePostEntry"
+            },
+            "title": "Synapses",
+            "type": "object"
+          }
+        },
+        "required": [
+          "synapses"
+        ],
+        "title": "GroupedSynapse",
+        "type": "object"
+      },
+      "PrePostEntry": {
+        "properties": {
+          "pre": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "items": {
+                  "$ref": "#/components/schemas/SynapseEntry"
+                },
+                "type": "array"
+              },
+              "type": "object"
+            },
+            "title": "Pre",
+            "type": "object"
+          },
+          "post": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "items": {
+                  "$ref": "#/components/schemas/SynapseEntry"
+                },
+                "type": "array"
+              },
+              "type": "object"
+            },
+            "title": "Post",
+            "type": "object"
+          }
+        },
+        "required": [
+          "pre",
+          "post"
+        ],
+        "title": "PrePostEntry",
+        "type": "object"
+      },
+      "SynapseEntry": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "pre": {
+            "title": "Pre",
+            "type": "string"
+          },
+          "posts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Posts",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "pre",
+          "posts"
+        ],
+        "title": "SynapseEntry",
         "type": "object"
       }
     },

@@ -1,6 +1,9 @@
+from collections import defaultdict
+from typing import Annotated, DefaultDict, Dict
 from django.conf import settings
 
 from ninja import ModelSchema, Schema
+import pydantic
 from .models import (
     Dataset as DatasetModel,
     Neuron as NeuronModel,
@@ -109,3 +112,18 @@ class ConnectionRequest(BilingualSchema):
     threshold_electrical: int
     include_neighboringcells: bool
     include_annotations: bool
+
+
+class SynapseEntry(BilingualSchema):
+    id: int
+    pre: str
+    posts: list[str]
+
+
+class PrePostEntry(BilingualSchema):
+    pre: dict[str, dict[str, list[SynapseEntry]]]
+    post: dict[str, dict[str, list[SynapseEntry]]]
+
+
+class GroupedSynapse(BilingualSchema):
+    synapses: dict[str, PrePostEntry]

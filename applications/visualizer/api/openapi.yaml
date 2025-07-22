@@ -192,6 +192,17 @@ components:
       - connections
       title: GroupedConnection
       type: object
+    GroupedSynapse:
+      properties:
+        synapses:
+          additionalProperties:
+            $ref: '#/components/schemas/PrePostEntry'
+          title: Synapses
+          type: object
+      required:
+      - synapses
+      title: GroupedSynapse
+      type: object
     Input:
       properties:
         page:
@@ -268,6 +279,31 @@ components:
       - count
       title: PagedNeuron
       type: object
+    PrePostEntry:
+      properties:
+        post:
+          additionalProperties:
+            additionalProperties:
+              items:
+                $ref: '#/components/schemas/SynapseEntry'
+              type: array
+            type: object
+          title: Post
+          type: object
+        pre:
+          additionalProperties:
+            additionalProperties:
+              items:
+                $ref: '#/components/schemas/SynapseEntry'
+              type: array
+            type: object
+          title: Pre
+          type: object
+      required:
+      - pre
+      - post
+      title: PrePostEntry
+      type: object
     RawConnection:
       properties:
         post:
@@ -291,6 +327,25 @@ components:
       - type
       - synapses
       title: RawConnection
+      type: object
+    SynapseEntry:
+      properties:
+        id:
+          title: Id
+          type: integer
+        posts:
+          items:
+            type: string
+          title: Posts
+          type: array
+        pre:
+          title: Pre
+          type: string
+      required:
+      - id
+      - pre
+      - posts
+      title: SynapseEntry
       type: object
   securitySchemes:
     BasicAuthSuperUser:
@@ -674,5 +729,35 @@ paths:
       summary: Ready
       tags:
       - healthcheck
+  /api/synapses:
+    get:
+      operationId: get_dataset_synapses
+      parameters:
+      - in: query
+        name: datasetIds
+        required: false
+        schema:
+          items:
+            type: string
+          title: Datasetids
+          type: array
+      - in: query
+        name: neurons
+        required: false
+        schema:
+          items:
+            type: string
+          title: Neurons
+          type: array
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupedSynapse'
+          description: OK
+      summary: Get Dataset Synapses
+      tags:
+      - synapses
 servers: []
 
