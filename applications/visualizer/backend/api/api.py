@@ -435,14 +435,14 @@ def get_dataset_synapses(
             ncls = neuron_name_to_class[pre]
             if ncls not in synapses:
                 synapses[ncls] = PrePostEntry(pre={}, post={})
-            synapses[ncls].post.setdefault(pre, {}).setdefault(pre, []).append(entry)
+            synapses[ncls].pre.setdefault(pre, {}).setdefault(pre, []).append(entry)
         else:
             for n in expanded_neurons_of_interest:
                 if n in entry.posts:
                     ncls = neuron_name_to_class[n]
                     if ncls not in synapses:
                         synapses[ncls] = PrePostEntry(pre={}, post={})
-                    synapses[ncls].pre.setdefault(n, {}).setdefault(pre, []).append(
+                    synapses[ncls].post.setdefault(n, {}).setdefault(pre, []).append(
                         entry
                     )
 
