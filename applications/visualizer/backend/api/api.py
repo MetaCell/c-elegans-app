@@ -15,7 +15,6 @@ from django.shortcuts import aget_object_or_404
 from django.db.models import Q
 from django.conf import settings
 from django.core.management import call_command
-from traitlets import default
 
 
 from .utils import get_dataset_viewer_config, to_list
