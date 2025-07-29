@@ -384,6 +384,7 @@ def get_dataset_synapses(
         SynapseModel.objects.filter(
             connection__pre__in=expanded_neurons_of_interest,
             connection__dataset__in=datasets_of_interest,
+            connection__type="chemical",
         )
         .exclude(connection__post__in=neuron_classes)
         .select_related("connection")
@@ -399,6 +400,7 @@ def get_dataset_synapses(
         SynapseModel.objects.filter(
             connection__post__in=expanded_neurons_of_interest,
             connection__dataset__in=datasets_of_interest,
+            connection__type="chemical",
         )
         .exclude(connection__pre__in=neuron_classes)
         .values_list("connector_id", flat=True)
