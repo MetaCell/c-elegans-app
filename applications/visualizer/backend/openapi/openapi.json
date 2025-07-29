@@ -465,6 +465,25 @@
               "type": "boolean"
             },
             "required": false
+          },
+          {
+            "in": "query",
+            "name": "neurons",
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Neurons"
+            },
+            "required": false
           }
         ],
         "responses": {
@@ -473,11 +492,21 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/RawConnection"
-                  },
-                  "title": "Response",
-                  "type": "array"
+                  "anyOf": [
+                    {
+                      "items": {
+                        "$ref": "#/components/schemas/RawConnection"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "items": {
+                        "$ref": "#/components/schemas/GroupedConnection"
+                      },
+                      "type": "array"
+                    }
+                  ],
+                  "title": "Response"
                 }
               }
             }
@@ -486,6 +515,53 @@
         "description": "Gets the connections of a dedicated Dataset\nConnections includes connection towards the neurons and their classes by default.\nif exclude_class is set to true: the neuron classes (higher level neuron) is not included.",
         "tags": [
           "connectivity"
+        ]
+      }
+    },
+    "/api/synapses": {
+      "get": {
+        "operationId": "get_dataset_synapses",
+        "summary": "Get Dataset Synapses",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "datasetIds",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Datasetids",
+              "type": "array"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "neurons",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Neurons",
+              "type": "array"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupedSynapse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "synapses"
         ]
       }
     },
@@ -914,6 +990,45 @@
         "title": "Connection",
         "type": "object"
       },
+      "ConnectionGroup": {
+        "properties": {
+          "pre": {
+            "title": "Pre",
+            "type": "string"
+          },
+          "post": {
+            "title": "Post",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pre",
+          "post"
+        ],
+        "title": "ConnectionGroup",
+        "type": "object"
+      },
+      "GroupedConnection": {
+        "properties": {
+          "neuron": {
+            "title": "Neuron",
+            "type": "string"
+          },
+          "connections": {
+            "items": {
+              "$ref": "#/components/schemas/ConnectionGroup"
+            },
+            "title": "Connections",
+            "type": "array"
+          }
+        },
+        "required": [
+          "neuron",
+          "connections"
+        ],
+        "title": "GroupedConnection",
+        "type": "object"
+      },
       "RawConnection": {
         "properties": {
           "pre": {
@@ -943,6 +1058,84 @@
           "synapses"
         ],
         "title": "RawConnection",
+        "type": "object"
+      },
+      "GroupedSynapse": {
+        "properties": {
+          "synapses": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PrePostEntry"
+            },
+            "title": "Synapses",
+            "type": "object"
+          }
+        },
+        "required": [
+          "synapses"
+        ],
+        "title": "GroupedSynapse",
+        "type": "object"
+      },
+      "PrePostEntry": {
+        "properties": {
+          "pre": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "items": {
+                  "$ref": "#/components/schemas/SynapseEntry"
+                },
+                "type": "array"
+              },
+              "type": "object"
+            },
+            "title": "Pre",
+            "type": "object"
+          },
+          "post": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "items": {
+                  "$ref": "#/components/schemas/SynapseEntry"
+                },
+                "type": "array"
+              },
+              "type": "object"
+            },
+            "title": "Post",
+            "type": "object"
+          }
+        },
+        "required": [
+          "pre",
+          "post"
+        ],
+        "title": "PrePostEntry",
+        "type": "object"
+      },
+      "SynapseEntry": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "pre": {
+            "title": "Pre",
+            "type": "string"
+          },
+          "posts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Posts",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "pre",
+          "posts"
+        ],
+        "title": "SynapseEntry",
         "type": "object"
       }
     },

@@ -32,6 +32,19 @@ components:
       - type
       title: Connection
       type: object
+    ConnectionGroup:
+      properties:
+        post:
+          title: Post
+          type: string
+        pre:
+          title: Pre
+          type: string
+      required:
+      - pre
+      - post
+      title: ConnectionGroup
+      type: object
     Dataset:
       properties:
         axes:
@@ -164,6 +177,32 @@ components:
       - detail
       title: ErrorMessage
       type: object
+    GroupedConnection:
+      properties:
+        connections:
+          items:
+            $ref: '#/components/schemas/ConnectionGroup'
+          title: Connections
+          type: array
+        neuron:
+          title: Neuron
+          type: string
+      required:
+      - neuron
+      - connections
+      title: GroupedConnection
+      type: object
+    GroupedSynapse:
+      properties:
+        synapses:
+          additionalProperties:
+            $ref: '#/components/schemas/PrePostEntry'
+          title: Synapses
+          type: object
+      required:
+      - synapses
+      title: GroupedSynapse
+      type: object
     Input:
       properties:
         page:
@@ -240,6 +279,31 @@ components:
       - count
       title: PagedNeuron
       type: object
+    PrePostEntry:
+      properties:
+        post:
+          additionalProperties:
+            additionalProperties:
+              items:
+                $ref: '#/components/schemas/SynapseEntry'
+              type: array
+            type: object
+          title: Post
+          type: object
+        pre:
+          additionalProperties:
+            additionalProperties:
+              items:
+                $ref: '#/components/schemas/SynapseEntry'
+              type: array
+            type: object
+          title: Pre
+          type: object
+      required:
+      - pre
+      - post
+      title: PrePostEntry
+      type: object
     RawConnection:
       properties:
         post:
@@ -263,6 +327,25 @@ components:
       - type
       - synapses
       title: RawConnection
+      type: object
+    SynapseEntry:
+      properties:
+        id:
+          title: Id
+          type: integer
+        posts:
+          items:
+            type: string
+          title: Posts
+          type: array
+        pre:
+          title: Pre
+          type: string
+      required:
+      - id
+      - pre
+      - posts
+      title: SynapseEntry
       type: object
   securitySchemes:
     BasicAuthSuperUser:
@@ -445,15 +528,29 @@ paths:
           default: false
           title: Exclude Class
           type: boolean
+      - in: query
+        name: neurons
+        required: false
+        schema:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Neurons
       responses:
         '200':
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/RawConnection'
+                anyOf:
+                - items:
+                    $ref: '#/components/schemas/RawConnection'
+                  type: array
+                - items:
+                    $ref: '#/components/schemas/GroupedConnection'
+                  type: array
                 title: Response
-                type: array
           description: OK
       summary: Get Dataset Connections
       tags:
@@ -632,5 +729,35 @@ paths:
       summary: Ready
       tags:
       - healthcheck
+  /api/synapses:
+    get:
+      operationId: get_dataset_synapses
+      parameters:
+      - in: query
+        name: datasetIds
+        required: false
+        schema:
+          items:
+            type: string
+          title: Datasetids
+          type: array
+      - in: query
+        name: neurons
+        required: false
+        schema:
+          items:
+            type: string
+          title: Neurons
+          type: array
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupedSynapse'
+          description: OK
+      summary: Get Dataset Synapses
+      tags:
+      - synapses
 servers: []
 

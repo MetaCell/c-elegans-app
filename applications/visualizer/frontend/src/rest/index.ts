@@ -8,16 +8,22 @@ export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { Connection } from './models/Connection';
+export type { ConnectionGroup } from './models/ConnectionGroup';
 export type { Dataset } from './models/Dataset';
 export type { EMData } from './models/EMData';
 export type { ErrorMessage } from './models/ErrorMessage';
+export type { GroupedConnection } from './models/GroupedConnection';
+export type { GroupedSynapse } from './models/GroupedSynapse';
 export type { Input } from './models/Input';
 export type { Neuron } from './models/Neuron';
 export type { PagedNeuron } from './models/PagedNeuron';
+export type { PrePostEntry } from './models/PrePostEntry';
 export type { RawConnection } from './models/RawConnection';
+export type { SynapseEntry } from './models/SynapseEntry';
 
 export { ConnectivityService } from './services/ConnectivityService';
 export { DatasetsService } from './services/DatasetsService';
 export { HealthcheckService } from './services/HealthcheckService';
 export { IngestionService } from './services/IngestionService';
 export { NeuronsService } from './services/NeuronsService';
+export { SynapsesService } from './services/SynapsesService';
