@@ -14,7 +14,6 @@ const { gray100, gray600 } = vars;
 // Function to transform synapses data into tree structure
 const transformSynapsesToTree = (synapses: any, availableNeurons: any): TreeViewBaseItem[] => {
   const treeItems: TreeViewBaseItem[] = [];
-console.log(availableNeurons);
 
   // Iterate through each neuron group (ADA, ADE, etc.)
   Object.entries(synapses).forEach(([neuronGroup, groupData]: [string, any]) => {
@@ -32,23 +31,46 @@ console.log(availableNeurons);
         children: [],
       };
 
-      Object.entries(groupData.pre).forEach(([preNeuron, preData]: [string, any], preIndex: number) => {
+      Object.entries(groupData.pre).forEach(([preNeuron, preData]: [string, any]) => {
         const preNeuronItem: TreeViewBaseItem = {
-          id: `${neuronGroup}-pre-${preNeuron}-${preIndex}`,
+          id: `${neuronGroup}-pre-${preNeuron}`,
           label: preNeuron,
           children: [],
         };
 
-        Object.entries(preData).forEach(([postNeuron, synapses]: [string, any], postIndex: number) => {
-          const postNeuronItem: TreeViewBaseItem = {
-            id: `${neuronGroup}-pre-${preNeuron}-${postNeuron}-${preIndex}-${postIndex}`,
-            label: postNeuron,
+        // Group injected items by their label
+        const injectedGroups = new Map<string, TreeViewBaseItem>();
+
+        Object.entries(preData).forEach(([neuron, synapses]: [string, any]) => {
+          const injectedNeuronClass = availableNeurons[neuron].nclass;
+          
+          // Check if we already have an injected group with this label
+          if (!injectedGroups.has(injectedNeuronClass)) {
+            const injectedNeuronItem: TreeViewBaseItem = {
+              id: `${neuronGroup}-pre-${preNeuron}-${injectedNeuronClass}`,
+              label: injectedNeuronClass,
+              children: [],
+            };
+            injectedGroups.set(injectedNeuronClass, injectedNeuronItem);
+          }
+
+          const neuronItem: TreeViewBaseItem = {
+            id: `${neuronGroup}-pre-${preNeuron}-${injectedNeuronClass}-${neuron}`,
+            label: neuron,
             children: synapses.map((synapse: any) => ({
-              id: `${neuronGroup}-pre-${preNeuron}-${postNeuron}-${synapse.id}-${preIndex}-${postIndex}`,
+              id: `${neuronGroup}-pre-${preNeuron}-${injectedNeuronClass}-${neuron}-${synapse.id}`,
               label: `${synapse.pre} → ${synapse.posts.join(", ")}`,
             })),
           };
-          preNeuronItem.children!.push(postNeuronItem);
+
+          // Add the neuron item to the appropriate injected group
+          injectedGroups.get(injectedNeuronClass)!.children!.push(neuronItem);
+        });
+
+        // Add all injected groups to the pre neuron item
+        injectedGroups.forEach((injectedGroup) => {
+          injectedGroup.children!.sort((a, b) => a.label.localeCompare(b.label));
+          preNeuronItem.children!.push(injectedGroup);
         });
 
         preNeuronItem.children!.sort((a, b) => a.label.localeCompare(b.label));
@@ -67,9 +89,9 @@ console.log(availableNeurons);
         children: [],
       };
 
-      Object.entries(groupData.post).forEach(([postNeuron, postData]: [string, any], postIndex: number) => {
+      Object.entries(groupData.post).forEach(([postNeuron, postData]: [string, any]) => {
         const postNeuronItem: TreeViewBaseItem = {
-          id: `${neuronGroup}-post-${postNeuron}-${postIndex}`,
+          id: `${neuronGroup}-post-${postNeuron}`,
           label: postNeuron,
           children: [],
         };
@@ -77,30 +99,30 @@ console.log(availableNeurons);
         // Group injected items by their label
         const injectedGroups = new Map<string, TreeViewBaseItem>();
 
-        Object.entries(postData).forEach(([neuron, synapses]: [string, any], preIndex: number) => {
-          const injectedLabel = availableNeurons[neuron].nclass;
+        Object.entries(postData).forEach(([neuron, synapses]: [string, any]) => {
+          const injectedNeuronClass = availableNeurons[neuron].nclass;
           
           // Check if we already have an injected group with this label
-          if (!injectedGroups.has(injectedLabel)) {
+          if (!injectedGroups.has(injectedNeuronClass)) {
             const injectedNeuronItem: TreeViewBaseItem = {
-              id: `${neuronGroup}-post-${postNeuron}-injected-${injectedLabel}-${postIndex}`,
-              label: injectedLabel,
+              id: `${neuronGroup}-post-${postNeuron}-${injectedNeuronClass}`,
+              label: injectedNeuronClass,
               children: [],
             };
-            injectedGroups.set(injectedLabel, injectedNeuronItem);
+            injectedGroups.set(injectedNeuronClass, injectedNeuronItem);
           }
 
           const neuronItem: TreeViewBaseItem = {
-            id: `${neuronGroup}-post-${postNeuron}-${neuron}-${postIndex}-${preIndex}`,
+            id: `${neuronGroup}-post-${postNeuron}-${injectedNeuronClass}-${neuron}`,
             label: neuron,
             children: synapses.map((synapse: any) => ({
-              id: `${neuronGroup}-post-${postNeuron}-${neuron}-${synapse.id}-${postIndex}-${preIndex}`,
+              id: `${neuronGroup}-post-${postNeuron}-${injectedNeuronClass}-${neuron}-${synapse.id}`,
               label: `${synapse.pre} → ${synapse.posts.join(", ")}`,
             })),
           };
 
           // Add the neuron item to the appropriate injected group
-          injectedGroups.get(injectedLabel)!.children!.push(neuronItem);
+          injectedGroups.get(injectedNeuronClass)!.children!.push(neuronItem);
         });
 
         // Add all injected groups to the post neuron item
