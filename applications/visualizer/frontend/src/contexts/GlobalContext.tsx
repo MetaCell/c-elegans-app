@@ -1,12 +1,12 @@
 import { produce } from "immer";
 import pako from "pako";
 import type React from "react";
-import { type ReactNode, createContext, useContext, useEffect, useState } from "react";
+import { type ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import ErrorAlert from "../components/ErrorAlert.tsx";
 import ErrorBoundary from "../components/ErrorBoundary.tsx";
-import { ViewMode } from "../models";
+import { ViewMode, Visibility } from "../models";
 import { Workspace } from "../models";
-import { type Dataset, DatasetsService } from "../rest";
+import { type Dataset, DatasetsService, type GroupedSynapse, SynapsesService } from "../rest";
 import type { SerializedGlobalContext } from "./SerializedContext.tsx";
 
 function b64Tob64Url(buffer: string): string {
@@ -42,6 +42,7 @@ export interface GlobalContextType {
   restoreGlobalContextFromBase64: (base64Context: string) => void;
   isGlobalRotating: boolean;
   toggleGlobalRotation: () => void;
+  synapsesData: GroupedSynapse | undefined;
 }
 
 interface GlobalContextProviderProps {
@@ -59,6 +60,9 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
   const [openErrorAlert, setOpenErrorAlert] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isGlobalRotating, setIsGlobalRotating] = useState(false);
+  const [synapsesData, setSynapsesData] = useState<GroupedSynapse | undefined>(undefined);
+  const { activeDatasets, activeNeurons } = workspaces?.[currentWorkspaceId] || {};
+  const lastFetchRef = useRef<string>("");
 
   const createWorkspace = (id: string, name: string, activeDatasetKeys: Set<string>, activeNeurons: Set<string>) => {
     // Convert the activeDatasetKeys into a Record<string, Dataset>
@@ -220,7 +224,40 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     restoreGlobalContextFromBase64,
     toggleGlobalRotation,
     isGlobalRotating,
+    synapsesData,
   });
+
+  const fetchSynapses = useCallback(async () => {
+    const visibleNeurons = Array.from(activeNeurons).filter((id) =>
+      Object.values(workspaces?.[currentWorkspaceId].visibilities[id]).every((e) => e === undefined || e.visibility === Visibility.Visible),
+    );
+
+    // Create a hash of the current state to prevent duplicate fetches
+    const stateHash = JSON.stringify({
+      datasets: Object.keys(activeDatasets),
+      neurons: visibleNeurons,
+      workspaceId: currentWorkspaceId,
+    });
+
+    // Only fetch if the state has actually changed
+    if (lastFetchRef.current === stateHash) {
+      return;
+    }
+
+    lastFetchRef.current = stateHash;
+
+    const synapses = await SynapsesService.getDatasetSynapses({
+      datasetIds: Object.keys(activeDatasets),
+      neurons: visibleNeurons,
+    });
+    setSynapsesData(synapses);
+  }, [activeNeurons, activeDatasets, currentWorkspaceId, workspaces?.[currentWorkspaceId]?.visibilities]);
+
+  useEffect(() => {
+    if (activeNeurons?.size > 0 && Object.keys(activeDatasets || {}).length > 0 && currentWorkspaceId !== undefined) {
+      fetchSynapses();
+    }
+  }, [fetchSynapses]);
 
   useEffect(() => {
     const fetchDatasets = async () => {

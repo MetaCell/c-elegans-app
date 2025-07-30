@@ -4,13 +4,14 @@ import IconButton from "@mui/material/IconButton";
 import type { CSSObject, Theme } from "@mui/material/styles";
 import React, { useState, useCallback } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext.tsx";
-import { DataSetsIcon, LogoIcon, NeuronsIcon } from "../../icons";
+import { DataSetsIcon, LogoIcon, NeuronsIcon, SynapsesIcon } from "../../icons";
 import { ViewMode } from "../../models";
 import { vars } from "../../theme/variables.ts";
 import CustomDialog from "../CustomDialog.tsx";
 import DataSets from "./DataSets.tsx";
 import Neurons from "./Neurons.tsx";
 import WorkspaceSelector from "./WorkspaceSelector";
+import Synapses from "./Synapses.tsx";
 
 const { gray100, gray50 } = vars;
 
@@ -217,6 +218,20 @@ const Sidebar = ({
             >
               <NeuronsIcon />
             </IconButton>
+            <IconButton
+              sx={{
+                padding: ".38rem",
+                borderRadius: content === "synapses" ? "0.5rem" : "initial",
+                background: content === "synapses" ? gray50 : "initial",
+                "&:hover": {
+                  borderRadius: "0.5rem",
+                  background: gray50,
+                },
+              }}
+              onClick={(e) => handleToggleContent(e, "synapses")}
+            >
+              <SynapsesIcon />
+            </IconButton>
           </Stack>
           <IconButton
             onClick={sidebarOpen ? handleDrawerClose : handleDrawerOpen}
@@ -248,7 +263,7 @@ const Sidebar = ({
                   </>
                 )}
               </DataSets>
-            ) : (
+            ) : content === "neurons" ? (
               <Neurons>
                 {viewMode === ViewMode.Compare && (
                   <>
@@ -263,6 +278,8 @@ const Sidebar = ({
                   </>
                 )}
               </Neurons>
+            ) : (
+              <Synapses />
             )}
           </>
         )}
