@@ -2,17 +2,17 @@ import type { LayoutManager } from "@metacell/geppetto-meta-client/common/layout
 import type { configureStore } from "@reduxjs/toolkit";
 import { createDraft, finishDraft, immerable, isDraft, produce } from "immer";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
-import { type Dataset, type Neuron, NeuronsService, type GroupedSynapse, SynapsesService } from "../rest";
+import { type Dataset, type GroupedSynapse, type Neuron, NeuronsService, SynapsesService } from "../rest";
 import { GlobalError } from "./Error.ts";
 import {
   type EMViewerSettings,
-  getDefaultViewerData,
   type NeuronGroup,
-  ViewerData,
+  type ViewerData,
   type ViewerSynchronizationPair,
   ViewerType,
   Visibility,
-  VisibilityContainer,
+  type VisibilityContainer,
+  getDefaultViewerData,
 } from "./models";
 import { type SynchronizerContext, SynchronizerOrchestrator } from "./synchronizer";
 

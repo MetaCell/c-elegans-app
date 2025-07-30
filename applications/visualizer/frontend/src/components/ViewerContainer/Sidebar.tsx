@@ -10,8 +10,8 @@ import { vars } from "../../theme/variables.ts";
 import CustomDialog from "../CustomDialog.tsx";
 import DataSets from "./DataSets.tsx";
 import Neurons from "./Neurons.tsx";
-import WorkspaceSelector from "./WorkspaceSelector";
 import Synapses from "./Synapses.tsx";
+import WorkspaceSelector from "./WorkspaceSelector";
 
 const { gray100, gray50 } = vars;
 
