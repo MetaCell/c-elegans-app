@@ -1,11 +1,14 @@
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
 import type { TreeViewBaseItem } from "@mui/x-tree-view/models";
-import { useState, useMemo, useEffect } from "react";
-import { TextField, Box, InputAdornment, CircularProgress } from "@mui/material";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { TextField, Box, InputAdornment, CircularProgress, Stack, Typography } from "@mui/material";
 import { vars } from "../../theme/variables";
 import SearchIcon from "@mui/icons-material/Search";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { TreeItem, treeItemClasses } from "@mui/x-tree-view";
+import ColorPicker from "./ColorPicker";
+import PickerWrapper from "./PickerWrapper";
+import CustomSwitch from "./CustomSwitch";
 
 const { gray100, gray600 } = vars;
 
@@ -179,6 +182,8 @@ export default function BasicRichTreeView() {
   const currentWorkspace = getCurrentWorkspace();
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [openColorPicker, setOpenColorPicker] = useState<string | null>(null);
 
   useEffect(() => {
     if (!currentWorkspace) return;
@@ -198,6 +203,26 @@ export default function BasicRichTreeView() {
     currentWorkspace?.activeDatasets,
     currentWorkspace?.visibilities?.neurons,
   ]);
+
+  const handleColorClick = useCallback((event: React.MouseEvent<HTMLElement>, itemId: string) => {
+    event.stopPropagation();
+    event.preventDefault();
+    setAnchorEl(event.currentTarget);
+    setOpenColorPicker(itemId);
+  }, []);
+
+  const handleColorClose = useCallback(() => {
+    setAnchorEl(null);
+    setOpenColorPicker(null);
+  }, []);
+
+  const handleColorChange = useCallback((itemId: string, color: any) => {
+    console.log(itemId, color);
+  }, []);
+
+  const handleSwitchChange = useCallback((itemId: string, checked: boolean) => {
+    console.log(itemId, checked);
+  }, []);
 
   const synapsesData = currentWorkspace?.getSynapsesData();
 
@@ -221,6 +246,66 @@ export default function BasicRichTreeView() {
     };
     return getExpandedIds(treeItems);
   }, [treeItems]);
+
+  if (isLoading) return <Box><CircularProgress /></Box>;
+  
+  const treeSlots = useMemo(() => ({
+    item: (props: any) => {            
+      const itemId = props.itemId;
+      const hasChildren = props.children && props.children.length > 0;
+      
+      const CustomLabel = () => (
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ width: "100%" }}>
+          <CustomSwitch
+            onChange={(_, checked) => handleSwitchChange(itemId, checked)}
+            width={20}
+            height={12}
+            thumbDimension={8}
+          />
+          {hasChildren && (
+            <Box
+              sx={{
+                width: "16px",
+                height: "16px",
+                backgroundColor: "#cccccc",
+                border: "1px solid #999",
+                borderRadius: "2px",
+                cursor: "pointer",
+                "&:hover": {
+                  opacity: 0.8,
+                },
+              }}
+              onClick={(e) => handleColorClick(e, itemId)}
+            />
+          )}
+          <Box sx={{ flexGrow: 1 }}>
+            <Typography variant="h6" fontWeight={500} fontSize={14}>{props.label}</Typography>
+          </Box>
+        </Stack>
+      );
+
+      return (
+        <TreeItem
+          {...props}
+          id={itemId}
+          label={<CustomLabel />}
+          sx={{
+            [`& .${treeItemClasses.content}`]: {
+              padding: "8px",
+            },
+            [`& .${treeItemClasses.groupTransition}`]: {
+              marginLeft: "15px",
+              paddingLeft: "10px",
+              borderLeft: `1px solid #ECECE9`,
+            },
+            "& .MuiTreeItem-iconContainer": {
+              display: "none",
+            },
+          }}
+        />
+      );
+    },
+  }), [handleSwitchChange, handleColorClick]);
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -289,28 +374,17 @@ export default function BasicRichTreeView() {
             },
           },
         }}
-        slots={{
-          item: (props) => (
-            <TreeItem
-              {...props}
-              label={props.label}
-              sx={{
-                [`& .${treeItemClasses.content}`]: {
-                  padding: "8px",
-                },
-                [`& .${treeItemClasses.groupTransition}`]: {
-                  marginLeft: "15px",
-                  paddingLeft: "10px",
-                  borderLeft: `1px solid #ECECE9`,
-                },
-                "& .MuiTreeItem-iconContainer": {
-                  display: "none",
-                },
-              }}
-            />
-          ),
-        }}
+        slots={treeSlots}
       />
+      {openColorPicker && anchorEl && (
+        <PickerWrapper
+          open={true}
+          anchorEl={anchorEl}
+          onClose={handleColorClose}
+          onChange={(color) => handleColorChange(openColorPicker, color)}
+          selectedColor={"#cccccc"}
+        />
+      )}
     </Box>
   );
 }

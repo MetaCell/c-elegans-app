@@ -362,8 +362,6 @@ export class Workspace {
 
   @triggerUpdate
   async fetchSynapses() {
-    console.log(this.activeNeurons);
-    
     const visibleNeurons = Array.from(this.activeNeurons).filter((id) =>
       Object.values(this.visibilities.neurons[id]).every((e) => e === undefined || e.visibility === Visibility.Visible),
     );
