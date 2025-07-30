@@ -1,7 +1,7 @@
 import { produce } from "immer";
 import pako from "pako";
 import type React from "react";
-import { type ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import ErrorAlert from "../components/ErrorAlert.tsx";
 import ErrorBoundary from "../components/ErrorBoundary.tsx";
 import { ViewMode, Visibility } from "../models";
