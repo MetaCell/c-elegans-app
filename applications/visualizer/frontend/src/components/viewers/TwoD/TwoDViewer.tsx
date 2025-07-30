@@ -76,13 +76,13 @@ const TwoDViewer = () => {
     return getVisibleActiveNeuronsIn2D(workspace);
   }, [
     [...workspace.activeNeurons, ...Object.keys(workspace.neuronGroups)]
-      .map((neuronId) => workspace.visibilities[neuronId]?.[ViewerType.Graph]?.visibility || "")
+      .map((neuronId) => workspace.getNeuronVisibility(neuronId)?.[ViewerType.Graph]?.visibility || "")
       .join(","),
   ]);
 
   const hiddenNeurons = useMemo(() => {
     return getHiddenNeuronsIn2D(workspace);
-  }, [Object.keys(workspace.visibilities).filter((neuronId) => workspace.visibilities[neuronId]?.Graph?.visibility === Visibility.Hidden)]);
+  }, [Object.keys(workspace.visibilities.neurons).filter((neuronId) => workspace.getNeuronVisibility(neuronId)?.Graph?.visibility === Visibility.Hidden)]);
 
   const handleContextMenuClose = () => {
     setMousePosition(null);

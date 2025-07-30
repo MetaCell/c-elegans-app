@@ -70,7 +70,7 @@ function isNeuronVisible(neuronId: string, workspace: Workspace): boolean {
 }
 
 function neuronColor(neuronId, workspace: Workspace): string {
-  const neuronVisibilities = workspace.visibilities[neuronId] || workspace.visibilities[workspace.getNeuronClass(neuronId)];
+  const neuronVisibilities = workspace.getNeuronVisibility(neuronId) || workspace.getNeuronVisibility(workspace.getNeuronClass(neuronId));
   return neuronVisibilities?.[ViewerType.EM].color;
 }
 
@@ -270,7 +270,7 @@ const EMStackViewer = () => {
     neuronsStyleRef.current = (feature: Feature) => neuronsStyle(feature, currentWorkspace);
     onFeatureClickRef.current = makeFeatureClickHandler();
     currSegLayer.current.getSource().changed();
-  }, [currentWorkspace.getVisibleNeuronsInEM(), currentWorkspace.visibilities, currentWorkspace.getSelection(ViewerType.EM), segSlice]);
+  }, [currentWorkspace.getVisibleNeuronsInEM(), currentWorkspace.visibilities.neurons, currentWorkspace.getSelection(ViewerType.EM), segSlice]);
 
   useEffect(() => {
     if (!currSynSegLayer.current?.getSource()) {

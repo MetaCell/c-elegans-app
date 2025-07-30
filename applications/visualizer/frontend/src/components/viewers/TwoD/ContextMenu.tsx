@@ -70,10 +70,10 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
   const handleHide = () => {
     workspace.customUpdate((draft) => {
       for (const neuronId of selectedNeurons) {
-        if (!(neuronId in draft.visibilities)) {
-          draft.visibilities[neuronId] = getDefaultViewerData(Visibility.Hidden);
+        if (!(neuronId in draft.visibilities.neurons)) {
+          draft.visibilities.neurons[neuronId] = getDefaultViewerData(Visibility.Hidden);
         } else {
-          draft.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Hidden;
+          draft.visibilities.neurons[neuronId][ViewerType.Graph].visibility = Visibility.Hidden;
         }
       }
       draft.clearSelection(ViewerType.Graph);
@@ -88,12 +88,12 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
     workspace.customUpdate((draft) => {
       // Add the new group
       draft.neuronGroups[newGroupId] = newGroup;
-      draft.visibilities[newGroupId] = getDefaultViewerData(Visibility.Visible);
+      draft.visibilities.neurons[newGroupId] = getDefaultViewerData(Visibility.Visible);
 
       // Remove the old groups that were merged into the new group
       for (const groupId of groupsToDelete) {
         delete draft.neuronGroups[groupId];
-        delete draft.visibilities[groupId];
+        delete draft.visibilities.neurons[groupId];
       }
 
       // Clear the current selection and select the new group
@@ -136,7 +136,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
             removeNodeFromGroup(cy, groupedNeuronId, true);
           }
           delete draft.neuronGroups[elementId]; // Delete the entire group
-          delete draft.visibilities[elementId];
+          delete draft.visibilities.neurons[elementId];
           if (openGroups.has(elementId)) {
             groupsToRemoveFromOpen.add(elementId);
           }
@@ -196,11 +196,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ open, onClose, position, setS
         if (group) {
           for (const groupedNeuronId of group.neurons) {
             draft.activeNeurons.add(groupedNeuronId);
-            draft.visibilities[groupedNeuronId] = getDefaultViewerData(Visibility.Visible);
+            draft.visibilities.neurons[groupedNeuronId] = getDefaultViewerData(Visibility.Visible);
           }
         } else {
           draft.activeNeurons.add(neuronId);
-          draft.visibilities[neuronId] = getDefaultViewerData(Visibility.Visible);
+          draft.visibilities.neurons[neuronId] = getDefaultViewerData(Visibility.Visible);
         }
       }
     });

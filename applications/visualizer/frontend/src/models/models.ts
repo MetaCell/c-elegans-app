@@ -63,6 +63,11 @@ export function getDefaultViewerData(visibility?: Visibility): ViewerData {
   };
 }
 
+export interface VisibilityContainer {
+  neurons: Record<string, ViewerData>;
+  synapses: Record<number, ViewerData>;
+}
+
 export interface ViewerData {
   [ViewerType.Graph]?: GraphViewerData;
   [ViewerType.ThreeD]?: ThreeDViewerData;

@@ -59,7 +59,7 @@ function ThreeDViewer() {
     const visibleNeurons = workspace.getVisibleNeuronsInThreeD();
     const newInstances: Instance[] = visibleNeurons.flatMap((neuronId) => {
       const neuron = workspace.availableNeurons[neuronId];
-      const viewerData = workspace.visibilities[neuronId]?.[ViewerType.ThreeD];
+      const viewerData = workspace.getNeuronVisibility(neuronId)?.[ViewerType.ThreeD];
       const urls = getNeuronUrlForDataset(neuron, selectedDataset.id);
 
       return urls.map((url) => {
@@ -74,7 +74,7 @@ function ThreeDViewer() {
     });
 
     setInstances(newInstances);
-  }, [selectedDataset, workspace.availableNeurons, workspace.visibilities]);
+  }, [selectedDataset, workspace.availableNeurons, workspace.visibilities.neurons]);
 
   const handleScreenshot = () => {
     downloadScreenshot(canvasRef, sceneRef, cameraRef, workspace.name);

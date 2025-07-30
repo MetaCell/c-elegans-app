@@ -1,7 +1,7 @@
 import { produce } from "immer";
 import pako from "pako";
 import type React from "react";
-import { type ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import ErrorAlert from "../components/ErrorAlert.tsx";
 import ErrorBoundary from "../components/ErrorBoundary.tsx";
 import { ViewMode, Visibility } from "../models";
@@ -181,6 +181,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
         ws.neuronGroups,
         ws.emViewerSettings,
         ws.viewers,
+        new Set(ws.activeSynapses),
       );
       workspace.viewers = ws.viewers;
 
@@ -227,9 +228,12 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     synapsesData,
   });
 
+  // TODO This method should be removed,
+  // The fetchSynapses shouldn't be operated here, the endpoint should be used to fetch the synapses for the active neurons only
+  // we shouldn't fetch all the synapses, there is too many of those.
   const fetchSynapses = useCallback(async () => {
     const visibleNeurons = Array.from(activeNeurons).filter((id) =>
-      Object.values(workspaces?.[currentWorkspaceId].visibilities[id]).every((e) => e === undefined || e.visibility === Visibility.Visible),
+      Object.values(workspaces?.[currentWorkspaceId].visibilities.neurons[id]).every((e) => e === undefined || e.visibility === Visibility.Visible),
     );
 
     // Create a hash of the current state to prevent duplicate fetches

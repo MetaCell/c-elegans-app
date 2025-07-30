@@ -8,10 +8,11 @@ import {
   type EMViewerSettings,
   getDefaultViewerData,
   type NeuronGroup,
-  type ViewerData,
+  ViewerData,
   type ViewerSynchronizationPair,
   ViewerType,
   Visibility,
+  VisibilityContainer,
 } from "./models";
 import { type SynchronizerContext, SynchronizerOrchestrator } from "./synchronizer";
 
@@ -56,7 +57,8 @@ export class Workspace {
   availableNeurons: Record<string, Neuron>;
   // neuronId
   activeNeurons: Set<string>;
-  visibilities: Record<string, ViewerData>;
+  activeSynapses: Set<number>;
+  visibilities: VisibilityContainer;
   viewers: Record<ViewerType, boolean>;
   neuronGroups: Record<string, NeuronGroup>;
   emViewerSettings: EMViewerSettings;
@@ -75,10 +77,11 @@ export class Workspace {
     updateContext: (workspace: Workspace) => void,
     activeSynchronizers?: Record<ViewerSynchronizationPair, boolean>,
     contexts?: Record<ViewerType, SynchronizerContext>,
-    visibilities?: Record<string, ViewerData>,
+    visibilities?: VisibilityContainer,
     neuronGroups?: Record<string, NeuronGroup>,
     emViewerSettings?: EMViewerSettings,
     viewers?: Record<ViewerType, boolean>,
+    activeSynapses?: Set<number>,
   ) {
     this.id = id;
     this.name = name;
@@ -109,7 +112,10 @@ export class Workspace {
     this.layoutManager = layoutManager;
     this.syncOrchestrator = SynchronizerOrchestrator.create(activeSynchronizers, contexts);
 
-    this.visibilities = visibilities || Object.fromEntries([...(activeNeurons || [])].map((n) => [n, getDefaultViewerData(Visibility.Visible)]));
+    this.visibilities = visibilities || {
+      neurons: Object.fromEntries([...(activeNeurons || [])].map((n) => [n, getDefaultViewerData(Visibility.Visible)])),
+      synapses: Object.fromEntries([...(activeSynapses || [])].map((s) => [s, getDefaultViewerData(Visibility.Visible)])),
+    };
 
     this.store = store;
     this.updateContext = updateContext;
@@ -120,39 +126,39 @@ export class Workspace {
   @triggerUpdate
   activateNeuron(neuron: Neuron) {
     this.activeNeurons.add(neuron.name);
-    this.visibilities[neuron.name] = getDefaultViewerData();
+    this.visibilities.neurons[neuron.name] = getDefaultViewerData();
     return this;
   }
 
   @triggerUpdate
   deactivateNeuron(neuronId: string) {
     this.activeNeurons.delete(neuronId);
-    delete this.visibilities[neuronId];
+    delete this.visibilities.neurons[neuronId];
     return this;
   }
 
   @triggerUpdate
   hideNeuron(neuronId: string) {
-    if (!(neuronId in this.visibilities)) {
+    if (!(neuronId in this.visibilities.neurons)) {
       this.visibilities[neuronId] = getDefaultViewerData(Visibility.Hidden);
       this.removeSelection(neuronId, ViewerType.Graph);
     }
     // todo: add actions for other viewers
-    this.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Hidden;
-    this.visibilities[neuronId][ViewerType.ThreeD].visibility = Visibility.Hidden;
-    this.visibilities[neuronId][ViewerType.EM].visibility = Visibility.Hidden;
+    this.visibilities.neurons[neuronId][ViewerType.Graph].visibility = Visibility.Hidden;
+    this.visibilities.neurons[neuronId][ViewerType.ThreeD].visibility = Visibility.Hidden;
+    this.visibilities.neurons[neuronId][ViewerType.EM].visibility = Visibility.Hidden;
     return this;
   }
 
   @triggerUpdate
   showNeuron(neuronId: string) {
-    if (!(neuronId in this.visibilities)) {
-      this.visibilities[neuronId] = getDefaultViewerData(Visibility.Visible);
+    if (!(neuronId in this.visibilities.neurons)) {
+      this.visibilities.neurons[neuronId] = getDefaultViewerData(Visibility.Visible);
     }
     // todo: add actions for other viewers
-    this.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Visible;
-    this.visibilities[neuronId][ViewerType.ThreeD].visibility = Visibility.Visible;
-    this.visibilities[neuronId][ViewerType.EM].visibility = Visibility.Visible;
+    this.visibilities.neurons[neuronId][ViewerType.Graph].visibility = Visibility.Visible;
+    this.visibilities.neurons[neuronId][ViewerType.ThreeD].visibility = Visibility.Visible;
+    this.visibilities.neurons[neuronId][ViewerType.EM].visibility = Visibility.Visible;
     return this;
   }
 
@@ -310,11 +316,15 @@ export class Workspace {
   }
 
   getVisibleNeuronsInThreeD(): string[] {
-    return Array.from(this.activeNeurons).filter((neuronId) => this.visibilities[neuronId]?.[ViewerType.ThreeD]?.visibility === Visibility.Visible);
+    return Array.from(this.activeNeurons).filter((neuronId) => this.visibilities.neurons[neuronId]?.[ViewerType.ThreeD]?.visibility === Visibility.Visible);
   }
 
   getVisibleNeuronsInEM(): string[] {
-    return Array.from(this.activeNeurons).filter((neuronId) => this.visibilities[neuronId]?.[ViewerType.EM]?.visibility === Visibility.Visible);
+    return Array.from(this.activeNeurons).filter((neuronId) => this.visibilities.neurons[neuronId]?.[ViewerType.EM]?.visibility === Visibility.Visible);
+  }
+
+  getNeuronVisibility(neuronId: string): ViewerData {
+    return this.visibilities.neurons[neuronId];
   }
 
   changeNeuronColorForViewers(neuronId: string, color: string): void {
@@ -322,8 +332,8 @@ export class Workspace {
 
     const updated = produce(this, (draft: Workspace) => {
       for (const viewerType of viewers) {
-        if (viewerType in draft.visibilities[neuronId]) {
-          const viewerData = draft.visibilities[neuronId]?.[viewerType];
+        if (viewerType in draft.visibilities.neurons[neuronId]) {
+          const viewerData = draft.visibilities.neurons[neuronId]?.[viewerType];
           if (viewerData && "color" in viewerData && typeof viewerData.color === "string") {
             viewerData.color = color;
           }
