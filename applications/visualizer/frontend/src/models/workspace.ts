@@ -2,7 +2,7 @@ import type { LayoutManager } from "@metacell/geppetto-meta-client/common/layout
 import type { configureStore } from "@reduxjs/toolkit";
 import { createDraft, finishDraft, immerable, isDraft, produce } from "immer";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
-import { type Dataset, type Neuron, NeuronsService } from "../rest";
+import { type Dataset, type Neuron, NeuronsService, type GroupedSynapse, SynapsesService } from "../rest";
 import { GlobalError } from "./Error.ts";
 import {
   type EMViewerSettings,
@@ -62,6 +62,7 @@ export class Workspace {
   viewers: Record<ViewerType, boolean>;
   neuronGroups: Record<string, NeuronGroup>;
   emViewerSettings: EMViewerSettings;
+  synapsesData: GroupedSynapse | undefined;
 
   store: ReturnType<typeof configureStore>;
   layoutManager: LayoutManager;
@@ -94,6 +95,7 @@ export class Workspace {
       [ViewerType.EM]: false,
     };
     this.neuronGroups = neuronGroups || {};
+    this.synapsesData = undefined;
     // Set EM viewer settings
     if (!emViewerSettings) {
       const firstActiveDataset = Object.values(activeDatasets)?.[0];
@@ -356,5 +358,30 @@ export class Workspace {
 
   emViewerShowSynapses(show: boolean) {
     this.emViewerSettings.showSynapses = show;
+  }
+
+  @triggerUpdate
+  async fetchSynapses() {
+    console.log(this.activeNeurons);
+    
+    const visibleNeurons = Array.from(this.activeNeurons).filter((id) =>
+      Object.values(this.visibilities.neurons[id]).every((e) => e === undefined || e.visibility === Visibility.Visible),
+    );
+
+    try {
+      const synapses = await SynapsesService.getDatasetSynapses({
+        datasetIds: Object.keys(this.activeDatasets),
+        neurons: visibleNeurons,
+      });
+      this.synapsesData = synapses;
+    } catch (error) {
+      throw new GlobalError("Failed to fetch synapses");
+    }
+
+    return this;
+  }
+
+  getSynapsesData(): GroupedSynapse | undefined {
+    return this.synapsesData;
   }
 }

@@ -1,7 +1,7 @@
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
 import type { TreeViewBaseItem } from "@mui/x-tree-view/models";
-import { useState, useMemo } from "react";
-import { TextField, Box, InputAdornment } from "@mui/material";
+import { useState, useMemo, useEffect } from "react";
+import { TextField, Box, InputAdornment, CircularProgress } from "@mui/material";
 import { vars } from "../../theme/variables";
 import SearchIcon from "@mui/icons-material/Search";
 import { useGlobalContext } from "../../contexts/GlobalContext";
@@ -175,17 +175,39 @@ const filterTreeItems = (items: TreeViewBaseItem[], searchTerm: string): TreeVie
 };
 
 export default function BasicRichTreeView() {
-  const {
-    synapsesData: { synapses },
-  } = useGlobalContext();
+  const { getCurrentWorkspace } = useGlobalContext();
+  const currentWorkspace = getCurrentWorkspace();
   const [searchTerm, setSearchTerm] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!currentWorkspace) return;
+
+    const { activeNeurons, activeDatasets } = currentWorkspace;
+    
+    if (activeNeurons?.size > 0 && Object.keys(activeDatasets || {}).length > 0) {
+      setIsLoading(true);
+      currentWorkspace.fetchSynapses().catch((error) => {
+        console.error("Failed to fetch synapses:", error);
+      });
+      setIsLoading(false);
+    }
+  }, [
+    currentWorkspace?.id,
+    currentWorkspace?.activeNeurons,
+    currentWorkspace?.activeDatasets,
+    currentWorkspace?.visibilities?.neurons,
+  ]);
+
+  const synapsesData = currentWorkspace?.getSynapsesData();
 
   const treeItems = useMemo(() => {
-    if (!synapses) return [];
-    const fullTree = transformSynapsesToTree(synapses);
+    if (!synapsesData?.synapses) return [];
+    const fullTree = transformSynapsesToTree(synapsesData.synapses);
     return filterTreeItems(fullTree, searchTerm);
-  }, [synapses, searchTerm]);
+  }, [synapsesData?.synapses, searchTerm]);
 
+  // Keep tree collapsed by default - no expanded items
   const expandedItems = useMemo(() => {
     const getExpandedIds = (items: TreeViewBaseItem[]): string[] => {
       let ids: string[] = [];
@@ -237,7 +259,7 @@ export default function BasicRichTreeView() {
       />
       <RichTreeView
         items={treeItems}
-        defaultExpandedItems={expandedItems}
+        expandedItems={expandedItems}
         sx={{
           "& .MuiTreeItem-root": {
             position: "relative",
@@ -256,12 +278,11 @@ export default function BasicRichTreeView() {
               position: "absolute",
               left: "-10px",
               bottom: "0px",
-              borderLeft: `1px solid ${gray100}`,
               content: '""',
               width: ".5rem",
               height: "100%",
             },
-            "&:last-of-type": {
+            "&:last-child": {
               "&:after": {
                 display: "none",
               },
@@ -276,12 +297,14 @@ export default function BasicRichTreeView() {
               sx={{
                 [`& .${treeItemClasses.content}`]: {
                   padding: "8px",
-                  margin: ".2px",
                 },
                 [`& .${treeItemClasses.groupTransition}`]: {
                   marginLeft: "15px",
                   paddingLeft: "10px",
                   borderLeft: `1px solid #ECECE9`,
+                },
+                "& .MuiTreeItem-iconContainer": {
+                  display: "none",
                 },
               }}
             />
