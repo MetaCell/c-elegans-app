@@ -12,8 +12,9 @@ import PickerWrapper from "./PickerWrapper";
 const { gray100, gray600 } = vars;
 
 // Function to transform synapses data into tree structure
-const transformSynapsesToTree = (synapses: any): TreeViewBaseItem[] => {
+const transformSynapsesToTree = (synapses: any, availableNeurons: any): TreeViewBaseItem[] => {
   const treeItems: TreeViewBaseItem[] = [];
+console.log(availableNeurons);
 
   // Iterate through each neuron group (ADA, ADE, etc.)
   Object.entries(synapses).forEach(([neuronGroup, groupData]: [string, any]) => {
@@ -31,19 +32,19 @@ const transformSynapsesToTree = (synapses: any): TreeViewBaseItem[] => {
         children: [],
       };
 
-      Object.entries(groupData.pre).forEach(([preNeuron, preData]: [string, any]) => {
+      Object.entries(groupData.pre).forEach(([preNeuron, preData]: [string, any], preIndex: number) => {
         const preNeuronItem: TreeViewBaseItem = {
-          id: `${neuronGroup}-pre-${preNeuron}`,
+          id: `${neuronGroup}-pre-${preNeuron}-${preIndex}`,
           label: preNeuron,
           children: [],
         };
 
-        Object.entries(preData).forEach(([postNeuron, synapses]: [string, any]) => {
+        Object.entries(preData).forEach(([postNeuron, synapses]: [string, any], postIndex: number) => {
           const postNeuronItem: TreeViewBaseItem = {
-            id: `${neuronGroup}-pre-${preNeuron}-${postNeuron}`,
+            id: `${neuronGroup}-pre-${preNeuron}-${postNeuron}-${preIndex}-${postIndex}`,
             label: postNeuron,
             children: synapses.map((synapse: any) => ({
-              id: `${neuronGroup}-pre-${preNeuron}-${postNeuron}-${synapse.id}`,
+              id: `${neuronGroup}-pre-${preNeuron}-${postNeuron}-${synapse.id}-${preIndex}-${postIndex}`,
               label: `${synapse.pre} → ${synapse.posts.join(", ")}`,
             })),
           };
@@ -66,23 +67,46 @@ const transformSynapsesToTree = (synapses: any): TreeViewBaseItem[] => {
         children: [],
       };
 
-      Object.entries(groupData.post).forEach(([postNeuron, postData]: [string, any]) => {
+      Object.entries(groupData.post).forEach(([postNeuron, postData]: [string, any], postIndex: number) => {
         const postNeuronItem: TreeViewBaseItem = {
-          id: `${neuronGroup}-post-${postNeuron}`,
+          id: `${neuronGroup}-post-${postNeuron}-${postIndex}`,
           label: postNeuron,
           children: [],
         };
 
-        Object.entries(postData).forEach(([preNeuron, synapses]: [string, any]) => {
-          const preNeuronItem: TreeViewBaseItem = {
-            id: `${neuronGroup}-post-${postNeuron}-${preNeuron}`,
-            label: preNeuron,
+        // Group injected items by their label
+        const injectedGroups = new Map<string, TreeViewBaseItem>();
+
+        Object.entries(postData).forEach(([neuron, synapses]: [string, any], preIndex: number) => {
+          const injectedLabel = availableNeurons[neuron].nclass;
+          
+          // Check if we already have an injected group with this label
+          if (!injectedGroups.has(injectedLabel)) {
+            const injectedNeuronItem: TreeViewBaseItem = {
+              id: `${neuronGroup}-post-${postNeuron}-injected-${injectedLabel}-${postIndex}`,
+              label: injectedLabel,
+              children: [],
+            };
+            injectedGroups.set(injectedLabel, injectedNeuronItem);
+          }
+
+          const neuronItem: TreeViewBaseItem = {
+            id: `${neuronGroup}-post-${postNeuron}-${neuron}-${postIndex}-${preIndex}`,
+            label: neuron,
             children: synapses.map((synapse: any) => ({
-              id: `${neuronGroup}-post-${postNeuron}-${preNeuron}-${synapse.id}`,
+              id: `${neuronGroup}-post-${postNeuron}-${neuron}-${synapse.id}-${postIndex}-${preIndex}`,
               label: `${synapse.pre} → ${synapse.posts.join(", ")}`,
             })),
           };
-          postNeuronItem.children!.push(preNeuronItem);
+
+          // Add the neuron item to the appropriate injected group
+          injectedGroups.get(injectedLabel)!.children!.push(neuronItem);
+        });
+
+        // Add all injected groups to the post neuron item
+        injectedGroups.forEach((injectedGroup) => {
+          injectedGroup.children!.sort((a, b) => a.label.localeCompare(b.label));
+          postNeuronItem.children!.push(injectedGroup);
         });
 
         postNeuronItem.children!.sort((a, b) => a.label.localeCompare(b.label));
@@ -183,12 +207,10 @@ export default function BasicRichTreeView() {
   const [isLoading, setIsLoading] = useState(false);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [openColorPicker, setOpenColorPicker] = useState<string | null>(null);
+  const { activeNeurons, activeDatasets, availableNeurons } = currentWorkspace;
 
   useEffect(() => {
     if (!currentWorkspace) return;
-
-    const { activeNeurons, activeDatasets } = currentWorkspace;
-
     if (activeNeurons?.size > 0 && Object.keys(activeDatasets || {}).length > 0) {
       setIsLoading(true);
       currentWorkspace.fetchSynapses().catch((error) => {
@@ -222,7 +244,7 @@ export default function BasicRichTreeView() {
 
   const treeItems = useMemo(() => {
     if (!synapsesData?.synapses) return [];
-    const fullTree = transformSynapsesToTree(synapsesData.synapses);
+    const fullTree = transformSynapsesToTree(synapsesData.synapses, availableNeurons);
     return filterTreeItems(fullTree, searchTerm);
   }, [synapsesData?.synapses, searchTerm]);
 
@@ -295,9 +317,9 @@ export default function BasicRichTreeView() {
                 paddingLeft: "10px",
                 borderLeft: `1px solid #ECECE9`,
               },
-              "& .MuiTreeItem-iconContainer": {
-                display: "none",
-              },
+              // "& .MuiTreeItem-iconContainer": {
+              //   display: "none",
+              // },
             }}
           />
         );
@@ -343,7 +365,7 @@ export default function BasicRichTreeView() {
       />
       <RichTreeView
         items={treeItems}
-        expandedItems={expandedItems}
+        defaultExpandedItems={expandedItems}
         sx={{
           "& .MuiTreeItem-root": {
             position: "relative",
