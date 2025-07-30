@@ -130,10 +130,10 @@ export const computeGraphDifferences = (
         }
         const neuron = workspace.availableNeurons[nodeId];
         const attributes = extractNeuronAttributes(neuron);
-        const neuronVisibility = workspace.visibilities[nodeId];
+        const neuronVisibility = workspace.getNeuronVisibility(nodeId);
         const position = neuronVisibility?.[ViewerType.Graph]?.defaultPosition ?? null;
         nodesToAdd.push(createNode(nodeId, selectedNeurons.includes(nodeId), attributes, position, false, parent, workspace.activeNeurons.has(nodeId)));
-        if (!(nodeId in workspace.visibilities)) {
+        if (!(nodeId in workspace.visibilities.neurons)) {
           workspace.showNeuron(nodeId);
         }
       }

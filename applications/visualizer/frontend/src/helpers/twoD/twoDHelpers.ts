@@ -159,7 +159,7 @@ export const calculateMeanPosition = (nodeIds: string[], workspace: Workspace): 
   let count = 0;
 
   for (const nodeId of nodeIds) {
-    const neuron = workspace.visibilities[nodeId];
+    const neuron = workspace.getNeuronVisibility(nodeId);
     const position = neuron?.[ViewerType.Graph]?.defaultPosition;
     if (position) {
       totalX += position.x;
@@ -227,18 +227,18 @@ export const updateWorkspaceNeurons2DViewerData = (workspace: Workspace, cy: Cor
     // Set visibility and position for nodes in the cytoscape graph
     for (const node of cy.nodes()) {
       const neuronId = node.id();
-      if (!(neuronId in draft.visibilities)) {
-        draft.visibilities[neuronId] = getDefaultViewerData(Visibility.Visible);
+      if (!(neuronId in draft.visibilities.neurons)) {
+        draft.visibilities.neurons[neuronId] = getDefaultViewerData(Visibility.Visible);
       }
-      draft.visibilities[neuronId][ViewerType.Graph].defaultPosition = { ...node.position() };
-      draft.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Visible;
+      draft.visibilities.neurons[neuronId][ViewerType.Graph].defaultPosition = { ...node.position() };
+      draft.visibilities.neurons[neuronId][ViewerType.Graph].visibility = Visibility.Visible;
     }
   });
 };
 
 export function getVisibleActiveNeuronsIn2D(workspace: Workspace): Set<string> {
   const activeVisibleNeurons = Array.from(workspace.activeNeurons).filter(
-    (neuronId) => workspace.visibilities[neuronId]?.[ViewerType.Graph]?.visibility === Visibility.Visible,
+    (neuronId) => workspace.getNeuronVisibility(neuronId)?.[ViewerType.Graph]?.visibility === Visibility.Visible,
   );
 
   // Create a set to store the class neurons that are active and visible
@@ -257,7 +257,7 @@ export function getVisibleActiveNeuronsIn2D(workspace: Workspace): Set<string> {
 
 export function getHiddenNeuronsIn2D(workspace: Workspace): Set<string> {
   return new Set(
-    Object.entries(workspace.visibilities)
+    Object.entries(workspace.visibilities.neurons)
       .filter(([_, data]) => data[ViewerType.Graph].visibility === Visibility.Hidden)
       .map(([name, _]) => name),
   );

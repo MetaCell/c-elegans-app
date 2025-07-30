@@ -94,7 +94,7 @@ const TwoDMenu = ({
 
   const handleToggleVisibility = (neuronId) => {
     workspace.customUpdate((draft) => {
-      const neuron = draft.visibilities[neuronId];
+      const neuron = draft.getNeuronVisibility(neuronId);
       if (neuron) {
         const currentVisibility = neuron[ViewerType.Graph]?.visibility;
         neuron[ViewerType.Graph].visibility = currentVisibility === Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
@@ -109,11 +109,11 @@ const TwoDMenu = ({
   const openVisibility = Boolean(visibilityAnchorEl);
   const visibilityId = openVisibility ? "visibility-popover" : undefined;
 
-  const visibleNeurons = Object.entries(workspace.visibilities)
+  const visibleNeurons = Object.entries(workspace.visibilities.neurons)
     .filter(([_, data]) => data[ViewerType.Graph].visibility === Visibility.Visible)
     .map(([key, _]) => key);
 
-  const hiddenNeurons = Object.entries(workspace.visibilities)
+  const hiddenNeurons = Object.entries(workspace.visibilities.neurons)
     .filter(([_, data]) => data[ViewerType.Graph].visibility === Visibility.Hidden)
     .map(([key, _]) => key);
 
@@ -342,7 +342,7 @@ const TwoDMenu = ({
               key={neuronId}
               control={
                 <Switch
-                  checked={workspace.visibilities[neuronId][ViewerType.Graph]?.visibility === Visibility.Visible}
+                  checked={workspace.visibilities.neurons[neuronId][ViewerType.Graph]?.visibility === Visibility.Visible}
                   onChange={() => handleToggleVisibility(neuronId)}
                 />
               }
@@ -360,7 +360,7 @@ const TwoDMenu = ({
               key={neuronId}
               control={
                 <Switch
-                  checked={workspace.visibilities[neuronId][ViewerType.Graph]?.visibility === Visibility.Visible}
+                  checked={workspace.visibilities.neurons[neuronId][ViewerType.Graph]?.visibility === Visibility.Visible}
                   onChange={() => handleToggleVisibility(neuronId)}
                 />
               }
