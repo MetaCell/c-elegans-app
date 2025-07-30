@@ -43,7 +43,7 @@ const transformSynapsesToTree = (synapses: any, availableNeurons: any): TreeView
 
         Object.entries(preData).forEach(([neuron, synapses]: [string, any]) => {
           const injectedNeuronClass = availableNeurons[neuron].nclass;
-          
+
           // Check if we already have an injected group with this label
           if (!injectedGroups.has(injectedNeuronClass)) {
             const injectedNeuronItem: TreeViewBaseItem = {
@@ -101,7 +101,7 @@ const transformSynapsesToTree = (synapses: any, availableNeurons: any): TreeView
 
         Object.entries(postData).forEach(([neuron, synapses]: [string, any]) => {
           const injectedNeuronClass = availableNeurons[neuron].nclass;
-          
+
           // Check if we already have an injected group with this label
           if (!injectedGroups.has(injectedNeuronClass)) {
             const injectedNeuronItem: TreeViewBaseItem = {
