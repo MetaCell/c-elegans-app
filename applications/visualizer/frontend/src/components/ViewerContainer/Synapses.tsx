@@ -1,6 +1,5 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { vars } from "../../theme/variables";
-import CustomEntitiesDropdown from "./CustomEntitiesDropdown";
 import SynapsesTreeView from "./SynapsesTreeView";
 
 const { gray900, gray500 } = vars;

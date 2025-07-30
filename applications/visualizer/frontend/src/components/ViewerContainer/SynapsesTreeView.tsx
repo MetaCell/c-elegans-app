@@ -237,6 +237,36 @@ export default function BasicRichTreeView() {
             <RichTreeView
                 items={treeItems}
                 defaultExpandedItems={expandedItems}
+                sx={{
+                    "& .MuiTreeItem-root": {
+                        position: "relative",
+                        "&:before": {
+                            position: "absolute",
+                            left: "-10px",
+                            top: "0px",
+                            borderLeft: `1px solid ${gray100}`,
+                            borderBottom: `1px solid ${gray100}`,
+                            content: '""',
+                            width: ".5rem",
+                            height: "1em",
+                            borderBottomLeftRadius: "50%",
+                        },
+                        "&:after": {
+                            position: "absolute",
+                            left: "-10px",
+                            bottom: "0px",
+                            borderLeft: `1px solid ${gray100}`,
+                            content: '""',
+                            width: ".5rem",
+                            height: "100%",
+                        },
+                        "&:last-of-type": {
+                            "&:after": {
+                                display: "none",
+                            },
+                        },
+                    },
+                }}
                 slots={{
                     item: (props) => <TreeItem {...props}
                         label={props.label}
