@@ -5,6 +5,7 @@ import { TextField, Box, InputAdornment } from "@mui/material";
 import { vars } from "../../theme/variables";
 import SearchIcon from "@mui/icons-material/Search";
 import { useGlobalContext } from "../../contexts/GlobalContext";
+import { TreeItem, treeItemClasses } from "@mui/x-tree-view";
 
 const { gray100, gray600 } = vars;
 
@@ -236,6 +237,21 @@ export default function BasicRichTreeView() {
             <RichTreeView
                 items={treeItems}
                 defaultExpandedItems={expandedItems}
+                slots={{
+                    item: (props) => <TreeItem {...props}
+                        label={props.label}
+                        sx={{
+                            [`& .${treeItemClasses.content}`]: {
+                                padding: '8px',
+                                margin: '.2px',
+                            },
+                            [`& .${treeItemClasses.groupTransition}`]: {
+                                marginLeft: '15px',
+                                paddingLeft: '10px',
+                                borderLeft: `1px solid #ECECE9`,
+                            },
+                        }} />
+                }}
             />
         </Box>
     );
