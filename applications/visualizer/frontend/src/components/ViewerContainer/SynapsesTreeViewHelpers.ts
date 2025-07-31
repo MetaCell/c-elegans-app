@@ -1,8 +1,8 @@
-import { Visibility } from "../../models/models";
 import type { TreeViewBaseItem } from "@mui/x-tree-view/models";
+import { Visibility } from "../../models/models";
 
 // Custom type that extends TreeViewBaseItem to include visibility
-export interface SynapseTreeItem extends Omit<TreeViewBaseItem, 'children'> {
+export interface SynapseTreeItem extends Omit<TreeViewBaseItem, "children"> {
   isVisible?: boolean;
   children?: SynapseTreeItem[];
   type?: string;
@@ -11,7 +11,7 @@ export interface SynapseTreeItem extends Omit<TreeViewBaseItem, 'children'> {
 // Function to transform synapses data into tree structure
 export const transformSynapsesToTree = (synapses: any, availableNeurons: any, currentWorkspace: any): SynapseTreeItem[] => {
   const treeItems: SynapseTreeItem[] = [];
-  
+
   // Helper function to get synapse visibility
   const getSynapseVisibility = (synapseId: number): boolean => {
     const synapseVisibility = currentWorkspace.getSynapseVisibility(synapseId);
@@ -75,7 +75,7 @@ export const transformSynapsesToTree = (synapses: any, availableNeurons: any, cu
 
           // Calculate neuron item visibility based on its children
           neuronItem.isVisible = true;
-          
+
           // Add the neuron item to the appropriate injected group
           injectedGroups.get(injectedNeuronClass)!.children!.push(neuronItem);
         });
@@ -149,7 +149,7 @@ export const transformSynapsesToTree = (synapses: any, availableNeurons: any, cu
 
           // Calculate neuron item visibility based on its children
           neuronItem.isVisible = true;
-          
+
           // Add the neuron item to the appropriate injected group
           injectedGroups.get(injectedNeuronClass)!.children!.push(neuronItem);
         });
@@ -224,13 +224,13 @@ export const findTreeItemById = (items: SynapseTreeItem[], id: string): SynapseT
 
 // Function to apply memorized visibility states to tree items
 export const applyMemorizedStates = (items: SynapseTreeItem[], itemVisibilityStates: Record<string, boolean>): SynapseTreeItem[] => {
-  return items.map(item => {
+  return items.map((item) => {
     const memorizedState = itemVisibilityStates[item.id];
     const updatedItem = {
       ...item,
       isVisible: memorizedState !== undefined ? memorizedState : item.isVisible,
-      children: item.children ? applyMemorizedStates(item.children, itemVisibilityStates) : undefined
+      children: item.children ? applyMemorizedStates(item.children, itemVisibilityStates) : undefined,
     };
     return updatedItem;
   });
-}; 
+};

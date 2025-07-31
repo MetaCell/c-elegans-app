@@ -357,7 +357,6 @@ export class Workspace {
     return this;
   }
 
-
   // Helper methods for use within customUpdate (no @triggerUpdate decorator)
   _showSynapseInternal(synapseId: number) {
     if (!(synapseId in this.visibilities.synapses)) {

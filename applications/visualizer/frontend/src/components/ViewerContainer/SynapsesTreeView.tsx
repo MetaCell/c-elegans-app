@@ -7,18 +7,9 @@ import { useGlobalContext } from "../../contexts/GlobalContext";
 import { vars } from "../../theme/variables";
 import CustomSwitch from "./CustomSwitch";
 import PickerWrapper from "./PickerWrapper";
-import { 
-  SynapseTreeItem, 
-  transformSynapsesToTree, 
-  filterTreeItems, 
-  findTreeItemById, 
-  applyMemorizedStates 
-} from "./SynapsesTreeViewHelpers";
+import { type SynapseTreeItem, applyMemorizedStates, filterTreeItems, findTreeItemById, transformSynapsesToTree } from "./SynapsesTreeViewHelpers";
 
 const { gray100, gray600 } = vars;
-
-
-
 
 export default function BasicRichTreeView() {
   const { workspaces, currentWorkspaceId } = useGlobalContext();
@@ -42,7 +33,6 @@ export default function BasicRichTreeView() {
 
   const synapsesData = currentWorkspace?.getSynapsesData();
 
-
   // Function to update tree items
   const updateTreeItems = useCallback(() => {
     if (!synapsesData?.synapses) {
@@ -50,7 +40,7 @@ export default function BasicRichTreeView() {
       return;
     }
     const fullTree = transformSynapsesToTree(synapsesData.synapses, availableNeurons, currentWorkspace);
-    
+
     // Apply memorized visibility states to the tree
     const treeWithMemorizedStates = applyMemorizedStates(fullTree, itemVisibilityStates);
     const filteredTree = filterTreeItems(treeWithMemorizedStates, searchTerm);
@@ -77,7 +67,6 @@ export default function BasicRichTreeView() {
     return getExpandedIds(treeItems);
   }, [treeItems]);
 
- 
   const handleColorClick = useCallback((event: React.MouseEvent<HTMLElement>, itemId: string) => {
     event.stopPropagation();
     event.preventDefault();
@@ -85,13 +74,12 @@ export default function BasicRichTreeView() {
     setOpenColorPicker(itemId);
   }, []);
 
-
   const handleSynapseVisibilityToggle = useCallback(
     (itemId: string, checked: boolean) => {
       if (!currentWorkspace) return;
       const lastPart = itemId.split("-").slice(-1)[0];
       const isSynapseId = /^\d+$/.test(lastPart);
-      
+
       if (isSynapseId) {
         // Handle individual synapse visibility
         if (checked) {
@@ -99,39 +87,38 @@ export default function BasicRichTreeView() {
         } else {
           currentWorkspace.hideSynapse(Number.parseInt(lastPart));
         }
-        
+
         // Update the memorized visibility state
-        setItemVisibilityStates(prevStates => ({
+        setItemVisibilityStates((prevStates) => ({
           ...prevStates,
-          [itemId]: checked
+          [itemId]: checked,
         }));
-       
       } else {
         const item = findTreeItemById(treeItems, itemId);
-                   // Update the memorized visibility states for the group and all its children
-          setItemVisibilityStates(prevStates => {
-            const newStates = { ...prevStates };
-            newStates[itemId] = checked;
-            
-            // Update all children of this group
-            const updateChildrenStates = (children: SynapseTreeItem[]) => {
-              children.forEach(child => {
-                newStates[child.id] = checked;
-                if (child.children) {
-                  updateChildrenStates(child.children);
-                }
-              });
-            };
-            
-            if (item.children) {
-              updateChildrenStates(item.children);
-            }
-            
-            return newStates;
-          });
+        // Update the memorized visibility states for the group and all its children
+        setItemVisibilityStates((prevStates) => {
+          const newStates = { ...prevStates };
+          newStates[itemId] = checked;
+
+          // Update all children of this group
+          const updateChildrenStates = (children: SynapseTreeItem[]) => {
+            children.forEach((child) => {
+              newStates[child.id] = checked;
+              if (child.children) {
+                updateChildrenStates(child.children);
+              }
+            });
+          };
+
+          if (item.children) {
+            updateChildrenStates(item.children);
+          }
+
+          return newStates;
+        });
         if (item?.type === "synapsesGroup") {
           const synapseIds = item.children?.map((child) => child.id.split("-").slice(-1)[0]);
-          
+
           // Use customUpdate to batch all synapse visibility changes into a single update
           currentWorkspace.customUpdate((draft) => {
             if (checked) {
@@ -144,16 +131,11 @@ export default function BasicRichTreeView() {
               });
             }
           });
-          
-         
         }
-        
       }
     },
     [currentWorkspace, treeItems],
   );
-
-
 
   useEffect(() => {
     if (!currentWorkspace) return;
@@ -166,14 +148,12 @@ export default function BasicRichTreeView() {
     }
   }, [currentWorkspace?.id, currentWorkspace?.activeNeurons, currentWorkspace?.activeDatasets, currentWorkspace?.visibilities?.neurons]);
 
-
   if (isLoading)
     return (
       <Box>
         <CircularProgress />
       </Box>
     );
-
 
   const treeSlots = useMemo(
     () => ({
