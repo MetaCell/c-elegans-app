@@ -292,12 +292,9 @@ export default function BasicRichTreeView() {
   const handleSynapseVisibilityToggle = useCallback(
     (itemId: string, checked: boolean) => {
       const lastPart = itemId.split("-").slice(-1)[0];
-      const isPreOrPost = lastPart === "pre" || lastPart === "post";
       const isOnlyNumbers = /^\d+$/.test(lastPart);
 
-      if (isPreOrPost) {
-        return;
-      } else if (isOnlyNumbers) {
+      if (isOnlyNumbers) {
         if (checked) {
           currentWorkspace.showSynapse(Number.parseInt(lastPart));
         } else {
@@ -320,11 +317,51 @@ export default function BasicRichTreeView() {
           return checked;
         };
 
-        // Check if this is a neuron item (contains neuron name in the path)
-        const lastPart = itemId.split("-").slice(-1)[0];
-        const isPreOrPost = lastPart === "pre" || lastPart === "post";
-        const isOnlyNumbers = /^\d+$/.test(lastPart);
-        const isVisible = isPreOrPost ? true : isOnlyNumbers ? getSynapseVisibility(Number.parseInt(lastPart)) : false;
+        const getSynapseVisibilityRecursive = (itemId: string): boolean => {
+          // Find the item in the tree data
+          const findItem = (items: TreeViewBaseItem[], targetId: string): TreeViewBaseItem | null => {
+            for (const item of items) {
+              if (item.id === targetId) {
+                return item;
+              }
+              if (item.children) {
+                const found = findItem(item.children, targetId);
+                if (found) return found;
+              }
+            }
+            return null;
+          };
+
+          const currentItem = findItem(treeItems, itemId);
+          if (!currentItem) {
+            console.warn('Item not found:', itemId);
+            return true;
+          }
+
+          // If this is a leaf node (synapse with ID)
+          if (!currentItem.children || currentItem.children.length === 0) {
+            const id = itemId.split("-").slice(-1)[0];
+            const isNumber = /^\d+$/.test(id);
+            return isNumber ? getSynapseVisibility(Number(id)) : true;
+          }
+          
+          // If this is a parent node, check all its children
+          return currentItem.children.every((child) => {
+            const childId = child.id;
+            const childLastPart = childId.split("-").slice(-1)[0];
+            const childIsNumber = /^\d+$/.test(childLastPart);
+            
+            if (childIsNumber) {
+              // Child is a synapse, check its visibility
+              return getSynapseVisibility(Number(childLastPart));
+            } else {
+              // Child is a parent, recursively check its children
+              return getSynapseVisibilityRecursive(childId);
+            }
+          });
+        };
+
+        const isVisible = getSynapseVisibilityRecursive(itemId);
 
         const CustomLabel = () => (
           <Stack direction="row" alignItems="center" spacing={1} sx={{ width: "100%" }}>
