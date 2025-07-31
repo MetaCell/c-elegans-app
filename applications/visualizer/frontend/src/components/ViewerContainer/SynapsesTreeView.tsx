@@ -12,41 +12,59 @@ import PickerWrapper from "./PickerWrapper";
 
 const { gray100, gray600 } = vars;
 
+// Custom type that extends TreeViewBaseItem to include visibility
+interface SynapseTreeItem extends Omit<TreeViewBaseItem, 'children'> {
+  isVisible?: boolean;
+  children?: SynapseTreeItem[];
+}
+
 // Function to transform synapses data into tree structure
-const transformSynapsesToTree = (synapses: any, availableNeurons: any): TreeViewBaseItem[] => {
-  const treeItems: TreeViewBaseItem[] = [];
+const transformSynapsesToTree = (synapses: any, availableNeurons: any, currentWorkspace: any): SynapseTreeItem[] => {
+  const treeItems: SynapseTreeItem[] = [];
+  
+  // Helper function to get synapse visibility
+  const getSynapseVisibility = (synapseId: number): boolean => {
+    const synapseVisibility = currentWorkspace.getSynapseVisibility(synapseId);
+    return Object.values(synapseVisibility).every((e: any) => e === undefined || e.visibility === Visibility.Visible);
+  };
+
+  // Helper function to calculate parent visibility based on children
+  const calculateParentVisibility = (children: SynapseTreeItem[]): boolean => {
+    if (children.length === 0) return true;
+    return children.every(child => child.isVisible === true);
+  };
 
   // Iterate through each neuron group (ADA, ADE, etc.)
   Object.entries(synapses).forEach(([neuronGroup, groupData]: [string, any]) => {
-    const groupItem: TreeViewBaseItem = {
+    const groupItem: SynapseTreeItem = {
       id: neuronGroup,
       label: neuronGroup,
       children: [],
     };
     // Add pre-synaptic connections
     if (groupData.pre) {
-      const preItem: TreeViewBaseItem = {
+      const preItem: SynapseTreeItem = {
         id: `${neuronGroup}-pre`,
         label: "Pre",
         children: [],
       };
 
       Object.entries(groupData.pre).forEach(([preNeuron, preData]: [string, any]) => {
-        const preNeuronItem: TreeViewBaseItem = {
+        const preNeuronItem: SynapseTreeItem = {
           id: `${neuronGroup}-pre-${preNeuron}`,
           label: preNeuron,
           children: [],
         };
 
         // Group injected items by their label
-        const injectedGroups = new Map<string, TreeViewBaseItem>();
+        const injectedGroups = new Map<string, SynapseTreeItem>();
 
         Object.entries(preData).forEach(([neuron, synapses]: [string, any]) => {
           const injectedNeuronClass = availableNeurons[neuron].nclass;
 
           // Check if we already have an injected group with this label
           if (!injectedGroups.has(injectedNeuronClass)) {
-            const injectedNeuronItem: TreeViewBaseItem = {
+            const injectedNeuronItem: SynapseTreeItem = {
               id: `${neuronGroup}-pre-${preNeuron}-${injectedNeuronClass}`,
               label: injectedNeuronClass,
               children: [],
@@ -54,15 +72,20 @@ const transformSynapsesToTree = (synapses: any, availableNeurons: any): TreeView
             injectedGroups.set(injectedNeuronClass, injectedNeuronItem);
           }
 
-          const neuronItem: TreeViewBaseItem = {
+          const neuronItem: SynapseTreeItem = {
             id: `${neuronGroup}-pre-${preNeuron}-${injectedNeuronClass}-${neuron}`,
             label: neuron,
             children: synapses.map((synapse: any) => ({
               id: `${neuronGroup}-pre-${preNeuron}-${injectedNeuronClass}-${neuron}-${synapse.id}`,
               label: `${synapse.pre} → ${synapse.posts.join(", ")}`,
+              // Leaf nodes (synapses) get their actual visibility state
+              isVisible: getSynapseVisibility(synapse.id),
             })),
           };
 
+          // Calculate neuron item visibility based on its children
+          neuronItem.isVisible = calculateParentVisibility(neuronItem.children!);
+          
           // Add the neuron item to the appropriate injected group
           injectedGroups.get(injectedNeuronClass)!.children!.push(neuronItem);
         });
@@ -70,41 +93,47 @@ const transformSynapsesToTree = (synapses: any, availableNeurons: any): TreeView
         // Add all injected groups to the pre neuron item
         injectedGroups.forEach((injectedGroup) => {
           injectedGroup.children!.sort((a, b) => a.label.localeCompare(b.label));
+          // Calculate injected group visibility based on its children
+          injectedGroup.isVisible = calculateParentVisibility(injectedGroup.children!);
           preNeuronItem.children!.push(injectedGroup);
         });
 
         preNeuronItem.children!.sort((a, b) => a.label.localeCompare(b.label));
+        // Calculate pre neuron item visibility based on its children
+        preNeuronItem.isVisible = calculateParentVisibility(preNeuronItem.children!);
         preItem.children!.push(preNeuronItem);
       });
 
       preItem.children!.sort((a, b) => a.label.localeCompare(b.label));
+      // Calculate pre item visibility based on its children
+      preItem.isVisible = calculateParentVisibility(preItem.children!);
       groupItem.children!.push(preItem);
     }
 
     // Add post-synaptic connections
     if (groupData.post) {
-      const postItem: TreeViewBaseItem = {
+      const postItem: SynapseTreeItem = {
         id: `${neuronGroup}-post`,
         label: "Post",
         children: [],
       };
 
       Object.entries(groupData.post).forEach(([postNeuron, postData]: [string, any]) => {
-        const postNeuronItem: TreeViewBaseItem = {
+        const postNeuronItem: SynapseTreeItem = {
           id: `${neuronGroup}-post-${postNeuron}`,
           label: postNeuron,
           children: [],
         };
 
         // Group injected items by their label
-        const injectedGroups = new Map<string, TreeViewBaseItem>();
+        const injectedGroups = new Map<string, SynapseTreeItem>();
 
         Object.entries(postData).forEach(([neuron, synapses]: [string, any]) => {
           const injectedNeuronClass = availableNeurons[neuron].nclass;
 
           // Check if we already have an injected group with this label
           if (!injectedGroups.has(injectedNeuronClass)) {
-            const injectedNeuronItem: TreeViewBaseItem = {
+            const injectedNeuronItem: SynapseTreeItem = {
               id: `${neuronGroup}-post-${postNeuron}-${injectedNeuronClass}`,
               label: injectedNeuronClass,
               children: [],
@@ -112,15 +141,20 @@ const transformSynapsesToTree = (synapses: any, availableNeurons: any): TreeView
             injectedGroups.set(injectedNeuronClass, injectedNeuronItem);
           }
 
-          const neuronItem: TreeViewBaseItem = {
+          const neuronItem: SynapseTreeItem = {
             id: `${neuronGroup}-post-${postNeuron}-${injectedNeuronClass}-${neuron}`,
             label: neuron,
             children: synapses.map((synapse: any) => ({
               id: `${neuronGroup}-post-${postNeuron}-${injectedNeuronClass}-${neuron}-${synapse.id}`,
               label: `${synapse.pre} → ${synapse.posts.join(", ")}`,
+              // Leaf nodes (synapses) get their actual visibility state
+              isVisible: getSynapseVisibility(synapse.id),
             })),
           };
 
+          // Calculate neuron item visibility based on its children
+          neuronItem.isVisible = calculateParentVisibility(neuronItem.children!);
+          
           // Add the neuron item to the appropriate injected group
           injectedGroups.get(injectedNeuronClass)!.children!.push(neuronItem);
         });
@@ -128,17 +162,25 @@ const transformSynapsesToTree = (synapses: any, availableNeurons: any): TreeView
         // Add all injected groups to the post neuron item
         injectedGroups.forEach((injectedGroup) => {
           injectedGroup.children!.sort((a, b) => a.label.localeCompare(b.label));
+          // Calculate injected group visibility based on its children
+          injectedGroup.isVisible = calculateParentVisibility(injectedGroup.children!);
           postNeuronItem.children!.push(injectedGroup);
         });
 
         postNeuronItem.children!.sort((a, b) => a.label.localeCompare(b.label));
+        // Calculate post neuron item visibility based on its children
+        postNeuronItem.isVisible = calculateParentVisibility(postNeuronItem.children!);
         postItem.children!.push(postNeuronItem);
       });
 
       postItem.children!.sort((a, b) => a.label.localeCompare(b.label));
+      // Calculate post item visibility based on its children
+      postItem.isVisible = calculateParentVisibility(postItem.children!);
       groupItem.children!.push(postItem);
     }
 
+    // Calculate group item visibility based on its children
+    groupItem.isVisible = calculateParentVisibility(groupItem.children!);
     treeItems.push(groupItem);
   });
 
@@ -149,27 +191,27 @@ const transformSynapsesToTree = (synapses: any, availableNeurons: any): TreeView
 };
 
 // Function to filter tree items based on search term
-const filterTreeItems = (items: TreeViewBaseItem[], searchTerm: string): TreeViewBaseItem[] => {
+const filterTreeItems = (items: SynapseTreeItem[], searchTerm: string): SynapseTreeItem[] => {
   if (!searchTerm.trim()) {
     return items;
   }
 
-  const filteredItems: TreeViewBaseItem[] = [];
+  const filteredItems: SynapseTreeItem[] = [];
 
   items.forEach((item) => {
-    const filteredChildren: TreeViewBaseItem[] = [];
+    const filteredChildren: SynapseTreeItem[] = [];
 
     if (item.children) {
       item.children.forEach((child) => {
-        const filteredGrandChildren: TreeViewBaseItem[] = [];
+        const filteredGrandChildren: SynapseTreeItem[] = [];
 
         if (child.children) {
           child.children.forEach((grandChild) => {
-            const filteredGreatGrandChildren: TreeViewBaseItem[] = [];
+            const filteredGreatGrandChildren: SynapseTreeItem[] = [];
 
             if (grandChild.children) {
               grandChild.children.forEach((greatGrandChild) => {
-                const filteredSynapses: TreeViewBaseItem[] = [];
+                const filteredSynapses: SynapseTreeItem[] = [];
 
                 if (greatGrandChild.children) {
                   greatGrandChild.children.forEach((synapse) => {
@@ -262,13 +304,13 @@ export default function BasicRichTreeView() {
 
   const treeItems = useMemo(() => {
     if (!synapsesData?.synapses) return [];
-    const fullTree = transformSynapsesToTree(synapsesData.synapses, availableNeurons);
+    const fullTree = transformSynapsesToTree(synapsesData.synapses, availableNeurons, currentWorkspace);
     return filterTreeItems(fullTree, searchTerm);
-  }, [synapsesData?.synapses, searchTerm]);
+  }, [synapsesData?.synapses, searchTerm, currentWorkspace]);
 
   // Keep tree collapsed by default - no expanded items
   const expandedItems = useMemo(() => {
-    const getExpandedIds = (items: TreeViewBaseItem[]): string[] => {
+    const getExpandedIds = (items: SynapseTreeItem[]): string[] => {
       let ids: string[] = [];
       items.forEach((item) => {
         ids.push(item.id);
@@ -299,65 +341,11 @@ export default function BasicRichTreeView() {
         } else {
           currentWorkspace.hideSynapse(Number.parseInt(lastPart));
         }
+      } else {
+        console.log(`No synapse IDs found for item: ${itemId}`);
       }
     },
     [currentWorkspace],
-  );
-
-  const getSynapseVisibility = useCallback(
-    (synapseId: number) => {
-      const synapseVisibility = currentWorkspace.getSynapseVisibility(synapseId);
-      const checked = Object.values(synapseVisibility).every((e) => e === undefined || e.visibility === Visibility.Visible);
-      return checked;
-    },
-    [currentWorkspace],
-  );
-
-  const getSynapseVisibilityRecursive = useCallback(
-    (itemId: string): boolean => {
-      // Find the item in the tree data
-      const findItem = (items: TreeViewBaseItem[], targetId: string): TreeViewBaseItem | null => {
-        for (const item of items) {
-          if (item.id === targetId) {
-            return item;
-          }
-          if (item.children) {
-            const found = findItem(item.children, targetId);
-            if (found) return found;
-          }
-        }
-        return null;
-      };
-
-      const currentItem = findItem(treeItems, itemId);
-      if (!currentItem) {
-        console.warn("Item not found:", itemId);
-        return true;
-      }
-
-      // If this is a leaf node (synapse with ID)
-      if (!currentItem.children || currentItem.children.length === 0) {
-        const id = itemId.split("-").slice(-1)[0];
-        const isNumber = /^\d+$/.test(id);
-        return isNumber ? getSynapseVisibility(Number(id)) : true;
-      }
-
-      // If this is a parent node, check all its children
-      return currentItem.children.every((child) => {
-        const childId = child.id;
-        const childLastPart = childId.split("-").slice(-1)[0];
-        const childIsNumber = /^\d+$/.test(childLastPart);
-
-        if (childIsNumber) {
-          // Child is a synapse, check its visibility
-          return getSynapseVisibility(Number(childLastPart));
-        } else {
-          // Child is a parent, recursively check its children
-          return getSynapseVisibilityRecursive(childId);
-        }
-      });
-    },
-    [treeItems, getSynapseVisibility],
   );
 
   const treeSlots = useMemo(
@@ -365,8 +353,22 @@ export default function BasicRichTreeView() {
       item: (props: any) => {
         const itemId = props.itemId;
         const hasChildren = props.children && props.children.length > 0;
+        // Find the current item in the tree to get its isVisible property
+        const findItem = (items: SynapseTreeItem[], targetId: string): SynapseTreeItem | null => {
+          for (const item of items) {
+            if (item.id === targetId) {
+              return item;
+            }
+            if (item.children) {
+              const found = findItem(item.children, targetId);
+              if (found) return found;
+            }
+          }
+          return null;
+        };
 
-        const isVisible = getSynapseVisibilityRecursive(itemId);
+        const currentItem = findItem(treeItems, itemId);
+        const isVisible = currentItem?.isVisible ?? true;
 
         const CustomLabel = () => (
           <Stack direction="row" alignItems="center" spacing={1} sx={{ width: "100%" }}>
@@ -430,7 +432,7 @@ export default function BasicRichTreeView() {
         );
       },
     }),
-    [handleColorClick, currentWorkspace, handleSynapseVisibilityToggle],
+    [handleColorClick, currentWorkspace, handleSynapseVisibilityToggle, treeItems],
   );
 
   return (
