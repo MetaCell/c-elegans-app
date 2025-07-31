@@ -23,14 +23,14 @@ export const transformSynapsesToTree = (synapses: any, availableNeurons: any, cu
     if (!item.children || item.children.length === 0) {
       return item.isVisible ?? true;
     }
-    
+
     // Get all children's visibility states
-    const childrenVisibility = item.children.map(child => calculateParentVisibility(child));
-    
+    const childrenVisibility = item.children.map((child) => calculateParentVisibility(child));
+
     // If all children have the same visibility state, parent should match that state
     // If children have mixed states, parent should be visible (true)
-    const allSameState = childrenVisibility.every(state => state === childrenVisibility[0]);
-    
+    const allSameState = childrenVisibility.every((state) => state === childrenVisibility[0]);
+
     if (allSameState) {
       return childrenVisibility[0];
     } else {
@@ -183,16 +183,16 @@ export const transformSynapsesToTree = (synapses: any, availableNeurons: any, cu
 
   // Calculate parent visibility based on children after building the tree
   const calculateAllParentVisibility = (items: SynapseTreeItem[]): SynapseTreeItem[] => {
-    return items.map(item => {
+    return items.map((item) => {
       const updatedItem = {
         ...item,
         children: item.children ? calculateAllParentVisibility(item.children) : undefined,
       };
-      
+
       if (updatedItem.children && updatedItem.children.length > 0) {
         updatedItem.isVisible = calculateParentVisibility(updatedItem);
       }
-      
+
       return updatedItem;
     });
   };
@@ -244,14 +244,14 @@ const calculateParentVisibility = (item: SynapseTreeItem): boolean => {
   if (!item.children || item.children.length === 0) {
     return item.isVisible ?? true;
   }
-  
+
   // Get all children's visibility states
-  const childrenVisibility = item.children.map(child => calculateParentVisibility(child));
-  
+  const childrenVisibility = item.children.map((child) => calculateParentVisibility(child));
+
   // If all children have the same visibility state, parent should match that state
   // If children have mixed states, parent should be visible (true)
-  const allSameState = childrenVisibility.every(state => state === childrenVisibility[0]);
-  
+  const allSameState = childrenVisibility.every((state) => state === childrenVisibility[0]);
+
   if (allSameState) {
     return childrenVisibility[0];
   } else {
@@ -269,12 +269,12 @@ export const applyMemorizedStates = (items: SynapseTreeItem[], itemVisibilitySta
       isVisible: memorizedState !== undefined ? memorizedState : item.isVisible,
       children: item.children ? applyMemorizedStates(item.children, itemVisibilityStates) : undefined,
     };
-    
+
     // After updating children, recalculate parent visibility based on children
     if (updatedItem.children && updatedItem.children.length > 0) {
       updatedItem.isVisible = calculateParentVisibility(updatedItem);
     }
-    
+
     return updatedItem;
   });
 };
