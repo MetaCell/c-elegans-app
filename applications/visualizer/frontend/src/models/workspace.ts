@@ -346,6 +346,12 @@ export class Workspace {
   }
 
   @triggerUpdate
+  showSynapseGroup(synapseGroup: string[]) {
+    synapseGroup.forEach((synapseId) => this.showSynapse(Number.parseInt(synapseId)));
+    return this;
+  }
+
+  @triggerUpdate
   hideSynapse(synapseId: number) {
     if (!(synapseId in this.visibilities.synapses)) {
       this.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Hidden);
@@ -354,6 +360,12 @@ export class Workspace {
     this.visibilities.synapses[synapseId][ViewerType.Graph].visibility = Visibility.Hidden;
     this.visibilities.synapses[synapseId][ViewerType.ThreeD].visibility = Visibility.Hidden;
     this.visibilities.synapses[synapseId][ViewerType.EM].visibility = Visibility.Hidden;
+    return this;
+  }
+
+  @triggerUpdate
+  hideSynapseGroup(synapseGroup: string[]) {
+    synapseGroup.forEach((synapseId) => this.hideSynapse(Number.parseInt(synapseId)));
     return this;
   }
 
