@@ -23,7 +23,6 @@ const transformSynapsesToTree = (synapses: any, availableNeurons: any): TreeView
       label: neuronGroup,
       children: [],
     };
-
     // Add pre-synaptic connections
     if (groupData.pre) {
       const preItem: TreeViewBaseItem = {
@@ -305,61 +304,67 @@ export default function BasicRichTreeView() {
     [currentWorkspace],
   );
 
+  const getSynapseVisibility = useCallback(
+    (synapseId: number) => {
+      const synapseVisibility = currentWorkspace.getSynapseVisibility(synapseId);
+      const checked = Object.values(synapseVisibility).every((e) => e === undefined || e.visibility === Visibility.Visible);
+      return checked;
+    },
+    [currentWorkspace],
+  );
+
+  const getSynapseVisibilityRecursive = useCallback(
+    (itemId: string): boolean => {
+      // Find the item in the tree data
+      const findItem = (items: TreeViewBaseItem[], targetId: string): TreeViewBaseItem | null => {
+        for (const item of items) {
+          if (item.id === targetId) {
+            return item;
+          }
+          if (item.children) {
+            const found = findItem(item.children, targetId);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      const currentItem = findItem(treeItems, itemId);
+      if (!currentItem) {
+        console.warn("Item not found:", itemId);
+        return true;
+      }
+
+      // If this is a leaf node (synapse with ID)
+      if (!currentItem.children || currentItem.children.length === 0) {
+        const id = itemId.split("-").slice(-1)[0];
+        const isNumber = /^\d+$/.test(id);
+        return isNumber ? getSynapseVisibility(Number(id)) : true;
+      }
+
+      // If this is a parent node, check all its children
+      return currentItem.children.every((child) => {
+        const childId = child.id;
+        const childLastPart = childId.split("-").slice(-1)[0];
+        const childIsNumber = /^\d+$/.test(childLastPart);
+
+        if (childIsNumber) {
+          // Child is a synapse, check its visibility
+          return getSynapseVisibility(Number(childLastPart));
+        } else {
+          // Child is a parent, recursively check its children
+          return getSynapseVisibilityRecursive(childId);
+        }
+      });
+    },
+    [treeItems, getSynapseVisibility],
+  );
+
   const treeSlots = useMemo(
     () => ({
       item: (props: any) => {
         const itemId = props.itemId;
         const hasChildren = props.children && props.children.length > 0;
-
-        const getSynapseVisibility = (synapseId: number) => {
-          const synapseVisibility = currentWorkspace.getSynapseVisibility(synapseId);
-          const checked = Object.values(synapseVisibility).every((e) => e === undefined || e.visibility === Visibility.Visible);
-          return checked;
-        };
-
-        const getSynapseVisibilityRecursive = (itemId: string): boolean => {
-          // Find the item in the tree data
-          const findItem = (items: TreeViewBaseItem[], targetId: string): TreeViewBaseItem | null => {
-            for (const item of items) {
-              if (item.id === targetId) {
-                return item;
-              }
-              if (item.children) {
-                const found = findItem(item.children, targetId);
-                if (found) return found;
-              }
-            }
-            return null;
-          };
-
-          const currentItem = findItem(treeItems, itemId);
-          if (!currentItem) {
-            console.warn('Item not found:', itemId);
-            return true;
-          }
-
-          // If this is a leaf node (synapse with ID)
-          if (!currentItem.children || currentItem.children.length === 0) {
-            const id = itemId.split("-").slice(-1)[0];
-            const isNumber = /^\d+$/.test(id);
-            return isNumber ? getSynapseVisibility(Number(id)) : true;
-          }
-          
-          // If this is a parent node, check all its children
-          return currentItem.children.every((child) => {
-            const childId = child.id;
-            const childLastPart = childId.split("-").slice(-1)[0];
-            const childIsNumber = /^\d+$/.test(childLastPart);
-            
-            if (childIsNumber) {
-              // Child is a synapse, check its visibility
-              return getSynapseVisibility(Number(childLastPart));
-            } else {
-              // Child is a parent, recursively check its children
-              return getSynapseVisibilityRecursive(childId);
-            }
-          });
-        };
 
         const isVisible = getSynapseVisibilityRecursive(itemId);
 
