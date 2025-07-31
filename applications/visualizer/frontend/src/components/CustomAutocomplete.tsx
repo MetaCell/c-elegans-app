@@ -26,7 +26,7 @@ interface CustomAutocompleteProps<T> {
   onInputChange?: (v: string) => void;
 }
 
-const CommonAutocomplete = <T,>({
+const CustomAutocomplete = <T,>({
   options,
   getOptionLabel,
   renderOption,
@@ -74,4 +74,4 @@ const CommonAutocomplete = <T,>({
   );
 };
 
-export default CommonAutocomplete;
+export default CustomAutocomplete;
