@@ -329,6 +329,34 @@ export class Workspace {
     return this.visibilities.neurons[neuronId];
   }
 
+  getSynapseVisibility(synapseId: number): ViewerData {
+    return this.visibilities.synapses[synapseId];
+  }
+
+  @triggerUpdate
+  showSynapse(synapseId: number) {
+    if (!(synapseId in this.visibilities.synapses)) {
+      this.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Visible);
+    }
+    // Set visibility for all viewers
+    this.visibilities.synapses[synapseId][ViewerType.Graph].visibility = Visibility.Visible;
+    this.visibilities.synapses[synapseId][ViewerType.ThreeD].visibility = Visibility.Visible;
+    this.visibilities.synapses[synapseId][ViewerType.EM].visibility = Visibility.Visible;
+    return this;
+  }
+
+  @triggerUpdate
+  hideSynapse(synapseId: number) {
+    if (!(synapseId in this.visibilities.synapses)) {
+      this.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Hidden);
+    }
+    // Set visibility for all viewers
+    this.visibilities.synapses[synapseId][ViewerType.Graph].visibility = Visibility.Hidden;
+    this.visibilities.synapses[synapseId][ViewerType.ThreeD].visibility = Visibility.Hidden;
+    this.visibilities.synapses[synapseId][ViewerType.EM].visibility = Visibility.Hidden;
+    return this;
+  }
+
   changeNeuronColorForViewers(neuronId: string, color: string): void {
     const viewers: ViewerType[] = [ViewerType.ThreeD, ViewerType.EM];
 
@@ -372,6 +400,37 @@ export class Workspace {
         neurons: visibleNeurons,
       });
       this.synapsesData = synapses;
+
+      // Extract synapse IDs from the fetched data and populate activeSynapses
+      const synapseIds = new Set<number>();
+      if (synapses && synapses.synapses) {
+        for (const [_, prePostEntry] of Object.entries(synapses.synapses)) {
+          // Extract synapse IDs from pre connections
+          for (const [_, postEntries] of Object.entries(prePostEntry.pre)) {
+            for (const [_, synapseEntries] of Object.entries(postEntries)) {
+              for (const synapseEntry of synapseEntries) {
+                synapseIds.add(synapseEntry.id);
+              }
+            }
+          }
+          // Extract synapse IDs from post connections
+          for (const [_, postEntries] of Object.entries(prePostEntry.post)) {
+            for (const [_, synapseEntries] of Object.entries(postEntries)) {
+              for (const synapseEntry of synapseEntries) {
+                synapseIds.add(synapseEntry.id);
+              }
+            }
+          }
+        }
+      }
+
+      // Update activeSynapses and initialize visibilities for new synapses
+      this.activeSynapses = synapseIds;
+      for (const synapseId of synapseIds) {
+        if (!(synapseId in this.visibilities.synapses)) {
+          this.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Visible);
+        }
+      }
     } catch (error) {
       throw new GlobalError("Failed to fetch synapses");
     }

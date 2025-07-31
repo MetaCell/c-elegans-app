@@ -5,6 +5,7 @@ import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
 import type { TreeViewBaseItem } from "@mui/x-tree-view/models";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext";
+import { Visibility } from "../../models/models";
 import { vars } from "../../theme/variables";
 import CustomSwitch from "./CustomSwitch";
 import PickerWrapper from "./PickerWrapper";
@@ -258,10 +259,6 @@ export default function BasicRichTreeView() {
     console.log(itemId, color);
   }, []);
 
-  const handleSwitchChange = useCallback((itemId: string, checked: boolean) => {
-    console.log(itemId, checked);
-  }, []);
-
   const synapsesData = currentWorkspace?.getSynapsesData();
 
   const treeItems = useMemo(() => {
@@ -292,15 +289,56 @@ export default function BasicRichTreeView() {
       </Box>
     );
 
+  const handleSynapseVisibilityToggle = useCallback(
+    (itemId: string, checked: boolean) => {
+      const lastPart = itemId.split("-").slice(-1)[0];
+      const isPreOrPost = lastPart === "pre" || lastPart === "post";
+      const isOnlyNumbers = /^\d+$/.test(lastPart);
+
+      if (isPreOrPost) {
+        return;
+      } else if (isOnlyNumbers) {
+        if (checked) {
+          currentWorkspace.showSynapse(Number.parseInt(lastPart));
+        } else {
+          currentWorkspace.hideSynapse(Number.parseInt(lastPart));
+        }
+      }
+    },
+    [currentWorkspace],
+  );
+
   const treeSlots = useMemo(
     () => ({
       item: (props: any) => {
         const itemId = props.itemId;
         const hasChildren = props.children && props.children.length > 0;
 
+        const getSynapseVisibility = (synapseId: number) => {
+          const synapseVisibility = currentWorkspace.getSynapseVisibility(synapseId);
+          const checked = Object.values(synapseVisibility).every((e) => e === undefined || e.visibility === Visibility.Visible);
+          return checked;
+        };
+
+        // Check if this is a neuron item (contains neuron name in the path)
+        const lastPart = itemId.split("-").slice(-1)[0];
+        const isPreOrPost = lastPart === "pre" || lastPart === "post";
+        const isOnlyNumbers = /^\d+$/.test(lastPart);
+        const isVisible = isPreOrPost ? true : isOnlyNumbers ? getSynapseVisibility(Number.parseInt(lastPart)) : false;
+
         const CustomLabel = () => (
           <Stack direction="row" alignItems="center" spacing={1} sx={{ width: "100%" }}>
-            <CustomSwitch onChange={(_, checked) => handleSwitchChange(itemId, checked)} width={20} height={12} thumbDimension={8} />
+            <CustomSwitch
+              checked={isVisible}
+              onChange={(e, checked) => {
+                e.stopPropagation();
+                e.preventDefault();
+                handleSynapseVisibilityToggle(itemId, checked);
+              }}
+              width={20}
+              height={12}
+              thumbDimension={8}
+            />
             {hasChildren && (
               <Box
                 sx={{
@@ -333,6 +371,9 @@ export default function BasicRichTreeView() {
             sx={{
               [`& .${treeItemClasses.content}`]: {
                 padding: "8px",
+                "&.Mui-selected": {
+                  backgroundColor: "transparent",
+                },
               },
               [`& .${treeItemClasses.groupTransition}`]: {
                 marginLeft: "15px",
@@ -347,7 +388,7 @@ export default function BasicRichTreeView() {
         );
       },
     }),
-    [handleSwitchChange, handleColorClick],
+    [handleColorClick, currentWorkspace, handleSynapseVisibilityToggle],
   );
 
   return (
