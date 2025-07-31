@@ -18,6 +18,27 @@ export const transformSynapsesToTree = (synapses: any, availableNeurons: any, cu
     return Object.values(synapseVisibility).every((e: any) => e === undefined || e.visibility === Visibility.Visible);
   };
 
+  // Helper function to calculate parent visibility based on children
+  const calculateParentVisibility = (item: SynapseTreeItem): boolean => {
+    if (!item.children || item.children.length === 0) {
+      return item.isVisible ?? true;
+    }
+    
+    // Get all children's visibility states
+    const childrenVisibility = item.children.map(child => calculateParentVisibility(child));
+    
+    // If all children have the same visibility state, parent should match that state
+    // If children have mixed states, parent should be visible (true)
+    const allSameState = childrenVisibility.every(state => state === childrenVisibility[0]);
+    
+    if (allSameState) {
+      return childrenVisibility[0];
+    } else {
+      // Mixed states - parent should be visible (true)
+      return true;
+    }
+  };
+
   // Iterate through each neuron group (ADA, ADE, etc.)
   Object.entries(synapses).forEach(([neuronGroup, groupData]: [string, any]) => {
     const groupItem: SynapseTreeItem = {
@@ -73,9 +94,6 @@ export const transformSynapsesToTree = (synapses: any, availableNeurons: any, cu
             type: "synapsesGroup",
           };
 
-          // Calculate neuron item visibility based on its children
-          neuronItem.isVisible = true;
-
           // Add the neuron item to the appropriate injected group
           injectedGroups.get(injectedNeuronClass)!.children!.push(neuronItem);
         });
@@ -83,20 +101,14 @@ export const transformSynapsesToTree = (synapses: any, availableNeurons: any, cu
         // Add all injected groups to the pre neuron item
         injectedGroups.forEach((injectedGroup) => {
           injectedGroup.children!.sort((a, b) => a.label.localeCompare(b.label));
-          // Calculate injected group visibility based on its children
-          injectedGroup.isVisible = true;
           preNeuronItem.children!.push(injectedGroup);
         });
 
         preNeuronItem.children!.sort((a, b) => a.label.localeCompare(b.label));
-        // Calculate pre neuron item visibility based on its children
-        preNeuronItem.isVisible = true;
         preItem.children!.push(preNeuronItem);
       });
 
       preItem.children!.sort((a, b) => a.label.localeCompare(b.label));
-      // Calculate pre item visibility based on its children
-      preItem.isVisible = true;
       groupItem.children!.push(preItem);
     }
 
@@ -147,9 +159,6 @@ export const transformSynapsesToTree = (synapses: any, availableNeurons: any, cu
             type: "synapsesGroup",
           };
 
-          // Calculate neuron item visibility based on its children
-          neuronItem.isVisible = true;
-
           // Add the neuron item to the appropriate injected group
           injectedGroups.get(injectedNeuronClass)!.children!.push(neuronItem);
         });
@@ -157,30 +166,38 @@ export const transformSynapsesToTree = (synapses: any, availableNeurons: any, cu
         // Add all injected groups to the post neuron item
         injectedGroups.forEach((injectedGroup) => {
           injectedGroup.children!.sort((a, b) => a.label.localeCompare(b.label));
-          // Calculate injected group visibility based on its children
-          injectedGroup.isVisible = true;
           postNeuronItem.children!.push(injectedGroup);
         });
 
         postNeuronItem.children!.sort((a, b) => a.label.localeCompare(b.label));
-        // Calculate post neuron item visibility based on its children
-        postNeuronItem.isVisible = true;
         postItem.children!.push(postNeuronItem);
       });
 
       postItem.children!.sort((a, b) => a.label.localeCompare(b.label));
-      // Calculate post item visibility based on its children
-      postItem.isVisible = true;
       groupItem.children!.push(postItem);
     }
 
     groupItem.children!.sort((a, b) => a.label.localeCompare(b.label));
-    // Calculate group item visibility based on its children
-    groupItem.isVisible = true;
     treeItems.push(groupItem);
   });
 
-  return treeItems;
+  // Calculate parent visibility based on children after building the tree
+  const calculateAllParentVisibility = (items: SynapseTreeItem[]): SynapseTreeItem[] => {
+    return items.map(item => {
+      const updatedItem = {
+        ...item,
+        children: item.children ? calculateAllParentVisibility(item.children) : undefined,
+      };
+      
+      if (updatedItem.children && updatedItem.children.length > 0) {
+        updatedItem.isVisible = calculateParentVisibility(updatedItem);
+      }
+      
+      return updatedItem;
+    });
+  };
+
+  return calculateAllParentVisibility(treeItems);
 };
 
 // Function to filter tree items based on search term
@@ -222,6 +239,27 @@ export const findTreeItemById = (items: SynapseTreeItem[], id: string): SynapseT
   return undefined;
 };
 
+// Function to calculate parent visibility based on children
+const calculateParentVisibility = (item: SynapseTreeItem): boolean => {
+  if (!item.children || item.children.length === 0) {
+    return item.isVisible ?? true;
+  }
+  
+  // Get all children's visibility states
+  const childrenVisibility = item.children.map(child => calculateParentVisibility(child));
+  
+  // If all children have the same visibility state, parent should match that state
+  // If children have mixed states, parent should be visible (true)
+  const allSameState = childrenVisibility.every(state => state === childrenVisibility[0]);
+  
+  if (allSameState) {
+    return childrenVisibility[0];
+  } else {
+    // Mixed states - parent should be visible (true)
+    return true;
+  }
+};
+
 // Function to apply memorized visibility states to tree items
 export const applyMemorizedStates = (items: SynapseTreeItem[], itemVisibilityStates: Record<string, boolean>): SynapseTreeItem[] => {
   return items.map((item) => {
@@ -231,6 +269,12 @@ export const applyMemorizedStates = (items: SynapseTreeItem[], itemVisibilitySta
       isVisible: memorizedState !== undefined ? memorizedState : item.isVisible,
       children: item.children ? applyMemorizedStates(item.children, itemVisibilityStates) : undefined,
     };
+    
+    // After updating children, recalculate parent visibility based on children
+    if (updatedItem.children && updatedItem.children.length > 0) {
+      updatedItem.isVisible = calculateParentVisibility(updatedItem);
+    }
+    
     return updatedItem;
   });
 };
