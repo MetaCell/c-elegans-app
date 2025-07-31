@@ -281,9 +281,9 @@ export default function BasicRichTreeView() {
   const handleSynapseVisibilityToggle = useCallback(
     (itemId: string, checked: boolean) => {
       const lastPart = itemId.split("-").slice(-1)[0];
-      const isOnlyNumbers = /^\d+$/.test(lastPart);
+      const isSynapseId = /^\d+$/.test(lastPart);
 
-      if (isOnlyNumbers) {
+      if (isSynapseId) {
         if (checked) {
           currentWorkspace.showSynapse(Number.parseInt(lastPart));
         } else {
@@ -331,8 +331,8 @@ export default function BasicRichTreeView() {
 
         // Check if this is a neuron item (contains neuron name in the path)
         const lastPart = itemId.split("-").slice(-1)[0];
-        const isOnlyNumbers = /^\d+$/.test(lastPart);
-        const isVisible = isOnlyNumbers ? getSynapseVisibility(Number.parseInt(lastPart)) : true;
+        const isSynapseId = /^\d+$/.test(lastPart);
+        const isVisible = isSynapseId ? getSynapseVisibility(Number.parseInt(lastPart)) : true;
       
         const CustomLabel = () => (
           <Stack direction="row" alignItems="center" spacing={1} sx={{ width: "100%" }}>
