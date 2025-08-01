@@ -399,24 +399,25 @@ export class Workspace {
     return this.visibilities.synapses[synapseId]?.[ViewerType.EM]?.color || this.visibilities.synapses[synapseId]?.[ViewerType.ThreeD]?.color;
   }
 
-  changeSynapseColorForViewers(synapseId: number, color: string): void {
+  @triggerUpdate
+  changeSynapsesColorForViewers(synapseIds: number[], color: string): this {
     const viewers: ViewerType[] = [ViewerType.ThreeD, ViewerType.EM];
 
-    const updated = produce(this, (draft: Workspace) => {
-      // Initialize synapse visibility data if it doesn't exist
-      if (!(synapseId in draft.visibilities.synapses)) {
-        draft.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Visible);
+    const visibilities = this.visibilities.synapses;
+    for (const synapseId of synapseIds) {
+      if (!(synapseId in visibilities)) {
+        visibilities[synapseId] = getDefaultViewerData(Visibility.Visible);
       }
 
       for (const viewerType of viewers) {
-        const viewerData = draft.visibilities.synapses[synapseId]?.[viewerType];
+        const viewerData = visibilities[synapseId]?.[viewerType];
         if (viewerData && "color" in viewerData && typeof viewerData.color === "string") {
           viewerData.color = color;
         }
       }
-    });
+    }
 
-    this.updateContext(updated);
+    return this;
   }
 
   // Those methods do not trigger updates as they are only here to store settings for the share function

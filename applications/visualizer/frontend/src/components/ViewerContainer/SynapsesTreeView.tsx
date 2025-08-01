@@ -46,12 +46,12 @@ export default function BasicRichTreeView() {
 
         // Update all children of this group
         const updateChildrenStates = (children: SynapseTreeItem[]) => {
-          children.forEach((child) => {
+          for (const child of children) {
             newStates[child.id] = color.hex;
             if (child.children) {
               updateChildrenStates(child.children);
             }
-          });
+          }
         };
 
         if (item?.children) {
@@ -80,9 +80,9 @@ export default function BasicRichTreeView() {
           };
 
           const parentIds = findParents(allItems, targetItem.id);
-          parentIds.forEach((parentId) => {
+          for (const parentId of parentIds) {
             delete newStates[parentId];
-          });
+          }
         };
 
         clearParentColors(item, treeItems);
@@ -94,11 +94,10 @@ export default function BasicRichTreeView() {
       const synapseIds = item ? getAllSynapseIds([item]) : [];
 
       if (synapseIds.length > 0) {
-        currentWorkspace.customUpdate((draft) => {
-          synapseIds.forEach((synapseId) => {
-            draft.changeSynapseColorForViewers(Number.parseInt(synapseId), color.hex);
-          });
-        });
+        currentWorkspace.changeSynapsesColorForViewers(
+          synapseIds.map((s) => Number.parseInt(s)),
+          color.hex,
+        );
       }
     },
     [currentWorkspace, treeItems],
@@ -133,12 +132,12 @@ export default function BasicRichTreeView() {
   const expandedItems = useMemo(() => {
     const getExpandedIds = (items: SynapseTreeItem[]): string[] => {
       let ids: string[] = [];
-      items.forEach((item) => {
+      for (const item of items) {
         ids.push(item.id);
         if (item.children) {
           ids = ids.concat(getExpandedIds(item.children));
         }
-      });
+      }
       return ids;
     };
     return getExpandedIds(treeItems);
@@ -179,12 +178,12 @@ export default function BasicRichTreeView() {
 
           // Update all children of this group
           const updateChildrenStates = (children: SynapseTreeItem[]) => {
-            children.forEach((child) => {
+            for (const child of children) {
               newStates[child.id] = checked;
               if (child.children) {
                 updateChildrenStates(child.children);
               }
-            });
+            }
           };
 
           if (item.children) {
@@ -198,14 +197,9 @@ export default function BasicRichTreeView() {
 
           // Use customUpdate to batch all synapse visibility changes into a single update
           currentWorkspace.customUpdate((draft) => {
-            if (checked) {
-              synapseIds.forEach((synapseId) => {
-                draft._showSynapseInternal(Number.parseInt(synapseId));
-              });
-            } else {
-              synapseIds.forEach((synapseId) => {
-                draft._hideSynapseInternal(Number.parseInt(synapseId));
-              });
+            const updateMethod = checked ? draft._showSynapseInternal : draft._hideSynapseInternal;
+            for (const synapseId of synapseIds) {
+              updateMethod(Number.parseInt(synapseId));
             }
           });
         }

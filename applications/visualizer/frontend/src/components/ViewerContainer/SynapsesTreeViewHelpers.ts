@@ -107,16 +107,16 @@ export const transformSynapsesToTree = (synapses: any, availableNeurons: any, cu
 
         // Add all injected groups to the pre neuron item
         injectedGroups.forEach((injectedGroup) => {
-          injectedGroup.children!.sort((a, b) => a.label.localeCompare(b.label));
-          preNeuronItem.children!.push(injectedGroup);
+          injectedGroup.children.sort((a, b) => a.label.localeCompare(b.label));
+          preNeuronItem.children.push(injectedGroup);
         });
 
-        preNeuronItem.children!.sort((a, b) => a.label.localeCompare(b.label));
-        preItem.children!.push(preNeuronItem);
+        preNeuronItem.children.sort((a, b) => a.label.localeCompare(b.label));
+        preItem.children.push(preNeuronItem);
       });
 
-      preItem.children!.sort((a, b) => a.label.localeCompare(b.label));
-      groupItem.children!.push(preItem);
+      preItem.children.sort((a, b) => a.label.localeCompare(b.label));
+      groupItem.children.push(preItem);
     }
 
     // Add post-synaptic connections
