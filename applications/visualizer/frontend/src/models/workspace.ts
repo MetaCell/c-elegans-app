@@ -395,6 +395,23 @@ export class Workspace {
     this.updateContext(updated);
   }
 
+  _hangeSynapseColorForViewers(synapseId: number, color: string): void {
+    const viewers: ViewerType[] = [ViewerType.ThreeD, ViewerType.EM];
+
+    const updated = produce(this, (draft: Workspace) => {
+      for (const viewerType of viewers) {
+        if (viewerType in draft.visibilities.synapses[synapseId]) {
+          const viewerData = draft.visibilities.synapses[synapseId]?.[viewerType];
+          if (viewerData && "color" in viewerData && typeof viewerData.color === "string") {
+            viewerData.color = color;
+          }
+        }
+      }
+    });
+
+    this.updateContext(updated);
+  }
+
   // Those methods do not trigger updates as they are only here to store settings for the share function
   // We don't want to trigger re-renderings of the full app
   setEmviewerSlice(slice: number) {

@@ -7,7 +7,7 @@ import { useGlobalContext } from "../../contexts/GlobalContext";
 import { vars } from "../../theme/variables";
 import CustomSwitch from "./CustomSwitch";
 import PickerWrapper from "./PickerWrapper";
-import { type SynapseTreeItem, applyMemorizedStates, filterTreeItems, findTreeItemById, transformSynapsesToTree } from "./SynapsesTreeViewHelpers";
+import { type SynapseTreeItem, applyMemorizedStates, filterTreeItems, findTreeItemById, findParentById, transformSynapsesToTree } from "./SynapsesTreeViewHelpers";
 
 const { gray100, gray600 } = vars;
 
@@ -21,15 +21,65 @@ export default function BasicRichTreeView() {
   const { activeNeurons, activeDatasets, availableNeurons } = currentWorkspace || {};
   const [treeItems, setTreeItems] = useState<SynapseTreeItem[]>([]);
   const [itemVisibilityStates, setItemVisibilityStates] = useState<Record<string, boolean>>({});
+  const [itemColorStates, setItemColorStates] = useState<Record<string, string>>({});
 
   const handleColorClose = useCallback(() => {
     setAnchorEl(null);
     setOpenColorPicker(null);
   }, []);
 
-  const handleColorChange = useCallback((itemId: string, color: any) => {
-    console.log(itemId, color);
-  }, []);
+  const handleColorChange = useCallback((itemId: string, color: any, treeItems: SynapseTreeItem[]) => {
+    const item = findTreeItemById(treeItems, itemId);
+    
+    setItemColorStates((prevStates) => {
+      const newStates = { ...prevStates };
+      newStates[itemId] = color.hex;
+
+      // Update all children of this group
+      const updateChildrenStates = (children: SynapseTreeItem[]) => {
+        children.forEach((child) => {
+          newStates[child.id] = color.hex;
+          if (child.children) { 
+            updateChildrenStates(child.children);
+          }
+        });
+      };
+
+      if (item?.children) {
+        updateChildrenStates(item.children);
+      }
+
+      // Also update parent colors if all siblings have the same color
+      const updateParentColors = (currentItem: SynapseTreeItem | undefined) => {
+        if (!currentItem) return;
+        
+        const parent = findParentById(treeItems, currentItem.id);
+        if (parent && parent.children) {
+          const siblingColors = parent.children
+            .map(child => newStates[child.id] || child.color)
+            .filter(Boolean);
+          
+          if (siblingColors.length > 0 && siblingColors.every(c => c === siblingColors[0])) {
+            newStates[parent.id] = siblingColors[0];
+            updateParentColors(parent);
+          }
+        }
+      };
+
+      updateParentColors(item);
+
+      return newStates;
+    });
+
+    if (item?.type === "synapsesGroup") {
+      const synapseIds = item.children?.map((child) => child.id.split("-").slice(-1)[0]);
+      synapseIds?.forEach((synapseId) => {
+        currentWorkspace.customUpdate((draft) => {
+          draft._hangeSynapseColorForViewers(Number.parseInt(synapseId), color.hex);
+        });
+      });
+    }
+  }, [currentWorkspace, treeItems]);
 
   const synapsesData = currentWorkspace?.getSynapsesData();
 
@@ -42,10 +92,10 @@ export default function BasicRichTreeView() {
     const fullTree = transformSynapsesToTree(synapsesData.synapses, availableNeurons, currentWorkspace);
 
     // Apply memorized visibility states to the tree
-    const treeWithMemorizedStates = applyMemorizedStates(fullTree, itemVisibilityStates);
+    const treeWithMemorizedStates = applyMemorizedStates(fullTree, itemVisibilityStates, itemColorStates);
     const filteredTree = filterTreeItems(treeWithMemorizedStates, searchTerm);
     setTreeItems(filteredTree);
-  }, [synapsesData?.synapses, searchTerm, currentWorkspace, availableNeurons, currentWorkspace?.visibilities, itemVisibilityStates]);
+  }, [synapsesData?.synapses, searchTerm, currentWorkspace, availableNeurons, currentWorkspace?.visibilities, itemVisibilityStates, itemColorStates]);
 
   // Update tree items when dependencies change
   useEffect(() => {
@@ -164,6 +214,7 @@ export default function BasicRichTreeView() {
         // Get visibility directly from treeItems state
         const treeItem = findTreeItemById(treeItems, itemId);
         const isVisible = treeItem?.isVisible;
+        const color = treeItem?.color;
         const CustomLabel = () => (
           <Stack direction="row" alignItems="center" spacing={1} sx={{ width: "100%" }}>
             <CustomSwitch
@@ -182,7 +233,7 @@ export default function BasicRichTreeView() {
                 sx={{
                   width: "0.875rem",
                   height: "0.875rem",
-                  backgroundColor: "#cccccc",
+                  backgroundColor: color,
                   border: "1px solid #999",
                   borderRadius: "2px",
                   cursor: "pointer",
@@ -218,9 +269,6 @@ export default function BasicRichTreeView() {
                 paddingLeft: "10px",
                 borderLeft: `1px solid #ECECE9`,
               },
-              // "& .MuiTreeItem-iconContainer": {
-              //   display: "none",
-              // },
             }}
           />
         );
@@ -303,8 +351,8 @@ export default function BasicRichTreeView() {
           open={true}
           anchorEl={anchorEl}
           onClose={handleColorClose}
-          onChange={(color) => handleColorChange(openColorPicker, color)}
-          selectedColor={"#cccccc"}
+          onChange={(color) => handleColorChange(openColorPicker, color, treeItems)}
+          selectedColor={findTreeItemById(treeItems, openColorPicker)?.color}
         />
       )}
     </Box>

@@ -1,11 +1,12 @@
 import type { TreeViewBaseItem } from "@mui/x-tree-view/models";
-import { Visibility } from "../../models/models";
+import { ViewerType, Visibility } from "../../models/models";
 
 // Custom type that extends TreeViewBaseItem to include visibility
 export interface SynapseTreeItem extends Omit<TreeViewBaseItem, "children"> {
   isVisible?: boolean;
   children?: SynapseTreeItem[];
   type?: string;
+  color?: string;
 }
 
 // Function to transform synapses data into tree structure
@@ -16,6 +17,11 @@ export const transformSynapsesToTree = (synapses: any, availableNeurons: any, cu
   const getSynapseVisibility = (synapseId: number): boolean => {
     const synapseVisibility = currentWorkspace.getSynapseVisibility(synapseId);
     return Object.values(synapseVisibility).every((e: any) => e === undefined || e.visibility === Visibility.Visible);
+  };
+
+  const getSynapseColor = (synapseId: number): string => {
+    const synapseVisibility = currentWorkspace.getSynapseVisibility(synapseId);
+    return synapseVisibility?.[ViewerType.EM]?.color || synapseVisibility?.[ViewerType.ThreeD]?.color;
   };
 
   // Helper function to calculate parent visibility based on children
@@ -90,6 +96,7 @@ export const transformSynapsesToTree = (synapses: any, availableNeurons: any, cu
               // Leaf nodes (synapses) get their actual visibility state
               isVisible: getSynapseVisibility(synapse.id),
               type: "synapse",
+              color: getSynapseColor(synapse.id),
             })),
             type: "synapsesGroup",
           };
@@ -155,6 +162,7 @@ export const transformSynapsesToTree = (synapses: any, availableNeurons: any, cu
               // Leaf nodes (synapses) get their actual visibility state
               isVisible: getSynapseVisibility(synapse.id),
               type: "synapse",
+              color: getSynapseColor(synapse.id),
             })),
             type: "synapsesGroup",
           };
@@ -181,23 +189,24 @@ export const transformSynapsesToTree = (synapses: any, availableNeurons: any, cu
     treeItems.push(groupItem);
   });
 
-  // Calculate parent visibility based on children after building the tree
-  const calculateAllParentVisibility = (items: SynapseTreeItem[]): SynapseTreeItem[] => {
+  // Calculate parent visibility and color based on children after building the tree
+  const calculateAllParentStates = (items: SynapseTreeItem[]): SynapseTreeItem[] => {
     return items.map((item) => {
       const updatedItem = {
         ...item,
-        children: item.children ? calculateAllParentVisibility(item.children) : undefined,
+        children: item.children ? calculateAllParentStates(item.children) : undefined,
       };
 
       if (updatedItem.children && updatedItem.children.length > 0) {
         updatedItem.isVisible = calculateParentVisibility(updatedItem);
+        updatedItem.color = calculateParentColor(updatedItem);
       }
 
       return updatedItem;
     });
   };
 
-  return calculateAllParentVisibility(treeItems);
+  return calculateAllParentStates(treeItems);
 };
 
 // Function to filter tree items based on search term
@@ -239,6 +248,22 @@ export const findTreeItemById = (items: SynapseTreeItem[], id: string): SynapseT
   return undefined;
 };
 
+// Function to find a parent of a tree item by ID
+export const findParentById = (items: SynapseTreeItem[], id: string): SynapseTreeItem | undefined => {
+  for (const item of items) {
+    if (item.children) {
+      for (const child of item.children) {
+        if (child.id === id) {
+          return item;
+        }
+        const result = findParentById(item.children, id);
+        if (result) return result;
+      }
+    }
+  }
+  return undefined;
+};
+
 // Function to calculate parent visibility based on children
 const calculateParentVisibility = (item: SynapseTreeItem): boolean => {
   if (!item.children || item.children.length === 0) {
@@ -260,19 +285,55 @@ const calculateParentVisibility = (item: SynapseTreeItem): boolean => {
   }
 };
 
+// Function to calculate parent color based on children
+export const calculateParentColor = (item: SynapseTreeItem): string | undefined => {
+  if (!item.children || item.children.length === 0) {
+    return item.color;
+  }
+
+  // Get all children's color states (including the item's own color if it has one)
+  const allColors: string[] = [];
+  
+  // Add the item's own color if it exists
+  if (item.color) {
+    allColors.push(item.color);
+  }
+  
+  // Add children's colors
+  const childrenColors = item.children.map((child) => calculateParentColor(child)).filter(Boolean);
+  allColors.push(...childrenColors);
+
+  // If all colors are the same, return that color
+  if (allColors.length > 0 && allColors.every((color) => color === allColors[0])) {
+    return allColors[0];
+  } else {
+    // Mixed colors - parent should not have a specific color
+    return undefined;
+  }
+};
+
 // Function to apply memorized visibility states to tree items
-export const applyMemorizedStates = (items: SynapseTreeItem[], itemVisibilityStates: Record<string, boolean>): SynapseTreeItem[] => {
+export const applyMemorizedStates = (items: SynapseTreeItem[], itemVisibilityStates: Record<string, boolean>, itemColorStates: Record<string, string>): SynapseTreeItem[] => {
   return items.map((item) => {
     const memorizedState = itemVisibilityStates[item.id];
+    const memorizedColor = itemColorStates[item.id];
     const updatedItem = {
       ...item,
       isVisible: memorizedState !== undefined ? memorizedState : item.isVisible,
-      children: item.children ? applyMemorizedStates(item.children, itemVisibilityStates) : undefined,
+      children: item.children ? applyMemorizedStates(item.children, itemVisibilityStates, itemColorStates) : undefined,
+      color: memorizedColor !== undefined ? memorizedColor : item.color,
     };
 
-    // After updating children, recalculate parent visibility based on children
+    // After updating children, recalculate parent visibility and color based on children
     if (updatedItem.children && updatedItem.children.length > 0) {
       updatedItem.isVisible = calculateParentVisibility(updatedItem);
+      
+      // For color inheritance:
+      // 1. If this item has a memorized color, use it
+      // 2. If not, calculate from children (which may have memorized colors)
+      if (memorizedColor === undefined) {
+        updatedItem.color = calculateParentColor(updatedItem);
+      }
     }
 
     return updatedItem;
