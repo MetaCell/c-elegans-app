@@ -288,7 +288,7 @@ export const calculateParentColor = (item: SynapseTreeItem): string | undefined 
   // Case 2: All defined children have the same color
   if (definedChildrenColors.every((color) => color === definedChildrenColors[0])) {
     // Check if there are any undefined children. If so, it's a mixed state.
-    if (childrenColors.some(color => color === undefined)) {
+    if (childrenColors.some((color) => color === undefined)) {
       return undefined; // Mixed defined and undefined children, so parent is undefined
     }
     return definedChildrenColors[0]; // All children have the same defined color
@@ -325,7 +325,11 @@ export const recalculateAllParentColors = (items: SynapseTreeItem[], itemColorSt
 };
 
 // Function to apply memorized visibility states to tree items
-export const applyMemorizedStates = (items: SynapseTreeItem[], itemVisibilityStates: Record<string, boolean>, itemColorStates: Record<string, string>): SynapseTreeItem[] => {
+export const applyMemorizedStates = (
+  items: SynapseTreeItem[],
+  itemVisibilityStates: Record<string, boolean>,
+  itemColorStates: Record<string, string>,
+): SynapseTreeItem[] => {
   return items.map((item) => {
     const memorizedState = itemVisibilityStates[item.id];
     const memorizedColor = itemColorStates[item.id];
@@ -339,7 +343,7 @@ export const applyMemorizedStates = (items: SynapseTreeItem[], itemVisibilitySta
     // After updating children, recalculate parent visibility and color based on children
     if (updatedItem.children && updatedItem.children.length > 0) {
       updatedItem.isVisible = calculateParentVisibility(updatedItem);
-      
+
       // For color inheritance:
       // 1. If this item has a memorized color, use it (preserve user choice)
       // 2. If not, calculate from children (which may have memorized colors)

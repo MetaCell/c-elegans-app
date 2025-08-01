@@ -75,7 +75,7 @@ function neuronColor(neuronId, workspace: Workspace): string {
 }
 
 function synapseColor(synapseId: string, workspace: Workspace): string {
-  const synapseIdNum = parseInt(synapseId);
+  const synapseIdNum = Number.parseInt(synapseId);
   if (isNaN(synapseIdNum)) return undefined;
   const synapseVisibilities = workspace.getSynapseVisibility(synapseIdNum);
   return synapseVisibilities?.[ViewerType.EM].color;
