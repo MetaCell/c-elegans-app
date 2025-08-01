@@ -74,6 +74,13 @@ function neuronColor(neuronId, workspace: Workspace): string {
   return neuronVisibilities?.[ViewerType.EM].color;
 }
 
+function synapseColor(synapseId: string, workspace: Workspace): string {
+  const synapseIdNum = parseInt(synapseId);
+  if (isNaN(synapseIdNum)) return undefined;
+  const synapseVisibilities = workspace.getSynapseVisibility(synapseIdNum);
+  return synapseVisibilities?.[ViewerType.EM].color;
+}
+
 function neuronsStyle(feature: FeatureLike, workspace: Workspace) {
   const neuronName = cellFeatureName(feature);
 
@@ -92,12 +99,13 @@ function neuronsStyle(feature: FeatureLike, workspace: Workspace) {
 
 function synapsesStyle(feature: FeatureLike, workspace: Workspace): Style {
   const synapseName = cellFeatureName(feature);
+  const color = synapseColor(synapseName, workspace);
 
   if (isCellSelected(synapseName, workspace)) {
-    return selectedSynapseStyle(feature);
+    return selectedSynapseStyle(feature, color);
   }
 
-  return activeSynapseStyle(feature);
+  return activeSynapseStyle(feature, color);
 }
 
 // LayerSelect specifies a layer for features to be selected from and a handler function to be called if a feature are found.

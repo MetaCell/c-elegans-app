@@ -395,16 +395,23 @@ export class Workspace {
     this.updateContext(updated);
   }
 
-  _hangeSynapseColorForViewers(synapseId: number, color: string): void {
+  getSynapseColor(synapseId: number): string {
+    return this.visibilities.synapses[synapseId]?.[ViewerType.EM]?.color || this.visibilities.synapses[synapseId]?.[ViewerType.ThreeD]?.color;
+  }
+
+  changeSynapseColorForViewers(synapseId: number, color: string): void {
     const viewers: ViewerType[] = [ViewerType.ThreeD, ViewerType.EM];
 
     const updated = produce(this, (draft: Workspace) => {
+      // Initialize synapse visibility data if it doesn't exist
+      if (!(synapseId in draft.visibilities.synapses)) {
+        draft.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Visible);
+      }
+
       for (const viewerType of viewers) {
-        if (viewerType in draft.visibilities.synapses[synapseId]) {
-          const viewerData = draft.visibilities.synapses[synapseId]?.[viewerType];
-          if (viewerData && "color" in viewerData && typeof viewerData.color === "string") {
-            viewerData.color = color;
-          }
+        const viewerData = draft.visibilities.synapses[synapseId]?.[viewerType];
+        if (viewerData && "color" in viewerData && typeof viewerData.color === "string") {
+          viewerData.color = color;
         }
       }
     });

@@ -7,7 +7,7 @@ import { useGlobalContext } from "../../contexts/GlobalContext";
 import { vars } from "../../theme/variables";
 import CustomSwitch from "./CustomSwitch";
 import PickerWrapper from "./PickerWrapper";
-import { type SynapseTreeItem, applyMemorizedStates, filterTreeItems, findTreeItemById, findParentById, transformSynapsesToTree } from "./SynapsesTreeViewHelpers";
+import { type SynapseTreeItem, applyMemorizedStates, filterTreeItems, findTreeItemById, transformSynapsesToTree, recalculateAllParentColors } from "./SynapsesTreeViewHelpers";
 
 const { gray100, gray600 } = vars;
 
@@ -49,33 +49,61 @@ export default function BasicRichTreeView() {
         updateChildrenStates(item.children);
       }
 
-      // Also update parent colors if all siblings have the same color
-      const updateParentColors = (currentItem: SynapseTreeItem | undefined) => {
-        if (!currentItem) return;
+      // Clear memorized colors for all parents of this item to force recalculation
+      const clearParentColors = (targetItem: SynapseTreeItem | undefined, allItems: SynapseTreeItem[]) => {
+        if (!targetItem) return;
         
-        const parent = findParentById(treeItems, currentItem.id);
-        if (parent && parent.children) {
-          const siblingColors = parent.children
-            .map(child => newStates[child.id] || child.color)
-            .filter(Boolean);
-          
-          if (siblingColors.length > 0 && siblingColors.every(c => c === siblingColors[0])) {
-            newStates[parent.id] = siblingColors[0];
-            updateParentColors(parent);
+        const findParents = (items: SynapseTreeItem[], targetId: string, parents: string[] = []): string[] => {
+          for (const item of items) {
+            if (item.children) {
+              for (const child of item.children) {
+                if (child.id === targetId) {
+                  return [...parents, item.id];
+                }
+                const childParents = findParents([child], targetId, [...parents, item.id]);
+                if (childParents.length > 0) {
+                  return childParents;
+                }
+              }
+            }
           }
-        }
+          return [];
+        };
+
+        const parentIds = findParents(allItems, targetItem.id);
+        parentIds.forEach(parentId => {
+          delete newStates[parentId];
+        });
       };
 
-      updateParentColors(item);
+      clearParentColors(item, treeItems);
 
       return newStates;
     });
 
-    if (item?.type === "synapsesGroup") {
-      const synapseIds = item.children?.map((child) => child.id.split("-").slice(-1)[0]);
-      synapseIds?.forEach((synapseId) => {
-        currentWorkspace.customUpdate((draft) => {
-          draft._hangeSynapseColorForViewers(Number.parseInt(synapseId), color.hex);
+    // Helper function to recursively find all synapse IDs in the tree
+    const getAllSynapseIds = (items: SynapseTreeItem[]): string[] => {
+      const synapseIds: string[] = [];
+      items.forEach((child) => {
+        if (child.type === "synapse") {
+          const synapseId = child.id.split("-").slice(-1)[0];
+          if (/^\d+$/.test(synapseId)) {
+            synapseIds.push(synapseId);
+          }
+        } else if (child.children) {
+          synapseIds.push(...getAllSynapseIds(child.children));
+        }
+      });
+      return synapseIds;
+    };
+
+    // Get all synapse IDs from the item and its children
+    const synapseIds = item ? getAllSynapseIds([item]) : [];
+    
+    if (synapseIds.length > 0) {
+      currentWorkspace.customUpdate((draft) => {
+        synapseIds.forEach((synapseId) => {
+          draft.changeSynapseColorForViewers(Number.parseInt(synapseId), color.hex);
         });
       });
     }
@@ -93,7 +121,11 @@ export default function BasicRichTreeView() {
 
     // Apply memorized visibility states to the tree
     const treeWithMemorizedStates = applyMemorizedStates(fullTree, itemVisibilityStates, itemColorStates);
-    const filteredTree = filterTreeItems(treeWithMemorizedStates, searchTerm);
+    
+    // Recalculate all parent colors based on children
+    const treeWithRecalculatedColors = recalculateAllParentColors(treeWithMemorizedStates, itemColorStates);
+    
+    const filteredTree = filterTreeItems(treeWithRecalculatedColors, searchTerm);
     setTreeItems(filteredTree);
   }, [synapsesData?.synapses, searchTerm, currentWorkspace, availableNeurons, currentWorkspace?.visibilities, itemVisibilityStates, itemColorStates]);
 
