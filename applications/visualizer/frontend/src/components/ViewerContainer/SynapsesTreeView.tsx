@@ -12,6 +12,7 @@ import {
   applyMemorizedStates,
   filterTreeItems,
   findTreeItemById,
+  getAllSynapseIds,
   recalculateAllParentColors,
   transformSynapsesToTree,
 } from "./SynapsesTreeViewHelpers";
@@ -88,22 +89,6 @@ export default function BasicRichTreeView() {
 
         return newStates;
       });
-
-      // Helper function to recursively find all synapse IDs in the tree
-      const getAllSynapseIds = (items: SynapseTreeItem[]): string[] => {
-        const synapseIds: string[] = [];
-        items.forEach((child) => {
-          if (child.type === "synapse") {
-            const synapseId = child.id.split("-").slice(-1)[0];
-            if (/^\d+$/.test(synapseId)) {
-              synapseIds.push(synapseId);
-            }
-          } else if (child.children) {
-            synapseIds.push(...getAllSynapseIds(child.children));
-          }
-        });
-        return synapseIds;
-      };
 
       // Get all synapse IDs from the item and its children
       const synapseIds = item ? getAllSynapseIds([item]) : [];
@@ -209,7 +194,7 @@ export default function BasicRichTreeView() {
           return newStates;
         });
         if (item?.type === "synapsesGroup") {
-          const synapseIds = item.children?.map((child) => child.id.split("-").slice(-1)[0]);
+          const synapseIds = item.children ? getAllSynapseIds(item.children) : [];
 
           // Use customUpdate to batch all synapse visibility changes into a single update
           currentWorkspace.customUpdate((draft) => {

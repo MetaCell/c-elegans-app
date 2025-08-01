@@ -356,3 +356,19 @@ export const applyMemorizedStates = (
     return updatedItem;
   });
 };
+
+// Function to recursively find all synapse IDs in the tree
+export const getAllSynapseIds = (items: SynapseTreeItem[]): string[] => {
+  const synapseIds: string[] = [];
+  items.forEach((child) => {
+    if (child.type === "synapse") {
+      const synapseId = child.id.split("-").slice(-1)[0];
+      if (/^\d+$/.test(synapseId)) {
+        synapseIds.push(synapseId);
+      }
+    } else if (child.children) {
+      synapseIds.push(...getAllSynapseIds(child.children));
+    }
+  });
+  return synapseIds;
+};
