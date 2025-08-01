@@ -30,6 +30,7 @@ export default function BasicRichTreeView() {
   const [treeItems, setTreeItems] = useState<SynapseTreeItem[]>([]);
   const [itemVisibilityStates, setItemVisibilityStates] = useState<Record<string, boolean>>({});
   const [itemColorStates, setItemColorStates] = useState<Record<string, string>>({});
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
   const handleColorClose = useCallback(() => {
     setAnchorEl(null);
@@ -127,21 +128,6 @@ export default function BasicRichTreeView() {
   useEffect(() => {
     updateTreeItems();
   }, [updateTreeItems]);
-
-  // Keep tree collapsed by default - no expanded items
-  const expandedItems = useMemo(() => {
-    const getExpandedIds = (items: SynapseTreeItem[]): string[] => {
-      let ids: string[] = [];
-      for (const item of items) {
-        ids.push(item.id);
-        if (item.children) {
-          ids = ids.concat(getExpandedIds(item.children));
-        }
-      }
-      return ids;
-    };
-    return getExpandedIds(treeItems);
-  }, [treeItems]);
 
   const handleColorClick = useCallback((event: React.MouseEvent<HTMLElement>, itemId: string) => {
     event.stopPropagation();
@@ -335,7 +321,8 @@ export default function BasicRichTreeView() {
       />
       <RichTreeView
         items={treeItems}
-        defaultExpandedItems={expandedItems}
+        expandedItems={expandedItems}
+        onExpandedItemsChange={(_event, newExpandedItems) => setExpandedItems(newExpandedItems)}
         sx={{
           "& .MuiTreeItem-root": {
             position: "relative",
