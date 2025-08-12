@@ -341,10 +341,16 @@ components:
         pre:
           title: Pre
           type: string
+        size:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Size
       required:
       - id
       - pre
       - posts
+      - size
       title: SynapseEntry
       type: object
   securitySchemes:

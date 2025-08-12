@@ -1,3 +1,4 @@
+from collections import defaultdict
 import json
 from pathlib import Path
 from operator import itemgetter
@@ -52,7 +53,9 @@ def populate_config(path: Path, print, print_success):
         em_config = MetadataFetcher.get_em_metadata(dataset_id)
         segmentation_config = MetadataFetcher.get_segmentation_metadata(dataset_id)
         if not em_config and not segmentation_config:
-            print(f"\n   . no EM config or SEG config found for {dataset_id}")
+            print(
+                f"\n   . no EM config or SEG config found for {dataset_id}", ending=""
+            )
             continue
         print(f"\n   . adding config for {dataset_id}")
         if em_config:
@@ -178,6 +181,7 @@ def combine_connections(connections_path: Path, print):
 
 
 synapses = []
+connectorid_size_map = {}
 
 
 def compute_connections_synapses(json_connections, print):
@@ -252,15 +256,14 @@ def compute_connections_synapses(json_connections, print):
                 ids, syn, pre_tid, post_tid
             ):
                 key = ",".join((dataset_id, pre, post, type))
-                synapses.append(
-                    {
-                        "connection_id": connections[key]["id"],
-                        "connector_id": connector_id,
-                        "weight": synid,
-                        "pre_tid": pretid,
-                        "post_tid": posttid,
-                    }
-                )
+                parameters = {
+                    "connection_id": connections[key]["id"],
+                    "connector_id": connector_id,
+                    "weight": synid,
+                    "pre_tid": pretid,
+                    "post_tid": posttid,
+                }
+                synapses.append(parameters)
     print("    100%")
     return connections
 
@@ -271,6 +274,14 @@ def populate_connections(path, print, print_success):
     json_connections = combine_connections(data_folder, print)
 
     connections = compute_connections_synapses(json_connections, print)
+
+    print("  . Fetching connections sizes")
+    json_size: Path = path / "synapses"
+    for file in json_size.glob("*.json"):
+        for synapses_information in json.load(file.open("r")):
+            connector_id = synapses_information["catmaid_id"]
+            synapse_size = synapses_information["size"]
+            connectorid_size_map[connector_id] = synapse_size
 
     print("  . Saving connections", ending="")
     Connection.objects.bulk_create(
@@ -287,6 +298,9 @@ def populate_synapses(_, print, print_success):
     print("  . Saving synapses", ending="")
     for synapse in synapses:
         synapse["connection"] = Connection.objects.get(id=synapse["connection_id"])
+        connector_id = synapse["connector_id"]
+        if connector_id in connectorid_size_map:
+            synapse["size"] = connectorid_size_map[connector_id]
         synapse_objects.append(Synapse(**synapse))
 
     Synapse.objects.bulk_create(synapse_objects, ignore_conflicts=True)

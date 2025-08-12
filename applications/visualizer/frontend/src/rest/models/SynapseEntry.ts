@@ -6,5 +6,6 @@ export type SynapseEntry = {
     id: number;
     pre: string;
     posts: Array<string>;
+    size: (number | null);
 };
 
