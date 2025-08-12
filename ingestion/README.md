@@ -3,25 +3,26 @@
 
 The C-Elegans Utility CLI Tool supports the C-Elegans application by allowing users to extract segmentation data from their datasets and upload it into the deployment environment.
 
-- [Installation](#installation)
-  - [Using Private Access Token (PAT)](#using-private-access-token-pat)
-  - [Using SSH](#using-ssh)
-  - [From Source](#from-source)
-  - [Verifying Installation](#verifying-installation)
-- [Usage](#usage)
-  - [Uploading Datasets](#uploading-datasets)
-    - [Authenticating with Google Cloud](#authenticating-with-google-cloud)
-    - [Ingesting Files](#ingesting-files)
-  - [Ingesting Segmentations](#ingesting-segmentations)
-    - [Extract segmentations from bitmap Files](#extract-segmentations-from-bitmap-files)
-    - [Ingest the Segmentations](#ingest-the-segmentations)
-- [FAQ](#faq)
-  - [What should be the file names and directory structure for the files I want to upload](#what-should-be-the-file-names-and-directory-structure-for-the-files-i-want-to-upload)
-  - [Re-upload new version of the Dataset or related data](#re-upload-new-version-of-the-dataset-or-related-data)
-- [Development](#development)
-  - [Setting up the Development Environment](#setting-up-the-development-environment)
-  - [Running and Modifying the CLI Tool](#running-and-modifying-the-cli-tool)
-  - [Pre-Commit Checklist](#pre-commit-checklist)
+- [C-Elegans Utility CLI Tool](#c-elegans-utility-cli-tool)
+  - [Installation](#installation)
+    - [Using Private Access Token (PAT)](#using-private-access-token-pat)
+    - [Using SSH](#using-ssh)
+    - [From Source](#from-source)
+    - [Verifying Installation](#verifying-installation)
+  - [Usage](#usage)
+    - [Uploading Datasets](#uploading-datasets)
+      - [Authenticating with Google Cloud](#authenticating-with-google-cloud)
+      - [Ingesting Files](#ingesting-files)
+    - [Ingesting Segmentations](#ingesting-segmentations)
+      - [Extract segmentations from bitmap Files](#extract-segmentations-from-bitmap-files)
+      - [Ingest the Segmentations](#ingest-the-segmentations)
+  - [FAQ](#faq)
+    - [What should be the file names and directory structure for the files I want to upload](#what-should-be-the-file-names-and-directory-structure-for-the-files-i-want-to-upload)
+    - [Re-upload new version of the Dataset or related data](#re-upload-new-version-of-the-dataset-or-related-data)
+  - [Development](#development)
+    - [Setting up the Development Environment](#setting-up-the-development-environment)
+    - [Running and Modifying the CLI Tool](#running-and-modifying-the-cli-tool)
+    - [Pre-Commit Checklist](#pre-commit-checklist)
 
 ## Installation
 
@@ -56,7 +57,7 @@ pip install "git+ssh://git@github.com/MetaCell/c-elegans-app.git@develop#egg=ing
 If you'd like to install the CLI from the source code, follow these steps:
 
 1. Clone the repository:
-   
+
    ```bash
    git clone https://github.com/MetaCell/c-elegans-app.git
    ```
@@ -87,7 +88,7 @@ This will display the help menu and available commands.
 
 You can view command usage by adding the `--help` flag to any subcommand.
 
-> [!NOTE]  
+> [!NOTE]
 > If at anytime, you are unsure of what the command will do, you can pass the `--dry-run` flag. Instead of executing the command, the dry run will instead describe what it would do. With this you can validate beforehand that's actually what you want to execute.
 
 ### Uploading Datasets
@@ -103,6 +104,9 @@ The datasets are a set of structured json files describing how neurons relate to
 ├── connections
 │   ├── <dataset_id>.json
 │   ...
+├── synapses
+│   ├── <dataset_id>.json
+|   ...
 ├── datasets.json
 ├── neurons.json
 └── trajectories
@@ -121,7 +125,7 @@ So, for every data you want to ingest, you will specify the path to the datasets
 celegans ingest --data /path/to/data/db-raw-data add-dataset --id witvliet_2020_2 ...
 ```
 
-> [!NOTE]  
+> [!NOTE]
 > The datasets files will be uploaded with the other files only if they have never been previously uploaded. To force a re-upload of files you can specify the `--overwrite` flag.
 
 #### Authenticating with Google Cloud
@@ -134,8 +138,8 @@ While you can specify the location of this file every time you run an ingestion 
 
 To upload dataset files such as 3D neuron models, EM tile images and segmentations, use the `ingest add-dataset` subcommand.
 
-> [!WARNING]  
-> Ensure that your files and directories adhere to the formatting guidelines outlined in the [ingestion format specification](format-ingestion.md). We validate this, so no issues should raise if by mistake you ingest these files. 
+> [!WARNING]
+> Ensure that your files and directories adhere to the formatting guidelines outlined in the [ingestion format specification](format-ingestion.md). We validate this, so no issues should raise if by mistake you ingest these files.
 
 When using the `add-dataset` subcommand, don't forget to specify the dataset ID corresponding to the files you're uploading (we will remember you otherwise).
 The following flags help determine which files to upload:
@@ -159,7 +163,7 @@ You can upload multiple datasets by chaining `add-dataset` commands. For example
 celegans ingest --data /path/to/data/db-raw-data add-dataset --id witvliet_2020_2 --3d /path/to/3d/models add-dataset --id witvliet_2020_3 --em /path/to/em/images
 ```
 
-> [!NOTE]  
+> [!NOTE]
 > To explore other flags for the `ingest` subcommand, run `celegans ingest --help` and `celegans ingest add-dataset --help`.
 
 ### Ingesting Segmentations
@@ -184,7 +188,7 @@ celegans extract -i /path/to/bitmap/files -l /path/to/metadata/the_metadata.txt
 **The segmentation will be saved in the same directory as your bitmap files.**
 This process may take a significant amount of time, depending on the number of files and the computational power of your system.
 
-> [!NOTE]  
+> [!NOTE]
 > To view additional flags for the `extract` subcommand, run `celegans extract --help`.
 
 #### Ingest the Segmentations
@@ -263,7 +267,7 @@ Where `dataset-metadata` is directory containing the datasets set of structured 
 You can simply upload the files as previously described with the `--overwrite` flag.
 We will check if the files have changed and upload them accordingly, removing old data and uploading new data.
 
-> [!WARNING]  
+> [!WARNING]
 > We check if the files have changed by its content and **NOT** by its name. So we assume that a new version of a file has the **same** name and different content.
 
 ## Development
@@ -307,7 +311,7 @@ Before committing and pushing your code changes to the remote repository, follow
    ```
 
 2. **Run Unit Tests**: Execute the unit tests to ensure your changes do not break the tool:
-   
+
    ```bash
    pytest
    ```

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import concurrent.futures
+from functools import lru_cache
 import json
 import logging
 import os
@@ -19,7 +20,7 @@ import niquests
 from ingestion.cli import ask, type_directory, type_file
 from ingestion.em_metadata import EMMetadata, Tile
 from ingestion.errors import DataValidationError, ErrorWriter
-from ingestion.schema import Data
+from ingestion.schema import Data, DataContainer
 from ingestion.storage.blob import (
     em_metadata_blob_name,
     find_longest_suffix,
@@ -74,7 +75,7 @@ def add_flags(parser: ArgumentParser):
         "-d",
         "--data",
         type=type_directory,
-        help="folder with the main structure with JSON files about neurons/datasets/connectivity that will be ingested in the DB (for all datasets)",
+        help="folder with the main structure with JSON files about neurons/datasets/connectivity/synapses information that will be ingested in the DB (for all datasets)",
     )
 
     parser.add_argument(
@@ -160,14 +161,15 @@ def add_add_dataset_flags(parser: ArgumentParser):
     add_in_paths(parser, "synapses", short_flag="syn")
 
 
-def validate_and_upload_data(
-    dataset_id: str, dir: Path, rs: RemoteStorage, *, overwrite: bool = False
-):
+@lru_cache()
+def collect_and_validate_data(dir: Path) -> tuple[Data, DataContainer[Path]]:
     data_files = find_data_files(dir)
     json_data = load_data(data_files)
 
     try:
         data = Data.model_validate(json_data)
+        logger.info(f"Data in {dir} has the right structure and is valid!")
+        return data, data_files
     except ValidationError as e:
         err_header = (
             "Seems like we found something unexpected with your data.\n"
@@ -185,28 +187,36 @@ def validate_and_upload_data(
 
         sys.exit(1)
 
+
+def validate_dataset(dataset_id: str, data: Data):
     if dataset_id not in (ds.id for ds in data.datasets):
         raise Exception(
             f"Specified dataset '{dataset_id}' was not found in datasets.json"
         )
 
-    logger.info(f"Data in {dir} has the right structure and is valid!")
 
-    logger.info(f"Uploading raw data...")
+def upload_dataset_data(
+    dir: Path, remote_storage: RemoteStorage, *, overwrite: bool = False
+):
+    _, data_files = collect_and_validate_data(dir)
+
+    logger.info(f"Uploading raw json data...")
 
     paths: list[Path] = list(data_files.all_paths())
 
-    pbar = tqdm(paths, disable=rs.dry_run)
+    pbar = tqdm(paths, disable=remote_storage.dry_run)
     for p in pbar:
         pbar.set_description(str(p))
-        rs.upload(p, fs_data_blob_name(p, dir), overwrite=overwrite)
+        remote_storage.upload(p, fs_data_blob_name(p, dir), overwrite=overwrite)
 
-    logger.info("Done uploading raw data!")
+    logger.info("Done uploading raw json data!")
 
     logger.info("Building the summary.txt file...")
     summary_file = dir / "summary.txt"
     summary_file.write_text("\n".join(fs_data_blob_name(file, dir) for file in paths))
-    rs.upload(summary_file, fs_data_blob_name(summary_file, dir), overwrite=overwrite)
+    remote_storage.upload(
+        summary_file, fs_data_blob_name(summary_file, dir), overwrite=overwrite
+    )
     logger.info("Done uploading summary.txt")
 
 
@@ -542,12 +552,19 @@ def ingest_cmd(args: Namespace):
         elif dry_run:
             logger.info(f"skipped prunning files from the bucket")
 
-    if dataset_id:
-        if args.data:
-            validate_and_upload_data(dataset_id, args.data, rs, overwrite=overwrite)
-        elif dry_run:
-            logger.warning(f"skipping neurons data validation and upload")
+    if args.data:
+        data_dir = args.data
+        data, _ = collect_and_validate_data(data_dir)
+        if not dry_run:
+            logger.info("Skipping raw json dataset information upload")
+            upload_dataset_data(data_dir, remote_storage=rs, overwrite=overwrite)
+    else:
+        logger.error("Raw json data directory for the dataset is missing!")
+        sys.exit(-1)
 
+    if dataset_id:
+        # validates that the dataset id is well in the raw json data
+        validate_dataset(dataset_id, data)
         if args.segmentation:
             upload_segmentations(dataset_id, args.segmentation, rs, overwrite=overwrite)
         elif dry_run:
@@ -567,6 +584,10 @@ def ingest_cmd(args: Namespace):
             upload_em_tiles(dataset_id, args.em, rs, overwrite=overwrite)
         elif dry_run:
             logger.warning("skipping EM tiles upload: flag not set")
+    else:
+        logger.warning(
+            "No dataset ID provided, skipping dataset dependent artifacts upload"
+        )
 
     if args.populate_db:
         trigger_populate_db(args)
