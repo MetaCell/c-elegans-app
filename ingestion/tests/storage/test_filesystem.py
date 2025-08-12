@@ -9,6 +9,7 @@ from ingestion.em_metadata import Tile
 from ingestion.schema import DataContainer
 from ingestion.storage.filesystem import (
     _CONNECTIONS_DIR,
+    _SYNAPSES_DIR,
     extract_tile_metadata,
     find_data_files,
     load_data,
@@ -25,6 +26,7 @@ def test__find_and_load_unknown_dataset(tmp_path: Path):
     create_json_file(tmp_path / "neurons.json", [])
     create_json_file(tmp_path / "datasets.json", [])  # white_1986_jse not defined here
     create_json_file(tmp_path / _CONNECTIONS_DIR / "white_1986_jse.json", [])
+    create_json_file(tmp_path / _SYNAPSES_DIR / "white_1986_jse.json", [])
 
     data_files = find_data_files(tmp_path)
 
@@ -34,6 +36,7 @@ def test__find_and_load_unknown_dataset(tmp_path: Path):
         connections={
             "white_1986_jse": tmp_path / _CONNECTIONS_DIR / "white_1986_jse.json"
         },
+        synapses={"white_1986_jse": tmp_path / _SYNAPSES_DIR / "white_1986_jse.json"},
     )
 
     data = load_data(data_files)
@@ -44,6 +47,9 @@ def test__find_and_load_unknown_dataset(tmp_path: Path):
         "connections": {
             "white_1986_jse": []  # still exist here and will fail in validation
         },
+        "synapses": {
+            "white_1986_jse": []  # still exist here and will fail in validation
+        },
         "annotations": {},
     }
 
@@ -52,6 +58,8 @@ def test__find_and_load_unknown_annotation(tmp_path: Path):
     create_json_file(tmp_path / "neurons.json", [])
     create_json_file(tmp_path / "datasets.json", [])
     create_json_file(tmp_path / "annotations/headd.annotations.json", {})
+    (tmp_path / _CONNECTIONS_DIR).mkdir(parents=True, exist_ok=False)
+    (tmp_path / _SYNAPSES_DIR).mkdir(parents=True, exist_ok=False)
 
     data_files = find_data_files(tmp_path)
 
@@ -66,6 +74,7 @@ def test__find_and_load_unknown_annotation(tmp_path: Path):
         "neurons": [],
         "datasets": [],
         "connections": {},
+        "synapses": {},
         "annotations": {},
     }
 
