@@ -48,7 +48,7 @@ const STLViewer: FC<Props> = ({ instances, isWireframe }) => {
 
       // If there is some error, we display a message to inform the user
       if (errorFiles.length > 0) {
-        handleErrors(new GlobalError(`Couldn't fetch 3D representation for ${errorFiles.map((e) => e.id)}`));
+        handleErrors(new GlobalError(`Couldn't fetch/find any 3D representation for ${errorFiles.map((e) => e.id)} from the selected datasets`));
       }
     };
 

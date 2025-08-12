@@ -124,12 +124,17 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
           <CustomAutocomplete
             options={datasetsArray}
             getOptionLabel={(option) => option.name}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <CheckIcon />
-                <Typography>{option.name}</Typography>
-              </li>
-            )}
+            renderOption={(props, option) => {
+              // This "trick" is mandatory:
+              // react doesn't like that an object with "key" as entrye is spread into a component that will be part of a list of objects.
+              // Instead it requires that the "key" is set explicitally as parameter of the component
+              return (
+                <li {...props} key={props["key"]}>
+                  <CheckIcon />
+                  <Typography>{option.name}</Typography>
+                </li>
+              );
+            }}
             placeholder="Start typing to search"
             id="grouped-demo"
             popupIcon={<CaretIcon />}
@@ -148,12 +153,17 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
           <FormLabel>Neurons</FormLabel>
           <CustomAutocomplete
             options={neuronNames}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <CheckIcon />
-                <Typography>{option}</Typography>
-              </li>
-            )}
+            renderOption={(props, option) => {
+              // This "trick" is mandatory:
+              // react doesn't like that an object with "key" as entrye is spread into a component that will be part of a list of objects.
+              // Instead it requires that the "key" is set explicitally as parameter of the component
+              return (
+                <li {...props} key={props["key"]}>
+                  <CheckIcon />
+                  <Typography>{option}</Typography>
+                </li>
+              );
+            }}
             onInputChange={onSearchNeurons}
             placeholder="Start typing to search"
             className="secondary"
