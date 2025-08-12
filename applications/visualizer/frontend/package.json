@@ -24,6 +24,7 @@
     "@mui/base": "^5.0.0-beta.40",
     "@mui/icons-material": "^5.16.4",
     "@mui/material": "^5.16.4",
+    "@mui/x-tree-view": "^8.9.0",
     "@react-three/drei": "^9.105.4",
     "@react-three/fiber": "^8.16.2",
     "@reduxjs/toolkit": "^2.2.3",

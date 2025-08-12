@@ -28,7 +28,7 @@ export const processNeuronSplit = (workspace: Workspace, splitJoinState: SplitJo
 
     const individualNeurons = workspace.getNeuronCellsByClass(neuronId);
 
-    const basePosition = workspace.visibilities[neuronId][ViewerType.Graph]?.defaultPosition || {
+    const basePosition = workspace.getNeuronVisibility(neuronId)[ViewerType.Graph]?.defaultPosition || {
       x: 0,
       y: 0,
     };
@@ -68,11 +68,11 @@ export const processNeuronSplit = (workspace: Workspace, splitJoinState: SplitJo
     }
 
     for (const [neuronName, update] of Object.entries(graphViewDataUpdates)) {
-      if (!(neuronName in draft.visibilities)) {
-        draft.visibilities[neuronName] = getDefaultViewerData(update.visibility);
+      if (!(neuronName in draft.visibilities.neurons)) {
+        draft.visibilities.neurons[neuronName] = getDefaultViewerData(update.visibility);
       }
       if (update.defaultPosition !== undefined) {
-        draft.visibilities[neuronName][ViewerType.Graph].defaultPosition = update.defaultPosition;
+        draft.visibilities.neurons[neuronName][ViewerType.Graph].defaultPosition = update.defaultPosition;
       }
     }
   });
@@ -103,7 +103,7 @@ export const processNeuronJoin = (workspace: Workspace, splitJoinState: SplitJoi
 
     const classPosition = calculateMeanPosition(individualNeurons, workspace);
 
-    if (!workspace.visibilities[neuronClass][ViewerType.Graph]?.defaultPosition) {
+    if (!workspace.getNeuronVisibility(neuronClass)[ViewerType.Graph]?.defaultPosition) {
       graphViewDataUpdates[neuronClass] = {
         defaultPosition: classPosition,
         visibility: Visibility.Visible,
@@ -146,11 +146,11 @@ export const processNeuronJoin = (workspace: Workspace, splitJoinState: SplitJoi
     }
 
     for (const [neuronName, update] of Object.entries(graphViewDataUpdates)) {
-      if (!(neuronName in draft.visibilities)) {
-        draft.visibilities[neuronName] = getDefaultViewerData(update.visibility);
+      if (!(neuronName in draft.visibilities.neurons)) {
+        draft.visibilities.neurons[neuronName] = getDefaultViewerData(update.visibility);
       }
       if (update.defaultPosition !== undefined) {
-        draft.visibilities[neuronName][ViewerType.Graph].defaultPosition = update.defaultPosition;
+        draft.visibilities.neurons[neuronName][ViewerType.Graph].defaultPosition = update.defaultPosition;
       }
     }
   });

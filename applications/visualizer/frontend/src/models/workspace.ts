@@ -2,16 +2,17 @@ import type { LayoutManager } from "@metacell/geppetto-meta-client/common/layout
 import type { configureStore } from "@reduxjs/toolkit";
 import { createDraft, finishDraft, immerable, isDraft, produce } from "immer";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
-import { type Dataset, type Neuron, NeuronsService } from "../rest";
+import { type Dataset, type GroupedSynapse, type Neuron, NeuronsService, SynapsesService } from "../rest";
 import { GlobalError } from "./Error.ts";
 import {
   type EMViewerSettings,
-  getDefaultViewerData,
   type NeuronGroup,
   type ViewerData,
   type ViewerSynchronizationPair,
   ViewerType,
   Visibility,
+  type VisibilityContainer,
+  getDefaultViewerData,
 } from "./models";
 import { type SynchronizerContext, SynchronizerOrchestrator } from "./synchronizer";
 
@@ -56,10 +57,12 @@ export class Workspace {
   availableNeurons: Record<string, Neuron>;
   // neuronId
   activeNeurons: Set<string>;
-  visibilities: Record<string, ViewerData>;
+  activeSynapses: Set<number>;
+  visibilities: VisibilityContainer;
   viewers: Record<ViewerType, boolean>;
   neuronGroups: Record<string, NeuronGroup>;
   emViewerSettings: EMViewerSettings;
+  synapsesData: GroupedSynapse | undefined;
 
   store: ReturnType<typeof configureStore>;
   layoutManager: LayoutManager;
@@ -75,10 +78,11 @@ export class Workspace {
     updateContext: (workspace: Workspace) => void,
     activeSynchronizers?: Record<ViewerSynchronizationPair, boolean>,
     contexts?: Record<ViewerType, SynchronizerContext>,
-    visibilities?: Record<string, ViewerData>,
+    visibilities?: VisibilityContainer,
     neuronGroups?: Record<string, NeuronGroup>,
     emViewerSettings?: EMViewerSettings,
     viewers?: Record<ViewerType, boolean>,
+    activeSynapses?: Set<number>,
   ) {
     this.id = id;
     this.name = name;
@@ -91,6 +95,7 @@ export class Workspace {
       [ViewerType.EM]: false,
     };
     this.neuronGroups = neuronGroups || {};
+    this.synapsesData = undefined;
     // Set EM viewer settings
     if (!emViewerSettings) {
       const firstActiveDataset = Object.values(activeDatasets)?.[0];
@@ -109,7 +114,10 @@ export class Workspace {
     this.layoutManager = layoutManager;
     this.syncOrchestrator = SynchronizerOrchestrator.create(activeSynchronizers, contexts);
 
-    this.visibilities = visibilities || Object.fromEntries([...(activeNeurons || [])].map((n) => [n, getDefaultViewerData(Visibility.Visible)]));
+    this.visibilities = visibilities || {
+      neurons: Object.fromEntries([...(activeNeurons || [])].map((n) => [n, getDefaultViewerData(Visibility.Visible)])),
+      synapses: Object.fromEntries([...(activeSynapses || [])].map((s) => [s, getDefaultViewerData(Visibility.Visible)])),
+    };
 
     this.store = store;
     this.updateContext = updateContext;
@@ -120,39 +128,39 @@ export class Workspace {
   @triggerUpdate
   activateNeuron(neuron: Neuron) {
     this.activeNeurons.add(neuron.name);
-    this.visibilities[neuron.name] = getDefaultViewerData();
+    this.visibilities.neurons[neuron.name] = getDefaultViewerData();
     return this;
   }
 
   @triggerUpdate
   deactivateNeuron(neuronId: string) {
     this.activeNeurons.delete(neuronId);
-    delete this.visibilities[neuronId];
+    delete this.visibilities.neurons[neuronId];
     return this;
   }
 
   @triggerUpdate
   hideNeuron(neuronId: string) {
-    if (!(neuronId in this.visibilities)) {
+    if (!(neuronId in this.visibilities.neurons)) {
       this.visibilities[neuronId] = getDefaultViewerData(Visibility.Hidden);
       this.removeSelection(neuronId, ViewerType.Graph);
     }
     // todo: add actions for other viewers
-    this.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Hidden;
-    this.visibilities[neuronId][ViewerType.ThreeD].visibility = Visibility.Hidden;
-    this.visibilities[neuronId][ViewerType.EM].visibility = Visibility.Hidden;
+    this.visibilities.neurons[neuronId][ViewerType.Graph].visibility = Visibility.Hidden;
+    this.visibilities.neurons[neuronId][ViewerType.ThreeD].visibility = Visibility.Hidden;
+    this.visibilities.neurons[neuronId][ViewerType.EM].visibility = Visibility.Hidden;
     return this;
   }
 
   @triggerUpdate
   showNeuron(neuronId: string) {
-    if (!(neuronId in this.visibilities)) {
-      this.visibilities[neuronId] = getDefaultViewerData(Visibility.Visible);
+    if (!(neuronId in this.visibilities.neurons)) {
+      this.visibilities.neurons[neuronId] = getDefaultViewerData(Visibility.Visible);
     }
     // todo: add actions for other viewers
-    this.visibilities[neuronId][ViewerType.Graph].visibility = Visibility.Visible;
-    this.visibilities[neuronId][ViewerType.ThreeD].visibility = Visibility.Visible;
-    this.visibilities[neuronId][ViewerType.EM].visibility = Visibility.Visible;
+    this.visibilities.neurons[neuronId][ViewerType.Graph].visibility = Visibility.Visible;
+    this.visibilities.neurons[neuronId][ViewerType.ThreeD].visibility = Visibility.Visible;
+    this.visibilities.neurons[neuronId][ViewerType.EM].visibility = Visibility.Visible;
     return this;
   }
 
@@ -310,11 +318,64 @@ export class Workspace {
   }
 
   getVisibleNeuronsInThreeD(): string[] {
-    return Array.from(this.activeNeurons).filter((neuronId) => this.visibilities[neuronId]?.[ViewerType.ThreeD]?.visibility === Visibility.Visible);
+    return Array.from(this.activeNeurons).filter((neuronId) => this.visibilities.neurons[neuronId]?.[ViewerType.ThreeD]?.visibility === Visibility.Visible);
   }
 
   getVisibleNeuronsInEM(): string[] {
-    return Array.from(this.activeNeurons).filter((neuronId) => this.visibilities[neuronId]?.[ViewerType.EM]?.visibility === Visibility.Visible);
+    return Array.from(this.activeNeurons).filter((neuronId) => this.visibilities.neurons[neuronId]?.[ViewerType.EM]?.visibility === Visibility.Visible);
+  }
+
+  getNeuronVisibility(neuronId: string): ViewerData {
+    return this.visibilities.neurons[neuronId];
+  }
+
+  getSynapseVisibility(synapseId: number): ViewerData {
+    return this.visibilities.synapses[synapseId];
+  }
+
+  @triggerUpdate
+  showSynapse(synapseId: number) {
+    if (!(synapseId in this.visibilities.synapses)) {
+      this.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Visible);
+    }
+    // Set visibility for all viewers
+    this.visibilities.synapses[synapseId][ViewerType.Graph].visibility = Visibility.Visible;
+    this.visibilities.synapses[synapseId][ViewerType.ThreeD].visibility = Visibility.Visible;
+    this.visibilities.synapses[synapseId][ViewerType.EM].visibility = Visibility.Visible;
+    return this;
+  }
+
+  @triggerUpdate
+  hideSynapse(synapseId: number) {
+    if (!(synapseId in this.visibilities.synapses)) {
+      this.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Hidden);
+    }
+    // Set visibility for all viewers
+    this.visibilities.synapses[synapseId][ViewerType.Graph].visibility = Visibility.Hidden;
+    this.visibilities.synapses[synapseId][ViewerType.ThreeD].visibility = Visibility.Hidden;
+    this.visibilities.synapses[synapseId][ViewerType.EM].visibility = Visibility.Hidden;
+    return this;
+  }
+
+  // Helper methods for use within customUpdate (no @triggerUpdate decorator)
+  _showSynapseInternal(synapseId: number) {
+    if (!(synapseId in this.visibilities.synapses)) {
+      this.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Visible);
+    }
+    // Set visibility for all viewers
+    this.visibilities.synapses[synapseId][ViewerType.Graph].visibility = Visibility.Visible;
+    this.visibilities.synapses[synapseId][ViewerType.ThreeD].visibility = Visibility.Visible;
+    this.visibilities.synapses[synapseId][ViewerType.EM].visibility = Visibility.Visible;
+  }
+
+  _hideSynapseInternal(synapseId: number) {
+    if (!(synapseId in this.visibilities.synapses)) {
+      this.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Hidden);
+    }
+    // Set visibility for all viewers
+    this.visibilities.synapses[synapseId][ViewerType.Graph].visibility = Visibility.Hidden;
+    this.visibilities.synapses[synapseId][ViewerType.ThreeD].visibility = Visibility.Hidden;
+    this.visibilities.synapses[synapseId][ViewerType.EM].visibility = Visibility.Hidden;
   }
 
   changeNeuronColorForViewers(neuronId: string, color: string): void {
@@ -322,8 +383,8 @@ export class Workspace {
 
     const updated = produce(this, (draft: Workspace) => {
       for (const viewerType of viewers) {
-        if (viewerType in draft.visibilities[neuronId]) {
-          const viewerData = draft.visibilities[neuronId]?.[viewerType];
+        if (viewerType in draft.visibilities.neurons[neuronId]) {
+          const viewerData = draft.visibilities.neurons[neuronId]?.[viewerType];
           if (viewerData && "color" in viewerData && typeof viewerData.color === "string") {
             viewerData.color = color;
           }
@@ -332,6 +393,31 @@ export class Workspace {
     });
 
     this.updateContext(updated);
+  }
+
+  getSynapseColor(synapseId: number): string {
+    return this.visibilities.synapses[synapseId]?.[ViewerType.EM]?.color || this.visibilities.synapses[synapseId]?.[ViewerType.ThreeD]?.color;
+  }
+
+  @triggerUpdate
+  changeSynapsesColorForViewers(synapseIds: number[], color: string): this {
+    const viewers: ViewerType[] = [ViewerType.ThreeD, ViewerType.EM];
+
+    const visibilities = this.visibilities.synapses;
+    for (const synapseId of synapseIds) {
+      if (!(synapseId in visibilities)) {
+        visibilities[synapseId] = getDefaultViewerData(Visibility.Visible);
+      }
+
+      for (const viewerType of viewers) {
+        const viewerData = visibilities[synapseId]?.[viewerType];
+        if (viewerData && "color" in viewerData && typeof viewerData.color === "string") {
+          viewerData.color = color;
+        }
+      }
+    }
+
+    return this;
   }
 
   // Those methods do not trigger updates as they are only here to store settings for the share function
@@ -346,5 +432,59 @@ export class Workspace {
 
   emViewerShowSynapses(show: boolean) {
     this.emViewerSettings.showSynapses = show;
+  }
+
+  @triggerUpdate
+  async fetchSynapses() {
+    const visibleNeurons = Array.from(this.activeNeurons).filter((id) =>
+      Object.values(this.visibilities.neurons[id]).every((e) => e === undefined || e.visibility === Visibility.Visible),
+    );
+
+    try {
+      const synapses = await SynapsesService.getDatasetSynapses({
+        datasetIds: Object.keys(this.activeDatasets),
+        neurons: visibleNeurons,
+      });
+      this.synapsesData = synapses;
+
+      // Extract synapse IDs from the fetched data and populate activeSynapses
+      const synapseIds = new Set<number>();
+      if (synapses && synapses.synapses) {
+        for (const [_, prePostEntry] of Object.entries(synapses.synapses)) {
+          // Extract synapse IDs from pre connections
+          for (const [_, postEntries] of Object.entries(prePostEntry.pre)) {
+            for (const [_, synapseEntries] of Object.entries(postEntries)) {
+              for (const synapseEntry of synapseEntries) {
+                synapseIds.add(synapseEntry.id);
+              }
+            }
+          }
+          // Extract synapse IDs from post connections
+          for (const [_, postEntries] of Object.entries(prePostEntry.post)) {
+            for (const [_, synapseEntries] of Object.entries(postEntries)) {
+              for (const synapseEntry of synapseEntries) {
+                synapseIds.add(synapseEntry.id);
+              }
+            }
+          }
+        }
+      }
+
+      // Update activeSynapses and initialize visibilities for new synapses
+      this.activeSynapses = synapseIds;
+      for (const synapseId of synapseIds) {
+        if (!(synapseId in this.visibilities.synapses)) {
+          this.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Visible);
+        }
+      }
+    } catch (error) {
+      throw new GlobalError("Failed to fetch synapses");
+    }
+
+    return this;
+  }
+
+  getSynapsesData(): GroupedSynapse | undefined {
+    return this.synapsesData;
   }
 }

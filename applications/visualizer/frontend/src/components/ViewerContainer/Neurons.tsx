@@ -126,7 +126,7 @@ const Neurons = ({ children }) => {
           {Array.from(activeNeurons).map((neuronId) => (
             <CustomListItem
               key={neuronId}
-              data={mapNeuronsToListItem(neuronId, currentWorkspace.visibilities[neuronId])}
+              data={mapNeuronsToListItem(neuronId, currentWorkspace.getNeuronVisibility(neuronId))}
               showTooltip={false}
               showExtraActions={true}
               listType="neurons"
@@ -154,7 +154,7 @@ const Neurons = ({ children }) => {
           {Array.from(Object.keys(groups)).map((groupId) => (
             <CustomListItem
               key={groupId}
-              data={mapToListItem(groupId, currentWorkspace.visibilities[groupId])}
+              data={mapToListItem(groupId, currentWorkspace.getNeuronVisibility(groupId))}
               showTooltip={false}
               showExtraActions={true}
               listType="groups"

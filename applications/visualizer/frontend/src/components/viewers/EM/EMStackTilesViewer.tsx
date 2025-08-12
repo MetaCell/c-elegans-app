@@ -1,13 +1,13 @@
 import { Box, Typography } from "@mui/material";
 import "ol/ol.css";
 import { type Feature, Map as OLMap, View } from "ol";
+import type { FeatureLike } from "ol/Feature";
 import ScaleLine from "ol/control/ScaleLine";
 import type { Coordinate } from "ol/coordinate";
 import { shiftKeyOnly } from "ol/events/condition";
 import { getCenter } from "ol/extent";
-import type { FeatureLike } from "ol/Feature";
 import GeoJSON from "ol/format/GeoJSON";
-import { defaults as defaultInteractions, MouseWheelZoom } from "ol/interaction.js";
+import { MouseWheelZoom, defaults as defaultInteractions } from "ol/interaction.js";
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
 import { Projection } from "ol/proj";
@@ -17,11 +17,11 @@ import type Style from "ol/style/Style";
 import { TileGrid } from "ol/tilegrid";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
-import { getEMDataURL, getEMResolution, getSegmentationURL, getSynapsesSegmentationURL, ViewerType } from "../../../models/models.ts";
+import { ViewerType, getEMDataURL, getEMResolution, getSegmentationURL, getSynapsesSegmentationURL } from "../../../models/models.ts";
 import type { Workspace } from "../../../models/workspace.ts";
 import type { Dataset } from "../../../rest/index.ts";
-import { activeNeuronStyle, activeSynapseStyle, cellFeatureName, selectedNeuronStyle, selectedSynapseStyle } from "./neuronsMapFeature.ts";
 import SceneControls from "./SceneControls.tsx";
+import { activeNeuronStyle, activeSynapseStyle, cellFeatureName, selectedNeuronStyle, selectedSynapseStyle } from "./neuronsMapFeature.ts";
 import { SlidingLayer } from "./slidingLayer.ts";
 
 const newEMLayer = (dataset: Dataset, slice: number, tilegrid: TileGrid, projection: Projection): TileLayer<XYZ> => {
@@ -70,8 +70,15 @@ function isNeuronVisible(neuronId: string, workspace: Workspace): boolean {
 }
 
 function neuronColor(neuronId, workspace: Workspace): string {
-  const neuronVisibilities = workspace.visibilities[neuronId] || workspace.visibilities[workspace.getNeuronClass(neuronId)];
+  const neuronVisibilities = workspace.getNeuronVisibility(neuronId) || workspace.getNeuronVisibility(workspace.getNeuronClass(neuronId));
   return neuronVisibilities?.[ViewerType.EM].color;
+}
+
+function synapseColor(synapseId: string, workspace: Workspace): string {
+  const synapseIdNum = Number.parseInt(synapseId);
+  if (isNaN(synapseIdNum)) return undefined;
+  const synapseVisibilities = workspace.getSynapseVisibility(synapseIdNum);
+  return synapseVisibilities?.[ViewerType.EM].color;
 }
 
 function neuronsStyle(feature: FeatureLike, workspace: Workspace) {
@@ -92,12 +99,13 @@ function neuronsStyle(feature: FeatureLike, workspace: Workspace) {
 
 function synapsesStyle(feature: FeatureLike, workspace: Workspace): Style {
   const synapseName = cellFeatureName(feature);
+  const color = synapseColor(synapseName, workspace);
 
   if (isCellSelected(synapseName, workspace)) {
-    return selectedSynapseStyle(feature);
+    return selectedSynapseStyle(feature, color);
   }
 
-  return activeSynapseStyle(feature);
+  return activeSynapseStyle(feature, color);
 }
 
 // LayerSelect specifies a layer for features to be selected from and a handler function to be called if a feature are found.
@@ -270,7 +278,7 @@ const EMStackViewer = () => {
     neuronsStyleRef.current = (feature: Feature) => neuronsStyle(feature, currentWorkspace);
     onFeatureClickRef.current = makeFeatureClickHandler();
     currSegLayer.current.getSource().changed();
-  }, [currentWorkspace.getVisibleNeuronsInEM(), currentWorkspace.visibilities, currentWorkspace.getSelection(ViewerType.EM), segSlice]);
+  }, [currentWorkspace.getVisibleNeuronsInEM(), currentWorkspace.visibilities.neurons, currentWorkspace.getSelection(ViewerType.EM), segSlice]);
 
   useEffect(() => {
     if (!currSynSegLayer.current?.getSource()) {
