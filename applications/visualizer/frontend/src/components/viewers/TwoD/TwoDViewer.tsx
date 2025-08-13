@@ -497,7 +497,6 @@ const TwoDViewer = () => {
           node.style(`pie-${index + 1}-background-color`, color);
           node.style(`pie-${index + 1}-background-size`, 100 / colors.length);
         });
-        node.style("pie-background-opacity", 1);
       } else {
         node.style("background-color", colors[0]);
       }
