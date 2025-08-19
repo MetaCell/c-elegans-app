@@ -233,6 +233,10 @@ Our suggestion would be to manage and store your files as follows:
 │   │   ├── ADAR.stl
 │   │   ├── ADEL.stl
 │   │   │   ...
+|   |   ├── synapses
+|   |   |   ├── _0001_ADAL_synapses.ADAL_AVBL,AVBR,RIML_8414886-SEM_adult.stl  # or .obj
+|   |   |   ├── _0002_ADAL_synapses.ADAL_AVBL,AVJL,AVBR_8414874-SEM_adult.stl
+|   |   |   ├── ...
 │   ├── em
 │   │   ├── ...
 │   │   ├── 13
@@ -261,6 +265,10 @@ Our suggestion would be to manage and store your files as follows:
 ```
 
 Where `dataset-metadata` is directory containing the datasets set of structured json files.
+
+> [!WARNING]
+> The synapses 3D files name **have to** follow this format: `[something].[pre-post]_[catmaid-id]([postfix]?).{stl|obj}`, otherwise, we cannot extract the catmaid id and map the positions that we find to the real synapse.
+
 
 ### Re-upload new version of the Dataset or related data
 

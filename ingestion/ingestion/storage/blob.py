@@ -57,6 +57,14 @@ def fs_3d_blob_name(dataset_id: str, p: Path, regex: str) -> str:
     return f"{dataset_id}/3d/{name}"
 
 
+def fs_3d_synapse_blob_name(dataset_id: str, p: Path, regex: str) -> str:
+    name = p.name
+    substitution = p.suffix if not regex else ""
+    regex = STL_FILE_REGEX if not regex else regex
+    name = re.sub(regex, substitution, name)
+    return f"{dataset_id}/3d/synapses/{name}"
+
+
 def fs_em_tile_blob_name(dataset_id: str, tile: Tile) -> str:
     # <dataset_id>/em/<slice>/<y>_<x>_<z>.jpg
     return f"{dataset_id}/em/{tile.slice}/{tile.path.name}"

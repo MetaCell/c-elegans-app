@@ -185,7 +185,7 @@ connectorid_size_map = {}
 
 
 def compute_connections_synapses(json_connections, print):
-    print("  . Compute connections and synapses")
+    print("  . Computing connections and synapses")
 
     def get_class(cell, connection):
         # TODO include legacy type?
@@ -295,17 +295,47 @@ def populate_synapses(_, print, print_success):
     print("Populate Synapse table...")
 
     synapse_objects = []
-    print("  . Saving synapses", ending="")
+    synapses_config = []
+    print("  . Creating synapses informations...")
     for synapse in synapses:
         connection = Connection.objects.get(id=synapse["connection_id"])
-        connection.dataset.name
+        dataset_id = connection.dataset.id
         synapse["connection"] = connection
         connector_id = synapse["connector_id"]
-        key = (connection.dataset.id, connector_id)
+        key = (dataset_id, connector_id)
         if key in connectorid_size_map:
             synapse["size"] = connectorid_size_map[key]
-        synapse_objects.append(Synapse(**synapse))
+        synapses_config.append(synapse)
 
+    print("  . Fetching synapses positions...")
+    MetadataFetcher = settings.METADATA_DOWNLOADER
+    positions_config = {}
+    for dataset in Dataset.objects.all():
+        dataset_id = dataset.id
+        positions: Path = MetadataFetcher.get_synapses_positions(dataset_id)
+        if not positions.exists():
+            print(f"    No synapse positions found for {dataset_id}")
+            continue
+        print(f"    Synapses positions found for {dataset_id}")
+        with positions.open("r") as f:
+            while line := f.readline():
+                connector_id, position = line.split(":")
+                connector_id = int(connector_id)
+                position = json.loads(position)
+                key = (dataset_id, connector_id)
+                positions_config[key] = position
+    print("  . Filling synapses positions...")
+    for synapse_config in synapses_config:
+        connection = Connection.objects.get(id=synapse_config["connection_id"])
+        syn_dataset_id = connection.dataset.id
+        syn_connector_id = synapse_config["connector_id"]
+        key = (syn_dataset_id, syn_connector_id)
+        if key in positions_config:
+            synapse_config["position"] = positions_config[key]
+
+    print("  . Creating synapses...", ending="")
+    for synapse in synapses_config:
+        synapse_objects.append(Synapse(**synapse))
     Synapse.objects.bulk_create(synapse_objects, ignore_conflicts=True)
     print_success("\t\t\t[OK]")
 

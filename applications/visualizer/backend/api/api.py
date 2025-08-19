@@ -388,7 +388,9 @@ def get_dataset_synapses(
         )
         .exclude(connection__post__in=neuron_classes)
         .select_related("connection")
-        .values("connector_id", "connection__pre", "connection__post", "size")
+        .values(
+            "connector_id", "connection__pre", "connection__post", "size", "position"
+        )
     )
 
     # POST-syn COMPUTATION
@@ -410,7 +412,9 @@ def get_dataset_synapses(
     synapses_related = (
         SynapseModel.objects.filter(connector_id__in=connector_ids)
         .select_related("connection")
-        .values("connector_id", "connection__pre", "connection__post", "size")
+        .values(
+            "connector_id", "connection__pre", "connection__post", "size", "position"
+        )
     )
 
     # We now group the synapses by connector_id
@@ -426,8 +430,13 @@ def get_dataset_synapses(
         pres = set(s["connection__pre"] for s in syns)
         posts = set(s["connection__post"] for s in syns)
         size = next(s["size"] for s in syns)  # We know the size is unique by connection
+        position = next(
+            s["position"] for s in syns
+        )  # We know the position is unique by connection
         pre = "".join(pres)  # We know there is only 1
-        entry = SynapseEntry(id=coid, pre=pre, posts=sorted(posts), size=size)
+        entry = SynapseEntry(
+            id=coid, pre=pre, posts=sorted(posts), size=size, position=position
+        )
         # We have to filter manually duplicates as "DISTINCT" using a field is not implemented for the test DB that uses SQLite
         if coid in existing:
             continue

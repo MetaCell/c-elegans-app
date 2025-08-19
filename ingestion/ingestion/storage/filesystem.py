@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from itertools import chain
 import json
 import logging
 import re
@@ -168,26 +169,29 @@ def find_synapses_resolution_metadata_file(paths: list[Path]) -> Path | None:
     return find_segmentation_resolution_metadata_file(paths)  # same namming scheme
 
 
-DEFAULT_EXCLUDED_WORDS = ["synapse"]
-
-
 def find_3d_files(
-    paths: list[Path], *, exclude_files_w_words: list[str] = DEFAULT_EXCLUDED_WORDS
+    paths: list[Path],
+    *,
+    exclude_files_w_words: list[str] | None = None,
+    extensions: list[str] | None = None,
 ) -> Generator[Path]:
+    extensions = extensions if extensions else [".stl", ".obj"]
+    exclude_files_w_words = exclude_files_w_words if exclude_files_w_words else []
+
     def contains_word(s: str, word_list: list[str]) -> bool:
         return any(word in s for word in word_list)
 
     if len(paths) == 1 and paths[0].is_dir():
         return (
             f
-            for f in paths[0].rglob("*.stl")
+            for f in chain(*chain(paths[0].rglob(f"*{it}") for it in extensions))
             if not contains_word(str(f), exclude_files_w_words)
         )
 
     return (
         path
         for path in paths
-        if path.suffix == ".stl"
+        if path.suffix in extensions
         if not contains_word(str(path), exclude_files_w_words)
     )
 

@@ -147,6 +147,7 @@ class Synapse(Model):
     pre_tid = PositiveIntegerField(db_index=True)
     post_tid = PositiveIntegerField(db_index=True)
     size = FloatField(db_index=False, null=True, blank=True)
+    position = JSONField(db_index=False, null=True)
 
     class Meta:
         constraints = [
