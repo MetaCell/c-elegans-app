@@ -281,7 +281,7 @@ def populate_connections(path, print, print_success):
         for synapses_information in json.load(file.open("r")):
             connector_id = synapses_information["catmaid_id"]
             synapse_size = synapses_information["size"]
-            connectorid_size_map[connector_id] = synapse_size
+            connectorid_size_map[(file.stem, connector_id)] = synapse_size
 
     print("  . Saving connections", ending="")
     Connection.objects.bulk_create(
@@ -297,10 +297,13 @@ def populate_synapses(_, print, print_success):
     synapse_objects = []
     print("  . Saving synapses", ending="")
     for synapse in synapses:
-        synapse["connection"] = Connection.objects.get(id=synapse["connection_id"])
+        connection = Connection.objects.get(id=synapse["connection_id"])
+        connection.dataset.name
+        synapse["connection"] = connection
         connector_id = synapse["connector_id"]
-        if connector_id in connectorid_size_map:
-            synapse["size"] = connectorid_size_map[connector_id]
+        key = (connection.dataset.id, connector_id)
+        if key in connectorid_size_map:
+            synapse["size"] = connectorid_size_map[key]
         synapse_objects.append(Synapse(**synapse))
 
     Synapse.objects.bulk_create(synapse_objects, ignore_conflicts=True)
