@@ -1139,13 +1139,21 @@
               }
             ],
             "title": "Size"
+          },
+          "position": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Position",
+            "type": "array"
           }
         },
         "required": [
           "id",
           "pre",
           "posts",
-          "size"
+          "size",
+          "position"
         ],
         "title": "SynapseEntry",
         "type": "object"

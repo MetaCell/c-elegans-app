@@ -333,6 +333,11 @@ components:
         id:
           title: Id
           type: integer
+        position:
+          items:
+            type: number
+          title: Position
+          type: array
         posts:
           items:
             type: string
@@ -351,6 +356,7 @@ components:
       - pre
       - posts
       - size
+      - position
       title: SynapseEntry
       type: object
   securitySchemes:
