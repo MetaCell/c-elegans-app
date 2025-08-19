@@ -70,7 +70,39 @@ export class Workspace {
   syncOrchestrator: SynchronizerOrchestrator;
   updateContext: (workspace: Workspace) => void;
 
-  constructor(
+  static async create(
+    id: string,
+    name: string,
+    activeDatasets: Record<string, Dataset>,
+    activeNeurons: Set<string>,
+    updateContext: (workspace: Workspace) => void,
+    activeSynchronizers?: Record<ViewerSynchronizationPair, boolean>,
+    contexts?: Record<ViewerType, SynchronizerContext>,
+    visibilities?: VisibilityContainer,
+    neuronGroups?: Record<string, NeuronGroup>,
+    emViewerSettings?: EMViewerSettings,
+    viewers?: Record<ViewerType, boolean>,
+    activeSynapses?: Set<number>,
+  ) {
+    const ws = new Workspace(
+      id,
+      name,
+      activeDatasets,
+      activeNeurons,
+      updateContext,
+      activeSynchronizers,
+      contexts,
+      visibilities,
+      neuronGroups,
+      emViewerSettings,
+      viewers,
+      activeSynapses,
+    );
+    await ws._initializeAvailableNeurons();
+    return ws;
+  }
+
+  private constructor(
     id: string,
     name: string,
     activeDatasets: Record<string, Dataset>,
@@ -119,10 +151,11 @@ export class Workspace {
       synapses: Object.fromEntries([...(activeSynapses || [])].map((s) => [s, getDefaultViewerData(Visibility.Visible)])),
     };
 
+    if (!store) {
+      throw new GlobalError("Store is not set, it's still undefined");
+    }
     this.store = store;
     this.updateContext = updateContext;
-
-    this._initializeAvailableNeurons();
   }
 
   @triggerUpdate
@@ -230,35 +263,39 @@ export class Workspace {
   }
 
   async _getAvailableNeurons() {
+    let neuronArrays;
     try {
       const datasetIds = Object.keys(this.activeDatasets);
-      const neuronArrays = await NeuronsService.searchCells({ datasetIds });
-
-      // Flatten and add neurons classes
-      const uniqueNeurons = new Set<Neuron>();
-      const neuronsClass: Record<string, Neuron> = {};
-      for (const neuron of neuronArrays.flat()) {
-        uniqueNeurons.add(neuron);
-
-        const className = neuron.nclass;
-        if (!(className in neuronsClass)) {
-          const neuronClass = {
-            ...neuron,
-            name: className,
-            model3DUrls: [...neuron.model3DUrls],
-            datasetIds: [...neuron.datasetIds],
-          };
-          neuronsClass[className] = neuronClass;
-          uniqueNeurons.add(neuronClass);
-        } else {
-          neuronsClass[className].model3DUrls.push(...neuron.model3DUrls);
-        }
-      }
-
-      this.availableNeurons = Object.fromEntries([...uniqueNeurons].map((n) => [n.name, n]));
+      neuronArrays = await NeuronsService.searchCells({ datasetIds });
     } catch (error) {
-      throw new GlobalError("Failed to fetch neurons:");
+      throw new GlobalError("Failed to fetch neurons");
     }
+
+    // Flatten and add neurons classes
+    if (!neuronArrays) {
+      throw new GlobalError("Fetched empty set of neurons");
+    }
+    const uniqueNeurons = new Set<Neuron>();
+    const neuronsClass: Record<string, Neuron> = {};
+    for (const neuron of neuronArrays.flat()) {
+      uniqueNeurons.add(neuron);
+
+      const className = neuron.nclass;
+      if (!(className in neuronsClass)) {
+        const neuronClass = {
+          ...neuron,
+          name: className,
+          model3DUrls: [...neuron.model3DUrls],
+          datasetIds: [...neuron.datasetIds],
+        };
+        neuronsClass[className] = neuronClass;
+        uniqueNeurons.add(neuronClass);
+      } else {
+        neuronsClass[className].model3DUrls.push(...neuron.model3DUrls);
+      }
+    }
+
+    this.availableNeurons = Object.fromEntries([...uniqueNeurons].map((n) => [n.name, n]));
   }
 
   customUpdate(updateFunction: (draft: Workspace) => void): void {

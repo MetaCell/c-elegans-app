@@ -18,7 +18,7 @@ function App() {
   const { workspaces, currentWorkspaceId, viewMode, selectedWorkspacesIds } = useGlobalContext();
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
 
-  const hasLaunched = currentWorkspaceId !== undefined;
+  const isReady = currentWorkspaceId !== undefined && Object.keys(workspaces).length > 0;
 
   const renderCompareMode = (workspaceIds: string[]) => (
     <CompareWrapper sidebarOpen={sidebarOpen}>
@@ -53,7 +53,7 @@ function App() {
           <Route
             path="/"
             element={
-              hasLaunched ? (
+              isReady ? (
                 <Box className={"layout-manager-container"}>
                   <Layout sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
                   {renderWorkspaces()}

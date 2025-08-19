@@ -28,15 +28,16 @@ function AppLauncher() {
   const handleTemplateClick = async () => {
     const workspaceId = `workspace-${Date.now()}`;
     const workspaceName = `Template Workspace ${Object.keys(workspaces).length + 1}`;
-    createWorkspace(workspaceId, workspaceName, new Set(TEMPLATE_ACTIVE_DATASETS), new Set(selectedNeurons));
+
+    await createWorkspace(workspaceId, workspaceName, new Set(TEMPLATE_ACTIVE_DATASETS), new Set(selectedNeurons));
     setCurrentWorkspace(workspaceId);
     setSelectedWorkspacesIds(new Set<string>([workspaceId]));
   };
-  const handleBlankClick = () => {
+  const handleBlankClick = async () => {
     const workspaceId = `workspace-${Date.now()}`;
     const workspaceName = `Workspace ${Object.keys(workspaces).length + 1}`;
 
-    createWorkspace(workspaceId, workspaceName, new Set(TEMPLATE_ACTIVE_DATASETS));
+    await createWorkspace(workspaceId, workspaceName, new Set(TEMPLATE_ACTIVE_DATASETS));
     setCurrentWorkspace(workspaceId);
     setSelectedWorkspacesIds(new Set<string>([workspaceId]));
   };

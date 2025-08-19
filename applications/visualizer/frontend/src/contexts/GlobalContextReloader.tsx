@@ -7,15 +7,14 @@ const GlobalContextReloader = () => {
   const navigate = useNavigate();
   const { restoreGlobalContextFromBase64, datasets } = useGlobalContext();
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: navigate and restoreGlobalContextFromBase64 are function from global context
+  // biome-ignore lint/correctness/useExhaustiveDependencies: restoreGlobalContextFromBase64 is function from global context
   useEffect(() => {
     if (code && datasets && Object.keys(datasets).length > 0) {
-      restoreGlobalContextFromBase64(code);
-      navigate("/");
+      restoreGlobalContextFromBase64(code, datasets).then(() => navigate("/"));
     }
   }, [datasets, code]);
 
-  return <div>Loading datasets</div>;
+  return <div>Restoring datasets and workspaces</div>;
 };
 
 export default GlobalContextReloader;

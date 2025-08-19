@@ -38,8 +38,8 @@ export interface GlobalContextType {
   setAllWorkspaces: (workspaces: Record<string, Workspace>) => void;
   handleErrors: (error: Error) => void;
   serializeGlobalContext: () => string;
-  restoreGlobalContext: (context: SerializedGlobalContext) => void;
-  restoreGlobalContextFromBase64: (base64Context: string) => void;
+  restoreGlobalContext: (context: SerializedGlobalContext, datasets: Record<string, Dataset>) => Promise<void>;
+  restoreGlobalContextFromBase64: (base64Context: string, datasets: Record<string, Dataset>) => Promise<void>;
   isGlobalRotating: boolean;
   toggleGlobalRotation: () => void;
 }
@@ -60,7 +60,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
   const [errorMessage, setErrorMessage] = useState("");
   const [isGlobalRotating, setIsGlobalRotating] = useState(false);
 
-  const createWorkspace = (id: string, name: string, activeDatasetKeys: Set<string>, activeNeurons: Set<string>) => {
+  const createWorkspace = async (id: string, name: string, activeDatasetKeys: Set<string>, activeNeurons: Set<string>) => {
     // Convert the activeDatasetKeys into a Record<string, Dataset>
     const activeDatasets: Record<string, Dataset> = {};
 
@@ -71,7 +71,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     }
 
     // Create a new workspace using the activeDatasets record
-    const newWorkspace = new Workspace(id, name, activeDatasets, activeNeurons, updateWorkspace);
+    const newWorkspace = await Workspace.create(id, name, activeDatasets, activeNeurons, updateWorkspace);
     setWorkspaces((prev) => ({ ...prev, [id]: newWorkspace }));
   };
 
@@ -149,10 +149,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
     return b64Tob64Url(base64UrlFragment);
   };
 
-  const restoreGlobalContext = (context: SerializedGlobalContext) => {
-    setCurrentWorkspaceId(context.currentWorkspaceId);
-    setSelectedWorkspacesIds(new Set(context.selectedWorkspacesIds));
-    setViewMode(context.viewMode);
+  const restoreGlobalContext = async (context: SerializedGlobalContext, datasets: Record<string, Dataset>) => {
+    setCurrentWorkspaceId((_) => context.currentWorkspaceId);
+    setSelectedWorkspacesIds((_) => new Set(context.selectedWorkspacesIds));
+    setViewMode((_) => context.viewMode);
 
     const reconstructedWorkspaces = {};
     for (const [wsId, ws] of Object.entries(context.workspaces)) {
@@ -165,7 +165,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
       for (const group of Object.values(ws.neuronGroups)) {
         group.neurons = new Set(group.neurons);
       }
-      const workspace = new Workspace(
+      const workspace = await Workspace.create(
         ws.id,
         ws.name,
         activeDatasets,
@@ -183,17 +183,17 @@ export const GlobalContextProvider: React.FC<GlobalContextProviderProps> = ({ ch
 
       reconstructedWorkspaces[wsId] = workspace;
     }
-    setWorkspaces(reconstructedWorkspaces);
+    setWorkspaces((_) => reconstructedWorkspaces);
   };
 
-  const restoreGlobalContextFromBase64 = (base64UrlContext: string) => {
+  const restoreGlobalContextFromBase64 = async (base64UrlContext: string, datasets: Record<string, Dataset>) => {
     const base64Context = b64UrlTo64(base64UrlContext);
     const gzipedContext = Uint8Array.from(atob(base64Context), (c) => c.charCodeAt(0));
     const serializedContext = pako.ungzip(gzipedContext);
     const jsonContext = new TextDecoder().decode(serializedContext);
 
     const ctx = JSON.parse(jsonContext) as SerializedGlobalContext;
-    restoreGlobalContext(ctx);
+    await restoreGlobalContext(ctx, datasets);
   };
 
   const toggleGlobalRotation = () => {
