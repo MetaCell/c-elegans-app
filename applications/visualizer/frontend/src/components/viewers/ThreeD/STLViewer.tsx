@@ -1,13 +1,12 @@
-import { Center } from "@react-three/drei";
 import { type FC, useMemo, useState } from "react";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
 import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 import { GlobalError } from "../../../models/Error.ts";
 import STLMesh from "./STLMesh.tsx";
-import type { Instance } from "./ThreeDViewer.tsx";
+import type { NeuronInstance } from "./ThreeDViewer.tsx";
 
 interface Props {
-  instances: Instance[];
+  instances: NeuronInstance[];
   isWireframe: boolean;
 }
 
@@ -27,7 +26,7 @@ const STLViewer: FC<Props> = ({ instances, isWireframe }) => {
           new Promise((resolve, _) => {
             loader.load(
               instance.url,
-              (geometry) => resolve(geometry.center()),
+              (geometry) => resolve(geometry),
               undefined,
               (error) => {
                 console.error(`Error loading ${instance.url}:`, error);
@@ -56,21 +55,20 @@ const STLViewer: FC<Props> = ({ instances, isWireframe }) => {
   }, [instances]);
 
   return (
-    <Center>
-      <group frustumCulled={false}>
-        {stlObjects.map((stl, idx) => (
-          <STLMesh
-            key={instances[idx]?.id}
-            id={instances[idx]?.id}
-            stl={stl}
-            opacity={instances[idx]?.opacity}
-            color={instances[idx]?.color}
-            renderOrder={idx}
-            isWireframe={isWireframe}
-          />
-        ))}
-      </group>
-    </Center>
+    <group frustumCulled={false}>
+      {stlObjects.map((stl, idx) => (
+        <STLMesh
+          key={instances[idx]?.id}
+          id={instances[idx]?.id}
+          stl={stl}
+          opacity={instances[idx]?.opacity}
+          color={instances[idx]?.color}
+          renderOrder={instances[idx]?.renderOrder || 0}
+          isWireframe={isWireframe}
+          clickable={instances[idx]?.clickable}
+        />
+      ))}
+    </group>
   );
 };
 
