@@ -74,7 +74,7 @@ const NerveRing = ({ instance, isWireframe }) => {
   const stl = useLoader(STLLoader, url);
 
   return (
-    <mesh userData={{ id }} frustumCulled={false} renderOrder={renderOrder}>
+    <mesh userData={{ id }} renderOrder={renderOrder}>
       <primitive attach="geometry" object={stl} />
       {isWireframe ? (
         <meshBasicMaterial color={color} opacity={opacity} wireframe={isWireframe} transparent />
@@ -128,8 +128,8 @@ function ThreeDViewer() {
           id: `${neuronName}`,
           url,
           color: viewerData?.color || "#FFFFFF",
-          opacity: 1,
-          renderOrder: 0.6,
+          opacity: 0.6,
+          renderOrder: 1,
           clickable: true,
         };
       });
@@ -199,7 +199,7 @@ function ThreeDViewer() {
           <Gizmo />
 
           <Center>
-            <group frustumCulled={false}>
+            <group>
               {showNerving && <NerveRing instance={NERVE_RING} isWireframe={isWireframe} />}
               <STLViewer instances={neuronInstances} isWireframe={isWireframe} />
               {synapseInstances.map((i) => (

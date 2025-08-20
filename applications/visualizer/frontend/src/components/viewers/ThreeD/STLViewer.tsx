@@ -55,7 +55,7 @@ const STLViewer: FC<Props> = ({ instances, isWireframe }) => {
   }, [instances]);
 
   return (
-    <group frustumCulled={false}>
+    <>
       {stlObjects.map((stl, idx) => (
         <STLMesh
           key={instances[idx]?.id}
@@ -68,7 +68,7 @@ const STLViewer: FC<Props> = ({ instances, isWireframe }) => {
           clickable={instances[idx]?.clickable}
         />
       ))}
-    </group>
+    </>
   );
 };
 

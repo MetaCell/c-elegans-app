@@ -62,7 +62,7 @@ const STLMesh: FC<Props> = ({ id, color, opacity, renderOrder, isWireframe, stl,
   );
 
   return (
-    <mesh userData={{ id }} onClick={onClick} frustumCulled={false} renderOrder={renderOrder}>
+    <mesh userData={{ id }} onClick={onClick} renderOrder={renderOrder}>
       <primitive attach="geometry" object={stl} />
       {isWireframe ? (
         <meshBasicMaterial color={color} opacity={opacity} wireframe={isWireframe} transparent />
