@@ -161,7 +161,7 @@ export const transformSynapsesToTree = (synapses: any, availableNeurons: any, cu
             label: neuron,
             children: synapses.map((synapse: any) => ({
               id: `${neuronGroup}-post-${postNeuron}-${injectedNeuronClass}-${neuron}-${synapse.id}`,
-              label: `${synapse.pre} → ${synapse.posts.join(", ")} [${synapse.id}]`,
+              label: `${synapse.pre} → ${synapse.posts.join(", ")}`,
               // Leaf nodes (synapses) get their actual visibility state
               isVisible: getSynapseVisibility(synapse.id),
               type: "synapse",
