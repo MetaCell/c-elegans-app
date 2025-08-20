@@ -1,5 +1,6 @@
 import type { TreeViewBaseItem } from "@mui/x-tree-view/models";
 import { Visibility } from "../../models/models";
+import { SynapseEntry } from "../../rest";
 
 // Custom type that extends TreeViewBaseItem to include visibility
 export interface SynapseTreeItem extends Omit<TreeViewBaseItem, "children"> {
@@ -7,6 +8,7 @@ export interface SynapseTreeItem extends Omit<TreeViewBaseItem, "children"> {
   children?: SynapseTreeItem[];
   type?: string;
   color?: string;
+  disabled?: boolean;
 }
 
 // Function to transform synapses data into tree structure
@@ -87,22 +89,23 @@ export const transformSynapsesToTree = (synapses: any, availableNeurons: any, cu
             injectedGroups.set(injectedNeuronClass, injectedNeuronItem);
           }
 
-          const neuronItem: SynapseTreeItem = {
+          const synapseItem: SynapseTreeItem = {
             id: `${neuronGroup}-pre-${preNeuron}-${injectedNeuronClass}-${neuron}`,
             label: neuron,
-            children: synapses.map((synapse: any) => ({
+            children: synapses.map((synapse: SynapseEntry) => ({
               id: `${neuronGroup}-pre-${preNeuron}-${injectedNeuronClass}-${neuron}-${synapse.id}`,
               label: `${synapse.pre} → ${synapse.posts.join(", ")}`,
               // Leaf nodes (synapses) get their actual visibility state
               isVisible: getSynapseVisibility(synapse.id),
               type: "synapse",
               color: getSynapseColor(synapse.id),
+              disabled: synapse.position === null || synapse.position === undefined,
             })),
             type: "synapsesGroup",
           };
 
           // Add the neuron item to the appropriate injected group
-          injectedGroups.get(injectedNeuronClass)!.children!.push(neuronItem);
+          injectedGroups.get(injectedNeuronClass)!.children!.push(synapseItem);
         });
 
         // Add all injected groups to the pre neuron item
@@ -153,22 +156,23 @@ export const transformSynapsesToTree = (synapses: any, availableNeurons: any, cu
             injectedGroups.set(injectedNeuronClass, injectedNeuronItem);
           }
 
-          const neuronItem: SynapseTreeItem = {
+          const synapseItem: SynapseTreeItem = {
             id: `${neuronGroup}-post-${postNeuron}-${injectedNeuronClass}-${neuron}`,
             label: neuron,
             children: synapses.map((synapse: any) => ({
               id: `${neuronGroup}-post-${postNeuron}-${injectedNeuronClass}-${neuron}-${synapse.id}`,
-              label: `${synapse.pre} → ${synapse.posts.join(", ")}`,
+              label: `${synapse.pre} → ${synapse.posts.join(", ")} [${synapse.id}]`,
               // Leaf nodes (synapses) get their actual visibility state
               isVisible: getSynapseVisibility(synapse.id),
               type: "synapse",
               color: getSynapseColor(synapse.id),
+              disabled: synapse.position === null || synapse.position === undefined,
             })),
             type: "synapsesGroup",
           };
 
           // Add the neuron item to the appropriate injected group
-          injectedGroups.get(injectedNeuronClass)!.children!.push(neuronItem);
+          injectedGroups.get(injectedNeuronClass)!.children!.push(synapseItem);
         });
 
         // Add all injected groups to the post neuron item

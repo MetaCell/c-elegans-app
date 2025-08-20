@@ -284,6 +284,7 @@ export default function BasicRichTreeView() {
         // Get visibility directly from treeItems state
         const treeItem = findTreeItemById(treeItems, itemId);
         const isVisible = treeItem?.isVisible;
+        const isDisabled = treeItem?.disabled || false;
         const color = treeItem?.color;
         const CustomLabel = () => (
           <Stack direction="row" alignItems="center" spacing={1} sx={{ width: "100%" }}>
@@ -297,6 +298,7 @@ export default function BasicRichTreeView() {
               width={20}
               height={12}
               thumbDimension={8}
+              disabled={isDisabled}
             />
             {hasChildren && (
               <Box
