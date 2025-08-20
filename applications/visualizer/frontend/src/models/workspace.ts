@@ -394,27 +394,6 @@ export class Workspace {
     return this;
   }
 
-  // Helper methods for use within customUpdate (no @triggerUpdate decorator)
-  _showSynapseInternal(synapseId: number) {
-    if (!(synapseId in this.visibilities.synapses)) {
-      this.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Visible);
-    }
-    // Set visibility for all viewers
-    this.visibilities.synapses[synapseId][ViewerType.Graph].visibility = Visibility.Visible;
-    this.visibilities.synapses[synapseId][ViewerType.ThreeD].visibility = Visibility.Visible;
-    this.visibilities.synapses[synapseId][ViewerType.EM].visibility = Visibility.Visible;
-  }
-
-  _hideSynapseInternal(synapseId: number) {
-    if (!(synapseId in this.visibilities.synapses)) {
-      this.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Hidden);
-    }
-    // Set visibility for all viewers
-    this.visibilities.synapses[synapseId][ViewerType.Graph].visibility = Visibility.Hidden;
-    this.visibilities.synapses[synapseId][ViewerType.ThreeD].visibility = Visibility.Hidden;
-    this.visibilities.synapses[synapseId][ViewerType.EM].visibility = Visibility.Hidden;
-  }
-
   changeNeuronColorForViewers(neuronId: string, color: string): void {
     const viewers: ViewerType[] = [ViewerType.ThreeD, ViewerType.EM];
 
@@ -511,7 +490,7 @@ export class Workspace {
       this.activeSynapses = synapseIds;
       for (const synapseId of synapseIds) {
         if (!(synapseId in this.visibilities.synapses)) {
-          this.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Visible);
+          this.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Hidden);
         }
       }
     } catch (error) {

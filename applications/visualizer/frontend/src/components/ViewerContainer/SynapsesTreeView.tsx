@@ -16,6 +16,8 @@ import {
   recalculateAllParentColors,
   transformSynapsesToTree,
 } from "./SynapsesTreeViewHelpers";
+import { ViewerType, Visibility } from "../../models";
+import { getDefaultViewerData } from "../../models/models";
 
 const { gray100, gray600 } = vars;
 
@@ -186,15 +188,15 @@ export default function BasicRichTreeView() {
   const handleSynapseVisibilityToggle = useCallback(
     (itemId: string, checked: boolean) => {
       if (!currentWorkspace) return;
-      const lastPart = itemId.split("-").slice(-1)[0];
-      const isSynapseId = /^\d+$/.test(lastPart);
+      const synapseId = itemId.split("-").slice(-1)[0];
+      const isSynapseId = /^\d+$/.test(synapseId);
 
       if (isSynapseId) {
         // Handle individual synapse visibility
         if (checked) {
-          currentWorkspace.showSynapse(Number.parseInt(lastPart));
+          currentWorkspace.showSynapse(Number.parseInt(synapseId));
         } else {
-          currentWorkspace.hideSynapse(Number.parseInt(lastPart));
+          currentWorkspace.hideSynapse(Number.parseInt(synapseId));
         }
 
         // Update the memorized visibility state
@@ -225,14 +227,28 @@ export default function BasicRichTreeView() {
 
           return newStates;
         });
-        if (item?.type === "synapsesGroup") {
+        if (item?.type === "group") {
           const synapseIds = item.children ? getAllSynapseIds(item.children) : [];
 
           // Use customUpdate to batch all synapse visibility changes into a single update
           currentWorkspace.customUpdate((draft) => {
-            const updateMethod = checked ? draft._showSynapseInternal : draft._hideSynapseInternal;
-            for (const synapseId of synapseIds) {
-              updateMethod(Number.parseInt(synapseId));
+            for (const synId of synapseIds) {
+              const synapseId = Number.parseInt(synId);
+              if (checked) {
+                if (!(synapseId in draft.visibilities.synapses)) {
+                  draft.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Visible);
+                }
+                draft.visibilities.synapses[synapseId][ViewerType.Graph].visibility = Visibility.Visible;
+                draft.visibilities.synapses[synapseId][ViewerType.ThreeD].visibility = Visibility.Visible;
+                draft.visibilities.synapses[synapseId][ViewerType.EM].visibility = Visibility.Visible;
+              } else {
+                if (!(synapseId in draft.visibilities.synapses)) {
+                  draft.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Hidden);
+                }
+                draft.visibilities.synapses[synapseId][ViewerType.Graph].visibility = Visibility.Hidden;
+                draft.visibilities.synapses[synapseId][ViewerType.ThreeD].visibility = Visibility.Hidden;
+                draft.visibilities.synapses[synapseId][ViewerType.EM].visibility = Visibility.Hidden;
+              }
             }
           });
         }
