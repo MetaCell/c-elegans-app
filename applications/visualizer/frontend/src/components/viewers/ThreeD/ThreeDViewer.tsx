@@ -151,6 +151,7 @@ function ThreeDViewer() {
       const synapse: SynapseEntry = allSynapses[synapseId];
       if (!synapse) continue; // This case shouldn't happen, but just in case
       if (!synapse.position) continue;
+      if (synapse.dataset !== selectedDataset.id) continue; // Ensure synapse belongs to the selected dataset
       synapses.push({
         id: synapseId.toString(),
         size: Math.min(Math.max(0.05, synapse.size / SYNAPSE_SIZE_FACTOR), 0.5),
