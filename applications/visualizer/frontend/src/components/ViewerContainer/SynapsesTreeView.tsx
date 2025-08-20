@@ -2,7 +2,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { Box, CircularProgress, InputAdornment, Stack, TextField, Typography } from "@mui/material";
 import { TreeItem, treeItemClasses } from "@mui/x-tree-view";
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { vars } from "../../theme/variables";
 import CustomSwitch from "./CustomSwitch";
@@ -24,8 +24,10 @@ export default function BasicRichTreeView() {
   const currentWorkspace = workspaces[currentWorkspaceId];
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const anchorElRef = useRef<HTMLElement | null>(null);
+  const virtualAnchorRef = useRef<HTMLDivElement | null>(null);
   const [openColorPicker, setOpenColorPicker] = useState<string | null>(null);
+  const [pendingColorChange, setPendingColorChange] = useState<{ itemId: string; color: string } | null>(null);
   const { activeNeurons, activeDatasets, availableNeurons } = currentWorkspace || {};
   const [treeItems, setTreeItems] = useState<SynapseTreeItem[]>([]);
   const [itemVisibilityStates, setItemVisibilityStates] = useState<Record<string, boolean>>({});
@@ -33,22 +35,19 @@ export default function BasicRichTreeView() {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
   const handleColorClose = useCallback(() => {
-    setAnchorEl(null);
-    setOpenColorPicker(null);
-  }, []);
-
-  const handleColorChange = useCallback(
-    (itemId: string, color: any, treeItems: SynapseTreeItem[]) => {
+    // Apply pending color change to tree state
+    if (pendingColorChange) {
+      const { itemId, color } = pendingColorChange;
       const item = findTreeItemById(treeItems, itemId);
 
       setItemColorStates((prevStates) => {
         const newStates = { ...prevStates };
-        newStates[itemId] = color.hex;
+        newStates[itemId] = color;
 
         // Update all children of this group
         const updateChildrenStates = (children: SynapseTreeItem[]) => {
           for (const child of children) {
-            newStates[child.id] = color.hex;
+            newStates[child.id] = color;
             if (child.children) {
               updateChildrenStates(child.children);
             }
@@ -91,7 +90,22 @@ export default function BasicRichTreeView() {
         return newStates;
       });
 
-      // Get all synapse IDs from the item and its children
+      setPendingColorChange(null);
+    }
+
+    // Clean up virtual anchor
+    if (virtualAnchorRef.current && document.body.contains(virtualAnchorRef.current)) {
+      document.body.removeChild(virtualAnchorRef.current);
+    }
+    virtualAnchorRef.current = null;
+    anchorElRef.current = null;
+    setOpenColorPicker(null);
+  }, [pendingColorChange, treeItems]);
+
+  const handleColorChange = useCallback(
+    (itemId: string, color: any, treeItems: SynapseTreeItem[]) => {
+      // Only update the 3D visualization immediately, defer tree state updates
+      const item = findTreeItemById(treeItems, itemId);
       const synapseIds = item ? getAllSynapseIds([item]) : [];
 
       if (synapseIds.length > 0) {
@@ -100,6 +114,9 @@ export default function BasicRichTreeView() {
           color.hex,
         );
       }
+
+      // Store the color change to apply when picker closes
+      setPendingColorChange({ itemId, color: color.hex });
     },
     [currentWorkspace, treeItems],
   );
@@ -108,6 +125,11 @@ export default function BasicRichTreeView() {
 
   // Function to update tree items
   const updateTreeItems = useCallback(() => {
+    // Skip tree updates while color picker is open to prevent anchor invalidation
+    if (openColorPicker) {
+      return;
+    }
+
     if (!synapsesData?.synapses) {
       setTreeItems([]);
       return;
@@ -122,7 +144,16 @@ export default function BasicRichTreeView() {
 
     const filteredTree = filterTreeItems(treeWithRecalculatedColors, searchTerm);
     setTreeItems(filteredTree);
-  }, [synapsesData?.synapses, searchTerm, currentWorkspace, availableNeurons, currentWorkspace?.visibilities, itemVisibilityStates, itemColorStates]);
+  }, [
+    synapsesData?.synapses,
+    searchTerm,
+    currentWorkspace,
+    availableNeurons,
+    currentWorkspace?.visibilities,
+    itemVisibilityStates,
+    itemColorStates,
+    openColorPicker,
+  ]);
 
   // Update tree items when dependencies change
   useEffect(() => {
@@ -132,7 +163,23 @@ export default function BasicRichTreeView() {
   const handleColorClick = useCallback((event: React.MouseEvent<HTMLElement>, itemId: string) => {
     event.stopPropagation();
     event.preventDefault();
-    setAnchorEl(event.currentTarget);
+
+    // Create a virtual anchor element that won't be affected by DOM changes
+    const rect = event.currentTarget.getBoundingClientRect();
+    if (!virtualAnchorRef.current) {
+      virtualAnchorRef.current = document.createElement("div");
+      virtualAnchorRef.current.style.position = "fixed";
+      virtualAnchorRef.current.style.pointerEvents = "none";
+      virtualAnchorRef.current.style.zIndex = "-1";
+      document.body.appendChild(virtualAnchorRef.current);
+    }
+
+    virtualAnchorRef.current.style.left = `${rect.left}px`;
+    virtualAnchorRef.current.style.top = `${rect.top}px`;
+    virtualAnchorRef.current.style.width = `${rect.width}px`;
+    virtualAnchorRef.current.style.height = `${rect.height}px`;
+
+    anchorElRef.current = virtualAnchorRef.current;
     setOpenColorPicker(itemId);
   }, []);
 
@@ -354,13 +401,13 @@ export default function BasicRichTreeView() {
         }}
         slots={treeSlots}
       />
-      {openColorPicker && anchorEl && (
+      {openColorPicker && anchorElRef.current && (
         <PickerWrapper
           open={true}
-          anchorEl={anchorEl}
+          anchorEl={anchorElRef.current}
           onClose={handleColorClose}
           onChange={(color) => handleColorChange(openColorPicker, color, treeItems)}
-          selectedColor={findTreeItemById(treeItems, openColorPicker)?.color}
+          selectedColor={pendingColorChange?.color || findTreeItemById(treeItems, openColorPicker)?.color}
         />
       )}
     </Box>
