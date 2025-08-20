@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
-import ChromePicker from "react-color";
+import {  Chrome } from '@uiw/react-color';
+
 
 const ColorPicker = ({ selectedColor, onChange }) => {
   return (
@@ -39,7 +40,7 @@ const ColorPicker = ({ selectedColor, onChange }) => {
         },
       }}
     >
-      <ChromePicker color={selectedColor} onChange={onChange} />
+      <Chrome color={selectedColor} onChange={onChange} />
     </Box>
   );
 };
