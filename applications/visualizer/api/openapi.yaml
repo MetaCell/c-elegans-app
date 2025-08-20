@@ -334,10 +334,12 @@ components:
           title: Id
           type: integer
         position:
-          items:
-            type: number
+          anyOf:
+          - items:
+              type: number
+            type: array
+          - type: 'null'
           title: Position
-          type: array
         posts:
           items:
             type: string

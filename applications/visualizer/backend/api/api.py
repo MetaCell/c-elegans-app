@@ -347,7 +347,10 @@ def get_dataset_synapses(
     datasetIds: list[str] = Query(None),  # type: ignore the Query type error
     neurons: list[str] = Query(None),  # type: ignore the Query type error
 ):
-    neurons_of_interest = neurons
+    # neurons_of_interest = neurons
+    neurons_of_interest = NeuronModel.objects.filter(
+        Q(nclass__in=neurons) | Q(name__in=neurons)
+    ).distinct()
     datasets_of_interest = datasetIds
 
     ## Build subneuron <-> neuron map and expand selection to "brothers" of subneurons

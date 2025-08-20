@@ -1141,11 +1141,18 @@
             "title": "Size"
           },
           "position": {
-            "items": {
-              "type": "number"
-            },
-            "title": "Position",
-            "type": "array"
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position"
           }
         },
         "required": [
