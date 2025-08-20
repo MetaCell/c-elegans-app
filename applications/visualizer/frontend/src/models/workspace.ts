@@ -516,7 +516,7 @@ export class Workspace {
 
   getAllSynapses(): Record<number, SynapseEntry> {
     if (!this.synapsesData) {
-      return [];
+      return {};
     }
     const allSynapses: Record<number, SynapseEntry> = {};
     for (const prePostEntry of Object.values(this.synapsesData.synapses)) {
