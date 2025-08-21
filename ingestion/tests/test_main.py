@@ -279,7 +279,8 @@ def test__main_ingest_valid_data_for_unknown_dataset_id(
             ]
         )
 
-    assert len(list(celegans_dir.iterdir())) == 0
+    # We should have at least the db-raw folder
+    assert len(list(celegans_dir.iterdir())) == 1
 
 
 def test__main_ingest_bad_data_dir_schema(
@@ -324,12 +325,15 @@ def test__main_ingest_segmentations(
     capsys: pytest.CaptureFixture,
     caplog: pytest.LogCaptureFixture,
     fake_secret,
+    fixture_path,
 ):
     local_dir = tmp_path / "local"
     local_dir.mkdir()
 
     celegans_dir = tmp_path / "celegans"
     celegans_dir.mkdir()
+
+    data_dir = fixture_path / "reference-data"
 
     # create a bunch of segmentation files
     for slice in range(1):
@@ -347,18 +351,22 @@ def test__main_ingest_segmentations(
                 "--gcp-bucket",
                 "celegans",
                 "--debug",
+                "--data",
+                f"{data_dir}",
                 "add-dataset",
                 "--id",
-                "dataset8",
+                "witvliet_2020_1",
                 "--segmentation",
                 f"{local_dir}",
             ]
         )
 
-    assert compare_directories(local_dir, celegans_dir / "dataset8" / "segmentations")
+    assert compare_directories(
+        local_dir, celegans_dir / "witvliet_2020_1" / "segmentations"
+    )
 
     out, _ = capsys.readouterr()
-    assert _done_message("dataset8") in out
+    assert _done_message("witvliet_2020_1") in out
 
 
 def test__main_ingest_em_tiles(
@@ -375,6 +383,7 @@ def test__main_ingest_em_tiles(
     celegans_dir.mkdir()
 
     em_fixtures_dir = fixture_path / "em-tiles"
+    data_dir = fixture_path / "reference-data"
 
     with (
         gcs_patch([Mount("celegans", celegans_dir, readable=True, writable=True)]),
@@ -388,17 +397,19 @@ def test__main_ingest_em_tiles(
                 "--gcp-bucket",
                 "celegans",
                 "--debug",
+                "--data",
+                f"{data_dir}",
                 "add-dataset",
                 "--id",
-                "dataset8",
+                "witvliet_2020_1",
                 "--em",
                 f"{em_fixtures_dir}",
             ]
         )
 
-    assert compare_directories(em_fixtures_dir, celegans_dir / "dataset8" / "em")
+    assert compare_directories(em_fixtures_dir, celegans_dir / "witvliet_2020_1" / "em")
     out, _ = capsys.readouterr()
-    assert _done_message("dataset8") in out
+    assert _done_message("witvliet_2020_1") in out
 
 
 def test__main_ingest_3d(
@@ -406,6 +417,7 @@ def test__main_ingest_3d(
     capsys: pytest.CaptureFixture,
     caplog: pytest.LogCaptureFixture,
     fake_secret,
+    fixture_path,
 ):
     local_dir = tmp_path / "local"
     local_dir.mkdir()
@@ -434,6 +446,8 @@ def test__main_ingest_3d(
     for neuron in neuron_names:
         (local_dir / f"{neuron}-SEM_adult.stl").touch()
 
+    data_dir = fixture_path / "reference-data"
+
     with (
         gcs_patch([Mount("celegans", celegans_dir, readable=True, writable=True)]),
         caplog.at_level(logging.INFO),
@@ -446,9 +460,11 @@ def test__main_ingest_3d(
                 "--gcp-bucket",
                 "celegans",
                 "--debug",
+                "--data",
+                f"{data_dir}",
                 "add-dataset",
                 "--id",
-                "dataset8",
+                "witvliet_2020_1",
                 "--3d",
                 f"{local_dir}",  # parent just cause its easy
             ]
@@ -459,7 +475,7 @@ def test__main_ingest_3d(
     assert remote_files.sort(key=lambda f: f.name) == expected_neurons_blob_names.sort()
 
     out, _ = capsys.readouterr()
-    assert _done_message("dataset8") in out
+    assert _done_message("witvliet_2020_1") in out
 
 
 def test__main_ingest_multiple_datasets(
@@ -467,6 +483,7 @@ def test__main_ingest_multiple_datasets(
     capsys: pytest.CaptureFixture,
     caplog: pytest.LogCaptureFixture,
     fake_secret,
+    fixture_path,
 ):
     # lets try ingest segmentation from multiple datasets
     local_dir = tmp_path / "local"
@@ -475,6 +492,8 @@ def test__main_ingest_multiple_datasets(
     celegans_dir = tmp_path / "celegans"
     celegans_dir.mkdir()
 
+    data_dir = fixture_path / "reference-data"
+
     def create_dummy_segmentations(dataset: str):
         seg_dir = local_dir / dataset / "segmentations"
         seg_dir.mkdir(parents=True)
@@ -482,7 +501,7 @@ def test__main_ingest_multiple_datasets(
         for slice in random.sample(range(999), 10):
             (seg_dir / f"s{str(slice):03}.json").write_text("{}")
 
-    datasets = ["dataset8", "dataset11", "someother-Dataset"]
+    datasets = ["witvliet_2020_1", "witvliet_2020_2", "witvliet_2020_8"]
 
     for ds in datasets:
         create_dummy_segmentations(ds)
@@ -514,11 +533,14 @@ def test__main_ingest_multiple_datasets(
                 "--gcp-bucket",
                 "celegans",
                 "--debug",
+                "--data",
+                f"{data_dir}",
             ]
             + datasets_argv
         )
 
-    assert compare_directories(local_dir, celegans_dir)
+    for ds in datasets:
+        assert compare_directories(local_dir / ds, celegans_dir / ds)
 
     out, _ = capsys.readouterr()
     for ds in datasets:

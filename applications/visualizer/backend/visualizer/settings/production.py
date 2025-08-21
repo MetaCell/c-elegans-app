@@ -92,7 +92,7 @@ class DbDataDownloader:
             file_path.parent.mkdir(parents=True, exist_ok=True)
             file_path.write_text(result.text)
 
-        # We pull the segmentation metadata and the EM viewer metadata
+        # We pull the segmentation metadata, the EM viewer metadata and the synapses positions
         self._pull_metadata()
 
         return BASE_DIR / DB_RAW_DATA_FOLDER
@@ -110,8 +110,12 @@ class DbDataDownloader:
             segmentation_metadata = (
                 db_data_folder / dataset_id / "segmentation_metadata.json"
             )
+            synapses_positions_file = (
+                db_data_folder / dataset_id / "3d" / "synapses_positions.txt"
+            )
             files[segmentation_metadata] = self._pull_segmentation_metadata(dataset_id)
             files[em_metadata] = self._pull_em_metadata(dataset_id)
+            files[synapses_positions_file] = self._pull_synapses_positions(dataset_id)
 
         for file_path, result in files.items():
             if result.status_code != 200 or not result.text:
@@ -133,6 +137,11 @@ class DbDataDownloader:
         print(f"  . pulling gs://{url}")
         return self.session.get(url)
 
+    def _pull_synapses_positions(self, dataset_id):
+        url = f"{GCS_BUCKET_URL}/{dataset_id}/3d/synapses/synapses_positions.txt"
+        print(f"  . pulling gs://{url}")
+        return self.session.get(url)
+
     @classmethod
     def get_segmentation_metadata(cls, dataset_id):
         file = BASE_DIR / DB_RAW_DATA_FOLDER / dataset_id / "segmentation_metadata.json"
@@ -147,6 +156,18 @@ class DbDataDownloader:
             return {}
         print(f"  . uses {file} for EM Metadata for {dataset_id}")
         return json.loads(file.read_text())
+
+    @classmethod
+    def get_synapses_positions(cls, dataset_id):
+        file = (
+            BASE_DIR
+            / DB_RAW_DATA_FOLDER
+            / dataset_id
+            / "3d"
+            / "synapses"
+            / "synapses_positions.txt"
+        )
+        return file
 
     def get_metadata_files(self, dataset_id):
         return (

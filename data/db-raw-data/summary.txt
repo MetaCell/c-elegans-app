@@ -14,3 +14,10 @@ db-raw-data/connections/witvliet_2020_5.json
 db-raw-data/connections/witvliet_2020_2.json
 db-raw-data/annotations/head.annotations.json
 db-raw-data/annotations/complete.annotations.json
+db-raw-data/synapses/witvliet_2020_4.json
+db-raw-data/synapses/witvliet_2020_6.json
+db-raw-data/synapses/witvliet_2020_8.json
+db-raw-data/synapses/witvliet_2020_1.json
+db-raw-data/synapses/witvliet_2020_3.json
+db-raw-data/synapses/witvliet_2020_5.json
+db-raw-data/synapses/witvliet_2020_2.json

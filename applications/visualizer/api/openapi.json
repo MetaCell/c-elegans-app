@@ -1128,12 +1128,39 @@
             },
             "title": "Posts",
             "type": "array"
+          },
+          "size": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size"
+          },
+          "position": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position"
           }
         },
         "required": [
           "id",
           "pre",
-          "posts"
+          "posts",
+          "size",
+          "position"
         ],
         "title": "SynapseEntry",
         "type": "object"

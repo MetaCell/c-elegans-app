@@ -333,6 +333,13 @@ components:
         id:
           title: Id
           type: integer
+        position:
+          anyOf:
+          - items:
+              type: number
+            type: array
+          - type: 'null'
+          title: Position
         posts:
           items:
             type: string
@@ -341,10 +348,17 @@ components:
         pre:
           title: Pre
           type: string
+        size:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Size
       required:
       - id
       - pre
       - posts
+      - size
+      - position
       title: SynapseEntry
       type: object
   securitySchemes:

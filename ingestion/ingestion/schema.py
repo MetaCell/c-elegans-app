@@ -81,6 +81,11 @@ class Connection(BaseModel):
         return self
 
 
+class SynapseInfo(BaseModel):
+    catmaid_id: int  # the id of the connection
+    size: float
+
+
 class Annotation(RootModel):
     root: dict[
         Literal["increase", "variable", "postembryonic", "decrease", "stable"],
@@ -101,14 +106,18 @@ class Data(BaseModel):
     neurons: list[Neuron]
     datasets: list[Dataset]
     connections: dict[str, list[Connection]] = {}
+    synapses: dict[str, list[SynapseInfo]] = {}
     annotations: dict[DataAnnotationEntry, Annotation] = {}
 
     @model_validator(mode="after")
-    def check_connection_dataset_exists(self):
+    def check_connection_and_synapses_dataset_exists(self):
         existing_datasets = [dt.id for dt in self.datasets]
         assert all(
             dataset_id in existing_datasets for dataset_id in self.connections.keys()
         ), "missing dataset definition for connection"
+        assert all(
+            dataset_id in existing_datasets for dataset_id in self.synapses.keys()
+        ), "missing dataset definition for synapses"
         return self
 
 
@@ -122,6 +131,7 @@ class DataContainer(Generic[T]):
     neurons: T
     datasets: T
     connections: dict[str, T] = field(default_factory=dict)  # dataset_name: T
+    synapses: dict[str, T] = field(default_factory=dict)  # dataset_name: T
     annotations: dict[DataAnnotationEntry, T] = field(default_factory=dict)
 
     def all_paths(self) -> Generator[T]:
@@ -129,3 +139,4 @@ class DataContainer(Generic[T]):
         yield self.datasets
         yield from self.connections.values()
         yield from self.annotations.values()
+        yield from self.synapses.values()

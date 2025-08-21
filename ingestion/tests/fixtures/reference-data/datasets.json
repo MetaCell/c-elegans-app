@@ -31,5 +31,55 @@
             "axisTransform": 1
          }
       ]
+   },
+   {
+      "id":"witvliet_2020_2",
+      "name":"Witvliet et al., 2020, Dataset 2 (L2)",
+      "type":"head",
+      "time":0,
+      "visualTime":0.5,
+      "description":"~0 hours after birth",
+      "axes": [
+         {
+            "face": "right",
+            "axisIndex": 2,
+            "axisTransform": 1
+         },
+         {
+            "face": "dorsal",
+            "axisIndex": 1,
+            "axisTransform": -1
+         },
+         {
+            "face": "anterior",
+            "axisIndex": 0,
+            "axisTransform": 1
+         }
+      ]
+   },
+   {
+      "id":"witvliet_2020_8",
+      "name":"Witvliet et al., 2020, Dataset 8 (L8)",
+      "type":"head",
+      "time":0,
+      "visualTime":0.5,
+      "description":"~0 hours after birth",
+      "axes": [
+         {
+            "face": "right",
+            "axisIndex": 2,
+            "axisTransform": 1
+         },
+         {
+            "face": "dorsal",
+            "axisIndex": 1,
+            "axisTransform": -1
+         },
+         {
+            "face": "anterior",
+            "axisIndex": 0,
+            "axisTransform": 1
+         }
+      ]
    }
  ]

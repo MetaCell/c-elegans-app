@@ -52,6 +52,13 @@ class DbDataDownloader:
             return {}
         return json.loads(file.read_text())
 
+    @classmethod
+    def get_synapses_positions(cls, dataset_id):
+        file = (
+            GCS_BUCKET_URL / dataset_id / "3d" / "synapses" / "synapses_positions.txt"
+        )
+        return file
+
     def get_metadata_files(self, dataset_id):
         return (
             self.get_em_metadata(dataset_id),
