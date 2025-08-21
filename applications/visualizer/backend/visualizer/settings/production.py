@@ -160,12 +160,7 @@ class DbDataDownloader:
     @classmethod
     def get_synapses_positions(cls, dataset_id):
         file = (
-            BASE_DIR
-            / DB_RAW_DATA_FOLDER
-            / dataset_id
-            / "3d"
-            / "synapses"
-            / "synapses_positions.txt"
+            BASE_DIR / DB_RAW_DATA_FOLDER / dataset_id / "3d" / "synapses_positions.txt"
         )
         return file
 

@@ -316,7 +316,7 @@ def populate_synapses(_, print, print_success):
         if not positions.exists():
             print(f"    No synapse positions found for {dataset_id}")
             continue
-        print(f"    Synapses positions found for {dataset_id}")
+        print(f"    Synapses positions found for {dataset_id} looking in {positions}")
         with positions.open("r") as f:
             while line := f.readline():
                 connector_id, position = line.split(":")

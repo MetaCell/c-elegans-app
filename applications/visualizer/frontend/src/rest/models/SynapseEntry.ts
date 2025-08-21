@@ -8,5 +8,6 @@ export type SynapseEntry = {
     posts: Array<string>;
     size: (number | null);
     position: (Array<number> | null);
+    dataset: string;
 };
 

@@ -330,6 +330,9 @@ components:
       type: object
     SynapseEntry:
       properties:
+        dataset:
+          title: Dataset
+          type: string
         id:
           title: Id
           type: integer
@@ -359,6 +362,7 @@ components:
       - posts
       - size
       - position
+      - dataset
       title: SynapseEntry
       type: object
   securitySchemes:
