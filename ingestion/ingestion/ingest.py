@@ -358,7 +358,9 @@ def upload_3d(
     if len(files_3d) == 0:
         logger.warning("skipping 3D synapses files upload: no files found")
     else:
-        logger.info("Extract and process synapses positions...")
+        logger.info(
+            "Extract and process synapses positions (this step is always run, even in dry-run mode)..."
+        )
         import re
 
         synapses_positions_file = synapses_dirs[0] / "synapses_positions.txt"
@@ -368,7 +370,8 @@ def upload_3d(
             match = re.findall(r"\d+", filename)
             return match[-1] if match else None
 
-        for file in files_3d:
+        file3d_pbar = tqdm(files_3d)
+        for file in file3d_pbar:
             import trimesh
 
             mesh = trimesh.load(file)
