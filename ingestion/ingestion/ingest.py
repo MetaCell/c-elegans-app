@@ -401,8 +401,17 @@ def upload_3d(
             f.write(entry)
 
         f.close()
+
         logger.info("Upload 3D synapses files...")
         longest_common_suffix = find_longest_suffix(files_3d)
+        rs.upload(
+            synapses_positions_file,
+            fs_3d_synapse_blob_name(
+                dataset_id, synapses_positions_file, regex=longest_common_suffix
+            ),
+            overwrite=True,
+        )
+
         pbar = tqdm(files_3d, disable=rs.dry_run)
         for f3d in pbar:
             pbar.set_description(str(f3d))
@@ -411,13 +420,6 @@ def upload_3d(
                 fs_3d_synapse_blob_name(dataset_id, f3d, regex=longest_common_suffix),
                 overwrite=overwrite,
             )
-        rs.upload(
-            synapses_positions_file,
-            fs_3d_synapse_blob_name(
-                dataset_id, synapses_positions_file, regex=longest_common_suffix
-            ),
-            overwrite=overwrite,
-        )
 
 
 def _tiles_root_path(tiles: list[Tile]) -> Path:
