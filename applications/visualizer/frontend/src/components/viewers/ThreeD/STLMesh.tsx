@@ -2,13 +2,14 @@ import { Outlines } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import { type FC, useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { type BufferGeometry, DoubleSide, NormalBlending } from "three";
+import { type BufferGeometry } from "three";
 import { useGlobalContext } from "../../../contexts/GlobalContext";
 import { getFurthestIntersectedObject } from "../../../helpers/threeDHelpers";
 import type { RootState } from "../../../layout-manager/layoutManagerFactory";
 import type { Workspace } from "../../../models";
 import { ViewerType } from "../../../models";
 import { OUTLINE_COLOR, OUTLINE_THICKNESS } from "../../../settings/threeDSettings";
+import { useTexture } from "@react-three/drei";
 
 interface Props {
   stl: BufferGeometry;
@@ -17,12 +18,14 @@ interface Props {
   opacity: number;
   renderOrder: number;
   isWireframe: boolean;
+  clickable?: boolean;
 }
 
-const STLMesh: FC<Props> = ({ id, color, opacity, renderOrder, isWireframe, stl }) => {
+const STLMesh: FC<Props> = ({ id, color, opacity, renderOrder, isWireframe, stl, clickable }) => {
   const { workspaces } = useGlobalContext();
   const workspaceId = useSelector((state: RootState) => state.workspaceId);
   const workspace: Workspace = workspaces[workspaceId];
+  const texture = useTexture("texture.png");
 
   const isSelected = useMemo(() => {
     const selectedNeurons = workspace.getSelection(ViewerType.ThreeD);
@@ -31,6 +34,9 @@ const STLMesh: FC<Props> = ({ id, color, opacity, renderOrder, isWireframe, stl 
 
   const onClick = useCallback(
     (event: ThreeEvent<MouseEvent>) => {
+      if (!clickable) {
+        return;
+      }
       const clicked = getFurthestIntersectedObject(event);
       if (!clicked) {
         return;
@@ -56,19 +62,14 @@ const STLMesh: FC<Props> = ({ id, color, opacity, renderOrder, isWireframe, stl 
   );
 
   return (
-    <mesh userData={{ id }} onClick={onClick} frustumCulled={false} renderOrder={renderOrder}>
+    <mesh userData={{ id }} onClick={onClick} renderOrder={renderOrder}>
       <primitive attach="geometry" object={stl} />
-      <meshStandardMaterial
-        color={color}
-        opacity={opacity}
-        side={DoubleSide}
-        depthWrite={false}
-        depthTest={false}
-        blending={NormalBlending}
-        wireframe={isWireframe}
-        transparent
-      />
-      {isSelected && <Outlines thickness={OUTLINE_THICKNESS} color={OUTLINE_COLOR} />}
+      {isWireframe ? (
+        <meshBasicMaterial color={color} opacity={opacity} wireframe={isWireframe} transparent />
+      ) : (
+        <meshMatcapMaterial color={color} opacity={opacity} transparent matcap={texture} />
+      )}
+      {clickable && isSelected && <Outlines thickness={OUTLINE_THICKNESS} color={OUTLINE_COLOR} />}
     </mesh>
   );
 };

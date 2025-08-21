@@ -1153,6 +1153,10 @@
               }
             ],
             "title": "Position"
+          },
+          "dataset": {
+            "title": "Dataset",
+            "type": "string"
           }
         },
         "required": [
@@ -1160,7 +1164,8 @@
           "pre",
           "posts",
           "size",
-          "position"
+          "position",
+          "dataset"
         ],
         "title": "SynapseEntry",
         "type": "object"

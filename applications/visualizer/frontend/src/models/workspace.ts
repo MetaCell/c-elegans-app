@@ -2,7 +2,7 @@ import type { LayoutManager } from "@metacell/geppetto-meta-client/common/layout
 import type { configureStore } from "@reduxjs/toolkit";
 import { createDraft, finishDraft, immerable, isDraft, produce } from "immer";
 import getLayoutManagerAndStore from "../layout-manager/layoutManagerFactory";
-import { type Dataset, type GroupedSynapse, type Neuron, NeuronsService, SynapsesService } from "../rest";
+import { type Dataset, type GroupedSynapse, type Neuron, NeuronsService, SynapseEntry, SynapsesService } from "../rest";
 import { GlobalError } from "./Error.ts";
 import {
   type EMViewerSettings,
@@ -358,8 +358,18 @@ export class Workspace {
     return Array.from(this.activeNeurons).filter((neuronId) => this.visibilities.neurons[neuronId]?.[ViewerType.ThreeD]?.visibility === Visibility.Visible);
   }
 
+  getVisibleSynapsesInThreeD(): number[] {
+    return Array.from(this.activeSynapses || []).filter(
+      (synapseId) => this.visibilities.synapses[synapseId]?.[ViewerType.ThreeD]?.visibility === Visibility.Visible,
+    );
+  }
+
   getVisibleNeuronsInEM(): string[] {
-    return Array.from(this.activeNeurons).filter((neuronId) => this.visibilities.neurons[neuronId]?.[ViewerType.EM]?.visibility === Visibility.Visible);
+    return Array.from(this.activeNeurons || []).filter((neuronId) => this.visibilities.neurons[neuronId]?.[ViewerType.EM]?.visibility === Visibility.Visible);
+  }
+
+  getVisibleSynapsesInEM(): number[] {
+    return Array.from(this.activeSynapses).filter((synapseId) => this.visibilities.synapses[synapseId]?.[ViewerType.EM]?.visibility === Visibility.Visible);
   }
 
   getNeuronVisibility(neuronId: string): ViewerData {
@@ -392,27 +402,6 @@ export class Workspace {
     this.visibilities.synapses[synapseId][ViewerType.ThreeD].visibility = Visibility.Hidden;
     this.visibilities.synapses[synapseId][ViewerType.EM].visibility = Visibility.Hidden;
     return this;
-  }
-
-  // Helper methods for use within customUpdate (no @triggerUpdate decorator)
-  _showSynapseInternal(synapseId: number) {
-    if (!(synapseId in this.visibilities.synapses)) {
-      this.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Visible);
-    }
-    // Set visibility for all viewers
-    this.visibilities.synapses[synapseId][ViewerType.Graph].visibility = Visibility.Visible;
-    this.visibilities.synapses[synapseId][ViewerType.ThreeD].visibility = Visibility.Visible;
-    this.visibilities.synapses[synapseId][ViewerType.EM].visibility = Visibility.Visible;
-  }
-
-  _hideSynapseInternal(synapseId: number) {
-    if (!(synapseId in this.visibilities.synapses)) {
-      this.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Hidden);
-    }
-    // Set visibility for all viewers
-    this.visibilities.synapses[synapseId][ViewerType.Graph].visibility = Visibility.Hidden;
-    this.visibilities.synapses[synapseId][ViewerType.ThreeD].visibility = Visibility.Hidden;
-    this.visibilities.synapses[synapseId][ViewerType.EM].visibility = Visibility.Hidden;
   }
 
   changeNeuronColorForViewers(neuronId: string, color: string): void {
@@ -511,7 +500,7 @@ export class Workspace {
       this.activeSynapses = synapseIds;
       for (const synapseId of synapseIds) {
         if (!(synapseId in this.visibilities.synapses)) {
-          this.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Visible);
+          this.visibilities.synapses[synapseId] = getDefaultViewerData(Visibility.Hidden);
         }
       }
     } catch (error) {
@@ -523,5 +512,29 @@ export class Workspace {
 
   getSynapsesData(): GroupedSynapse | undefined {
     return this.synapsesData;
+  }
+
+  getAllSynapses(): Record<number, SynapseEntry> {
+    if (!this.synapsesData) {
+      return {};
+    }
+    const allSynapses: Record<number, SynapseEntry> = {};
+    for (const prePostEntry of Object.values(this.synapsesData.synapses)) {
+      for (const postEntries of Object.values(prePostEntry.pre)) {
+        for (const synapseEntries of Object.values(postEntries)) {
+          for (const synapseEntry of synapseEntries) {
+            allSynapses[synapseEntry.id] = synapseEntry;
+          }
+        }
+      }
+      for (const postEntries of Object.values(prePostEntry.post)) {
+        for (const synapseEntries of Object.values(postEntries)) {
+          for (const synapseEntry of synapseEntries) {
+            allSynapses[synapseEntry.id] = synapseEntry;
+          }
+        }
+      }
+    }
+    return allSynapses;
   }
 }
