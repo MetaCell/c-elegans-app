@@ -6,9 +6,9 @@ harness:
     size: 2Gi
     resources:
       limits:
-        cpu: '0.50'
+        cpu: "0.50"
       requests:
-        cpu: '0.25'
+        cpu: "0.25"
   dependencies:
     build: [cloudharness-base]
     hard: []
@@ -21,12 +21,12 @@ harness:
       #   cpu: '0.50'
       #   memory: 500M
       requests:
-        cpu: '0.25'
-        memory: 32M
-  livenessProbe: {path: /api/live}
-  readinessProbe: {path: /api/ready}
+        cpu: "0.25"
+        memory: 2000Mi
+  livenessProbe: { path: /api/live }
+  readinessProbe: { path: /api/ready }
   secured: false
-  service: {auto: true, port: 8080}
+  service: { auto: true, port: 8080 }
   subdomain: visualizer
   test:
     api:
