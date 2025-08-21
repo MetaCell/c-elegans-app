@@ -120,6 +120,7 @@ class SynapseEntry(BilingualSchema):
     posts: list[str]
     size: float | None
     position: list[float] | None
+    dataset: str
 
 
 class PrePostEntry(BilingualSchema):

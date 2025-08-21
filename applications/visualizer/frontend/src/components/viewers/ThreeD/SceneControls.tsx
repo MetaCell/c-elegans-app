@@ -23,7 +23,21 @@ import { useGlobalContext } from "../../../contexts/GlobalContext.tsx";
 
 const { gray500 } = vars;
 
-function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorderRef, handleScreenshot, sceneColor, setSceneColor }) {
+function SceneControls({
+  cameraControlRef,
+  isWireframe,
+  setIsWireframe,
+  recorderRef,
+  handleScreenshot,
+  sceneColor,
+  setSceneColor,
+  toggleWormBody,
+  toggleNeurons,
+  toggleSynapses,
+  wormBodyChecked,
+  neuronsChecked,
+  synapsesChecked,
+}) {
   const { isGlobalRotating } = useGlobalContext();
   const workspace = useSelectedWorkspace();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -181,8 +195,21 @@ function SceneControls({ cameraControlRef, isWireframe, setIsWireframe, recorder
           <Typography color={gray500} variant="subtitle1" mb=".5rem" ml=".5rem">
             3D viewer settings
           </Typography>
-          <CustomFormControlLabel label="Neurons" tooltipTitle="tooltip" helpText="data.helpText" />
-          <CustomFormControlLabel label="Synapses" tooltipTitle="tooltip" helpText="data.helpText" />
+          <CustomFormControlLabel
+            checked={wormBodyChecked}
+            label="Worm body"
+            tooltipTitle="Toggle worm body"
+            helpText="data.helpText"
+            onChange={toggleWormBody}
+          />
+          <CustomFormControlLabel checked={neuronsChecked} label="Neurons" tooltipTitle="Toggle neurons" helpText="data.helpText" onChange={toggleNeurons} />
+          <CustomFormControlLabel
+            checked={synapsesChecked}
+            label="Synapses"
+            tooltipTitle="Toggle synapses"
+            helpText="data.helpText"
+            onChange={toggleSynapses}
+          />
         </Box>
       </Popover>
       <Divider />
