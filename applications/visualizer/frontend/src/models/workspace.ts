@@ -182,11 +182,11 @@ export class Workspace {
     if (!relatedSynapses) {
       return this;
     }
-    delete this.synapsesData.synapses[neuronClass];
     for (const synapseId of collectLeafProps(relatedSynapses, "id")) {
       delete this.visibilities.synapses[synapseId];
       this.activeSynapses.delete(synapseId);
     }
+    delete this.synapsesData.synapses[neuronClass];
 
     return this;
   }
