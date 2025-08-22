@@ -173,6 +173,25 @@ export class Workspace {
   }
 
   @triggerUpdate
+  deactivateSynapsesOfNeuron(neuronId: string) {
+    const neuronClass = this.availableNeurons?.[neuronId]?.nclass;
+    if (!neuronClass) {
+      return this;
+    }
+    const relatedSynapses = this.synapsesData?.synapses[neuronClass];
+    if (!relatedSynapses) {
+      return this;
+    }
+    delete this.synapsesData.synapses[neuronClass];
+    for (const synapseId of collectLeafProps(relatedSynapses, "id")) {
+      delete this.visibilities.synapses[synapseId];
+      this.activeSynapses.delete(synapseId);
+    }
+
+    return this;
+  }
+
+  @triggerUpdate
   hideNeuron(neuronId: string) {
     if (!(neuronId in this.visibilities.neurons)) {
       this.visibilities[neuronId] = getDefaultViewerData(Visibility.Hidden);
@@ -537,4 +556,29 @@ export class Workspace {
     }
     return allSynapses;
   }
+}
+
+function collectLeafProps<T>(obj: unknown, targetProp: keyof T): T[keyof T][] {
+  const results: T[keyof T][] = [];
+
+  function recurse(node: unknown) {
+    if (node == null || typeof node !== "object") return;
+
+    // We collect the target property
+    if (targetProp in (node as object)) {
+      results.push((node as T)[targetProp]);
+    }
+
+    // Traverse every property
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) {
+        for (const child of value) recurse(child);
+      } else if (typeof value === "object") {
+        recurse(value);
+      }
+    }
+  }
+
+  recurse(obj);
+  return results;
 }

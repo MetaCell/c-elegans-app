@@ -18,6 +18,9 @@ export const transformSynapsesToTree = (synapses: any, availableNeurons: any, cu
   // Helper function to get synapse visibility
   const getSynapseVisibility = (synapseId: number): boolean => {
     const synapseVisibility = currentWorkspace.getSynapseVisibility(synapseId);
+    if (!synapseVisibility) {
+      return false;
+    }
     return Object.values(synapseVisibility).every((e: any) => e === undefined || e.visibility === Visibility.Visible);
   };
 

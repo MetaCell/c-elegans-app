@@ -57,7 +57,8 @@ const Neurons = ({ children }) => {
     }
   };
   const handleDeleteNeuron = (neuronId: string) => {
-    currentWorkspace.deactivateNeuron(neuronId);
+    const workspace = currentWorkspace.deactivateSynapsesOfNeuron(neuronId);
+    workspace.deactivateNeuron(neuronId);
   };
 
   const onSearchNeurons = (nameFragment) => {
