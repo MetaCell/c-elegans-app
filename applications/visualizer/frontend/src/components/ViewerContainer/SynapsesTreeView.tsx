@@ -155,6 +155,7 @@ export default function BasicRichTreeView() {
     itemVisibilityStates,
     itemColorStates,
     openColorPicker,
+    currentWorkspace.activeSynapses,
   ]);
 
   // Update tree items when dependencies change
@@ -254,7 +255,7 @@ export default function BasicRichTreeView() {
         }
       }
     },
-    [currentWorkspace, treeItems],
+    [currentWorkspace, treeItems, currentWorkspace.visibilities.synapses, currentWorkspace.activeSynapses],
   );
 
   useEffect(() => {
@@ -346,7 +347,7 @@ export default function BasicRichTreeView() {
         );
       },
     }),
-    [handleColorClick, currentWorkspace, handleSynapseVisibilityToggle, treeItems],
+    [handleColorClick, currentWorkspace, handleSynapseVisibilityToggle, treeItems, currentWorkspace.visibilities.synapses, currentWorkspace.activeSynapses],
   );
 
   return (
