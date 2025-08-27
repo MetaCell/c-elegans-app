@@ -206,7 +206,7 @@ const DataSets = ({ children }) => {
   );
 
   return (
-    <Box>
+    <Box display="flex" flexDirection="column">
       <Stack spacing=".25rem" p=".75rem" mb="1.5rem" pb="0">
         <Typography variant="body1" component="p" color={gray900} fontWeight={500}>
           Datasets
@@ -339,7 +339,6 @@ const DataSets = ({ children }) => {
       </Box>
       <Box
         sx={{
-          height: "calc(100% - 12.75rem)",
           paddingBottom: "0.5rem",
           overflow: "auto",
         }}
