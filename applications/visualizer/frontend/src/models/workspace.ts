@@ -131,7 +131,7 @@ export class Workspace {
     // Set EM viewer settings
     if (!emViewerSettings) {
       const firstActiveDataset = Object.values(activeDatasets)?.[0];
-      const [minSlice, maxSlice] = firstActiveDataset.emData?.sliceRange || [0, 0];
+      const [minSlice, maxSlice] = firstActiveDataset?.emData?.sliceRange || [0, 0];
       const startSlice = Math.floor((maxSlice + minSlice) / 2);
       this.emViewerSettings = {
         showNeurons: true,

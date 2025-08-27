@@ -74,7 +74,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
     return Object.values(workspaces).some((workspace) => workspace.name === name);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formValues.workspaceName.trim()) {
       setErrorMessage("Workspace name is required!");
       return;
@@ -89,7 +89,7 @@ const CreateNewWorkspaceDialog = ({ onCloseCreateWorkspace, showCreateWorkspaceD
     const newWorkspaceId = `workspace-${randomNumber}`;
     const activeNeurons = new Set(formValues.selectedNeurons);
     const activeDatasets = new Set(formValues.selectedDatasets.map((dataset) => dataset.id));
-    createWorkspace(newWorkspaceId, formValues.workspaceName, activeDatasets, activeNeurons);
+    await createWorkspace(newWorkspaceId, formValues.workspaceName, activeDatasets, activeNeurons);
 
     if (isCompareMode) {
       const updatedWorkspaces = new Set([...Object.keys(workspaces), newWorkspaceId]);
