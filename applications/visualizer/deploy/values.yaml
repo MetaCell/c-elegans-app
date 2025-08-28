@@ -17,9 +17,9 @@ harness:
     port: 8080
     replicas: 1
     resources:
-      # limits:
-      #   cpu: '0.50'
-      #   memory: 500M
+      limits:
+        cpu: "0.50"
+        memory: 2000M
       requests:
         cpu: "0.25"
         # memory: 2000Mi
