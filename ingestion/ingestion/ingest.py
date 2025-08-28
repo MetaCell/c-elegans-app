@@ -363,6 +363,25 @@ def upload_3d(
         )
         import re
 
+        conversion_script = synapses_dirs[0] / "convert.py"
+
+        conversion_fun = None
+        if conversion_script.exists():
+            logger.info(f"Conversion script detected: {conversion_script}")
+            import importlib
+
+            spec = importlib.util.spec_from_file_location(  # type: ignore
+                "synapses_converter", conversion_script
+            )
+            module = importlib.util.module_from_spec(spec)  # type: ignore
+            spec.loader.exec_module(module)
+            try:
+                conversion_fun = getattr(module, "convert")
+            except AttributeError:
+                logger.warning(
+                    "Conversion script had been found, but it doesn't have a 'convert' function. Coordinate conversion will not be applied"
+                )
+
         synapses_positions_file = synapses_dirs[0] / "synapses_positions.txt"
         f = synapses_positions_file.open("w")
 
@@ -376,24 +395,14 @@ def upload_3d(
 
             mesh = trimesh.load(file)
 
-            if file.suffix == ".obj":
-                # Adapt the mesh position
-                # Step 1: negate the bbox
-                bbox_neg = -mesh.bounds
-
-                # Step 2: double x and y
-                bbox_neg[:, 0] *= 2  # double x
-                bbox_neg[:, 1] *= 2  # double y
-
-                # Step 3: swap x and y
-                bbox_swapped = bbox_neg.copy()
-                bbox_swapped[:, [0, 1]] = bbox_swapped[:, [1, 0]]
-            else:
-                bbox_swapped = mesh.bounds
-
             # Gets the center of the bbox
-            bbox_min, bbox_max = bbox_swapped
+            bbox = mesh.bounds
+            bbox_min, bbox_max = bbox
             center = (bbox_min + bbox_max) / 2
+
+            # We call the conversion function if there is one
+            if conversion_fun:
+                center = conversion_fun(file, mesh, center)
 
             # Extract catmaid connector id
             connector_id = extract_last_number(file.stem)
