@@ -375,7 +375,12 @@ def upload_3d(
             )
             module = importlib.util.module_from_spec(spec)  # type: ignore
             spec.loader.exec_module(module)
-            conversion_fun = module.convert
+            try:
+                conversion_fun = getattr(module, "convert")
+            except AttributeError:
+                logger.warning(
+                    "Conversion script had been found, but it doesn't have a 'convert' function. Coordinate conversion will not be applied"
+                )
 
         synapses_positions_file = synapses_dirs[0] / "synapses_positions.txt"
         f = synapses_positions_file.open("w")

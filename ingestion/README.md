@@ -16,6 +16,7 @@ The C-Elegans Utility CLI Tool supports the C-Elegans application by allowing us
     - [Ingesting Segmentations](#ingesting-segmentations)
       - [Extract segmentations from bitmap Files](#extract-segmentations-from-bitmap-files)
       - [Ingest the Segmentations](#ingest-the-segmentations)
+      - [Synapse coordinate conversion script](#synapse-coordinate-conversion-script)
   - [FAQ](#faq)
     - [What should be the file names and directory structure for the files I want to upload](#what-should-be-the-file-names-and-directory-structure-for-the-files-i-want-to-upload)
     - [Re-upload new version of the Dataset or related data](#re-upload-new-version-of-the-dataset-or-related-data)
@@ -145,7 +146,7 @@ When using the `add-dataset` subcommand, don't forget to specify the dataset ID 
 The following flags help determine which files to upload:
 
 - `-seg`/`--segmentation`: Path to the directory or files containing neuron segmentation data.
-- `-3`/`--3d`: Path to the directory or files containing 3D neuron models.
+- `-3`/`--3d`: Path to the directory or files containing 3D neuron models and 3D synapse models.
 - `-e`/`--em`: Path to the directory or files containing EM tile images.
 - `-syn`/`--synapses`: Path to the directory or files containin synapses segmentation data.
 
@@ -156,6 +157,8 @@ For example, to upload 3D neuron models from `/path/to/3d/models` for the datase
 ```bash
 celegans ingest --data /path/to/data/db-raw-data add-dataset --id witvliet_2020_2 --3d /path/to/3d/models
 ```
+
+This command will also try to detect all the 3D synapse models that could be located under `/path/to/3d/models/synapses` and will also check for a conversion script if there is one. If the conversion script exists, the
 
 You can upload multiple datasets by chaining `add-dataset` commands. For example, to upload 3D neuron models for `witvliet_2020_2` and EM images for `witvliet_2020_3`, use this command:
 
@@ -203,6 +206,24 @@ celegans ingest --data /path/to/data/db-raw-data add-dataset --id witvliet_2020_
 2. Using the correct flag for either neuron segmentations (`-seg` or `--segmentation`) or the synapses segmentations (`-syn` or `--synapses`)
 3. Pointing to the segmentation output directory, which is the same as the bitmap files directory.
 
+#### Synapse coordinate conversion script
+
+The synapse coordinate conversion script is searched in the 3D synapse model folder. It has to be named `convert.py` and has to contain at least one function named `convert` with this signature `convert(f: Path, mesh: trimesh.Geometry, bbox_center: ndarray) -> ndarray`.
+
+Here is an example of conversion script
+
+```python
+from pathlib import Path
+from numpy import ndarray
+import trimesh
+
+
+def convert(f: Path, mesh: trimesh.Geometry, bbox_center: ndarray) -> ndarray:
+   center = -bbox_center
+   center[0], center[1] = center[1] * 2, center[0] * 2
+   return center
+```
+
 ## FAQ
 
 ### What should be the file names and directory structure for the files I want to upload
@@ -234,6 +255,7 @@ Our suggestion would be to manage and store your files as follows:
 │   │   ├── ADEL.stl
 │   │   │   ...
 |   |   ├── synapses
+|   |   |   ├── convert.py  # [optional] coordinate script conversion
 |   |   |   ├── _0001_ADAL_synapses.ADAL_AVBL,AVBR,RIML_8414886-SEM_adult.stl  # or .obj
 |   |   |   ├── _0002_ADAL_synapses.ADAL_AVBL,AVJL,AVBR_8414874-SEM_adult.stl
 |   |   |   ├── ...
