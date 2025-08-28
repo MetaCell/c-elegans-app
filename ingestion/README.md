@@ -158,7 +158,7 @@ For example, to upload 3D neuron models from `/path/to/3d/models` for the datase
 celegans ingest --data /path/to/data/db-raw-data add-dataset --id witvliet_2020_2 --3d /path/to/3d/models
 ```
 
-This command will also try to detect all the 3D synapse models that could be located under `/path/to/3d/models/synapses` and will also check for a conversion script if there is one. If the conversion script exists, the
+This command will also try to detect all the 3D synapse models that could be located under `/path/to/3d/models/synapses` and will also check for a conversion script if there is one. If the conversion script exists, the tool will automatically run it to convert the coordinates or data as required before uploading.
 
 You can upload multiple datasets by chaining `add-dataset` commands. For example, to upload 3D neuron models for `witvliet_2020_2` and EM images for `witvliet_2020_3`, use this command:
 
