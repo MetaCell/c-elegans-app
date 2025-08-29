@@ -27,7 +27,7 @@ export interface GlobalContextType {
   viewMode: ViewMode;
   selectedWorkspacesIds: Set<string>;
   setViewMode: (viewMode: ViewMode) => void;
-  createWorkspace: (id: string, name: string, activeDatasets?: Set<string>, activeNeurons?: Set<string>) => void;
+  createWorkspace: (id: string, name: string, activeDatasets?: Set<string>, activeNeurons?: Set<string>) => Promise<void>;
   updateWorkspace: (workspace: Workspace) => void;
   removeWorkspace: (workspaceId: string) => void;
   setCurrentWorkspace: (workspaceId: string) => void;
