@@ -297,7 +297,8 @@ def populate_synapses(_, print, print_success):
     synapse_objects = []
     synapses_config = []
     print("  . Creating synapses informations...")
-    for synapse in synapses:
+    synapses_count = len(synapses)
+    for i, synapse in enumerate(synapses):
         connection = Connection.objects.get(id=synapse["connection_id"])
         dataset_id = connection.dataset.id
         synapse["connection"] = connection
@@ -306,7 +307,15 @@ def populate_synapses(_, print, print_success):
         if key in connectorid_size_map:
             synapse["size"] = connectorid_size_map[key]
         synapses_config.append(synapse)
+        # ugly
+        if i == synapses_count // 4:
+            print("    25%  ")
+        if i == synapses_count // 2:
+            print("    50%  ")
+        if i == (synapses_count // 4) * 3:
+            print("    75%  ")
 
+    print("   100%  ")
     print("  . Fetching synapses positions...")
     MetadataFetcher = settings.METADATA_DOWNLOADER
     positions_config = {}

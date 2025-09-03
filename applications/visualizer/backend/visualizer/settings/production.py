@@ -154,7 +154,7 @@ class DbDataDownloader:
         file = BASE_DIR / DB_RAW_DATA_FOLDER / dataset_id / "em_metadata.json"
         if not file.exists():
             return {}
-        print(f"  . uses {file} for EM Metadata for {dataset_id}")
+        print(f"\n  . uses {file} for EM Metadata for {dataset_id}")
         return json.loads(file.read_text())
 
     @classmethod
